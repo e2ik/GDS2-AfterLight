@@ -2,9 +2,6 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
-# Recommended: add any editor/OS/tool-specific ignore rules from the Global/ templates as needed.
-# See: https://github.com/github/gitignore/tree/main/Global
-#
 .utmp/
 /[Ll]ibrary/
 /[Tt]emp/
@@ -36,6 +33,8 @@
 
 # Visual Studio cache directory
 .vs/
+.vscode/
+.idea/
 
 # Gradle cache directory
 .gradle/
@@ -102,5 +101,25 @@ InitTestScene*.unity*
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
-# Auto-generated cache in Assets folder
-/[Aa]ssets/[Ss]ceneDependencyCache*
+### FMOD Unity Integration ###
+# Never ignore DLLs in the FMOD subfolder, so make sure that the 
+# FMOD-folder is in the correct path.
+!/[Aa]ssets/Plugins/FMOD/**/*.dll
+
+# Don't ignore images and gizmos used by FMOD in the Unity Editor
+!/[Aa]ssets/Gizmos/FMOD/*
+!/[Aa]ssets/Editor Default Resources/FMOD/*
+
+# Ignore the Cache-file since it is updated locally either way
+/[Aa]ssets/**/FMODStudioCache.asset
+/[Aa]ssets/**/FMODStudioCache.asset.meta
+/[Aa]ssets/Plugins/FMOD/Cache.meta
+/[Aa]ssets/Plugins/FMOD/Cache/Editor.meta
+
+# Log-files
+fmod.log
+fmod_editor.log
+
+# FMOD 1.10.x (Legacy)
+/Assets/FMODAssets/*
+/Assets/FMODStudioCache.meta
