@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee2d34d2521e9324ca064b87abc38417, type: 3}
+  m_Name: Test_Sword
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSO
+  itemId: sword
+  displayName: Test Sword of LOL
+  minDamage: 1
+  maxDamage: 5
+  minAttack: 1
+  maxAttack: 5
+  minDefense: 1
+  maxDefense: 5
+  minHumanity: 1
+  maxHumanity: 5
