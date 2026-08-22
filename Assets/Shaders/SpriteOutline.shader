@@ -45,10 +45,10 @@ Shader "Custom/SpriteOutline"
             {
                 float4 baseColor = tex2D(_MainTex, i.uv) * i.color;
 
-                if (baseColor.a > 0.1)
+                if (_OutlineEnabled < 0.5)
                     return baseColor;
 
-                if (_OutlineEnabled < 0.5)
+                if (baseColor.a > 0.1)
                     return baseColor;
 
                 float2 texel = _MainTex_TexelSize.xy * _OutlineThickness;

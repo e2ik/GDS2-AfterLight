@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class SpriteOutlineToggle : MonoBehaviour
 {
-    [Header("Outline Defaults")]
-    [SerializeField] private Color outlineColor = Color.white;
+    [Header("Default Outline Settings")]
+    [SerializeField] private Color outlineColor = Color.yellow;
     [SerializeField] private float outlineThickness = 1f;
 
-    private SpriteRenderer spriteRenderer;
+    private SpriteRenderer[] spriteRenderers;
     private MaterialPropertyBlock propertyBlock;
 
     private static readonly int OutlineEnabledID = Shader.PropertyToID("_OutlineEnabled");
@@ -15,7 +15,7 @@ public class SpriteOutlineToggle : MonoBehaviour
 
     private void Awake()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
         propertyBlock = new MaterialPropertyBlock();
     }
 
@@ -26,11 +26,18 @@ public class SpriteOutlineToggle : MonoBehaviour
 
     public void SetOutline(bool enabled, Color color, float thickness)
     {
-        spriteRenderer.GetPropertyBlock(propertyBlock);
-        propertyBlock.SetFloat(OutlineEnabledID, enabled ? 1f : 0f);
-        propertyBlock.SetColor(OutlineColorID, color);
-        propertyBlock.SetFloat(OutlineThicknessID, thickness);
-        spriteRenderer.SetPropertyBlock(propertyBlock);
+        if (spriteRenderers == null || spriteRenderers.Length == 0) return;
+
+        foreach (var sr in spriteRenderers)
+        {
+            if (sr == null) continue;
+
+            sr.GetPropertyBlock(propertyBlock);
+            propertyBlock.SetFloat(OutlineEnabledID, enabled ? 1f : 0f);
+            propertyBlock.SetColor(OutlineColorID, color);
+            propertyBlock.SetFloat(OutlineThicknessID, thickness);
+            sr.SetPropertyBlock(propertyBlock);
+        }
     }
 
     public Color DefaultColor => outlineColor;
