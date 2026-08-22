@@ -7,7 +7,9 @@ public class WorldStreamer : MonoBehaviour
 {
     public static WorldStreamer Instance { get; private set; }
 
-    private HashSet<string> loadedScenes = new HashSet<string>();
+    public bool IsFastTraveling { get; set; } = false;
+
+    private HashSet<string> loadingScenes = new HashSet<string>();
 
     private void Awake()
     {
@@ -17,52 +19,43 @@ public class WorldStreamer : MonoBehaviour
             return;
         }
         Instance = this;
+    }
 
-        for (int i = 0; i < SceneManager.sceneCount; i++)
+    public void StreamAndStitchScene(string sceneToLoad, string sourceAnchorID, string targetAnchorID)
+    {
+        if (IsFastTraveling) return;
+        if (string.IsNullOrEmpty(sceneToLoad)) return;
+        if (SceneManager.GetSceneByName(sceneToLoad).isLoaded || loadingScenes.Contains(sceneToLoad)) return;
+
+        StartCoroutine(StreamAndAlignRoutine(sceneToLoad, sourceAnchorID, targetAnchorID));
+    }
+
+    private IEnumerator StreamAndAlignRoutine(string sceneToLoad, string sourceAnchorID, string targetAnchorID)
+    {
+        loadingScenes.Add(sceneToLoad);
+
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneToLoad, LoadSceneMode.Additive);
+        while (!asyncLoad.isDone) yield return null;
+
+        SceneAnchor sourceAnchor = FindAnchor(sourceAnchorID);
+        SceneAnchor targetAnchor = FindAnchor(targetAnchorID);
+
+        if (sourceAnchor != null && targetAnchor != null && targetAnchor.SceneRoot != null)
         {
-            loadedScenes.Add(SceneManager.GetSceneAt(i).name);
+            Vector3 positionOffset = sourceAnchor.transform.position - targetAnchor.transform.position;
+            targetAnchor.SceneRoot.position += positionOffset;
         }
+
+        loadingScenes.Remove(sceneToLoad);
     }
 
-    public void LoadZoneAdditive(string sceneName)
+    private SceneAnchor FindAnchor(string anchorID)
     {
-        if (string.IsNullOrEmpty(sceneName) || loadedScenes.Contains(sceneName)) 
-            return;
-
-        StartCoroutine(LoadAdditiveRoutine(sceneName));
-    }
-
-    public void UnloadZoneAdditive(string sceneName)
-    {
-        if (string.IsNullOrEmpty(sceneName) || !loadedScenes.Contains(sceneName)) 
-            return;
-
-        StartCoroutine(UnloadAdditiveRoutine(sceneName));
-    }
-
-    private IEnumerator LoadAdditiveRoutine(string sceneName)
-    {
-        loadedScenes.Add(sceneName);
-
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-        asyncLoad.allowSceneActivation = true;
-
-        while (!asyncLoad.isDone)
+        SceneAnchor[] anchors = Object.FindObjectsByType<SceneAnchor>(FindObjectsSortMode.None);
+        foreach (var anchor in anchors)
         {
-            yield return null;
+            if (anchor.AnchorID == anchorID) return anchor;
         }
-    }
-
-    private IEnumerator UnloadAdditiveRoutine(string sceneName)
-    {
-        loadedScenes.Remove(sceneName);
-
-        AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(sceneName);
-        if (asyncUnload == null) yield break;
-
-        while (!asyncUnload.isDone)
-        {
-            yield return null;
-        }
+        return null;
     }
 }

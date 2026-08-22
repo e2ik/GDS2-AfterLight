@@ -1,12 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class FastTravelManager : MonoBehaviour
 {
     public static FastTravelManager Instance { get; private set; }
-
-    private string currentLoadedZone;
 
     private void Awake()
     {
@@ -17,19 +16,6 @@ public class FastTravelManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-    }
-
-    private void Start()
-    {
-        for (int i = 0; i < SceneManager.sceneCount; i++)
-        {
-            Scene scene = SceneManager.GetSceneAt(i);
-            if (scene.name != gameObject.scene.name)
-            {
-                currentLoadedZone = scene.name;
-                break;
-            }
-        }
     }
 
     public void TravelTo(FastTravelNodeSO node)
@@ -57,28 +43,54 @@ public class FastTravelManager : MonoBehaviour
             }
         }
 
-        if (!string.IsNullOrEmpty(currentLoadedZone) && currentLoadedZone != targetScene && currentLoadedZone != "WorldMaster")
+        List<Scene> scenesToUnload = new List<Scene>();
+        for (int i = 0; i < SceneManager.sceneCount; i++)
         {
-            Scene sceneToUnload = SceneManager.GetSceneByName(currentLoadedZone);
-            if (sceneToUnload.isLoaded && sceneToUnload.name != "WorldMaster")
+            Scene scene = SceneManager.GetSceneAt(i);
+            if (scene.name != "WorldMaster" && scene.name != targetScene && scene.isLoaded)
             {
-                AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(currentLoadedZone);
-                if (asyncUnload != null)
+                scenesToUnload.Add(scene);
+            }
+        }
+
+        foreach (Scene scene in scenesToUnload)
+        {
+            AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(scene);
+            if (asyncUnload != null)
+            {
+                while (!asyncUnload.isDone)
                 {
-                    while (!asyncUnload.isDone)
-                    {
-                        yield return null;
-                    }
+                    yield return null;
                 }
             }
         }
 
-        currentLoadedZone = targetScene;
-
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null)
         {
-            player.transform.position = destination.targetWorldPosition;
+            Transform anchorTransform = FindAnchorTransform(destination.spawnAnchorID);
+
+            if (anchorTransform != null)
+            {
+                player.transform.position = anchorTransform.position;
+            }
+            else
+            {
+                Debug.LogWarning($"[FastTravelManager] Could not find spawn anchor '{destination.spawnAnchorID}' inside scene '{targetScene}'.");
+            }
         }
+    }
+
+    private Transform FindAnchorTransform(string anchorID)
+    {
+        FastTravelSpawnAnchor[] anchors = Object.FindObjectsByType<FastTravelSpawnAnchor>(FindObjectsSortMode.None);
+        foreach (var anchor in anchors)
+        {
+            if (anchor.AnchorID == anchorID)
+            {
+                return anchor.transform;
+            }
+        }
+        return null;
     }
 }
