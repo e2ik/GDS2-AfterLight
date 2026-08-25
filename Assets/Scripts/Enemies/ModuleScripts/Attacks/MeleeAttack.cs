@@ -7,6 +7,8 @@ namespace Enemies.ModuleScripts.Attacks
     {
         [SerializeField] private AnimationClip clip;
         [SerializeField] private int damage = 1;
+        [SerializeField] private float attackRange = 2;
+        [SerializeField] private float attackCooldown = 3;
 
         [SerializeField] private string placeholderClipName = "AttackPlaceholder";
         [SerializeField] private string attackStateName = "Attack";
