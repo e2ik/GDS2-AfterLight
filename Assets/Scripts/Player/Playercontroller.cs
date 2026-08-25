@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody2D rb;
     private InputAction moveAction;
+    private InputAction attackAction;
+    private InputAction sAttackAction;
     private float horizontalInput;
 
     public bool MovementEnabled { get; set; } = true;
@@ -21,6 +23,8 @@ public class PlayerController : MonoBehaviour
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions["Move"];
+        attackAction = playerInput.actions["Attack"];
+        sAttackAction = playerInput.actions["SAttack"];
     }
 
     private void Update()
