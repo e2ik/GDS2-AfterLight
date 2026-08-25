@@ -4,7 +4,7 @@ namespace Enemies
 {
     public abstract class EnemyObservationSO : ScriptableObject
     {
-        public abstract void Tick(EnemyContext enemyContext, float deltaTime);
+        public abstract void Tick(EnemyContext ctx, float deltaTime);
     }
     
     public abstract class EnemyMovementSO : ScriptableObject

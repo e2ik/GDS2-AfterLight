@@ -498,6 +498,8 @@ GameObject:
   - component: {fileID: 1620163593}
   - component: {fileID: 1620163592}
   - component: {fileID: 1620163591}
+  - component: {fileID: 1620163597}
+  - component: {fileID: 1620163598}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -563,10 +565,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43d7a0364cd4a4042bfd2ff0b7f8abf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.Enemy
-  observationSO: {fileID: 0}
-  movementSO: {fileID: 0}
-  attackSO: {fileID: 0}
-  behaviorAgent: {fileID: 0}
+  observationSO: {fileID: 11400000, guid: 507f599106ab90f40a26514267cdd09a, type: 2}
+  movementSO: {fileID: 11400000, guid: f20471508b340084cbc688ab0ae9f89f, type: 2}
+  attackSO: {fileID: 11400000, guid: 07bfc0d7bf7394d459124971720a7609, type: 2}
+  attackRange: 1.2
+  behaviorAgent: {fileID: 1620163598}
+  animator: {fileID: 1620163597}
 --- !u!114 &1620163593
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -683,6 +687,57 @@ Transform:
   - {fileID: 1593145353}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &1620163597
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620163590}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 5b1f0bd09ad08b749b6598bd324c5649, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1620163598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620163590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0038c16c34866b4f9e25c9c0dc0f7e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Behavior::Unity.Behavior.BehaviorGraphAgent
+  m_Graph: {fileID: 4179997528926895500, guid: bc54622a94ee35845ae0e010d8dd287d, type: 2}
+  m_BlackboardVariableOverridesList:
+  - rid: 1460187198979309838
+  m_OriginalGraph: {fileID: 4179997528926895500, guid: bc54622a94ee35845ae0e010d8dd287d, type: 2}
+  m_IsInitialised: 0
+  m_IsStarted: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 1460187198979309838
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 1
+          m_Value1: 0
+        Name: Self
+        m_Value: {fileID: 1620163590}
 --- !u!1 &2029663487
 GameObject:
   m_ObjectHideFlags: 0
