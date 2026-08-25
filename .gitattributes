@@ -1,2 +1,8 @@
 Assets/Plugins/FMOD/**/*.bundle text eol=lf
 Assets/Plugins/FMOD/**/Info.plist text eol=lf
+
+# Force Git to treat all dynamic libraries as raw binary data
+*.dll binary
+*.bundle binary
+*.dylib binary
+*.so binary
