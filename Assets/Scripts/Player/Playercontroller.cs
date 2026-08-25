@@ -14,6 +14,10 @@ public class PlayerController : MonoBehaviour
     private InputAction sAttackAction;
     private float horizontalInput;
 
+    public WeaponDefinition weapon;
+    public PrimaryGemBehaviourDefinition specialAttackDef;
+    public SecondaryGemInstance secondaryGem;
+
     public bool MovementEnabled { get; set; } = true;
     public int FacingDirection { get; private set; } = 1;
 
@@ -25,6 +29,7 @@ public class PlayerController : MonoBehaviour
         moveAction = playerInput.actions["Move"];
         attackAction = playerInput.actions["Attack"];
         sAttackAction = playerInput.actions["SAttack"];
+        ClearSecondaryGem();
     }
 
     private void Update()
@@ -35,10 +40,43 @@ public class PlayerController : MonoBehaviour
             FacingDirection = 1;
         else if (horizontalInput < -0.01f)
             FacingDirection = -1;
+
+        if (attackAction.WasPressedThisFrame())
+        {
+            Debug.Log("Attack");
+        }
+        if (sAttackAction.WasPressedThisFrame())
+        {
+            Debug.Log("S Attack");
+            AttackContext newAttack = new AttackContext
+            {
+              BaseAttackDamage = weapon.BaseWeaponDamage,  
+              BaseAttackCrit = weapon.BaseWeaponCrit,    
+            };
+            SpecialAttack(newAttack,secondaryGem, specialAttackDef);
+        }
     }
 
     private void FixedUpdate()
     {
         rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+    }
+
+    private void SpecialAttack(AttackContext context, SecondaryGemInstance modifier, PrimaryGemBehaviourDefinition attackStrategy)
+    {
+        if(modifier.InstTemplateID != null)
+        {
+            GameDatabase.GetSecondaryTemplateFromID(modifier.InstTemplateID).Modify(ref context,modifier);
+        }
+        attackStrategy.Execute(context);
+    }
+
+    public void ClearSecondaryGem()
+    {
+        secondaryGem.InstTemplateID = null;
+        secondaryGem.InstanceGUID = null;
+        secondaryGem.InstDamageMult = 0;
+        secondaryGem.InstCritMult = 0;
+        secondaryGem.InstSizeMult = 0;
     }
 }

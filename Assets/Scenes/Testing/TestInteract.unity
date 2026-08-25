@@ -420,6 +420,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 5
+  weapon: {fileID: 11400000, guid: 14cafacdf5f57eed19576977769f0367, type: 2}
+  specialAttackDef: {fileID: 11400000, guid: 0c490fd2d61891d90966197bc88509b1, type: 2}
+  secondaryGem:
+    InstTemplateID: 
+    InstDamageMult: 0
+    InstCritMult: 0
+    InstSizeMult: 0
+    InstanceGUID: 
 --- !u!114 &297054175
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -482,6 +490,51 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventoryManager
   currentInventory: {fileID: 11400000, guid: ffa10fe2259f350d8be325c6bc193e99, type: 2}
+--- !u!1 &591632124
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 591632126}
+  - component: {fileID: 591632125}
+  m_Layer: 0
+  m_Name: Systems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &591632125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 591632124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 421a1a4c34e6a93e3a7a342e6fd9b79a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  secondaryGemTemplateDB: {fileID: 11400000, guid: 1de000d958e21378185792a838b4b00b, type: 2}
+--- !u!4 &591632126
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 591632124}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &935940307
 GameObject:
   m_ObjectHideFlags: 0
@@ -514,6 +567,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7bfd56b82474de45b85e71b64a9bad2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Chest
+  gemLootTemplate: {fileID: 11400000, guid: 02f999b411a3cb90890f65e7c4aef9db, type: 2}
 --- !u!212 &935940309
 SpriteRenderer:
   serializedVersion: 2
@@ -582,7 +636,7 @@ Transform:
   m_GameObject: {fileID: 935940307}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10.32, y: -2.35, z: 0}
+  m_LocalPosition: {x: -6.88, y: -2.35, z: 0}
   m_LocalScale: {x: 1.7863, y: 1.735, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -932,3 +986,4 @@ SceneRoots:
   - {fileID: 297054169}
   - {fileID: 935940310}
   - {fileID: 201877724}
+  - {fileID: 591632126}
