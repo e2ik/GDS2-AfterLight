@@ -73,6 +73,8 @@ public class FastTravelManager : MonoBehaviour
             if (anchorTransform != null)
             {
                 player.transform.position = anchorTransform.position;
+                CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
+                cam?.SnapToTarget(); // need this since not all scenes are aligned
             }
             else
             {

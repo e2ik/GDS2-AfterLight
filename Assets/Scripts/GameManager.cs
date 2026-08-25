@@ -125,6 +125,21 @@ public class GameManager : MonoBehaviour
 
         _playerInstance = Instantiate(playerPrefab);
         _playerInstance.name = "Player";
+
+        AssignCameraTarget();
+    }
+
+    private void AssignCameraTarget()
+    {
+        CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
+        if (cam != null)
+        {
+            cam.SetTarget(_playerInstance.transform);
+        }
+        else
+        {
+            Debug.LogWarning("[GameManager] No CameraFollow2D found in scene to assign player target.");
+        }
     }
 
     private void PlacePlayerAtAnchor(string anchorID)
@@ -145,6 +160,9 @@ public class GameManager : MonoBehaviour
         if (anchor != null)
         {
             _playerInstance.transform.position = anchor.position;
+
+            CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
+            cam?.SnapToTarget();
         }
         else
         {
