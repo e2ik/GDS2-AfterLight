@@ -81,7 +81,7 @@ public class FastTravelManager : MonoBehaviour
         }
     }
 
-    private Transform FindAnchorTransform(string anchorID)
+    public Transform FindAnchorTransform(string anchorID)
     {
         FastTravelSpawnAnchor[] anchors = Object.FindObjectsByType<FastTravelSpawnAnchor>(FindObjectsSortMode.None);
         foreach (var anchor in anchors)

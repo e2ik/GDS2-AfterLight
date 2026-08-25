@@ -24,6 +24,15 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
             worldMapState.UnlockNode(nodeData);
         }
 
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.SaveProgressAtLocation(nodeData.targetSceneName, nodeData.spawnAnchorID);
+        }
+        else
+        {
+            Debug.LogError("SaveManager Instance is missing from the scene!");
+        }
+
         if (MapUIManager.Instance != null)
         {
             MapUIManager.Instance.OpenMap(nodeData);
