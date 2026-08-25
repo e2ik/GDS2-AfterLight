@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,6 +20,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private SaveManager saveManager;
 
     private GameObject _playerInstance;
+    private Player player;
 
     private void Awake()
     {
@@ -54,6 +56,7 @@ public class GameManager : MonoBehaviour
         }
 
         ClearPlayerInventory();
+        ClearPlayerEquipment();
 
         SaveManager targetSaveManager = GetSaveManager();
         if (targetSaveManager != null)
@@ -93,6 +96,7 @@ public class GameManager : MonoBehaviour
         }
 
         LoadPlayerInventory(data.inventoryData);
+        LoadPlayerEquipment(data);
 
         string sceneToLoad = (data.progress != null && !string.IsNullOrEmpty(data.progress.lastVisitedSceneName))
             ? data.progress.lastVisitedSceneName
@@ -142,6 +146,7 @@ public class GameManager : MonoBehaviour
 
         _playerInstance = Instantiate(playerPrefab);
         _playerInstance.name = "Player";
+        player = _playerInstance.GetComponent<Player>();
 
         AssignCameraTarget();
     }
@@ -189,27 +194,48 @@ public class GameManager : MonoBehaviour
 
     private void LoadPlayerInventory(InventorySaveData inventoryData)
     {
-        if (_playerInstance == null)
-        {
-            Debug.LogWarning("[GameManager] No player instance to load inventory onto.");
-            return;
-        }
+        if (_playerInstance == null) return;
 
-        PlayerInventoryManager inventoryManager = _playerInstance.GetComponent<PlayerInventoryManager>();
-        if (inventoryManager == null)
+        if (player.Inventory == null)
         {
             Debug.LogError("[GameManager] PlayerInventoryManager not found on player instance.");
             return;
         }
 
-        inventoryManager.LoadFromSaveData(inventoryData);
+        player.Inventory.LoadFromSaveData(inventoryData);
     }
 
     private void ClearPlayerInventory()
     {
         if (_playerInstance == null) return;
+        player.Inventory.LoadFromSaveData(new InventorySaveData());
+    }
 
-        PlayerInventoryManager inventoryManager = _playerInstance.GetComponent<PlayerInventoryManager>();
-        inventoryManager?.LoadFromSaveData(new InventorySaveData());
+    private void LoadPlayerEquipment(SaveData data)
+    {
+        Player player = FindFirstObjectByType<Player>();
+        if (player == null || player.Equipment == null) return;
+
+        player.Equipment.LoadEquippedGearSaveData(data.equippedGear);
+
+        if (data.equippedSecondaryGem != null && !string.IsNullOrEmpty(data.equippedSecondaryGem.InstTemplateID))
+        {
+            player.Equipment.EquipSecondaryGem(data.equippedSecondaryGem);
+        }
+        else
+        {
+            player.Equipment.ClearSecondaryGem();
+        }
+    }
+
+    private void ClearPlayerEquipment()
+    {
+        Player player = FindFirstObjectByType<Player>();
+        if (player == null || player.Equipment == null) return;
+
+        player.Equipment.ClearAllGear();
+        player.Equipment.ClearSecondaryGem();
+        player.Equipment.ClearWeapon();
+        player.Equipment.ClearSpecialAttack();
     }
 }

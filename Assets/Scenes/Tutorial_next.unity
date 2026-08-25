@@ -152,8 +152,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Chest
   chestID: chest2
-  lootItem: {fileID: 0}
-  worldItemPrefab: {fileID: 0}
+  lootItem: {fileID: 11400000, guid: ad79a8a955122ef0b95b5db5ec727976, type: 2}
+  worldItemPrefab: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
   popForce: 5
   minHorizontalAngle: -0.4
   maxHorizontalAngle: 0.4
@@ -261,7 +261,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0

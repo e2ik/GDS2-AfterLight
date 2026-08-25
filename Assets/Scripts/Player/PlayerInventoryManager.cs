@@ -17,22 +17,49 @@ public class PlayerInventoryManager : MonoBehaviour
         if (!currentInventory.SecondaryGems.Contains(item))
         {
             currentInventory.SecondaryGems.Add(item);
-            SaveManager.Instance.SaveInventory(ToSaveData());
+            SaveManager.Instance?.SaveInventory(ToSaveData());
+        }
+    }
+
+    public void AddItemToInventory(GearInstance item)
+    {
+        if (item == null || currentInventory == null) return;
+
+        if (!currentInventory.GearInstances.Contains(item))
+        {
+            currentInventory.GearInstances.Add(item);
+            SaveManager.Instance?.SaveInventory(ToSaveData());
         }
     }
 
     public InventorySaveData ToSaveData()
     {
         var data = new InventorySaveData();
-        data.secondaryGems.AddRange(currentInventory.SecondaryGems);
+        if (currentInventory != null)
+        {
+            data.secondaryGems.AddRange(currentInventory.SecondaryGems);
+            data.gearInstances.AddRange(currentInventory.GearInstances);
+        }
         return data;
     }
 
     public void LoadFromSaveData(InventorySaveData data)
     {
-        currentInventory.SecondaryGems.Clear();
-        currentInventory.SecondaryGems.AddRange(data.secondaryGems);
-    }
+        if (currentInventory == null) return;
 
-    // might need remove logic sometime in the future
+        currentInventory.SecondaryGems.Clear();
+        currentInventory.GearInstances.Clear();
+
+        if (data == null) return;
+
+        if (data.secondaryGems != null)
+        {
+            currentInventory.SecondaryGems.AddRange(data.secondaryGems);
+        }
+
+        if (data.gearInstances != null)
+        {
+            currentInventory.GearInstances.AddRange(data.gearInstances);
+        }
+    }
 }
