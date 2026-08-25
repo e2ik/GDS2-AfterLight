@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -20,14 +21,23 @@ public class PlayerController : MonoBehaviour
     private bool isWallSliding;
     private float wallSlideSpeed = 2f;
 
+    [SerializeField] private float wallJumpVelocity = 5f;
     private bool isWallJumping;
     private float wallJumpDirection;
     private float wallJumpTime = 0.2f;
-    private float wallJumpCoolDown;
+    private float wallJumpLeniency;
     private float wallJumpDuration = 0.4f;
     private Vector2 wallJumpPower = new(8f, 16f);
-    [SerializeField] private float wallJumpVelocity = 5f;
     
+    [Header("Dash Movement")]
+    [SerializeField] private float dashVelocity = 20f;
+    private float dashDuration = 0.2f;
+    private bool dashPressed;
+    private bool dashReleased;
+    private bool isDashing;
+    private float dashDirection;
+    private float dashCoolDown = 0.2f;
+    private float dashTimer;
 
     [Header("Ground Check")] 
     [SerializeField] private Transform groundCheck;
@@ -45,6 +55,7 @@ public class PlayerController : MonoBehaviour
     private float targetSpeed;
     private bool jumpPressed;
     private bool jumpReleased;
+    
     
     private float horizontalInput;
     private Vector2 jumpInput;
@@ -68,7 +79,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (!isWallJumping)
+        if (!isWallJumping && !isDashing)
         {
             Flip();
         }
@@ -84,13 +95,14 @@ public class PlayerController : MonoBehaviour
         
         HandleWallSlide();
         HandleWallJump();
+        HandleDash();
         
         GravityState();
     }
 
     private void HandleMovement()
     {
-        if (!isWallJumping)
+        if (!isWallJumping && !isDashing)
         {
             targetSpeed = MovementEnabled ? horizontalInput * moveSpeed : 0f;
             rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
@@ -121,7 +133,6 @@ public class PlayerController : MonoBehaviour
         {
             isWallSliding = true;
             rb.linearVelocityY = Mathf.Clamp(rb.linearVelocityY, -wallSlideSpeed, float.MaxValue);
-            Debug.Log(rb.linearVelocityY);
         }
         else
         {
@@ -134,20 +145,20 @@ public class PlayerController : MonoBehaviour
         {
             isWallJumping = false;
             wallJumpDirection = -FacingDirection;
-            wallJumpCoolDown = wallJumpTime;
+            wallJumpLeniency = wallJumpTime;
             
             CancelInvoke(nameof(StopWallJumping));
         }
         else
         {
-            wallJumpCoolDown -= Time.deltaTime;
+            wallJumpLeniency -= Time.deltaTime;
         }
 
-        if (jumpPressed && wallJumpCoolDown > 0f)
+        if (jumpPressed && wallJumpLeniency > 0f)
         {
             isWallJumping = true;
             rb.linearVelocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
-            wallJumpCoolDown = 0f;
+            wallJumpLeniency = 0f;
 
             if (FacingDirection != wallJumpDirection)
             {
@@ -161,6 +172,48 @@ public class PlayerController : MonoBehaviour
     private void StopWallJumping()
     {
         isWallJumping = false;
+    }
+
+    private void HandleDash()
+    {
+        if (isDashing)
+        {
+            dashTimer = dashCoolDown;
+        }
+        else
+        {
+            dashTimer -= Time.deltaTime;
+        }
+
+        if (dashPressed && isGrounded && dashTimer <= 0f)
+        {
+            isDashing = true;
+            if (horizontalInput != 0)
+            {
+                //dash forward
+                targetSpeed = horizontalInput * dashVelocity;
+                rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
+                
+            } else
+            {
+                //dash backwards
+                targetSpeed = -FacingDirection * dashVelocity;
+                rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
+            }
+            dashPressed = false;
+            dashReleased = false;
+            Invoke(nameof(StopDashing), dashDuration);
+        }
+        if (dashReleased)
+        {
+            dashPressed = false;
+            dashReleased = false;
+        }
+    }
+
+    private void StopDashing()
+    {
+        isDashing = false;
     }
 
     private void Flip()
@@ -199,6 +252,20 @@ public class PlayerController : MonoBehaviour
         {
             jumpPressed = false;
             jumpReleased = true;
+        }
+    }
+
+    public void OnDash(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            dashPressed = true;
+            dashReleased = false;
+        }
+        else
+        {
+            dashPressed = false;
+            dashReleased = true;
         }
     }
     
