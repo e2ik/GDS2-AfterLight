@@ -23,6 +23,7 @@ public class InventorySlot : MonoBehaviour
 
         if (actionButton != null)
         {
+            actionButton.onClick.RemoveAllListeners();
             actionButton.onClick.AddListener(OnSlotClicked);
         }
     }
@@ -67,22 +68,39 @@ public class InventorySlot : MonoBehaviour
 
     private void OnSlotClicked()
     {
-        Debug.Log($"[InventorySlot] Button clicked! Gem: {currentSecondaryGem != null}, Gear: {currentGear != null}");
         Player player = FindFirstObjectByType<Player>();
         if (player == null || player.Equipment == null) return;
 
+        PlayerEquipmentManager equipManager = player.Equipment;
+
         if (currentSecondaryGem != null)
         {
-            player.Equipment.EquipSecondaryGem(currentSecondaryGem);
-            Debug.Log($"Equipped Gem: {currentSecondaryGem.InstTemplateID}");
+            if (equipManager.IsGemEquipped(currentSecondaryGem))
+            {
+                equipManager.ClearSecondaryGem();
+                Debug.Log($"Unequipped Gem: {currentSecondaryGem.InstTemplateID}");
+            }
+            else
+            {
+                equipManager.EquipSecondaryGem(currentSecondaryGem);
+                Debug.Log($"Equipped Gem: {currentSecondaryGem.InstTemplateID}");
+            }
         }
         else if (currentGear != null)
         {
             var def = GameDatabase.GetGearTemplateFromID(currentGear.InstTemplateID);
             if (def != null)
             {
-                player.Equipment.EquipGear(def.Slot, currentGear);
-                Debug.Log($"Equipped Gear: {def.Slot}");
+                if (equipManager.IsGearEquipped(currentGear))
+                {
+                    equipManager.ClearGear(def.Slot);
+                    Debug.Log($"Unequipped Gear from slot: {def.Slot}");
+                }
+                else
+                {
+                    equipManager.EquipGear(def.Slot, currentGear);
+                    Debug.Log($"Equipped Gear: {def.Slot}");
+                }
             }
         }
 

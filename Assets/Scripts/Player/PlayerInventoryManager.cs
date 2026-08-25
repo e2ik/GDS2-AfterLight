@@ -7,14 +7,25 @@ public class PlayerInventoryManager : MonoBehaviour
 
     private void Start()
     {
-        InventoryDisplay display = FindFirstObjectByType<InventoryDisplay>();
-        if (display != null)
+        Player player = GetComponent<Player>();
+
+        InventoryDisplay invDisplay = Object.FindFirstObjectByType<InventoryDisplay>();
+        if (invDisplay != null)
         {
-            display.RegisterInventoryManager(this);
+            invDisplay.RegisterInventoryManager(this);
         }
-        else
+
+        PlayerEquipmentManager equipManager = GetComponent<PlayerEquipmentManager>();
+        EquipmentDisplay equipDisplay = Object.FindFirstObjectByType<EquipmentDisplay>();
+        if (equipDisplay != null && equipManager != null)
         {
-            Debug.LogWarning("[PlayerInventoryManager] InventoryDisplay not found in scene on spawn!");
+            equipDisplay.RegisterEquipmentManager(equipManager);
+        }
+
+        PlayerStatsDisplay statsDisplay = Object.FindFirstObjectByType<PlayerStatsDisplay>();
+        if (statsDisplay != null && player != null)
+        {
+            statsDisplay.RegisterPlayer(player);
         }
     }
 

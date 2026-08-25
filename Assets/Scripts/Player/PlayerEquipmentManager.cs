@@ -203,9 +203,12 @@ public class PlayerEquipmentManager : MonoBehaviour
 
     public AttackContext GetModifiedAttackContext()
     {
+        PlayerStats playerStats = GetComponent<PlayerStats>();
+        float totalBaseAndGearAttack = playerStats != null ? playerStats.TotalAttack : 0f;
+
         AttackContext context = new AttackContext
         {
-            BaseAttackDamage = equippedWeapon != null ? equippedWeapon.BaseWeaponDamage : 0f,
+            BaseAttackDamage = totalBaseAndGearAttack + (equippedWeapon != null ? equippedWeapon.BaseWeaponDamage : 0f),
             BaseAttackCrit = equippedWeapon != null ? equippedWeapon.BaseWeaponCrit : 0f
         };
 
@@ -214,18 +217,6 @@ public class PlayerEquipmentManager : MonoBehaviour
             SecondaryGemBehaviourDefinition secondaryDef = GameDatabase.GetSecondaryTemplateFromID(secondaryGem.InstTemplateID);
             secondaryDef?.Modify(ref context, secondaryGem);
         }
-
-        float gearBonusAttack = 0f;
-
-        foreach (KeyValuePair<EGearSlot, GearInstance> slot in equippedGear)
-        {
-            GearInstance gear = slot.Value;
-            if (gear != null)
-            {
-                gearBonusAttack += gear.InstBonusAttack;
-            }
-        }
-        context.BaseAttackDamage += gearBonusAttack;
 
         return context;
     }

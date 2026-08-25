@@ -90,11 +90,6 @@ public class GameManager : MonoBehaviour
             yield break;
         }
 
-        if (worldMapState != null && data.progress != null)
-        {
-            worldMapState.LoadFromSaveIDs(data.progress.unlockedFastTravelIDs);
-        }
-
         LoadPlayerInventory(data.inventoryData);
         LoadPlayerEquipment(data);
 
@@ -107,6 +102,12 @@ public class GameManager : MonoBehaviour
             : defaultSpawnAnchorID;
 
         yield return LoadSceneAdditive(sceneToLoad);
+
+        if (worldMapState != null && data.progress != null && data.progress.unlockedFastTravelIDs != null)
+        {
+            worldMapState.LoadFromSaveIDs(data.progress.unlockedFastTravelIDs);
+        }
+
         PlacePlayerAtAnchor(anchorToUse);
     }
 
