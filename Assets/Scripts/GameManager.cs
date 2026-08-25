@@ -45,12 +45,17 @@ public class GameManager : MonoBehaviour
         SpawnPlayer();
 
         worldMapState.ResetState();
+        ClearPlayerInventory();
 
-        string savePath = Path.Combine(Application.persistentDataPath, "save.json");
-        if (File.Exists(savePath))
+        // Reset in-memory data and create a fresh file
+        if (saveManager != null)
         {
-            File.Delete(savePath);
-            Debug.Log("[GameManager] Save file deleted for new game.");
+            saveManager.CreateNewSaveData();
+            saveManager.SaveGame(saveManager.GetSaveData()); // Writes the clean state to disk
+        }
+        else if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.CreateNewSaveData();
         }
 
         yield return LoadSceneAdditive(defaultStartSceneName);
@@ -76,6 +81,7 @@ public class GameManager : MonoBehaviour
         }
 
         worldMapState.LoadFromSaveIDs(data.progress.unlockedFastTravelIDs);
+        LoadPlayerInventory(data.inventoryData);
 
         string sceneToLoad = string.IsNullOrEmpty(data.progress.lastVisitedSceneName)
             ? defaultStartSceneName
@@ -168,5 +174,31 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning($"[GameManager] Spawn anchor '{anchorID}' not found.");
         }
+    }
+
+    private void LoadPlayerInventory(InventorySaveData inventoryData)
+    {
+        if (_playerInstance == null)
+        {
+            Debug.LogWarning("[GameManager] No player instance to load inventory onto.");
+            return;
+        }
+
+        PlayerInventoryManager inventoryManager = _playerInstance.GetComponent<PlayerInventoryManager>();
+        if (inventoryManager == null)
+        {
+            Debug.LogError("[GameManager] PlayerInventoryManager not found on player instance.");
+            return;
+        }
+
+        inventoryManager.LoadFromSaveData(inventoryData);
+    }
+
+    private void ClearPlayerInventory()
+    {
+        if (_playerInstance == null) return;
+
+        PlayerInventoryManager inventoryManager = _playerInstance.GetComponent<PlayerInventoryManager>();
+        inventoryManager?.LoadFromSaveData(new InventorySaveData());
     }
 }
