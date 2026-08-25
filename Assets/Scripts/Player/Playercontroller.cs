@@ -15,19 +15,20 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float normGravity;
     [SerializeField] private float jumpGravity;
     [SerializeField] private float fallGravity;
-
+    private float targetSpeed;
+    private bool jumpPressed;
+    private bool jumpReleased;
+    
     [Header("Wall Movement")] 
-    private bool onWall;
-    private bool isWallSliding;
-    private float wallSlideSpeed = 2f;
-
+    [SerializeField] private float wallSlideSpeed = 2f;
     [SerializeField] private float wallJumpVelocity = 5f;
+    private bool isWallSliding;
     private bool isWallJumping;
     private float wallJumpDirection;
-    private float wallJumpTime = 0.2f;
-    private float wallJumpLeniency;
+    private float wallJumpLeniency = 0.2f;
+    private float wallJumpTimer;
     private float wallJumpDuration = 0.4f;
-    private Vector2 wallJumpPower = new(8f, 16f);
+    private Vector2 wallJumpForce = new(8f, 16f);
     
     [Header("Dash Movement")]
     [SerializeField] private float dashVelocity = 20f;
@@ -39,23 +40,27 @@ public class PlayerController : MonoBehaviour
     private float dashCoolDown = 0.2f;
     private float dashTimer;
 
-    [Header("Ground Check")] 
+    [Header("Skill Charge Movement")]
+    private bool isChargingSkill;
+    private bool skillPressed;
+    private bool skillReleased;
+    private float chargingSkillTimer;
+    private float chargingSkillMinDur = 0.4f;
+    private float chargingSkillMaxDur;
+
+    [Header("Ground & Wall Check")] 
     [SerializeField] private Transform groundCheck;
     public LayerMask groundLayer;
     private bool isGrounded;
     private float groundCheckRadius = 0.2f;
     
-    [Header("Wall Check")] 
     [SerializeField] private Transform wallCheck; 
     public LayerMask wallLayer;
+    private bool onWall;
     private float wallCheckRadius = 0.2f;
     
     private Rigidbody2D rb;
     private InputAction moveAction;
-    private float targetSpeed;
-    private bool jumpPressed;
-    private bool jumpReleased;
-    
     
     private float horizontalInput;
     private Vector2 jumpInput;
@@ -79,7 +84,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (!isWallJumping && !isDashing)
+        if (CanMove())
         {
             Flip();
         }
@@ -100,9 +105,14 @@ public class PlayerController : MonoBehaviour
         GravityState();
     }
 
+    private bool CanMove()
+    {
+        return !isWallJumping && !isDashing && !isChargingSkill;
+    }
+
     private void HandleMovement()
     {
-        if (!isWallJumping && !isDashing)
+        if (CanMove())
         {
             targetSpeed = MovementEnabled ? horizontalInput * moveSpeed : 0f;
             rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
@@ -145,20 +155,20 @@ public class PlayerController : MonoBehaviour
         {
             isWallJumping = false;
             wallJumpDirection = -FacingDirection;
-            wallJumpLeniency = wallJumpTime;
+            wallJumpTimer = wallJumpLeniency;
             
             CancelInvoke(nameof(StopWallJumping));
         }
         else
         {
-            wallJumpLeniency -= Time.deltaTime;
+            wallJumpTimer -= Time.deltaTime;
         }
 
-        if (jumpPressed && wallJumpLeniency > 0f)
+        if (jumpPressed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
-            rb.linearVelocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
-            wallJumpLeniency = 0f;
+            rb.linearVelocity = new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y);
+            wallJumpTimer = 0f;
 
             if (FacingDirection != wallJumpDirection)
             {
@@ -190,13 +200,11 @@ public class PlayerController : MonoBehaviour
             isDashing = true;
             if (horizontalInput != 0)
             {
-                //dash forward
                 targetSpeed = horizontalInput * dashVelocity;
                 rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
                 
             } else
             {
-                //dash backwards
                 targetSpeed = -FacingDirection * dashVelocity;
                 rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
             }
@@ -216,6 +224,43 @@ public class PlayerController : MonoBehaviour
         isDashing = false;
     }
 
+    private void HandleSkill()
+    {
+        //if manual skill charging is enabled and not charged
+            //HandleSkillCharging
+        //else if skill is charged
+            //execute skill
+    }
+
+    private void HandleSkillCharging()
+    {
+        if (isChargingSkill)
+        {
+            chargingSkillTimer += Time.deltaTime;
+        }
+        if (!isChargingSkill && skillPressed) // && is not charged && is enabled by skill
+        {
+            isChargingSkill = true;
+            rb.linearVelocityY = 0;
+            skillPressed = false;
+            skillReleased = false;
+
+            chargingSkillTimer = 0f;
+            Invoke(nameof(StopChargingSkill), chargingSkillMaxDur); //get from skills points needed to charge
+        }
+        if (skillReleased && chargingSkillTimer >= chargingSkillMinDur)
+        {
+            isChargingSkill = false;
+            skillPressed = false;
+            skillReleased = false;
+        }
+    }
+
+    private void StopChargingSkill()
+    {
+        isChargingSkill = false;
+    }
+
     private void Flip()
     {
         if (horizontalInput > 0.01f)
@@ -228,7 +273,11 @@ public class PlayerController : MonoBehaviour
 
     private void GravityState()
     { 
-        if (rb.linearVelocityY > 0.1)
+        if (isChargingSkill)
+        {
+            rb.gravityScale = 0;
+        }
+        else if (rb.linearVelocityY > 0.1)
             rb.gravityScale = jumpGravity;
         else if (rb.linearVelocityY < -0.1)
             rb.gravityScale = fallGravity;
@@ -266,6 +315,20 @@ public class PlayerController : MonoBehaviour
         {
             dashPressed = false;
             dashReleased = true;
+        }
+    }
+
+    public void OnSkill(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            skillPressed = true;
+            skillReleased = false;
+        }
+        else
+        {
+            skillPressed = false;
+            skillReleased = true;
         }
     }
     
