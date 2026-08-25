@@ -45,13 +45,75 @@ public class PlayerEquipmentManager : MonoBehaviour
         UpdateDebugView();
     }
 
-    public void EquipWeapon(WeaponDefinition newWeapon) => equippedWeapon = newWeapon;
-    public void EquipSpecialAttack(PrimaryGemBehaviourDefinition newSpecial) => specialAttackDef = newSpecial;
-    public void EquipSecondaryGem(SecondaryGemInstance newGem) => secondaryGem = newGem;
+    public bool IsGemEquipped(SecondaryGemInstance gem)
+    {
+        if (gem == null || secondaryGem == null) return false;
 
-    public void ClearWeapon() => equippedWeapon = null;
-    public void ClearSpecialAttack() => specialAttackDef = null;
-    public void ClearSecondaryGem() => secondaryGem = new SecondaryGemInstance();
+        if (secondaryGem == gem) return true;
+
+        if (!string.IsNullOrEmpty(secondaryGem.InstanceGUID) && !string.IsNullOrEmpty(gem.InstanceGUID))
+        {
+            return secondaryGem.InstanceGUID == gem.InstanceGUID;
+        }
+
+        return false;
+    }
+
+    public bool IsGearEquipped(GearInstance gear)
+    {
+        if (gear == null || string.IsNullOrEmpty(gear.InstTemplateID)) return false;
+
+        var def = GameDatabase.GetGearTemplateFromID(gear.InstTemplateID);
+        if (def != null && equippedGear.TryGetValue(def.Slot, out GearInstance equippedItem))
+        {
+            if (equippedItem == null) return false;
+
+            if (equippedItem == gear) return true;
+
+            if (!string.IsNullOrEmpty(equippedItem.InstanceGUID) && !string.IsNullOrEmpty(gear.InstanceGUID))
+            {
+                return equippedItem.InstanceGUID == gear.InstanceGUID;
+            }
+        }
+
+        return false;
+    }
+
+    public void EquipWeapon(WeaponDefinition newWeapon)
+    {
+        equippedWeapon = newWeapon;
+        OnEquipmentChanged?.Invoke();
+    }
+
+    public void EquipSpecialAttack(PrimaryGemBehaviourDefinition newSpecial)
+    {
+        specialAttackDef = newSpecial;
+        OnEquipmentChanged?.Invoke();
+    }
+
+    public void EquipSecondaryGem(SecondaryGemInstance newGem)
+    {
+        secondaryGem = newGem;
+        OnEquipmentChanged?.Invoke();
+    }
+
+    public void ClearWeapon()
+    {
+        equippedWeapon = null;
+        OnEquipmentChanged?.Invoke();
+    }
+
+    public void ClearSpecialAttack()
+    {
+        specialAttackDef = null;
+        OnEquipmentChanged?.Invoke();
+    }
+
+    public void ClearSecondaryGem()
+    {
+        secondaryGem = new SecondaryGemInstance();
+        OnEquipmentChanged?.Invoke();
+    }
 
     public void EquipGear(EGearSlot gearType, GearInstance newGear)
     {
@@ -128,9 +190,15 @@ public class PlayerEquipmentManager : MonoBehaviour
         {
             if (entry != null && entry.gearData != null)
             {
+                if (string.IsNullOrEmpty(entry.gearData.InstanceGUID))
+                {
+                    entry.gearData.InstanceGUID = System.Guid.NewGuid().ToString();
+                }
+
                 EquipGear(entry.slot, entry.gearData);
             }
         }
+        OnEquipmentChanged?.Invoke();
     }
 
     public AttackContext GetModifiedAttackContext()

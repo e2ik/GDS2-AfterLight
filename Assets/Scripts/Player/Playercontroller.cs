@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
     private InputAction moveAction;
     private InputAction attackAction;
     private InputAction sAttackAction;
-
+    private InputAction inventoryAction;
     private float horizontalInput;
 
     public bool MovementEnabled { get; set; } = true;
@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
         moveAction = playerInput.actions["Move"];
         attackAction = playerInput.actions["Attack"];
         sAttackAction = playerInput.actions["SAttack"];
+        inventoryAction = playerInput.actions["Inventory"];
     }
 
     private void Update()
@@ -49,6 +50,11 @@ public class PlayerController : MonoBehaviour
         if (sAttackAction.WasPressedThisFrame())
         {
             PerformSpecialAttack();
+        }
+
+        if (inventoryAction.WasPressedThisFrame())
+        {
+            PerformInventoryAction();
         }
     }
 
@@ -82,5 +88,24 @@ public class PlayerController : MonoBehaviour
         AttackContext context = equipmentManager.GetModifiedAttackContext();
 
         specialDef.Execute(context);
+    }
+
+    private InventoryDisplay inventoryDisplay;
+
+    private void PerformInventoryAction()
+    {
+        if (inventoryDisplay == null)
+        {
+            inventoryDisplay = Object.FindFirstObjectByType<InventoryDisplay>();
+        }
+
+        if (inventoryDisplay != null)
+        {
+            inventoryDisplay.ToggleInventory();
+        }
+        else
+        {
+            Debug.LogWarning("[Player] InventoryDisplay reference missing in scene!");
+        }
     }
 }
