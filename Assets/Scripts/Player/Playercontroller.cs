@@ -41,6 +41,8 @@ public class PlayerController : MonoBehaviour
         else if (horizontalInput < -0.01f)
             FacingDirection = -1;
 
+        if (!MovementEnabled) return;
+
         if (attackAction.WasPressedThisFrame())
         {
             Debug.Log("Attack");
@@ -50,16 +52,17 @@ public class PlayerController : MonoBehaviour
             Debug.Log("S Attack");
             AttackContext newAttack = new AttackContext
             {
-              BaseAttackDamage = weapon.BaseWeaponDamage,  
-              BaseAttackCrit = weapon.BaseWeaponCrit,    
+                BaseAttackDamage = weapon.BaseWeaponDamage,
+                BaseAttackCrit = weapon.BaseWeaponCrit,
             };
-            SpecialAttack(newAttack,secondaryGem, specialAttackDef);
+            SpecialAttack(newAttack, secondaryGem, specialAttackDef);
         }
     }
 
     private void FixedUpdate()
     {
-        rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+        float verticalVelocity = MovementEnabled ? rb.linearVelocity.y : 0f;
+        rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, verticalVelocity);
     }
 
     private void SpecialAttack(AttackContext context, SecondaryGemInstance modifier, PrimaryGemBehaviourDefinition attackStrategy)
