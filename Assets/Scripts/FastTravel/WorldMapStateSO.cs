@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 [CreateAssetMenu(fileName = "WorldMapState", menuName = "World/Map State Tracker")]
 public class WorldMapStateSO : ScriptableObject
@@ -21,4 +22,29 @@ public class WorldMapStateSO : ScriptableObject
     }
 
     public bool IsUnlocked(FastTravelNodeSO node) => unlockedNodes.Contains(node);
+
+    public List<string> ToSaveIDs()
+    {
+        return unlockedNodes.Where(n => n != null).Select(n => n.nodeID).ToList();
+    }
+
+    public void LoadFromSaveIDs(List<string> ids)
+    {
+        unlockedNodes.Clear();
+        if (ids == null) return;
+
+        foreach (var id in ids)
+        {
+            var node = FastTravelNodeResolver.GetByID(id);
+            if (node != null)
+                unlockedNodes.Add(node);
+            else
+                Debug.LogWarning($"[WorldMapState] Unknown fast travel node ID '{id}' in save data.");
+        }
+    }
+
+    public void ResetState()
+    {
+        unlockedNodes.Clear();
+    }
 }
