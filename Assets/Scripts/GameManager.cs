@@ -1,5 +1,4 @@
 using System.Collections;
-using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -28,6 +27,11 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    private SaveManager GetSaveManager()
+    {
+        return saveManager != null ? saveManager : SaveManager.Instance;
+    }
+
     public void NewGame()
     {
         StartCoroutine(NewGameRoutine());
@@ -44,18 +48,17 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayer();
 
-        worldMapState.ResetState();
+        if (worldMapState != null)
+        {
+            worldMapState.ResetState();
+        }
+
         ClearPlayerInventory();
 
-        // Reset in-memory data and create a fresh file
-        if (saveManager != null)
+        SaveManager targetSaveManager = GetSaveManager();
+        if (targetSaveManager != null)
         {
-            saveManager.CreateNewSaveData();
-            saveManager.SaveGame(saveManager.GetSaveData()); // Writes the clean state to disk
-        }
-        else if (SaveManager.Instance != null)
-        {
-            SaveManager.Instance.CreateNewSaveData();
+            targetSaveManager.CreateNewSaveData();
         }
 
         yield return LoadSceneAdditive(defaultStartSceneName);
@@ -68,9 +71,13 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayer();
 
-        worldMapState.ResetState();
+        if (worldMapState != null)
+        {
+            worldMapState.ResetState();
+        }
 
-        SaveData data = saveManager.LoadGame();
+        SaveManager targetSaveManager = GetSaveManager();
+        SaveData data = targetSaveManager != null ? targetSaveManager.LoadGame() : null;
 
         if (data == null)
         {
@@ -80,16 +87,20 @@ public class GameManager : MonoBehaviour
             yield break;
         }
 
-        worldMapState.LoadFromSaveIDs(data.progress.unlockedFastTravelIDs);
+        if (worldMapState != null && data.progress != null)
+        {
+            worldMapState.LoadFromSaveIDs(data.progress.unlockedFastTravelIDs);
+        }
+
         LoadPlayerInventory(data.inventoryData);
 
-        string sceneToLoad = string.IsNullOrEmpty(data.progress.lastVisitedSceneName)
-            ? defaultStartSceneName
-            : data.progress.lastVisitedSceneName;
+        string sceneToLoad = (data.progress != null && !string.IsNullOrEmpty(data.progress.lastVisitedSceneName))
+            ? data.progress.lastVisitedSceneName
+            : defaultStartSceneName;
 
-        string anchorToUse = string.IsNullOrEmpty(data.progress.lastSpawnAnchorID)
-            ? defaultSpawnAnchorID
-            : data.progress.lastSpawnAnchorID;
+        string anchorToUse = (data.progress != null && !string.IsNullOrEmpty(data.progress.lastSpawnAnchorID))
+            ? data.progress.lastSpawnAnchorID
+            : defaultSpawnAnchorID;
 
         yield return LoadSceneAdditive(sceneToLoad);
         PlacePlayerAtAnchor(anchorToUse);

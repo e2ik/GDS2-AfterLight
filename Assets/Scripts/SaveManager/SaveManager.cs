@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ public class SaveManager : MonoBehaviour
     
     public bool HasSaveFile => File.Exists(SavePath);
     private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
+    private string TempSavePath => Path.Combine(Application.persistentDataPath, "save.tmp");
 
     [SerializeField] private WorldMapStateSO worldMapState;
     private SaveData _currentSaveData;
@@ -37,15 +39,27 @@ public class SaveManager : MonoBehaviour
             inventoryData = new InventorySaveData()
         };
         
-        SaveGame(_currentSaveData); 
+        CommitToDisk(); 
     }
 
-    public void SaveGame(SaveData data)
+    public void CommitToDisk()
     {
-        _currentSaveData = data;
-        string json = JsonUtility.ToJson(data, prettyPrint: true);
-        File.WriteAllText(SavePath, json);
-        Debug.Log($"Saved to {SavePath}");
+        if (_currentSaveData == null) return;
+
+        try
+        {
+            string json = JsonUtility.ToJson(_currentSaveData, prettyPrint: true);
+            
+            File.WriteAllText(TempSavePath, json);
+            File.Copy(TempSavePath, SavePath, overwrite: true);
+            File.Delete(TempSavePath);
+
+            Debug.Log($"Saved successfully to {SavePath}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[SaveManager] Failed to write save file: {e.Message}");
+        }
     }
 
     public SaveData LoadGame()
@@ -57,11 +71,18 @@ public class SaveManager : MonoBehaviour
             return _currentSaveData;
         }
 
-        string json = File.ReadAllText(SavePath);
-        _currentSaveData = JsonUtility.FromJson<SaveData>(json);
+        try
+        {
+            string json = File.ReadAllText(SavePath);
+            _currentSaveData = JsonUtility.FromJson<SaveData>(json);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[SaveManager] Failed to load save file: {e.Message}");
+            _currentSaveData = new SaveData();
+        }
 
         EnsureDataIntegrity();
-
         return _currentSaveData;
     }
 
@@ -82,7 +103,7 @@ public class SaveManager : MonoBehaviour
         if (worldMapState != null)
             _currentSaveData.progress.unlockedFastTravelIDs = worldMapState.ToSaveIDs();
 
-        SaveGame(_currentSaveData);
+        CommitToDisk();
     }
 
     public bool IsChestOpened(string chestID)
@@ -99,7 +120,6 @@ public class SaveManager : MonoBehaviour
         {
             _currentSaveData.chestData.openedChestIDs.Add(chestID);
         }
-        SaveGame(_currentSaveData);
     }
 
     public InventorySaveData GetInventorySaveData()
@@ -110,6 +130,18 @@ public class SaveManager : MonoBehaviour
     public void SaveInventory(InventorySaveData data)
     {
         _currentSaveData.inventoryData = data;
-        SaveGame(_currentSaveData);
+    }
+
+    private void OnApplicationQuit()
+    {
+        CommitToDisk();
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            CommitToDisk();
+        }
     }
 }
