@@ -8,8 +8,6 @@ namespace Enemies
     public class Enemy : MonoBehaviour
     {
         [SerializeField] private EnemyObservationSO observationSO;
-        [SerializeField] private EnemyMovementSO movementSO;
-        [SerializeField] private EnemyAttackSO attackSO;
         [SerializeField] private float attackRange = 1.2f;
         
         [SerializeField] private BehaviorGraphAgent behaviorAgent;
@@ -51,6 +49,5 @@ namespace Enemies
         }
         
         public void RunMovement(EnemyMovementSO module, float dt) => module.Tick(Context, dt);
-        public void RunAttack(EnemyAttackSO module, float dt) => module.Tick(Context, dt);
     }
 }

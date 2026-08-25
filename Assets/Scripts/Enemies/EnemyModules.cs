@@ -14,6 +14,7 @@ namespace Enemies
  
     public abstract class EnemyAttackSO : ScriptableObject
     {
-        public abstract void Tick(EnemyContext ctx, float deltaTime);
+        public abstract void Begin(EnemyContext ctx);
+        public abstract bool IsFinished(EnemyContext ctx);
     }
 }
