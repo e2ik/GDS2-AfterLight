@@ -15,23 +15,30 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpGravity;
     [SerializeField] private float fallGravity;
 
+    [Header("Wall Movement")] 
+    private bool onWall;
+    private bool isWallSliding;
+    private float wallSlideSpeed = 2f;
+
+    private bool isWallJumping;
+    private float wallJumpDirection;
+    private float wallJumpTime = 0.2f;
+    private float wallJumpCoolDown;
+    private float wallJumpDuration = 0.4f;
+    private Vector2 wallJumpPower = new(8f, 16f);
     [SerializeField] private float wallJumpVelocity = 5f;
-    [SerializeField] private float wallSlideGravity;
+    
 
     [Header("Ground Check")] 
     [SerializeField] private Transform groundCheck;
     public LayerMask groundLayer;
     private bool isGrounded;
-    [SerializeField] private float groundCheckRadius;
+    private float groundCheckRadius = 0.2f;
     
     [Header("Wall Check")] 
-    [SerializeField] private Transform rightWallCheck; 
-    [SerializeField] private Transform leftWallCheck;
+    [SerializeField] private Transform wallCheck; 
     public LayerMask wallLayer;
-    private bool isWallSliding;
-    private bool isRightWallSliding;
-    private bool isLeftWallSliding;
-    [SerializeField] private float wallCheckRadius;
+    private float wallCheckRadius = 0.2f;
     
     private Rigidbody2D rb;
     private InputAction moveAction;
@@ -61,35 +68,33 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        Flip();
+        if (!isWallJumping)
+        {
+            Flip();
+        }
     }
 
     private void FixedUpdate()
     {
         GroundCheckUpdate();
         WallCheckUpdate();
-        GravityState();
+        
         HandleMovement();
         HandleJump();
+        
+        HandleWallSlide();
+        HandleWallJump();
+        
+        GravityState();
     }
 
     private void HandleMovement()
     {
-        if (isGrounded) //can move on ground
+        if (!isWallJumping)
         {
             targetSpeed = MovementEnabled ? horizontalInput * moveSpeed : 0f;
+            rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
         }
-        else if (isWallSliding)
-        {
-            //have to hold down left or right to stay on wall
-            //if let go, fall
-        }
-        else //cannot move while falling
-        {
-            targetSpeed = rb.linearVelocityX;
-        }
-        
-        rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);
     }
 
     private void HandleJump()
@@ -97,21 +102,6 @@ public class PlayerController : MonoBehaviour
         if (jumpPressed && isGrounded)
         {
             rb.linearVelocityY = jumpVelocity;
-            jumpPressed = false;
-            jumpReleased = false;
-        } 
-        else if (jumpPressed && isWallSliding)
-        {
-            if (isRightWallSliding)
-            {
-                rb.linearVelocityY = wallJumpVelocity;
-                rb.AddForce(new Vector2(-wallJumpVelocity, 0));
-            }
-            else if (isLeftWallSliding)
-            {
-                rb.linearVelocityY = wallJumpVelocity;
-                rb.AddForce(new Vector2(wallJumpVelocity, 0));
-            }
             jumpPressed = false;
             jumpReleased = false;
         }
@@ -125,31 +115,67 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void HandleWallSlide()
+    {
+        if (onWall && !isGrounded && horizontalInput != 0)
+        {
+            isWallSliding = true;
+            rb.linearVelocityY = Mathf.Clamp(rb.linearVelocityY, -wallSlideSpeed, float.MaxValue);
+            Debug.Log(rb.linearVelocityY);
+        }
+        else
+        {
+            isWallSliding = false;
+        }
+    }
+    private void HandleWallJump()
+    {
+        if (isWallSliding)
+        {
+            isWallJumping = false;
+            wallJumpDirection = -FacingDirection;
+            wallJumpCoolDown = wallJumpTime;
+            
+            CancelInvoke(nameof(StopWallJumping));
+        }
+        else
+        {
+            wallJumpCoolDown -= Time.deltaTime;
+        }
+
+        if (jumpPressed && wallJumpCoolDown > 0f)
+        {
+            isWallJumping = true;
+            rb.linearVelocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
+            wallJumpCoolDown = 0f;
+
+            if (FacingDirection != wallJumpDirection)
+            {
+                FacingDirection *= -1;
+                transform.localScale = new Vector3(FacingDirection, transform.localScale.y);
+            }
+            Invoke(nameof(StopWallJumping), wallJumpDuration);
+        }
+    }
+
+    private void StopWallJumping()
+    {
+        isWallJumping = false;
+    }
+
     private void Flip()
     {
         if (horizontalInput > 0.01f)
             FacingDirection = 1;
         else if (horizontalInput < -0.01f)
             FacingDirection = -1;
-    }
-    
-    private void GroundCheckUpdate()
-    {
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-    }
-
-    private void WallCheckUpdate()
-    {
-        isRightWallSliding = Physics2D.OverlapCircle(rightWallCheck.position, wallCheckRadius, wallLayer);
-        isLeftWallSliding = Physics2D.OverlapCircle(leftWallCheck.position, wallCheckRadius, wallLayer);
-        isWallSliding = isRightWallSliding || isLeftWallSliding;
+        
+        transform.localScale = new Vector3(FacingDirection, transform.localScale.y);
     }
 
     private void GravityState()
-    {
-        if (isWallSliding && rb.linearVelocityY < -0.1)
-            rb.gravityScale = wallSlideGravity;
-        else if (rb.linearVelocityY > 0.1)
+    { 
+        if (rb.linearVelocityY > 0.1)
             rb.gravityScale = jumpGravity;
         else if (rb.linearVelocityY < -0.1)
             rb.gravityScale = fallGravity;
@@ -171,15 +197,25 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            jumpPressed = false;
             jumpReleased = true;
         }
+    }
+    
+    private void GroundCheckUpdate()
+    {
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+    }
+
+    private void WallCheckUpdate()
+    {
+        onWall = Physics2D.OverlapCircle(wallCheck.position, wallCheckRadius, wallLayer);
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
-        Gizmos.DrawWireSphere(leftWallCheck.position, groundCheckRadius);
-        Gizmos.DrawWireSphere(rightWallCheck.position, groundCheckRadius);
+        Gizmos.DrawWireSphere(wallCheck.position, wallCheckRadius);
     }
 }
