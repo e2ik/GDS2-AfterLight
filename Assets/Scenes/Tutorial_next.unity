@@ -151,6 +151,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7bfd56b82474de45b85e71b64a9bad2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Chest
+  chestID: chest2
+  lootItem: {fileID: 0}
+  worldItemPrefab: {fileID: 0}
+  popForce: 5
+  minHorizontalAngle: -0.4
+  maxHorizontalAngle: 0.4
 --- !u!212 &935940309
 SpriteRenderer:
   serializedVersion: 2
@@ -390,7 +396,7 @@ GameObject:
   - component: {fileID: 1436933139}
   - component: {fileID: 1436933138}
   - component: {fileID: 1436933137}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}

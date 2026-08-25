@@ -1,5 +1,4 @@
 using System.Collections;
-using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -28,6 +27,11 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    private SaveManager GetSaveManager()
+    {
+        return saveManager != null ? saveManager : SaveManager.Instance;
+    }
+
     public void NewGame()
     {
         StartCoroutine(NewGameRoutine());
@@ -44,13 +48,17 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayer();
 
-        worldMapState.ResetState();
-
-        string savePath = Path.Combine(Application.persistentDataPath, "save.json");
-        if (File.Exists(savePath))
+        if (worldMapState != null)
         {
-            File.Delete(savePath);
-            Debug.Log("[GameManager] Save file deleted for new game.");
+            worldMapState.ResetState();
+        }
+
+        ClearPlayerInventory();
+
+        SaveManager targetSaveManager = GetSaveManager();
+        if (targetSaveManager != null)
+        {
+            targetSaveManager.CreateNewSaveData();
         }
 
         yield return LoadSceneAdditive(defaultStartSceneName);
@@ -63,9 +71,13 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayer();
 
-        worldMapState.ResetState();
+        if (worldMapState != null)
+        {
+            worldMapState.ResetState();
+        }
 
-        SaveData data = saveManager.LoadGame();
+        SaveManager targetSaveManager = GetSaveManager();
+        SaveData data = targetSaveManager != null ? targetSaveManager.LoadGame() : null;
 
         if (data == null)
         {
@@ -75,15 +87,20 @@ public class GameManager : MonoBehaviour
             yield break;
         }
 
-        worldMapState.LoadFromSaveIDs(data.progress.unlockedFastTravelIDs);
+        if (worldMapState != null && data.progress != null)
+        {
+            worldMapState.LoadFromSaveIDs(data.progress.unlockedFastTravelIDs);
+        }
 
-        string sceneToLoad = string.IsNullOrEmpty(data.progress.lastVisitedSceneName)
-            ? defaultStartSceneName
-            : data.progress.lastVisitedSceneName;
+        LoadPlayerInventory(data.inventoryData);
 
-        string anchorToUse = string.IsNullOrEmpty(data.progress.lastSpawnAnchorID)
-            ? defaultSpawnAnchorID
-            : data.progress.lastSpawnAnchorID;
+        string sceneToLoad = (data.progress != null && !string.IsNullOrEmpty(data.progress.lastVisitedSceneName))
+            ? data.progress.lastVisitedSceneName
+            : defaultStartSceneName;
+
+        string anchorToUse = (data.progress != null && !string.IsNullOrEmpty(data.progress.lastSpawnAnchorID))
+            ? data.progress.lastSpawnAnchorID
+            : defaultSpawnAnchorID;
 
         yield return LoadSceneAdditive(sceneToLoad);
         PlacePlayerAtAnchor(anchorToUse);
@@ -168,5 +185,31 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning($"[GameManager] Spawn anchor '{anchorID}' not found.");
         }
+    }
+
+    private void LoadPlayerInventory(InventorySaveData inventoryData)
+    {
+        if (_playerInstance == null)
+        {
+            Debug.LogWarning("[GameManager] No player instance to load inventory onto.");
+            return;
+        }
+
+        PlayerInventoryManager inventoryManager = _playerInstance.GetComponent<PlayerInventoryManager>();
+        if (inventoryManager == null)
+        {
+            Debug.LogError("[GameManager] PlayerInventoryManager not found on player instance.");
+            return;
+        }
+
+        inventoryManager.LoadFromSaveData(inventoryData);
+    }
+
+    private void ClearPlayerInventory()
+    {
+        if (_playerInstance == null) return;
+
+        PlayerInventoryManager inventoryManager = _playerInstance.GetComponent<PlayerInventoryManager>();
+        inventoryManager?.LoadFromSaveData(new InventorySaveData());
     }
 }

@@ -1,0 +1,51 @@
+using UnityEngine;
+using System.Collections;
+
+public class TransitionDoor : MonoBehaviour, IInteractable
+{
+    [SerializeField] private string interactionPrompt = "Enter";
+    [SerializeField] private bool canInteract = true;
+    public string InteractionPrompt => interactionPrompt;
+    public bool CanInteract => canInteract;
+
+    [SerializeField] private GameObject exteriorRoot;
+    [SerializeField] private GameObject interiorRoot;
+    [SerializeField] private CanvasGroup fadeCanvas;
+    [SerializeField] private float fadeDuration = 0.5f;
+    private bool isInside;
+
+    public void Interact(Player player)
+    {
+        StartCoroutine(TransitionRoutine(player));
+    }
+
+    private IEnumerator TransitionRoutine(Player player)
+    {
+        canInteract = false;
+        player.Controller.MovementEnabled = false;
+
+        yield return Fade(0f, 1f);
+
+        isInside = !isInside;
+        exteriorRoot.SetActive(!isInside);
+        interiorRoot.SetActive(isInside);
+
+        yield return Fade(1f, 0f);
+
+        player.Controller.MovementEnabled = true;
+        canInteract = true;
+    }
+
+    private IEnumerator Fade(float from, float to)
+    {
+        float t = 0f;
+        fadeCanvas.alpha = from;
+        while (t < fadeDuration)
+        {
+            t += Time.deltaTime;
+            fadeCanvas.alpha = Mathf.Lerp(from, to, t / fadeDuration);
+            yield return null;
+        }
+        fadeCanvas.alpha = to;
+    }
+}

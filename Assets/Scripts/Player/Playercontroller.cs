@@ -2,21 +2,19 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(PlayerInput))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
 
     private Rigidbody2D rb;
+    private PlayerEquipmentManager equipmentManager;
+
     private InputAction moveAction;
     private InputAction attackAction;
     private InputAction sAttackAction;
-    private float horizontalInput;
 
-    public WeaponDefinition weapon;
-    public PrimaryGemBehaviourDefinition specialAttackDef;
-    public SecondaryGemInstance secondaryGem;
+    private float horizontalInput;
 
     public bool MovementEnabled { get; set; } = true;
     public int FacingDirection { get; private set; } = 1;
@@ -24,12 +22,12 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        equipmentManager = GetComponent<PlayerEquipmentManager>();
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions["Move"];
         attackAction = playerInput.actions["Attack"];
         sAttackAction = playerInput.actions["SAttack"];
-        ClearSecondaryGem();
     }
 
     private void Update()
@@ -41,42 +39,48 @@ public class PlayerController : MonoBehaviour
         else if (horizontalInput < -0.01f)
             FacingDirection = -1;
 
+        if (!MovementEnabled) return;
+
         if (attackAction.WasPressedThisFrame())
         {
-            Debug.Log("Attack");
+            PerformPrimaryAttack();
         }
+
         if (sAttackAction.WasPressedThisFrame())
         {
-            Debug.Log("S Attack");
-            AttackContext newAttack = new AttackContext
-            {
-              BaseAttackDamage = weapon.BaseWeaponDamage,  
-              BaseAttackCrit = weapon.BaseWeaponCrit,    
-            };
-            SpecialAttack(newAttack,secondaryGem, specialAttackDef);
+            PerformSpecialAttack();
         }
     }
 
     private void FixedUpdate()
     {
-        rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+        float verticalVelocity = MovementEnabled ? rb.linearVelocity.y : 0f;
+        rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, verticalVelocity);
     }
 
-    private void SpecialAttack(AttackContext context, SecondaryGemInstance modifier, PrimaryGemBehaviourDefinition attackStrategy)
+    private void PerformPrimaryAttack()
     {
-        if(modifier.InstTemplateID != null)
+        if (equipmentManager.EquippedWeapon == null)
         {
-            GameDatabase.GetSecondaryTemplateFromID(modifier.InstTemplateID).Modify(ref context,modifier);
+            Debug.LogWarning("[PlayerController] Cannot attack: No weapon equipped in PlayerEquipmentManager.");
+            return;
         }
-        attackStrategy.Execute(context);
+
+        Debug.Log("Primary Attack executed.");
     }
 
-    public void ClearSecondaryGem()
+    private void PerformSpecialAttack()
     {
-        secondaryGem.InstTemplateID = null;
-        secondaryGem.InstanceGUID = null;
-        secondaryGem.InstDamageMult = 0;
-        secondaryGem.InstCritMult = 0;
-        secondaryGem.InstSizeMult = 0;
+        PrimaryGemBehaviourDefinition specialDef = equipmentManager.SpecialAttackDef;
+
+        if (specialDef == null)
+        {
+            Debug.LogWarning("[PlayerController] Cannot execute Special Attack: No Primary Gem equipped.");
+            return;
+        }
+
+        AttackContext context = equipmentManager.GetModifiedAttackContext();
+
+        specialDef.Execute(context);
     }
 }

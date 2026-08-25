@@ -7,6 +7,8 @@ public class SaveData
     public List<ItemInstanceSaveData> inventory; // example
     public ItemInstanceSaveData equippedWeapon;
     public ProgressSaveData progress;
+    public ChestSaveData chestData;
+    public InventorySaveData inventoryData;
 }
 
 [System.Serializable]
@@ -35,4 +37,17 @@ public class ProgressSaveData
     public List<string> unlockedFastTravelIDs;
     public string lastVisitedSceneName;
     public string lastSpawnAnchorID;
+}
+
+[System.Serializable]
+public class ChestSaveData
+{
+    public List<string> openedChestIDs = new List<string>();
+}
+
+[System.Serializable]
+public class InventorySaveData
+{
+    // primary and weapon not yet
+    public List<SecondaryGemInstance> secondaryGems = new List<SecondaryGemInstance>();
 }
