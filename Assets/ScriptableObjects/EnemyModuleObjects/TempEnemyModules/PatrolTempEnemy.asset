@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: PatrolTempEnemy
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.PatrolMovementSO
   moveSpeed: 2
-  edgeCheckDistance: 0.5
+  edgeCheckDistance: 1
   groundCheckDepth: 1
-  wallCheckDistance: 0.3
+  wallCheckDistance: 0.7
   groundMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64

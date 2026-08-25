@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: 2790469036999504735}
   - component: {fileID: 4603576144132445173}
   - component: {fileID: 6074950192708980958}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -207,6 +207,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 5
+  weapon: {fileID: 0}
+  specialAttackDef: {fileID: 0}
+  secondaryGem:
+    InstTemplateID: 
+    InstDamageMult: 0
+    InstCritMult: 0
+    InstSizeMult: 0
+    InstanceGUID: 
 --- !u!114 &2954816236131703790
 MonoBehaviour:
   m_ObjectHideFlags: 0

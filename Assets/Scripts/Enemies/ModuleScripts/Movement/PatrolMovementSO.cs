@@ -16,10 +16,17 @@ namespace Enemies.ModuleScripts
             int dir = ctx.FacingRight ? 1 : -1;
             Vector2 origin = ctx.Self.position;
 
-            bool groundAhead = Physics2D.Raycast(origin + Vector2.right * dir * edgeCheckDistance, Vector2.down,
-                groundCheckDepth, groundMask);
+            Vector2 groundOrigin = origin + Vector2.right * dir * edgeCheckDistance;
+            Vector2 groundDirection = Vector2.down * groundCheckDepth;
+
+            bool groundAhead = Physics2D.Raycast(groundOrigin, Vector2.down, groundCheckDepth, groundMask);
+            Debug.DrawRay((Vector3)groundOrigin, (Vector3)groundDirection, groundAhead ? Color.green : Color.red);
             
-            bool wallAhead = Physics2D.Raycast(origin, Vector2.right * dir, wallCheckDistance, groundMask);
+            Vector2 wallOrigin = origin;
+            Vector2 wallDirection = Vector2.right * dir * wallCheckDistance;
+
+            bool wallAhead = Physics2D.Raycast(wallOrigin, Vector2.right * dir, wallCheckDistance, groundMask);
+            Debug.DrawRay((Vector3)wallOrigin, (Vector3)wallDirection, wallAhead ? Color.green : Color.red);
 
             if (!groundAhead || wallAhead)
             {

@@ -14,6 +14,7 @@ namespace Enemies
         
         [SerializeField] private BehaviorGraphAgent behaviorAgent;
         [SerializeField] private Animator animator;
+        [SerializeField] private Rigidbody2D rb2D;
 
         public EnemyContext Context { get; private set; }
 
@@ -25,7 +26,7 @@ namespace Enemies
             Context = new EnemyContext()
             {
                 Self = transform,
-                Body = GetComponent<Rigidbody2D>(),
+                Body = rb2D,
                 Health = GetComponent<EnemyHealth>(),
                 Behavior = behaviorAgent,
                 Animator = animator,
@@ -38,11 +39,15 @@ namespace Enemies
         {
             observationSO.Tick(Context, Time.deltaTime);
             
+            transform.localScale = new Vector3(Context.FacingRight ? 1f : -1f, 1f, 1f);
+            animator.SetFloat("Speed", Mathf.Abs(Context.Body.linearVelocityX));
+            
             bool inRange = Context.TargetVisible && Vector2.Distance(transform.position, Context.TargetPosition) <= attackRange;
             
             behaviorAgent.BlackboardReference.SetVariableValue("TargetVisible", Context.TargetVisible);
             behaviorAgent.BlackboardReference.SetVariableValue("TargetPosition", Context.TargetPosition);
             behaviorAgent.BlackboardReference.SetVariableValue("InAttackRange", inRange);
+            behaviorAgent.BlackboardReference.SetVariableValue("Self", gameObject);
         }
         
         public void RunMovement(EnemyMovementSO module, float dt) => module.Tick(Context, dt);
