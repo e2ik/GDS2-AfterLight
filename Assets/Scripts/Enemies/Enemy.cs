@@ -41,6 +41,7 @@ namespace Enemies
             animator.SetFloat("Speed", Mathf.Abs(Context.Body.linearVelocityX));
             
             bool inRange = Context.TargetVisible && Vector2.Distance(transform.position, Context.TargetPosition) <= attackRange;
+            Context.TargetInRange = inRange;
             
             behaviorAgent.BlackboardReference.SetVariableValue("TargetVisible", Context.TargetVisible);
             behaviorAgent.BlackboardReference.SetVariableValue("TargetPosition", Context.TargetPosition);

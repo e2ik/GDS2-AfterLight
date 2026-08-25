@@ -35,8 +35,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 421764455095116228}
-  - {fileID: 7166656262927269922}
-  - {fileID: 5941124416988594395}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3024282185278052449
@@ -65,8 +63,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.Enemy
   observationSO: {fileID: 11400000, guid: 507f599106ab90f40a26514267cdd09a, type: 2}
-  movementSO: {fileID: 11400000, guid: f20471508b340084cbc688ab0ae9f89f, type: 2}
-  attackSO: {fileID: 11400000, guid: 07bfc0d7bf7394d459124971720a7609, type: 2}
   attackRange: 1.2
   behaviorAgent: {fileID: 3741899294261406425}
   animator: {fileID: 3422330860409311587}
@@ -203,7 +199,9 @@ Transform:
   m_LocalPosition: {x: 0.985, y: 0.447, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7166656262927269922}
+  - {fileID: 5941124416988594395}
   m_Father: {fileID: 6231625418547740632}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &9016610030483811910
@@ -303,7 +301,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &5941124416988594395
 Transform:
   m_ObjectHideFlags: 0
@@ -312,12 +310,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7655709470947892358}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.985, y: -0.447, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6231625418547740632}
+  m_Father: {fileID: 421764455095116228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &1691160875376365278
 BoxCollider2D:
@@ -390,12 +388,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8116198673704997885}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.086, y: 0.479, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.10099995, y: 0.032000095, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6231625418547740632}
+  m_Father: {fileID: 421764455095116228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &8061515899177227973
 BoxCollider2D:

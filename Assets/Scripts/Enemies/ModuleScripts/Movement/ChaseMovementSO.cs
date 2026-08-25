@@ -7,13 +7,17 @@ namespace Enemies.ModuleScripts
     public class ChaseMovementSO : EnemyMovementSO
     {
         [SerializeField] private float moveSpeed = 3.5f;
+        [SerializeField] private float facingDeadZone = 0.15f;
 
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
             if (ctx.Target == null) return;
 
             float diff = ctx.TargetPosition.x - ctx.Self.position.x;
-            ctx.FacingRight = diff >= 0f;
+            
+            if(Mathf.Abs(diff) > facingDeadZone)
+                ctx.FacingRight = diff >= 0f;
+            
             int dir = ctx.FacingRight ? 1 : -1;
 
             ctx.Body.linearVelocity = new Vector2(dir * moveSpeed, ctx.Body.linearVelocity.y);

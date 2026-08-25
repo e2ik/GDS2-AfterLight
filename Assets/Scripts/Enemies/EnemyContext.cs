@@ -16,6 +16,7 @@ namespace Enemies
 
         public Transform Target;
         public bool TargetVisible;
+        public bool TargetInRange;
         public Vector2 TargetPosition;
     }
 }
