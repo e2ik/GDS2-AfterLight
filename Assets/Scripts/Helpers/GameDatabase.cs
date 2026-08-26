@@ -8,8 +8,8 @@ public class GameDatabase : MonoBehaviour
 
     public static SecondaryGemTemplateDB SecondaryGemTemplateDB{get; private set;}
     public static GearTemplateDB GearTemplateDB{get; private set;}
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+
+    void Awake()
     {
         SecondaryGemTemplateDB = secondaryGemTemplateDB;
         GearTemplateDB = gearTemplateDB;

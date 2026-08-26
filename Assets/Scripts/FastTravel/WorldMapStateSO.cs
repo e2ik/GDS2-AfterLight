@@ -37,9 +37,14 @@ public class WorldMapStateSO : ScriptableObject
         {
             var node = FastTravelNodeResolver.GetByID(id);
             if (node != null)
+            {
                 unlockedNodes.Add(node);
+                OnNodeUnlocked?.Invoke(node);
+            }
             else
+            {
                 Debug.LogWarning($"[WorldMapState] Unknown fast travel node ID '{id}' in save data.");
+            }
         }
     }
 
