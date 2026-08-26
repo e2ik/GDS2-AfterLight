@@ -94,14 +94,32 @@ public class SaveManager : MonoBehaviour
         if (_currentSaveData.chestData.openedChestIDs == null) 
             _currentSaveData.chestData.openedChestIDs = new System.Collections.Generic.List<string>();
         if (_currentSaveData.inventoryData == null) _currentSaveData.inventoryData = new InventorySaveData();
+        if (_currentSaveData.equippedGear == null) 
+            _currentSaveData.equippedGear = new System.Collections.Generic.List<EquippedGearSaveData>();
     }
 
     public void SaveProgressAtLocation(string sceneName, string anchorID)
     {
         _currentSaveData.progress.lastVisitedSceneName = sceneName;
         _currentSaveData.progress.lastSpawnAnchorID = anchorID;
+
         if (worldMapState != null)
+        {
             _currentSaveData.progress.unlockedFastTravelIDs = worldMapState.ToSaveIDs();
+        }
+
+        Player player = FindFirstObjectByType<Player>();
+        if (player != null)
+        {
+            if (player.Inventory != null)
+                _currentSaveData.inventoryData = player.Inventory.ToSaveData();
+
+            if (player.Equipment != null)
+            {
+                _currentSaveData.equippedGear = player.Equipment.GetEquippedGearSaveData();
+                _currentSaveData.equippedSecondaryGem = player.Equipment.SecondaryGem;
+            }
+        }
 
         CommitToDisk();
     }

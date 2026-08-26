@@ -128,6 +128,15 @@ public class WorldItem : MonoBehaviour
                 Debug.Log($"Auto-picked up Weapon: {weaponDef.UIName}");
                 break;
 
+            case GearDefinition gearDef:
+                ERarity gearRarity = GetRandomRarity();
+                GearInstance gearLoot = gearDef.CreateInstance(gearRarity);
+
+                player.Inventory.AddItemToInventory(gearLoot);
+                player.Equipment.EquipGear(gearDef.Slot, gearLoot); 
+                Debug.Log($"Auto-picked up Gear: {gearDef.UIName} ({gearRarity})");
+                break;
+
             default:
                 Debug.LogWarning($"[WorldItem] Item type '{itemDefinition.GetType().Name}' is not handled.");
                 break;

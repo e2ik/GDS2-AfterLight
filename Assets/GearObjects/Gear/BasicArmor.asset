@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2e054ff3130166479efb6f387d7ced9, type: 3}
+  m_Name: BasicArmor
+  m_EditorClassIdentifier: Assembly-CSharp::GearDefinition
+  ItemID: basic_armor
+  UIName: Basic Armor
+  UISprite: {fileID: 0}
+  Slot: 0
+  TemplateID: A1
+  BonusAttackRange: {x: 5, y: 15}
+  BonusDefenseRange: {x: 2, y: 8}
+  BonusHumanityRange: {x: 1, y: 5}
