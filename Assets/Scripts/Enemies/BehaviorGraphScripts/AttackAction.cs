@@ -34,6 +34,7 @@ public partial class AttackAction : Action
             return Status.Failure;
         }
         
+        _enemy.MarkAttackStarted();
         _selected.Begin(_enemy.Context);
         
         return Status.Running;
@@ -44,6 +45,11 @@ public partial class AttackAction : Action
 
     protected override void OnEnd()
     {
+        if (_selected != null)
+        {
+            _enemy?.MarkAttackEnded();
+            _selected = null;
+        }
     }
 }
 
