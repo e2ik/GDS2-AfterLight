@@ -13,6 +13,7 @@ namespace Enemies
         public AnimatorOverrideController OverrideController;
 
         public bool FacingRight;
+        public float AttackStopDistance;
 
         public Transform Target;
         public bool TargetVisible;

@@ -8,6 +8,7 @@ namespace Enemies.ModuleScripts
     {
         [SerializeField] private float moveSpeed = 3.5f;
         [SerializeField] private float facingDeadZone = 0.15f;
+        [SerializeField] private float stopBuffer = 0.1f;
 
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
@@ -20,7 +21,11 @@ namespace Enemies.ModuleScripts
             
             int dir = ctx.FacingRight ? 1 : -1;
 
-            ctx.Body.linearVelocity = new Vector2(dir * moveSpeed, ctx.Body.linearVelocity.y);
+            float distance = Vector2.Distance(ctx.Self.position, ctx.TargetPosition);
+            bool closeEnoughToStop = distance <= ctx.AttackStopDistance + stopBuffer;
+
+            float moveX = closeEnoughToStop ? 0f : dir * moveSpeed;
+            ctx.Body.linearVelocity = new Vector2(moveX, ctx.Body.linearVelocity.y);
         }
 
     }

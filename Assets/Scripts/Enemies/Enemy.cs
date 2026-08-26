@@ -33,6 +33,8 @@ namespace Enemies
                 OverrideController = overrideController,
                 FacingRight = true
             };
+
+            Context.AttackStopDistance = attacks.Count > 0 ? attacks.Min(a => a.Attack.Range) : 0.1f;
         }
 
         private void Update()
