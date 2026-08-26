@@ -119,25 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &346178091 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8116198673704997885, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
-  m_PrefabInstance: {fileID: 8370556556029834892}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &346178094
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 346178091}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34cd1348375f97c429228f4206c139b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Enemies.HurtBox
-  health: {fileID: 1499766803}
-  Invulnerable: 0
 --- !u!1 &833315789
 GameObject:
   m_ObjectHideFlags: 0
@@ -276,36 +257,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!1 &1499766798 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1508996274877242485, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
-  m_PrefabInstance: {fileID: 8370556556029834892}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1499766803 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3024282185278052449, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
-  m_PrefabInstance: {fileID: 8370556556029834892}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1499766798}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9b08fde3cea1e74eaa88ad2dd99a63a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
---- !u!114 &1499766805
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1499766798}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b64c839ba1fd3804bab730ccee5c28ca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Enemies.AttackEvents
-  hitbox: {fileID: 2002324408}
-  hurtbox: {fileID: 346178094}
 --- !u!1 &1509861269
 GameObject:
   m_ObjectHideFlags: 0
@@ -455,24 +406,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
---- !u!1 &2002324405 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7655709470947892358, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
-  m_PrefabInstance: {fileID: 8370556556029834892}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2002324408
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2002324405}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe9e8143c53f5294a85d5656f0abcf20, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Enemies.HitBox
-  col: {fileID: 0}
 --- !u!1001 &8370556556029834892
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -486,8 +419,16 @@ PrefabInstance:
       value: Enemy
       objectReference: {fileID: 0}
     - target: {fileID: 5011396066847478461, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
-      propertyPath: attackRange
-      value: 2
+      propertyPath: attacks.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5011396066847478461, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
+      propertyPath: attacks.Array.data[0].Attack
+      value: 
+      objectReference: {fileID: 11400000, guid: 07bfc0d7bf7394d459124971720a7609, type: 2}
+    - target: {fileID: 5011396066847478461, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
+      propertyPath: attacks.Array.data[0].Weight
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 6231625418547740632, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -529,23 +470,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7655709470947892358, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1508996274877242485, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
-      insertIndex: 3
-      addedObject: {fileID: 1499766805}
-    - targetCorrespondingSourceObject: {fileID: 8116198673704997885, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 346178094}
-    - targetCorrespondingSourceObject: {fileID: 7655709470947892358, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2002324408}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

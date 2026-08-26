@@ -41,7 +41,7 @@ public partial class PatrolAction : Action
     protected override Status OnUpdate()
     {   
         _enemy.RunMovement(PatrolModule.Value, Time.deltaTime);
-        return _enemy.Context.TargetVisible ? Status.Success : Status.Running;
+        return Status.Running;
     }
 
     protected override void OnEnd()

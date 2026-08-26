@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6231625418547740632}
   - component: {fileID: 3024282185278052449}
   - component: {fileID: 5011396066847478461}
+  - component: {fileID: 1521051261008522368}
   - component: {fileID: 3741899294261406425}
   - component: {fileID: 1037170224883650968}
   - component: {fileID: 6183684701131280056}
@@ -63,10 +64,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.Enemy
   observationSO: {fileID: 11400000, guid: 507f599106ab90f40a26514267cdd09a, type: 2}
-  attackRange: 1.2
+  attacks: []
   behaviorAgent: {fileID: 3741899294261406425}
   animator: {fileID: 3422330860409311587}
   rb2D: {fileID: 1037170224883650968}
+--- !u!114 &1521051261008522368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508996274877242485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b64c839ba1fd3804bab730ccee5c28ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.AttackEvents
+  hitbox: {fileID: 8255842453170479238}
+  hurtbox: {fileID: 2803622147759670400}
 --- !u!114 &3741899294261406425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -295,6 +310,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5941124416988594395}
   - component: {fileID: 1691160875376365278}
+  - component: {fileID: 8255842453170479238}
   m_Layer: 8
   m_Name: HitBox
   m_TagString: Untagged
@@ -363,6 +379,19 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.6877041, y: 0.98843336}
   m_EdgeRadius: 0
+--- !u!114 &8255842453170479238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7655709470947892358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe9e8143c53f5294a85d5656f0abcf20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.HitBox
+  col: {fileID: 0}
 --- !u!1 &8116198673704997885
 GameObject:
   m_ObjectHideFlags: 0
@@ -373,6 +402,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7166656262927269922}
   - component: {fileID: 8061515899177227973}
+  - component: {fileID: 2803622147759670400}
   m_Layer: 8
   m_Name: HurtBox
   m_TagString: Untagged
@@ -441,3 +471,17 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.56830645, y: 0.98843336}
   m_EdgeRadius: 0
+--- !u!114 &2803622147759670400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8116198673704997885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34cd1348375f97c429228f4206c139b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.HurtBox
+  health: {fileID: 3024282185278052449}
+  Invulnerable: 0

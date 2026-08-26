@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Behavior;
 using UnityEngine;
 
@@ -8,7 +10,7 @@ namespace Enemies
     public class Enemy : MonoBehaviour
     {
         [SerializeField] private EnemyObservationSO observationSO;
-        [SerializeField] private float attackRange = 1.2f;
+        [SerializeField] private List<AttackInstance> attacks = new();
         
         [SerializeField] private BehaviorGraphAgent behaviorAgent;
         [SerializeField] private Animator animator;
@@ -40,15 +42,54 @@ namespace Enemies
             transform.localScale = new Vector3(Context.FacingRight ? 1f : -1f, 1f, 1f);
             animator.SetFloat("Speed", Mathf.Abs(Context.Body.linearVelocityX));
             
-            bool inRange = Context.TargetVisible && Vector2.Distance(transform.position, Context.TargetPosition) <= attackRange;
-            Context.TargetInRange = inRange;
+            bool attackReady = false;
+            foreach (AttackInstance attack in attacks)
+            {
+                attack.Tick(Context, Time.deltaTime);
+                if (attack.IsValid)
+                    attackReady = true;
+            }
             
             behaviorAgent.BlackboardReference.SetVariableValue("TargetVisible", Context.TargetVisible);
             behaviorAgent.BlackboardReference.SetVariableValue("TargetPosition", Context.TargetPosition);
-            behaviorAgent.BlackboardReference.SetVariableValue("InAttackRange", inRange);
+            behaviorAgent.BlackboardReference.SetVariableValue("AttackReady", attackReady);
             behaviorAgent.BlackboardReference.SetVariableValue("Self", gameObject);
         }
         
         public void RunMovement(EnemyMovementSO module, float dt) => module.Tick(Context, dt);
+
+        public bool TrySelectAttack(out AttackInstance selected)
+        {
+            selected = null;
+            float totalWeight = attacks.Where(a => a.IsValid).Sum(a => a.Weight);
+            if (totalWeight <= 0f) return false;
+
+            float roll = UnityEngine.Random.value * totalWeight;
+            float cumulative = 0f;
+
+            foreach (AttackInstance attack in attacks)
+            {
+                if (!attack.IsValid) continue;
+                cumulative += attack.Weight;
+
+                if (roll <= cumulative)
+                {
+                    selected = attack;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (attacks == null || attacks.Count == 0) return;
+
+            float sum = attacks.Sum(a => a.Weight);
+            if(Mathf.Abs(sum - 100f) > 0.01f)
+                Debug.LogWarning($"{name}: attack weights sum to {sum}, expected 100");
+        }
+#endif
     }
 }

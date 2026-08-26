@@ -10,9 +10,9 @@ using Unity.Properties;
 public partial class AttackAction : Action
 {
     [SerializeReference] public BlackboardVariable<GameObject> Agent;
-    [SerializeReference] public BlackboardVariable<EnemyAttackSO> AttackModule;
 
     private Enemy _enemy;
+    private AttackInstance _selected;
 
     protected override Status OnStart()
     {
@@ -22,25 +22,25 @@ public partial class AttackAction : Action
             return Status.Failure;
         }
 
-        if (AttackModule == null || AttackModule.Value == null)
-        {
-            Debug.LogError("AttackAction: AttackModule SO is not assigned on the node");
-            return Status.Failure;
-        }
-
         if (!Agent.Value.TryGetComponent(out _enemy))
         {
             Debug.LogError("Agent has no Enemy component");
             return Status.Failure;
         }
-
-        AttackModule.Value.Begin(_enemy.Context);
+        
+        if (!_enemy.TrySelectAttack(out _selected))
+        {
+            Debug.LogWarning("AttackAction: no valid attack available.");
+            return Status.Failure;
+        }
+        
+        _selected.Begin(_enemy.Context);
         
         return Status.Running;
     }
 
     protected override Status OnUpdate() =>
-        AttackModule.Value.IsFinished(_enemy.Context) ? Status.Success : Status.Running;
+        _selected.IsFinished(_enemy.Context) ? Status.Success : Status.Running;
 
     protected override void OnEnd()
     {

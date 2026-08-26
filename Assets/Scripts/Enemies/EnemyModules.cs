@@ -14,6 +14,13 @@ namespace Enemies
  
     public abstract class EnemyAttackSO : ScriptableObject
     {
+        [SerializeField] protected float range = 1f;
+        [SerializeField] protected float cooldownDuration = 3f;
+
+        public float Range => range;
+        public float CooldownDuration => cooldownDuration;
+        
+        
         public abstract void Begin(EnemyContext ctx);
         public abstract bool IsFinished(EnemyContext ctx);
     }

@@ -42,10 +42,7 @@ public partial class ChaseAction : Action
     {
         _enemy.RunMovement(ChaseModule.Value, Time.deltaTime);
 
-        if (_enemy.Context.TargetVisible && !_enemy.Context.TargetInRange)
-            return Status.Running;
-        
-        return  Status.Success;
+        return Status.Running;
     }
 
     protected override void OnEnd()
