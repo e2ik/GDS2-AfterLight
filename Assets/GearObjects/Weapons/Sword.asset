@@ -12,13 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdcea4db7b01d13b7b2110c48f8b5a21, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinition
+  ItemID: 
+  UIName: 
+  UISprite: {fileID: 0}
   BaseWeaponDamage: 1
   BaseWeaponRange: 1
-  BaseWeaponCrit: 1
-  PrimaryGemBehaviour: {fileID: 11400000, guid: 0c490fd2d61891d90966197bc88509b1, type: 2}
-  SecondaryGemBehaviour:
-    InstTemplateID: 0
-    InstDamageMult: 0
-    InstCritMult: 0
-    InstSizeMult: 0
-    InstanceGUID: 
+  BaseWeaponCrit: 0.5

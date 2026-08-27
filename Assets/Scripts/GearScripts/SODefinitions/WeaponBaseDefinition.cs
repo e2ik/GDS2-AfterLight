@@ -5,5 +5,5 @@ public class WeaponDefinition : InventoryItemBase
 {
     public float BaseWeaponDamage;
     public float BaseWeaponRange;
-    public float BaseWeaponCrit;
+    [Range(0f, 1f)] public float BaseWeaponCrit;
 }

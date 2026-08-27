@@ -1,6 +1,9 @@
 using System;
+using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
+using Random = System.Random;
 
 public enum ParryDirection
 {
@@ -15,6 +18,10 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private Transform attackOrigin;
     private float attackRadius;
     public LayerMask enemyLayer;
+
+    private float attackDamage;
+    private float attackCrit; 
+    [SerializeField] private float critDamageMultiplier = 2f;
     
     private bool parryPressed;
     private bool isParrying;
@@ -109,10 +116,16 @@ public class PlayerCombatController : MonoBehaviour
                 return;
             }
 
+            attackRadius = equipmentManager.EquippedWeapon.BaseWeaponRange;
+            attackDamage = equipmentManager.EquippedWeapon.BaseWeaponDamage;
+            attackCrit = equipmentManager.EquippedWeapon.BaseWeaponCrit;
+                
             Collider2D[] enemiesInRange = Physics2D.OverlapCircleAll(attackOrigin.position, attackRadius, enemyLayer);
             
+            float dmgAmount = attackDamage * (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f);
+            enemiesInRange[0].GetComponent<EnemyHealth>().ApplyDamage((int)dmgAmount);
+            
             Debug.Log("Primary Attack executed.");
-            //
             
             attackPressed = false;
             Invoke(nameof(StopAttacking), attackDuration); //probably trigger this though animation events
@@ -150,6 +163,11 @@ public class PlayerCombatController : MonoBehaviour
     public void OnMove(InputValue value)
     {
         verticalInput = value.Get<Vector2>().y;
+    }
+
+    public void OnParry()
+    {
+        parryPressed = true;
     }
     
     public void OnAttack()
