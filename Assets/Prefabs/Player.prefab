@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3454623433225443930
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5048382237972281099}
+  m_Layer: 0
+  m_Name: WallCheck
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5048382237972281099
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3454623433225443930}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.5, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8579385553579684227}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6310612592100663882
 GameObject:
   m_ObjectHideFlags: 0
@@ -38,7 +69,9 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7522278443075006567}
+  - {fileID: 5048382237972281099}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5837685772460609055
@@ -155,6 +188,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 5
+  jumpVelocity: 20
+  tapJumpMultiplier: 0.5
+  normGravity: 5
+  jumpGravity: 4
+  fallGravity: 11
+  wallSlideSpeed: 2
+  wallJumpVelocity: 5
+  dashVelocity: 15
+  groundCheck: {fileID: 7522278443075006567}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  wallCheck: {fileID: 5048382237972281099}
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!114 &6264206310521610964
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -169,6 +218,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   maxHealth: 100
   currentHealth: 0
+  baseAttack: 10
+  baseDefense: 5
+  baseHumanity: 10
+  gearAttackBonus: 0
+  gearDefenseBonus: 0
+  gearHumanityBonus: 0
+  equipmentManager: {fileID: 0}
 --- !u!114 &7383012226346758473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -202,6 +258,7 @@ MonoBehaviour:
     InstCritMult: 0
     InstSizeMult: 0
     InstanceGUID: 
+  equippedGearDebug: []
 --- !u!114 &4056446563424932215
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -285,3 +342,34 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!1 &6762988504613199543
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7522278443075006567}
+  m_Layer: 0
+  m_Name: GroundCheck
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7522278443075006567
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6762988504613199543}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8579385553579684227}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
