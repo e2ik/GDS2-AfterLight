@@ -17,9 +17,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float normGravity;
     [SerializeField] private float jumpGravity;
     [SerializeField] private float fallGravity;
+    [SerializeField] private float coyoteTime = 0.15f;
     private float targetSpeed;
     private bool jumpPressed;
     private bool jumpReleased;
+    private float coyoteTimeCounter;
     
     [Header("Wall Movement")] 
     [SerializeField] private float wallSlideSpeed = 2f;
@@ -72,9 +74,16 @@ public class PlayerController : MonoBehaviour
     private float horizontalInput;
     private Vector2 jumpInput;
 
-    public bool MovementEnabled { get; set; } = true;
-    
+    public bool MovementEnabled { get; set; } = true;    
     public int FacingDirection { get; private set; } = 1;
+
+    // anim required
+    public bool IsGrounded => isGrounded;
+    public bool IsWallSliding => isWallSliding;
+    public bool IsDashing => isDashing;
+    public bool IsChargingSkill => isChargingSkill;
+    public bool IsDirectionalDash { get; private set; }
+
 
     private void Awake()
     {
@@ -116,11 +125,21 @@ public class PlayerController : MonoBehaviour
             PerformInventoryAction();
         }
     }
+
     private void FixedUpdate()
     {
         GroundCheckUpdate();
         WallCheckUpdate();
-        
+
+        if (isGrounded)
+        {
+            coyoteTimeCounter = coyoteTime;
+        }
+        else
+        {
+            coyoteTimeCounter -= Time.fixedDeltaTime;
+        }
+
         HandleMovement();
         HandleJump();
         
@@ -147,11 +166,12 @@ public class PlayerController : MonoBehaviour
     
     private void HandleJump()
     {
-        if (jumpPressed && isGrounded)
+        if (jumpPressed && coyoteTimeCounter > 0f)
         {
             rb.linearVelocityY = jumpVelocity;
             jumpPressed = false;
             jumpReleased = false;
+            coyoteTimeCounter = 0f;
         }
         if (jumpReleased)
         {
@@ -224,20 +244,26 @@ public class PlayerController : MonoBehaviour
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
             isDashing = true;
+            
             if (horizontalInput != 0)
             {
-                targetSpeed = horizontalInput * dashVelocity;
-                rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
-                
-            } else
+                IsDirectionalDash = true; // Directional input
+                dashDirection = Mathf.Sign(horizontalInput);
+            } 
+            else
             {
-                targetSpeed = -FacingDirection * dashVelocity;
-                rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
+                IsDirectionalDash = false; // Neutral input
+                dashDirection = -FacingDirection;
             }
+
+            targetSpeed = dashDirection * dashVelocity;
+            rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
+
             dashPressed = false;
             dashReleased = false;
             Invoke(nameof(StopDashing), dashDuration);
         }
+
         if (dashReleased)
         {
             dashPressed = false;
