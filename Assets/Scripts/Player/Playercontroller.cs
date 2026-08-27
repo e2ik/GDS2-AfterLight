@@ -334,6 +334,7 @@ public class PlayerController : MonoBehaviour
         interactPressed = false;
         
         //interact logic
+        //if it doesn't work, will have to check the input interactions in controls
     }
 
     private void Flip()
