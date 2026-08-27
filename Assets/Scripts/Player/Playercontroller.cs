@@ -59,6 +59,7 @@ public class PlayerController : MonoBehaviour
     private float chargingSkillMaxDur;
 
     private bool inventoryPressed;
+    private bool interactPressed;
 
     [Header("Ground & Wall Check")] 
     [SerializeField] private Transform groundCheck;
@@ -118,10 +119,8 @@ public class PlayerController : MonoBehaviour
         }
         if (!MovementEnabled) return;
 
-        if (inventoryPressed)
-        {
-            PerformInventoryAction();
-        }
+        PerformInventoryAction();
+        HandleInteract();
     }
 
     private void FixedUpdate()
@@ -311,6 +310,8 @@ public class PlayerController : MonoBehaviour
 
     private void PerformInventoryAction()
     {
+        if (!inventoryPressed) return;
+        
         inventoryPressed = false;
         if (inventoryDisplay == null)
         {
@@ -325,6 +326,14 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogWarning("[Player] InventoryDisplay reference missing in scene!");
         }
+    }
+
+    private void HandleInteract()
+    {
+        if (!interactPressed) return;
+        interactPressed = false;
+        
+        //interact logic
     }
 
     private void Flip()
@@ -398,6 +407,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void OnInteract()
+    {
+        interactPressed = true;
+    }
     public void OnInventory()
     {
         inventoryPressed = true;

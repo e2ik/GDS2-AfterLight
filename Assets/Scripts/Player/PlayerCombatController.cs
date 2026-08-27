@@ -2,8 +2,6 @@ using System;
 using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
-using Random = System.Random;
 
 public enum ParryDirection
 {
