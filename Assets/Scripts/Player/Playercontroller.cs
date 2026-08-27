@@ -1,4 +1,5 @@
 using System;
+using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
@@ -11,28 +12,33 @@ using Object = UnityEngine.Object;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float jumpVelocity = 20f;
-    [SerializeField] private float tapJumpMultiplier = 0.5f;
+    [SerializeField] private float moveSpeed = 8f;
+    [SerializeField] private float jumpForce = 15f;
+    [SerializeField] private float tapJumpMultiplier = 0.2f;
+    
+    private float acceleration = 8f;
+    private float deceleration = 8f;
+    private float velocityPower = 1.2f;
+    private float friction = 0.2f;
+    
     [SerializeField] private float normGravity;
     [SerializeField] private float jumpGravity;
     [SerializeField] private float fallGravity;
+    
     [SerializeField] private float coyoteTime = 0.15f;
-    private float targetSpeed;
     private bool jumpPressed;
     private bool jumpReleased;
     private float coyoteTimeCounter;
     
     [Header("Wall Movement")] 
     [SerializeField] private float wallSlideSpeed = 2f;
-    [SerializeField] private float wallJumpVelocity = 5f;
     private bool isWallSliding;
     private bool isWallJumping;
     private float wallJumpDirection;
     private float wallJumpLeniency = 0.2f;
     private float wallJumpTimer;
     private float wallJumpDuration = 0.4f;
-    private Vector2 wallJumpForce = new(8f, 16f);
+    private Vector2 wallJumpForce = new(10f, 16f);
     
     [Header("Dash Movement")]
     [SerializeField] private float dashVelocity = 20f;
@@ -44,13 +50,15 @@ public class PlayerController : MonoBehaviour
     private float dashCoolDown = 0.2f;
     private float dashTimer;
 
-    [Header("Skill Charge Movement")]
-    private bool isChargingSkill;
+    [Header("Skill Charge Movement")] 
     private bool skillPressed;
     private bool skillReleased;
+    private bool isChargingSkill;
     private float chargingSkillTimer;
     private float chargingSkillMinDur = 0.4f;
     private float chargingSkillMaxDur;
+
+    private bool inventoryPressed;
 
     [Header("Ground & Wall Check")] 
     [SerializeField] private Transform groundCheck;
@@ -109,18 +117,8 @@ public class PlayerController : MonoBehaviour
             Flip();
         }
         if (!MovementEnabled) return;
-         
-        if (attackAction.WasPressedThisFrame())
-        {
-            PerformPrimaryAttack();
-        }
-         
-        if (sAttackAction.WasPressedThisFrame())
-        {
-            PerformSpecialAttack();
-        }
 
-        if (inventoryAction.WasPressedThisFrame())
+        if (inventoryPressed)
         {
             PerformInventoryAction();
         }
@@ -130,15 +128,6 @@ public class PlayerController : MonoBehaviour
     {
         GroundCheckUpdate();
         WallCheckUpdate();
-
-        if (isGrounded)
-        {
-            coyoteTimeCounter = coyoteTime;
-        }
-        else
-        {
-            coyoteTimeCounter -= Time.fixedDeltaTime;
-        }
 
         HandleMovement();
         HandleJump();
@@ -152,23 +141,37 @@ public class PlayerController : MonoBehaviour
     
     private bool CanMove()
     {
-        return !isWallJumping && !isDashing && !isChargingSkill;
+        return MovementEnabled && !isWallJumping && !isDashing && !isChargingSkill;
     }
     
     private void HandleMovement()
     {
-        if (CanMove())
+        if (!CanMove()) return;
+        
+        float targetSpeed = horizontalInput * moveSpeed;
+        float speedDif = targetSpeed - rb.linearVelocityX;
+        float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? acceleration : deceleration;
+        float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, velocityPower) * Mathf.Sign(speedDif);
+        rb.AddForce(movement * Vector2.right);
+
+        if (isGrounded && horizontalInput < 0.01f)
         {
-            targetSpeed = MovementEnabled ? horizontalInput * moveSpeed : 0f;
-            rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
+            float f = Mathf.Min(Mathf.Abs(rb.linearVelocityX), Mathf.Abs(friction));
+            f *= Mathf.Sign(rb.linearVelocityX);
+            rb.AddForce(Vector2.right * -f, ForceMode2D.Impulse);
         }
     }
     
     private void HandleJump()
     {
+        if (isGrounded)
+            coyoteTimeCounter = coyoteTime;
+        else
+            coyoteTimeCounter -= Time.fixedDeltaTime;
+        
         if (jumpPressed && coyoteTimeCounter > 0f)
         {
-            rb.linearVelocityY = jumpVelocity;
+            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             jumpPressed = false;
             jumpReleased = false;
             coyoteTimeCounter = 0f;
@@ -177,23 +180,28 @@ public class PlayerController : MonoBehaviour
         {
             if (rb.linearVelocityY > 0)
             {
-                rb.linearVelocityY *= tapJumpMultiplier;
+                rb.AddForce(Vector2.down * (rb.linearVelocityY * (1 - tapJumpMultiplier)), ForceMode2D.Impulse);
             }
             jumpReleased = false;
         }
     }
 
+    private float wallCoyoteTimer;
+
     private void HandleWallSlide()
     {
         if (onWall && !isGrounded && horizontalInput != 0)
+            wallCoyoteTimer = coyoteTime;
+        else
+            wallCoyoteTimer -= Time.deltaTime;
+        
+        if (onWall && !isGrounded && wallCoyoteTimer > 0)
         {
             isWallSliding = true;
             rb.linearVelocityY = Mathf.Clamp(rb.linearVelocityY, -wallSlideSpeed, float.MaxValue);
         }
         else
-        {
             isWallSliding = false;
-        }
     }
     private void HandleWallJump()
     {
@@ -206,14 +214,13 @@ public class PlayerController : MonoBehaviour
             CancelInvoke(nameof(StopWallJumping));
         }
         else
-        {
             wallJumpTimer -= Time.deltaTime;
-        }
 
         if (jumpPressed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
-            rb.linearVelocity = new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y);
+            //rb.linearVelocity = new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y);
+            rb.AddForce(new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y), ForceMode2D.Impulse);
             wallJumpTimer = 0f;
 
             if (FacingDirection != wallJumpDirection)
@@ -233,13 +240,9 @@ public class PlayerController : MonoBehaviour
     private void HandleDash()
     {
         if (isDashing)
-        {
             dashTimer = dashCoolDown;
-        }
         else
-        {
             dashTimer -= Time.deltaTime;
-        }
 
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
@@ -256,7 +259,7 @@ public class PlayerController : MonoBehaviour
                 dashDirection = -FacingDirection;
             }
 
-            targetSpeed = dashDirection * dashVelocity;
+            var targetSpeed = dashDirection * dashVelocity;
             rb.linearVelocity = new Vector2(targetSpeed, rb.linearVelocity.y);   
 
             dashPressed = false;
@@ -276,20 +279,11 @@ public class PlayerController : MonoBehaviour
         isDashing = false;
     }
 
-    private void HandleSkill()
-    {
-        //if manual skill charging is enabled and not charged
-            //HandleSkillCharging
-        //else if skill is charged
-            //execute skill
-    }
-
     private void HandleSkillCharging()
     {
         if (isChargingSkill)
-        {
             chargingSkillTimer += Time.deltaTime;
-        }
+        
         if (!isChargingSkill && skillPressed) // && is not charged && is enabled by skill
         {
             isChargingSkill = true;
@@ -313,36 +307,11 @@ public class PlayerController : MonoBehaviour
         isChargingSkill = false;
     }
     
-    private void PerformPrimaryAttack()
-    {
-        if (equipmentManager.EquippedWeapon == null)
-        {
-            Debug.LogWarning("[PlayerController] Cannot attack: No weapon equipped in PlayerEquipmentManager.");
-            return;
-        }
-
-        Debug.Log("Primary Attack executed.");
-    }
-
-    private void PerformSpecialAttack()
-    {
-        PrimaryGemBehaviourDefinition specialDef = equipmentManager.SpecialAttackDef;
-
-        if (specialDef == null)
-        {
-            Debug.LogWarning("[PlayerController] Cannot execute Special Attack: No Primary Gem equipped.");
-            return;
-        }
-
-        AttackContext context = equipmentManager.GetModifiedAttackContext();
-
-        specialDef.Execute(context);
-    }
-
     private InventoryDisplay inventoryDisplay;
 
     private void PerformInventoryAction()
     {
+        inventoryPressed = false;
         if (inventoryDisplay == null)
         {
             inventoryDisplay = Object.FindFirstObjectByType<InventoryDisplay>();
@@ -415,7 +384,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void OnSkill(InputValue value)
+    public void OnSAttack(InputValue value)
     {
         if (value.isPressed)
         {
@@ -427,6 +396,11 @@ public class PlayerController : MonoBehaviour
             skillPressed = false;
             skillReleased = true;
         }
+    }
+
+    public void OnInventory()
+    {
+        inventoryPressed = true;
     }
     
     private void GroundCheckUpdate()
@@ -441,7 +415,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.red;
+        Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         Gizmos.DrawWireSphere(wallCheck.position, wallCheckRadius);
     }

@@ -29,6 +29,70 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
+  m_Father: {fileID: 4198840556815070744}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4789660594014709810
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6444912443510829891}
+  m_Layer: 3
+  m_Name: AttackOrigin
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6444912443510829891
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4789660594014709810}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.5, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8579385553579684227}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5057755514946928993
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4198840556815070744}
+  m_Layer: 3
+  m_Name: CollisionChecks
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4198840556815070744
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5057755514946928993}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7522278443075006567}
+  - {fileID: 5048382237972281099}
   m_Father: {fileID: 8579385553579684227}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6310612592100663882
@@ -44,6 +108,7 @@ GameObject:
   - component: {fileID: 2522387617810979971}
   - component: {fileID: 4540935121380188695}
   - component: {fileID: 2301400823228123696}
+  - component: {fileID: 3547647608137716798}
   - component: {fileID: 4877809276059888347}
   - component: {fileID: 6264206310521610964}
   - component: {fileID: 7383012226346758473}
@@ -72,8 +137,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7522278443075006567}
-  - {fileID: 5048382237972281099}
+  - {fileID: 6444912443510829891}
+  - {fileID: 4198840556815070744}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5837685772460609055
@@ -189,9 +254,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 266eb14286712a94bb1449a5710a403a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  moveSpeed: 5
-  jumpVelocity: 20
-  tapJumpMultiplier: 0.5
+  moveSpeed: 8
+  jumpForce: 15
+  tapJumpMultiplier: 0.2
   normGravity: 5
   jumpGravity: 4
   fallGravity: 11
@@ -207,6 +272,24 @@ MonoBehaviour:
   wallLayer:
     serializedVersion: 2
     m_Bits: 128
+--- !u!114 &3547647608137716798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6310612592100663882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d468be84ea439ee48a3f5bc0d47f9b5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCombatController
+  attackOrigin: {fileID: 6444912443510829891}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  parryDuration: 0.5
+  attackDuration: 0.5
 --- !u!114 &4877809276059888347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -346,16 +429,16 @@ Rigidbody2D:
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: ff4b5df5eefe0e74090ff1584d7ca5bf, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_Interpolate: 1
+  m_SleepingMode: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!95 &8973568721246507005
 Animator:
@@ -408,5 +491,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8579385553579684227}
+  m_Father: {fileID: 4198840556815070744}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

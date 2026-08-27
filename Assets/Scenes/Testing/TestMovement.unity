@@ -761,6 +761,18 @@ PrefabInstance:
       propertyPath: moveSpeed
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 2301400823228123696, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
+      propertyPath: acceleration
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2301400823228123696, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
+      propertyPath: deceleration
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2301400823228123696, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
+      propertyPath: velocityPower
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 3384368436107685213, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
       propertyPath: m_Material
       value: 
