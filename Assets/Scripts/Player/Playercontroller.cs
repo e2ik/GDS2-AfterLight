@@ -2,9 +2,12 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.UI;
 using UnityEngine.Serialization;
+using Object = UnityEngine.Object;
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(PlayerInput))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
