@@ -327,6 +327,7 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogWarning("[Player] InventoryDisplay reference missing in scene!");
         }
+    }
 
     private void Flip()
     {
