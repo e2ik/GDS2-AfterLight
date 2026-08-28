@@ -56,7 +56,7 @@ Transform:
   m_GameObject: {fileID: 4789660594014709810}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0, z: 0}
+  m_LocalPosition: {x: 0.25, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -290,10 +290,13 @@ MonoBehaviour:
   attackOrigin: {fileID: 6444912443510829891}
   enemyLayer:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 2560
   critDamageMultiplier: 2
+  counterAttackMultiplier: 1.2
+  attackWidth: 1.5
   attackDuration: 0.5
   attackCoolDown: 0.2
+  counterAttackWindow: 0.5
   skillCoolDown: 0.2
 --- !u!114 &4877809276059888347
 MonoBehaviour:

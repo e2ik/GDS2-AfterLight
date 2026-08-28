@@ -35,15 +35,22 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private Transform attackOrigin;
     public LayerMask enemyLayer;
     [SerializeField] private float critDamageMultiplier = 2f;
-    [SerializeField] private float attackDuration = 0.5f;
-    [SerializeField] private float attackCoolDown = 0.2f;
 
-    private float attackRadius;
+    [SerializeField] private float counterAttackMultiplier = 1.2f;
+    [SerializeField] private float attackWidth = 1.5f;
+    [SerializeField] private float attackDuration = 0.3f;
+    [SerializeField] private float attackCoolDown = 0.2f;
+    [SerializeField] private float counterAttackWindow = 0.5f;
+
+    private Vector2 attackDir;
+    private Vector2 attackRange;
+    private Vector2 attackCenter;
     private float attackDamage;
     private float attackCrit;
     private float attackTimer;
     private bool attackPressed;
     private bool isAttacking;
+    private bool isCounterAttacking;
 
     [Header("Skill Settings")]
     [SerializeField] private float skillCoolDown = 0.2f;
@@ -58,7 +65,7 @@ public class PlayerCombatController : MonoBehaviour
 
     public bool IsAttacking => isAttacking;
     public bool IsParrying => isParrying || isParryInRecovery; // just for now we can make visual distinction later
-    // public bool IsParryInRecovery => isParryInRecovery;
+    
 
     private void Awake()
     {
@@ -131,31 +138,28 @@ public class PlayerCombatController : MonoBehaviour
 
     private void ExecuteParry()
     {
-        parryBufferTimer = 0f; // Clear buffer
+        parryBufferTimer = 0f;
 
         isParrying = true;
         isParryInRecovery = false;
         parryActiveTimer = parryActiveDuration;
-
-        // Freeze player movement while parrying
-        if (pController != null)
-        {
+        
+        if (pController != null) 
             pController.FreezeMovement(true);
-        }
 
-        // Determine Direction
-        parryDir = pController.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
-
-        if (verticalInput > 0.01f)
-        {
-            parryDir = ParryDirection.Up;
-        }
-        else if (verticalInput < -0.01f && !pController.IsGrounded)
-        {
-            parryDir = ParryDirection.Down;
-        }
+        parryDir = GetInputDirection();
 
         Debug.Log($"Parry Executed! Direction: {parryDir}");
+    }
+
+    private ParryDirection GetInputDirection()
+    {
+        ParryDirection inputDir = pController.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
+        if (verticalInput > 0.01f) 
+            inputDir = ParryDirection.Up;
+        else if (verticalInput < -0.01f && !pController.IsGrounded) 
+            inputDir = ParryDirection.Down;
+        return inputDir;
     }
 
     public bool CheckParry(ParryDirection incomingDirection)
@@ -181,7 +185,18 @@ public class PlayerCombatController : MonoBehaviour
             pController.FreezeMovement(false);
         }
 
+        //slow down surroundings for effect when successful parry/counter attacking?
+        Time.timeScale = 0.7f;
+        isCounterAttacking = true;
+        Invoke(nameof(EndCounterAttackWindow), counterAttackWindow);
+
         Debug.Log("PARRY SUCCESSFUL!");
+    }
+
+    private void EndCounterAttackWindow()
+    {
+        isCounterAttacking = false;
+        Time.timeScale = 1f;
     }
 
     public void CancelParry()
@@ -214,6 +229,8 @@ public class PlayerCombatController : MonoBehaviour
 
         if (attackPressed && attackTimer <= 0f && CanAct())
         {
+            attackPressed = false;
+            
             if (equipmentManager.EquippedWeapon == null)
             {
                 Debug.LogWarning("[PlayerCombatController] Cannot attack: No weapon equipped.");
@@ -223,26 +240,58 @@ public class PlayerCombatController : MonoBehaviour
 
             isAttacking = true;
 
-            attackRadius = equipmentManager.EquippedWeapon.BaseWeaponRange;
+            attackDir = GetInputDirection() switch
+            {
+                ParryDirection.Up => Vector2.up,
+                ParryDirection.Down => Vector2.down,
+                ParryDirection.Left => Vector2.left,
+                ParryDirection.Right => Vector2.right
+            };
+
+            attackCenter = attackOrigin.position;
+            float weaponRange = equipmentManager.EquippedWeapon.BaseWeaponRange;
+            if (attackDir == Vector2.left || attackDir == Vector2.right)
+            {
+                attackRange = new Vector2(weaponRange, attackWidth);
+                attackCenter += new Vector2(attackDir.x * (attackRange.x/2), 0f);
+            }
+            else
+            {
+                attackRange = new Vector2(attackWidth, weaponRange);
+                attackCenter += attackDir == Vector2.up 
+                    ? new Vector2(0f, attackRange.y / 2) 
+                    : new Vector2(0f, -attackRange.y / 2);
+            }
+            
             attackDamage = equipmentManager.EquippedWeapon.BaseWeaponDamage;
             attackCrit = equipmentManager.EquippedWeapon.BaseWeaponCrit;
-                
-            Collider2D[] enemiesInRange = Physics2D.OverlapCircleAll(attackOrigin.position, attackRadius, enemyLayer);
             
-            // quick fix to stop compiler from complaining
+            Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
+
             if (enemiesInRange.Length > 0)
-            {
-                float dmgAmount = attackDamage * (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f);
-                if (enemiesInRange[0].TryGetComponent(out EnemyHealth enemyHealth))
-                {
-                    enemyHealth.ApplyDamage((int)dmgAmount);
-                }
-            }
+                HitEnemy(enemiesInRange);
             
             Debug.Log("Primary Attack executed.");
             
-            attackPressed = false;
             Invoke(nameof(StopAttacking), attackDuration);
+        }
+    }
+
+    private void HitEnemy(Collider2D[] enemiesInRange)
+    {
+        float dmgAmount = attackDamage;
+        if (isCounterAttacking)
+            dmgAmount *= counterAttackMultiplier;
+        
+        dmgAmount *= (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f);
+
+        foreach (var col in enemiesInRange)
+        {
+            if (!col.CompareTag("EnemyHurtBox"))
+                continue;
+            
+            if(col.transform.root.TryGetComponent(out EnemyHealth enemyHealth)) 
+                enemyHealth.ApplyDamage((int)dmgAmount);
         }
     }
 
@@ -312,11 +361,11 @@ public class PlayerCombatController : MonoBehaviour
     }
 
     #endregion
-
+    
     private void OnDrawGizmosSelected()
     {
         if (attackOrigin == null) return;
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackOrigin.position, attackRadius);
+        Gizmos.DrawWireCube(attackCenter, attackRange);
     }
 }
