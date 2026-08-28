@@ -119,6 +119,102 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &220508947 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2803622147759670400, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
+  m_PrefabInstance: {fileID: 8370556556029834892}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34cd1348375f97c429228f4206c139b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.HurtBox
+--- !u!1 &549256740
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 549256741}
+  - component: {fileID: 549256742}
+  - component: {fileID: 549256743}
+  m_Layer: 3
+  m_Name: HurtBox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &549256741
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549256740}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2003735194}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!70 &549256742
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549256740}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0.12555647, y: -0.055244505}
+  m_Size: {x: 0.42968845, y: 1.9743158}
+  m_Direction: 0
+--- !u!114 &549256743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549256740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 378a9cd5d7349b2449ce9c2e35b829db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHurtBox
+  stats: {fileID: 0}
+  combatController: {fileID: 0}
+  Invulnerable: 0
 --- !u!1 &833315789
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,6 +353,25 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!1 &1174503942 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3861998898545050931, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
+  m_PrefabInstance: {fileID: 8370556556029834892}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1174503946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174503942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b64c839ba1fd3804bab730ccee5c28ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.AttackEvents
+  hitbox: {fileID: 1683144773}
+  hurtbox: {fileID: 220508947}
 --- !u!1 &1509861269
 GameObject:
   m_ObjectHideFlags: 0
@@ -403,9 +518,28 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8579385553579684227, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 549256741}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
+--- !u!114 &1683144773 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8255842453170479238, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
+  m_PrefabInstance: {fileID: 8370556556029834892}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe9e8143c53f5294a85d5656f0abcf20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.HitBox
+--- !u!4 &2003735194 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8579385553579684227, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
+  m_PrefabInstance: {fileID: 1585536086}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8370556556029834892
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -417,6 +551,14 @@ PrefabInstance:
     - target: {fileID: 1508996274877242485, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
       propertyPath: m_Name
       value: Enemy
+      objectReference: {fileID: 0}
+    - target: {fileID: 1508996274877242485, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3861998898545050931, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 5011396066847478461, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
       propertyPath: attacks.Array.size
@@ -478,10 +620,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 7655709470947892358, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
+      propertyPath: m_Layer
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 8116198673704997885, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
+      propertyPath: m_Layer
+      value: 11
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 1521051261008522368, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3861998898545050931, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1174503946}
   m_SourcePrefab: {fileID: 100100000, guid: 4aa6a54f181a8fb4994c8b7926ff335a, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

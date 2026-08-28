@@ -20,7 +20,6 @@ namespace Enemies
         public float Range => range;
         public float CooldownDuration => cooldownDuration;
         
-        
         public abstract void Begin(EnemyContext ctx);
         public abstract bool IsFinished(EnemyContext ctx);
     }

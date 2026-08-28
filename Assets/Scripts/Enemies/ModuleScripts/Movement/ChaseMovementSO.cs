@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 
 namespace Enemies.ModuleScripts
@@ -12,6 +13,8 @@ namespace Enemies.ModuleScripts
 
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
+            if (ctx.IsAttacking) return;
+            
             if (ctx.Target == null) return;
 
             float diff = ctx.TargetPosition.x - ctx.Self.position.x;

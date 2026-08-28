@@ -11,7 +11,7 @@ namespace Enemies
     {
         [SerializeField] private EnemyObservationSO observationSO;
         [SerializeField] private List<AttackInstance> attacks = new();
-        
+
         [SerializeField] private BehaviorGraphAgent behaviorAgent;
         [SerializeField] private Animator animator;
         [SerializeField] private Rigidbody2D rb2D;
@@ -23,7 +23,7 @@ namespace Enemies
         {
             var overrideController = new AnimatorOverrideController(animator.runtimeAnimatorController);
             animator.runtimeAnimatorController = overrideController;
-            
+
             Context = new EnemyContext()
             {
                 Self = transform,
@@ -41,10 +41,12 @@ namespace Enemies
         private void Update()
         {
             observationSO.Tick(Context, Time.deltaTime);
-            
-            transform.localScale = new Vector3(Context.FacingRight ? 1f : -1f, 1f, 1f);
+
+            if (!IsAttacking)
+                transform.localScale = new Vector3(Context.FacingRight ? 1f : -1f, 1f, 1f);
+
             animator.SetFloat("Speed", Mathf.Abs(Context.Body.linearVelocityX));
-            
+
             bool attackReady = false;
             foreach (AttackInstance attack in attacks)
             {
@@ -52,20 +54,20 @@ namespace Enemies
                 if (!IsAttacking && attack.IsValid)
                     attackReady = true;
             }
-            
+
             behaviorAgent.BlackboardReference.SetVariableValue("TargetVisible", Context.TargetVisible);
             behaviorAgent.BlackboardReference.SetVariableValue("TargetPosition", Context.TargetPosition);
             behaviorAgent.BlackboardReference.SetVariableValue("AttackReady", attackReady);
             behaviorAgent.BlackboardReference.SetVariableValue("Self", gameObject);
         }
-        
+
         public void RunMovement(EnemyMovementSO module, float dt) => module.Tick(Context, dt);
 
         public bool TrySelectAttack(out AttackInstance selected)
         {
             selected = null;
             if (IsAttacking) return false;
-            
+
             float totalWeight = attacks.Where(a => a.IsValid).Sum(a => a.Weight);
             if (totalWeight <= 0f) return false;
 
@@ -87,8 +89,17 @@ namespace Enemies
             return false;
         }
 
-        public void MarkAttackStarted() => IsAttacking = true;
-        public void MarkAttackEnded() => IsAttacking = false;
+        public void MarkAttackStarted()
+        {
+            IsAttacking = true;
+            Context.IsAttacking = true;
+        }
+
+        public void MarkAttackEnded()
+        {
+            IsAttacking = false;
+            Context.IsAttacking = false;
+        }
         
 #if UNITY_EDITOR
         private void OnValidate()

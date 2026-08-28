@@ -95,6 +95,13 @@ public class PlayerCombatController : MonoBehaviour
             Invoke(nameof(StopParrying), parryDuration);
         }
     }
+
+    public void OnParrySuccess(GameObject attacker)
+    {
+        Debug.Log($"Parried attack from {attacker.name}");
+        StopParrying();
+    }
+    
     private void StopParrying()
     {
         isParrying = false;

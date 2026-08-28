@@ -15,12 +15,19 @@ namespace Enemies.ModuleScripts.Attacks
         {
             ctx.OverrideController[placeholderClipName] = clip;
 
-            var events = ctx.Self.GetComponent<AttackEvents>();
+            var events = ctx.Self.GetComponentInChildren<AttackEvents>();
             events.CurrentDamage = damage;
+            events.CurrentParryDirection = CombatUtility.GetAttackDirection(ctx.Self.position, ctx.TargetPosition);
             
             ctx.Animator.Play(attackStateName, 0, 0f);
         }
-        public override bool IsFinished(EnemyContext ctx) => ctx.Animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f;
+
+        public override bool IsFinished(EnemyContext ctx)
+        {
+            AnimatorStateInfo state = ctx.Animator.GetCurrentAnimatorStateInfo(0);
+
+            return state.normalizedTime >= 1f && !state.IsName(attackStateName);
+        } 
         
     }
 }
