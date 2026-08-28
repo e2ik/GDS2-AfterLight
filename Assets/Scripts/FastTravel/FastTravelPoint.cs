@@ -56,7 +56,16 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
         }
     }
 
-    public bool CanInteract => canBeInteractedWith && !isInteracting;
+    public bool CanInteract
+    {
+        get
+        {
+            if (MapUIManager.Instance != null && MapUIManager.Instance.IsMapOpen)
+                return false;
+
+            return canBeInteractedWith && !isInteracting;
+        }
+    }
 
     public string InteractionPrompt => (worldMapState != null && worldMapState.IsUnlocked(nodeData))
         ? $"Travel from {nodeData.displayName}" 
@@ -78,7 +87,9 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
             anim.SetTrigger(IsInteractedHash);
         }
 
-        if (worldMapState != null && !worldMapState.IsUnlocked(nodeData))
+        bool isAlreadyUnlocked = worldMapState != null && worldMapState.IsUnlocked(nodeData);
+
+        if (!isAlreadyUnlocked && worldMapState != null)
         {
             worldMapState.UnlockNode(nodeData);
         }
@@ -88,7 +99,10 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
             SaveManager.Instance.SaveProgressAtLocation(nodeData.targetSceneName, nodeData.spawnAnchorID);
         }
 
-        yield return new WaitForSeconds(mapOpenDelay);
+        if (!isAlreadyUnlocked && mapOpenDelay > 0f)
+        {
+            yield return new WaitForSeconds(mapOpenDelay);
+        }
 
         UpdateVisualState();
 
