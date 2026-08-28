@@ -56,12 +56,15 @@ public class PlayerCombatController : MonoBehaviour
 
     [Header("Skill Settings")]
     [SerializeField] private float skillCoolDown = 0.2f;
+    private float skillBufferTimer;
+    private float skillBufferTime => attackBufferTime;
     private float skillTimer;
     private bool skillPressed;
     private bool skillReleased;
     private bool isSkilling;
 
     private float verticalInput;
+    private PlayerStats pStats;
     private PlayerController pController;
     private PlayerEquipmentManager equipmentManager;
 
@@ -71,6 +74,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void Awake()
     {
+        pStats = GetComponent<PlayerStats>();
         pController = GetComponent<PlayerController>();
         equipmentManager = GetComponent<PlayerEquipmentManager>();
     }
@@ -277,8 +281,8 @@ public class PlayerCombatController : MonoBehaviour
                     ? new Vector2(0f, attackRange.y / 2) 
                     : new Vector2(0f, -attackRange.y / 2);
             }
-            
-            attackDamage = equipmentManager.EquippedWeapon.BaseWeaponDamage;
+
+            attackDamage = equipmentManager.EquippedWeapon.BaseWeaponDamage + (pStats != null ? pStats.TotalAttack : 0);
             attackCrit = equipmentManager.EquippedWeapon.BaseWeaponCrit;
             
             Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
@@ -321,11 +325,22 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleSkill()
     {
-        if (isSkilling)
-            skillTimer = skillCoolDown;
-        else
-            skillTimer -= Time.deltaTime;
 
+        if (skillBufferTimer > 0f && CanAct())
+        {
+            ExecuteSkill();
+        }
+    }
+    
+    private void ExecuteSkill()
+    {
+        skillBufferTimer = 0f;
+
+        if (isSkilling) 
+            skillTimer = skillCoolDown;
+        else 
+            skillTimer -= Time.deltaTime;
+        
         if (skillPressed && skillTimer <= 0f && CanAct())
         {
             PrimaryGemBehaviourDefinition specialDef = equipmentManager.SpecialAttackDef;
@@ -368,6 +383,7 @@ public class PlayerCombatController : MonoBehaviour
         {
             skillPressed = true;
             skillReleased = false;
+            skillBufferTimer = skillBufferTime;
         }
         else
         {
