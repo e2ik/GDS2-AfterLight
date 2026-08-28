@@ -170,7 +170,6 @@ public class PlayerController : MonoBehaviour
         
         if (jumpPressed && coyoteTimeCounter > 0f)
         {
-            if(!isGrounded) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             jumpPressed = false;
             jumpReleased = false;
