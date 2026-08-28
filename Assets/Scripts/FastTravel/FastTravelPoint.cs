@@ -72,6 +72,8 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
         ? $"Travel from {nodeData.displayName}" 
         : $"Unlock {nodeData.displayName}";
 
+    public bool ShouldStopPlayerMovement => true;
+
     public void Interact(Player player)
     {
         if (!CanInteract) return;

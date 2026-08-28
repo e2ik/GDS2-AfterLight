@@ -43,6 +43,7 @@ public class MapUIManager : MonoBehaviour
     public void CloseMap()
     {
         IsMapOpen = false;
+        GameManager.Instance.Player.Controller.FreezeMovement(false);
         if (mapWindowAnimator != null)
             mapWindowAnimator.Hide();
     }

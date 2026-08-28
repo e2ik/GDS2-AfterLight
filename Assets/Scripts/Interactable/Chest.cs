@@ -17,6 +17,7 @@ public class Chest : MonoBehaviour, IInteractable
 
     public string InteractionPrompt => "Open Chest";
     public bool CanInteract => !isOpened;
+    public bool ShouldStopPlayerMovement => false;
 
     private void Start()
     {

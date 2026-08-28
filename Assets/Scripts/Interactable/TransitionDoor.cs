@@ -5,8 +5,10 @@ public class TransitionDoor : MonoBehaviour, IInteractable
 {
     [SerializeField] private string interactionPrompt = "Enter";
     [SerializeField] private bool canInteract = true;
+    [SerializeField] private bool shouldStopPlayer = true;
     public string InteractionPrompt => interactionPrompt;
     public bool CanInteract => canInteract;
+    public bool ShouldStopPlayerMovement => shouldStopPlayer;
 
     [SerializeField] private GameObject exteriorRoot;
     [SerializeField] private GameObject interiorRoot;
@@ -33,6 +35,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
         yield return Fade(1f, 0f);
 
         player.Controller.InputEnabled = true;
+        player.Controller.FreezeMovement(false);
         canInteract = true;
     }
 
