@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5011396066847478461}
   - component: {fileID: 3741899294261406425}
   - component: {fileID: 1037170224883650968}
-  - component: {fileID: 6183684701131280056}
+  - component: {fileID: 5891478009599138281}
   m_Layer: 9
   m_Name: Enemy
   m_TagString: Untagged
@@ -128,8 +128,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &6183684701131280056
-BoxCollider2D:
+--- !u!70 &5891478009599138281
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -162,18 +162,9 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.047068834, y: 0.010898709}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.5676875, y: 1.0033386}
-  m_EdgeRadius: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.5, y: 1}
+  m_Direction: 0
 --- !u!1 &3861998898545050931
 GameObject:
   m_ObjectHideFlags: 0
@@ -488,5 +479,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34cd1348375f97c429228f4206c139b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.HurtBox
-  health: {fileID: 3024282185278052449}
   Invulnerable: 0
