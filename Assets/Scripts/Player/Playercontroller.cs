@@ -311,8 +311,8 @@ public class PlayerController : MonoBehaviour
     private void PerformInventoryAction()
     {
         if (!inventoryPressed) return;
-        
         inventoryPressed = false;
+        
         if (inventoryDisplay == null)
         {
             inventoryDisplay = Object.FindFirstObjectByType<InventoryDisplay>();
