@@ -12,6 +12,31 @@ public class PlayerStatsDisplay : MonoBehaviour
     private PlayerStats playerStats;
     private PlayerEquipmentManager equipmentManager;
 
+    private void OnEnable()
+    {
+        if (playerStats == null)
+        {
+            Player player = Object.FindFirstObjectByType<Player>();
+            if (player != null)
+            {
+                RegisterPlayer(player);
+                return;
+            }
+        }
+
+        if (playerStats != null)
+        {
+            playerStats.OnStatsRecalculated -= RefreshStatsUI;
+            playerStats.OnStatsRecalculated += RefreshStatsUI;
+            RefreshStatsUI();
+        }
+    }
+
+    private void OnDisable()
+    {
+        UnbindEvents();
+    }
+
     private void OnDestroy()
     {
         UnbindEvents();
@@ -26,7 +51,7 @@ public class PlayerStatsDisplay : MonoBehaviour
             playerStats = player.GetComponent<PlayerStats>();
             equipmentManager = player.GetComponent<PlayerEquipmentManager>();
 
-            if (playerStats != null)
+            if (playerStats != null && gameObject.activeInHierarchy)
             {
                 playerStats.OnStatsRecalculated += RefreshStatsUI;
             }
