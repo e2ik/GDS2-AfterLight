@@ -13,14 +13,5 @@ namespace Enemies
         {
             health = transform.parent.parent.GetComponent<EnemyHealth>();
         }
-
-        private void OnTriggerEnter2D(Collider2D other)
-        {
-            if (Invulnerable) return;
- 
-            var hitbox = other.GetComponent<HitBox>();
-            if (hitbox != null && hitbox.IsActive)
-                health.ApplyDamage(hitbox.Damage);
-        }
     }
 }

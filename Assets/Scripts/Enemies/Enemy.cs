@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Behavior;
+using UnityEditor.Rendering;
 using UnityEngine;
 
 namespace Enemies
@@ -16,12 +17,24 @@ namespace Enemies
         [SerializeField] private Animator animator;
         [SerializeField] private Rigidbody2D rb2D;
         [SerializeField] private float attackCooldown;
-        
 
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
 
         private float attackCooldownTimer;
+
+        private void OnEnable()
+        {
+            Context.Health.OnDamaged += OnDamaged;
+            Context.Health.OnDeath += OnDeath;
+        }
+
+        private void OnDisable()
+        {
+            Context.Health.OnDamaged -= OnDamaged;
+            Context.Health.OnDamaged -= OnDamaged;
+        }
+
 
         private void Awake()
         {
@@ -110,6 +123,17 @@ namespace Enemies
             IsAttacking = false;
             Context.IsAttacking = false;
             attackCooldownTimer = attackCooldown;
+        }
+
+        private void OnDamaged(int amount, int currentHealth)
+        {
+            Debug.Log($"Enemy blud was damaged for {amount}. Current Health: {currentHealth}");
+        }
+
+        private void OnDeath()
+        {
+            Debug.Log($"Enemy hath died. Rip {name}");
+            gameObject.SetActive(false);
         }
         
 #if UNITY_EDITOR
