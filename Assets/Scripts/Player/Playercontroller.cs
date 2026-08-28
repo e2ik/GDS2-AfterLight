@@ -1,10 +1,5 @@
-using System;
-using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.UI;
-using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -76,23 +71,27 @@ public class PlayerController : MonoBehaviour
     private PlayerEquipmentManager equipmentManager;
 
     private InputAction moveAction;
-    
     private InputAction attackAction;
     private InputAction sAttackAction;
     private InputAction inventoryAction;
     private float horizontalInput;
     private Vector2 jumpInput;
 
-    public bool MovementEnabled { get; set; } = true;    
+    // Movement Freeze State just incase multiple systems need to freeze movement
+    // that system needs to be responsible for decrementing the count tho
+    private int movementFreezeCount = 0;
+    public bool IsMovementFrozen => movementFreezeCount > 0;
+
+    public bool InputEnabled { get; set; } = true;    
     public int FacingDirection { get; private set; } = 1;
 
-    // anim required
+    // Anim required
     public bool IsGrounded => isGrounded;
     public bool IsWallSliding => isWallSliding;
     public bool IsDashing => isDashing;
     public bool IsChargingSkill => isChargingSkill;
     public bool IsDirectionalDash { get; private set; }
-
+    private bool isParryGravityActive;
 
     private void Awake()
     {
@@ -117,7 +116,7 @@ public class PlayerController : MonoBehaviour
         {
             Flip();
         }
-        if (!MovementEnabled) return;
+        if (!InputEnabled || IsMovementFrozen) return;
 
         PerformInventoryAction();
         HandleInteract();
@@ -137,10 +136,33 @@ public class PlayerController : MonoBehaviour
         
         GravityState();
     }
+
+    public void FreezeMovement(bool freeze)
+    {
+        if (freeze)
+        {
+            movementFreezeCount++;
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+        }
+        else
+        {
+            movementFreezeCount = Mathf.Max(0, movementFreezeCount - 1);
+        }
+    }
+
+    // incase you wanna be able to parry in the air
+    public void SetParryGravity(bool active)
+    {
+        isParryGravityActive = active;
+        if (active)
+        {
+            rb.linearVelocity = Vector2.zero; // Freeze instantly in place example
+        }
+    }
     
     private bool CanMove()
     {
-        return MovementEnabled && !isWallJumping && !isDashing && !isChargingSkill;
+        return InputEnabled && !IsMovementFrozen && !isWallJumping && !isDashing && !isChargingSkill;
     }
     
     private void HandleMovement()
@@ -163,6 +185,8 @@ public class PlayerController : MonoBehaviour
     
     private void HandleJump()
     {
+        if (!CanMove()) return;
+
         if (isGrounded)
             coyoteTimeCounter = coyoteTime;
         else
@@ -190,6 +214,12 @@ public class PlayerController : MonoBehaviour
 
     private void HandleWallSlide()
     {
+        if (IsMovementFrozen)
+        {
+            isWallSliding = false;
+            return;
+        }
+
         if (onWall && !isGrounded && horizontalInput != 0)
             wallCoyoteTimer = coyoteTime;
         else
@@ -203,8 +233,11 @@ public class PlayerController : MonoBehaviour
         else
             isWallSliding = false;
     }
+
     private void HandleWallJump()
     {
+        if (IsMovementFrozen) return;
+
         if (isWallSliding)
         {
             isWallJumping = false;
@@ -219,7 +252,6 @@ public class PlayerController : MonoBehaviour
         if (jumpPressed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
-            //rb.linearVelocity = new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y);
             rb.AddForce(new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y), ForceMode2D.Impulse);
             wallJumpTimer = 0f;
 
@@ -244,18 +276,30 @@ public class PlayerController : MonoBehaviour
         else
             dashTimer -= Time.deltaTime;
 
-        if (dashPressed && isGrounded && dashTimer <= 0f)
+        if (dashPressed && dashTimer <= 0f)
         {
+            PlayerCombatController combatController = GetComponent<PlayerCombatController>();
+            if (combatController != null && combatController.IsParrying)
+            {
+                combatController.CancelParry(); // Interrupt parry
+            }
+            else if (IsMovementFrozen)
+            {
+                // If movement is frozen by another state (e.g. dialogue), block dash
+                return; 
+            }
+
+            // Proceed with normal dash execution
             isDashing = true;
             
             if (horizontalInput != 0)
             {
-                IsDirectionalDash = true; // Directional input
+                IsDirectionalDash = true;
                 dashDirection = Mathf.Sign(horizontalInput);
             } 
             else
             {
-                IsDirectionalDash = false; // Neutral input
+                IsDirectionalDash = false;
                 dashDirection = -FacingDirection;
             }
 
@@ -284,7 +328,7 @@ public class PlayerController : MonoBehaviour
         if (isChargingSkill)
             chargingSkillTimer += Time.deltaTime;
         
-        if (!isChargingSkill && skillPressed) // && is not charged && is enabled by skill
+        if (!isChargingSkill && skillPressed && !IsMovementFrozen)
         {
             isChargingSkill = true;
             rb.linearVelocityY = 0;
@@ -292,7 +336,7 @@ public class PlayerController : MonoBehaviour
             skillReleased = false;
 
             chargingSkillTimer = 0f;
-            Invoke(nameof(StopChargingSkill), chargingSkillMaxDur); //get from skills points needed to charge
+            Invoke(nameof(StopChargingSkill), chargingSkillMaxDur);
         }
         if (skillReleased && chargingSkillTimer >= chargingSkillMinDur)
         {
@@ -333,8 +377,6 @@ public class PlayerController : MonoBehaviour
     {
         if (!interactPressed) return;
         interactPressed = false;
-        
-        //interact logic
     }
 
     private void Flip()
@@ -349,9 +391,9 @@ public class PlayerController : MonoBehaviour
 
     private void GravityState()
     { 
-        if (isChargingSkill)
+        if (isParryGravityActive || isChargingSkill)
         {
-            rb.gravityScale = 0;
+            rb.gravityScale = 0f;
         }
         else if (rb.linearVelocityY > 0.1)
             rb.gravityScale = jumpGravity;
@@ -429,6 +471,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        if (groundCheck == null || wallCheck == null) return;
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         Gizmos.DrawWireSphere(wallCheck.position, wallCheckRadius);

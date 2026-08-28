@@ -68,7 +68,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void Update()
     {
-        if (!pController.MovementEnabled) return;
+        if (!pController.InputEnabled) return;
 
         HandleParry();
         HandleAttack();
@@ -101,13 +101,17 @@ public class PlayerCombatController : MonoBehaviour
             if (parryRecoveryTimer <= 0f)
             {
                 isParryInRecovery = false;
+                
+                // Unfreeze player movement when recovery finishes
+                if (pController != null)
+                    pController.FreezeMovement(false);
             }
         }
     }
 
     private bool CanAct()
     {
-        return pController.MovementEnabled 
+        return pController.InputEnabled 
             && !pController.IsWallSliding 
             && !pController.IsChargingSkill 
             && !isParrying 
@@ -127,11 +131,17 @@ public class PlayerCombatController : MonoBehaviour
 
     private void ExecuteParry()
     {
-        parryBufferTimer = 0f; // Consume buffer
+        parryBufferTimer = 0f; // Clear buffer
 
         isParrying = true;
         isParryInRecovery = false;
         parryActiveTimer = parryActiveDuration;
+
+        // Freeze player movement while parrying
+        if (pController != null)
+        {
+            pController.FreezeMovement(true);
+        }
 
         // Determine Direction
         parryDir = pController.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
@@ -160,13 +170,35 @@ public class PlayerCombatController : MonoBehaviour
 
     public void OnSuccessfulParry()
     {
-        // Cancel recovery/active timers on success so player can act immediately
+        // Cancel timers and restore movement instantly on successful parry
         isParrying = false;
         isParryInRecovery = false;
         parryActiveTimer = 0f;
         parryRecoveryTimer = 0f;
 
+        if (pController != null)
+        {
+            pController.FreezeMovement(false);
+        }
+
         Debug.Log("PARRY SUCCESSFUL!");
+    }
+
+    public void CancelParry()
+    {
+        if (!isParrying && !isParryInRecovery) return;
+
+        isParrying = false;
+        isParryInRecovery = false;
+        parryActiveTimer = 0f;
+        parryRecoveryTimer = 0f;
+
+        // Reset movement freeze and gravity state
+        if (pController != null)
+        {
+            pController.FreezeMovement(false);
+            // pController.SetParryGravity(false);
+        }
     }
 
     #endregion

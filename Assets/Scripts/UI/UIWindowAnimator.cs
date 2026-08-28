@@ -74,7 +74,7 @@ public class UIWindowAnimator : MonoBehaviour
     {
         if (freezeplayer)
         {
-            GameManager.Instance.Player.Controller.MovementEnabled = false;
+            GameManager.Instance.Player.Controller.InputEnabled = false;
         }
 
         EnsureInitialized();
@@ -93,11 +93,11 @@ public class UIWindowAnimator : MonoBehaviour
 
     public void Hide()
     {
-        if (!GameManager.Instance.Player.Controller.MovementEnabled)
+        if (!GameManager.Instance.Player.Controller.InputEnabled)
         {
-            GameManager.Instance.Player.Controller.MovementEnabled = true;
+            GameManager.Instance.Player.Controller.InputEnabled = true;
         }
-        
+
         EnsureInitialized();
 
         canvasGroup.blocksRaycasts = false;

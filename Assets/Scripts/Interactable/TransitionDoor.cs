@@ -22,7 +22,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     private IEnumerator TransitionRoutine(Player player)
     {
         canInteract = false;
-        player.Controller.MovementEnabled = false;
+        player.Controller.InputEnabled = false;
 
         yield return Fade(0f, 1f);
 
@@ -32,7 +32,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
 
         yield return Fade(1f, 0f);
 
-        player.Controller.MovementEnabled = true;
+        player.Controller.InputEnabled = true;
         canInteract = true;
     }
 
