@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4464314063223907065}
   - component: {fileID: 858690692665468543}
   - component: {fileID: 3659004850841219853}
+  - component: {fileID: 2611270284688499760}
   - component: {fileID: 5986202733250459176}
   - component: {fileID: 5499233983169772823}
   m_Layer: 0
@@ -62,7 +63,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: b0d90b5219f95224ba6ffe30774f0e19, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -110,6 +111,21 @@ MonoBehaviour:
   nodeData: {fileID: 11400000, guid: 6000679fb26e198498949b38caf1ae56, type: 2}
   worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
   canBeInteractedWith: 1
+  mapOpenDelay: 0.5
+--- !u!114 &2611270284688499760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4061237539069818470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1188833748a44a946825f148e641e29a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteOutlineToggle
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineThickness: 1
 --- !u!61 &5986202733250459176
 BoxCollider2D:
   m_ObjectHideFlags: 0

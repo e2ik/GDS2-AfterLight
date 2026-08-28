@@ -10,43 +10,55 @@ public enum ParryDirection
     Left,
     Right
 }
+
 public class PlayerCombatController : MonoBehaviour
 {
-    [Header("PlayerCombat")]
-    [SerializeField] private Transform attackOrigin;
-    private float attackRadius;
-    public LayerMask enemyLayer;
+    [Header("Parry Settings")]
+    // actual parry window duration
+    [SerializeField] private float parryActiveDuration = 0.2f;
 
-    private float attackDamage;
-    private float attackCrit; 
-    [SerializeField] private float critDamageMultiplier = 2f;
-    
-    private bool parryPressed;
-    private bool isParrying;
-    [SerializeField] private float parryDuration = 0.5f;
-    private float parryTimer;
-    private float parryCoolDown = 0.2f;
+    // if we want to implement this to parry bad timing
+    [SerializeField] private float parryRecoveryDuration = 0.3f;
+
+    // how long a parry button press stays queued in memory if pressed early
+    [SerializeField] private float parryBufferTime = 0.15f;
+
+    private float parryActiveTimer;
+    private float parryRecoveryTimer;
+    private float parryBufferTimer;
+
+    private bool isParrying;           // True during Active Window only
+    private bool isParryInRecovery;    // True during Recovery Window only
     private ParryDirection parryDir;
-    
+
+    [Header("Attack Settings")]
+    [SerializeField] private Transform attackOrigin;
+    public LayerMask enemyLayer;
+    [SerializeField] private float critDamageMultiplier = 2f;
+    [SerializeField] private float attackDuration = 0.5f;
+    [SerializeField] private float attackCoolDown = 0.2f;
+
+    private float attackRadius;
+    private float attackDamage;
+    private float attackCrit;
+    private float attackTimer;
     private bool attackPressed;
     private bool isAttacking;
-    [SerializeField] private float attackDuration = 0.5f;
-    private float attackTimer;
-    private float attackCoolDown = 0.2f;
-    
+
+    [Header("Skill Settings")]
+    [SerializeField] private float skillCoolDown = 0.2f;
+    private float skillTimer;
     private bool skillPressed;
     private bool skillReleased;
     private bool isSkilling;
-    private float skillTimer;
-    private float skillCoolDown = 0.2f;
 
     private float verticalInput;
-
     private PlayerController pController;
     private PlayerEquipmentManager equipmentManager;
 
     public bool IsAttacking => isAttacking;
-    public bool IsParrying => isParrying;
+    public bool IsParrying => isParrying || isParryInRecovery; // just for now we can make visual distinction later
+    // public bool IsParryInRecovery => isParryInRecovery;
 
     private void Awake()
     {
@@ -56,57 +68,143 @@ public class PlayerCombatController : MonoBehaviour
 
     private void Update()
     {
-        if (!pController.MovementEnabled) return;
+        if (!pController.InputEnabled) return;
+
         HandleParry();
         HandleAttack();
         HandleSkill();
+        UpdateTimers();
     }
 
-    private bool CanAttack()
+    private void UpdateTimers()
     {
-        return pController.MovementEnabled && !pController.IsWallSliding && !pController.IsChargingSkill;
-    }
-    
-    public bool CheckParry(ParryDirection parryDirection)
-    {
-        return isParrying && parryDir == parryDirection;
-    }
-    
-    private void HandleParry()
-    {
+        // Countdown Input Buffer
+        if (parryBufferTimer > 0f)
+            parryBufferTimer -= Time.deltaTime;
+
+        // Active Parry Window
         if (isParrying)
-            parryTimer = parryCoolDown;
-        else
-            parryTimer -= Time.deltaTime;
-
-        if (parryPressed && parryTimer <= 0f && CanAttack())
         {
-            isParrying = true;
-            parryDir = pController.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
-            if (verticalInput != 0)
+            parryActiveTimer -= Time.deltaTime;
+            if (parryActiveTimer <= 0f)
             {
-                if (verticalInput > 0.01f)
-                    parryDir = ParryDirection.Up;
-                else if (verticalInput < 0.01f && !pController.IsGrounded)
-                    parryDir = ParryDirection.Down;
+                isParrying = false;
+                isParryInRecovery = true;
+                parryRecoveryTimer = parryRecoveryDuration;
             }
+        }
 
-            parryPressed = false;
-            Invoke(nameof(StopParrying), parryDuration);
+        // Parry Recovery Window
+        if (isParryInRecovery)
+        {
+            parryRecoveryTimer -= Time.deltaTime;
+            if (parryRecoveryTimer <= 0f)
+            {
+                isParryInRecovery = false;
+                
+                // Unfreeze player movement when recovery finishes
+                if (pController != null)
+                    pController.FreezeMovement(false);
+            }
         }
     }
 
-    public void OnParrySuccess(GameObject attacker)
+    private bool CanAct()
     {
-        Debug.Log($"Parried attack from {attacker.name}");
-        StopParrying();
+        return pController.InputEnabled 
+            && !pController.IsWallSliding 
+            && !pController.IsChargingSkill 
+            && !isParrying 
+            && !isParryInRecovery 
+            && !isAttacking;
     }
-    
-    private void StopParrying()
+
+    #region Parry Logic
+
+    private void HandleParry()
     {
+        if (parryBufferTimer > 0f && CanAct())
+        {
+            ExecuteParry();
+        }
+    }
+
+    private void ExecuteParry()
+    {
+        parryBufferTimer = 0f; // Clear buffer
+
+        isParrying = true;
+        isParryInRecovery = false;
+        parryActiveTimer = parryActiveDuration;
+
+        // Freeze player movement while parrying
+        if (pController != null)
+        {
+            pController.FreezeMovement(true);
+        }
+
+        // Determine Direction
+        parryDir = pController.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
+
+        if (verticalInput > 0.01f)
+        {
+            parryDir = ParryDirection.Up;
+        }
+        else if (verticalInput < -0.01f && !pController.IsGrounded)
+        {
+            parryDir = ParryDirection.Down;
+        }
+
+        Debug.Log($"Parry Executed! Direction: {parryDir}");
+    }
+
+    public bool CheckParry(ParryDirection incomingDirection)
+    {
+        if (isParrying && parryDir == incomingDirection)
+        {
+            OnSuccessfulParry();
+            return true;
+        }
+        return false;
+    }
+
+    public void OnSuccessfulParry()
+    {
+        // Cancel timers and restore movement instantly on successful parry
         isParrying = false;
+        isParryInRecovery = false;
+        parryActiveTimer = 0f;
+        parryRecoveryTimer = 0f;
+
+        if (pController != null)
+        {
+            pController.FreezeMovement(false);
+        }
+
+        Debug.Log("PARRY SUCCESSFUL!");
     }
-    
+
+    public void CancelParry()
+    {
+        if (!isParrying && !isParryInRecovery) return;
+
+        isParrying = false;
+        isParryInRecovery = false;
+        parryActiveTimer = 0f;
+        parryRecoveryTimer = 0f;
+
+        // Reset movement freeze and gravity state
+        if (pController != null)
+        {
+            pController.FreezeMovement(false);
+            // pController.SetParryGravity(false);
+        }
+    }
+
+    #endregion
+
+    #region Attack Logic
+
     private void HandleAttack()
     {
         if (isAttacking)
@@ -114,15 +212,16 @@ public class PlayerCombatController : MonoBehaviour
         else
             attackTimer -= Time.deltaTime;
 
-        if (attackPressed && attackTimer <= 0f && CanAttack())
+        if (attackPressed && attackTimer <= 0f && CanAct())
         {
-            isAttacking = true;
-            
             if (equipmentManager.EquippedWeapon == null)
             {
-                Debug.LogWarning("[PlayerController] Cannot attack: No weapon equipped in PlayerEquipmentManager.");
+                Debug.LogWarning("[PlayerCombatController] Cannot attack: No weapon equipped.");
+                attackPressed = false;
                 return;
             }
+
+            isAttacking = true;
 
             attackRadius = equipmentManager.EquippedWeapon.BaseWeaponRange;
             attackDamage = equipmentManager.EquippedWeapon.BaseWeaponDamage;
@@ -130,13 +229,20 @@ public class PlayerCombatController : MonoBehaviour
                 
             Collider2D[] enemiesInRange = Physics2D.OverlapCircleAll(attackOrigin.position, attackRadius, enemyLayer);
             
-            float dmgAmount = attackDamage * (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f);
-            enemiesInRange[0].GetComponent<EnemyHealth>().ApplyDamage((int)dmgAmount);
+            // quick fix to stop compiler from complaining
+            if (enemiesInRange.Length > 0)
+            {
+                float dmgAmount = attackDamage * (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f);
+                if (enemiesInRange[0].TryGetComponent(out EnemyHealth enemyHealth))
+                {
+                    enemyHealth.ApplyDamage((int)dmgAmount);
+                }
+            }
             
             Debug.Log("Primary Attack executed.");
             
             attackPressed = false;
-            Invoke(nameof(StopAttacking), attackDuration); //probably trigger this though animation events
+            Invoke(nameof(StopAttacking), attackDuration);
         }
     }
 
@@ -144,7 +250,11 @@ public class PlayerCombatController : MonoBehaviour
     {
         isAttacking = false;
     }
-    
+
+    #endregion
+
+    #region Skill Logic
+
     private void HandleSkill()
     {
         if (isSkilling)
@@ -152,22 +262,26 @@ public class PlayerCombatController : MonoBehaviour
         else
             skillTimer -= Time.deltaTime;
 
-        if (skillPressed && skillTimer <= 0f && CanAttack())
+        if (skillPressed && skillTimer <= 0f && CanAct())
         {
             PrimaryGemBehaviourDefinition specialDef = equipmentManager.SpecialAttackDef;
 
             if (specialDef == null)
             {
-                Debug.LogWarning("[PlayerController] Cannot execute Special Attack: No Primary Gem equipped.");
+                Debug.LogWarning("[PlayerCombatController] Cannot execute Special Attack: No Primary Gem equipped.");
+                skillPressed = false;
                 return;
             }
 
             AttackContext context = equipmentManager.GetModifiedAttackContext();
-
             specialDef.Execute(context);
         }
     }
-    
+
+    #endregion
+
+    #region Input Handlers
+
     public void OnMove(InputValue value)
     {
         verticalInput = value.Get<Vector2>().y;
@@ -175,14 +289,14 @@ public class PlayerCombatController : MonoBehaviour
 
     public void OnParry()
     {
-        parryPressed = true;
+        parryBufferTimer = parryBufferTime;
     }
-    
+
     public void OnAttack()
     {
         attackPressed = true;
     }
-    
+
     public void OnSAttack(InputValue value)
     {
         if (value.isPressed)
@@ -197,8 +311,11 @@ public class PlayerCombatController : MonoBehaviour
         }
     }
 
+    #endregion
+
     private void OnDrawGizmosSelected()
     {
+        if (attackOrigin == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(attackOrigin.position, attackRadius);
     }

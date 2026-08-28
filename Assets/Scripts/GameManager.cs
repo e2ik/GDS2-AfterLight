@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
 
     private GameObject _playerInstance;
     private Player player;
+    public Player Player { get => player; }
 
     private void Awake()
     {

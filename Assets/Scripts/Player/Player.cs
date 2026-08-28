@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerStats))]
 [RequireComponent(typeof(PlayerInventoryManager))]
 [RequireComponent(typeof(PlayerEquipmentManager))]
+[RequireComponent(typeof(PlayerCombatController))]
 public class Player : MonoBehaviour
 {
     public PlayerInput Input { get; private set; }
@@ -15,6 +16,7 @@ public class Player : MonoBehaviour
     public PlayerStats Stats { get; private set; }
     public PlayerInventoryManager Inventory { get; private set; }
     public PlayerEquipmentManager Equipment { get; private set; }
+    public PlayerCombatController CombatController { get; private set; }
 
     private void Awake()
     {
@@ -24,5 +26,6 @@ public class Player : MonoBehaviour
         Stats = GetComponent<PlayerStats>();
         Inventory = GetComponent<PlayerInventoryManager>();
         Equipment = GetComponent<PlayerEquipmentManager>();
+        CombatController = GetComponent<PlayerCombatController>();
     }
 }
