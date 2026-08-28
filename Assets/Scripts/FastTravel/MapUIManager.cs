@@ -37,7 +37,7 @@ public class MapUIManager : MonoBehaviour
         RefreshMapNodes();
         
         if (mapWindowAnimator != null)
-            mapWindowAnimator.Show();
+            mapWindowAnimator.Show(true);
     }
 
     public void CloseMap()

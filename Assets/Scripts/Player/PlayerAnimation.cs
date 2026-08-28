@@ -14,6 +14,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsDashingHash = Animator.StringToHash("isDashing");
     private static readonly int IsDirectionalDashHash = Animator.StringToHash("isDirectionalDash");
     private static readonly int IsChargingSkillHash = Animator.StringToHash("isChargingSkill");
+    private static readonly int IsParryingHash = Animator.StringToHash("isParrying");
 
     private void Awake()
     {
@@ -37,5 +38,6 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetBool(IsDashingHash, player.Controller.IsDashing);
         animator.SetBool(IsDirectionalDashHash, player.Controller.IsDirectionalDash);
         animator.SetBool(IsChargingSkillHash, player.Controller.IsChargingSkill);
+        animator.SetBool(IsParryingHash, player.CombatController.IsParrying);
     }
 }

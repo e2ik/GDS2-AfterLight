@@ -31,6 +31,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
             worldMapState.OnStateLoaded += UpdateVisualState;
             worldMapState.OnStateReset += UpdateVisualState;
         }
+        UpdateVisualState();
     }
 
     private void OnDisable()
