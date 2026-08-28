@@ -28,6 +28,14 @@ public class MapUIManager : MonoBehaviour
 
         if (closeButton != null)
             closeButton.onClick.AddListener(CloseMap);
+
+        // Instantly hide the map UI when the scene boots up
+        if (mapWindowAnimator != null)
+        {
+            mapWindowAnimator.InstantHide();
+        }
+        
+        IsMapOpen = false;
     }
 
     public void OpenMap(FastTravelNodeSO originNode)
@@ -43,7 +51,12 @@ public class MapUIManager : MonoBehaviour
     public void CloseMap()
     {
         IsMapOpen = false;
-        GameManager.Instance.Player.Controller.FreezeMovement(false);
+
+        if (GameManager.Instance?.Player?.Controller != null)
+        {
+            GameManager.Instance.Player.Controller.FreezeMovement(false);
+        }
+
         if (mapWindowAnimator != null)
             mapWindowAnimator.Hide();
     }

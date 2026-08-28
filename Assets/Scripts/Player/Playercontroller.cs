@@ -403,6 +403,8 @@ public class PlayerController : MonoBehaviour
             rb.gravityScale = normGravity;
     }
 
+    #region Input System Callbacks
+
     public void OnMove()
     {
         horizontalInput = moveAction.ReadValue<Vector2>().x;
@@ -454,11 +456,22 @@ public class PlayerController : MonoBehaviour
     {
         interactPressed = true;
     }
+
     public void OnInventory()
     {
         inventoryPressed = true;
     }
-    
+
+    public void OnPause(InputValue value)
+    {
+        if (value.isPressed && GameManager.Instance != null)
+        {
+            GameManager.Instance.TogglePause();
+        }
+    }
+
+    #endregion
+
     private void GroundCheckUpdate()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);

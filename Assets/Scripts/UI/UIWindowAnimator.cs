@@ -72,7 +72,7 @@ public class UIWindowAnimator : MonoBehaviour
 
     public void Show(bool freezeplayer = false)
     {
-        if (freezeplayer)
+        if (freezeplayer && GameManager.Instance?.Player?.Controller != null)
         {
             GameManager.Instance.Player.Controller.InputEnabled = false;
         }
@@ -93,7 +93,7 @@ public class UIWindowAnimator : MonoBehaviour
 
     public void Hide()
     {
-        if (!GameManager.Instance.Player.Controller.InputEnabled)
+        if (GameManager.Instance?.Player?.Controller != null && !GameManager.Instance.Player.Controller.InputEnabled)
         {
             GameManager.Instance.Player.Controller.InputEnabled = true;
         }
@@ -126,7 +126,7 @@ public class UIWindowAnimator : MonoBehaviour
 
         while (time < duration)
         {
-            time += Time.deltaTime;
+            time += Time.unscaledDeltaTime;
             float t = easeCurve.Evaluate(time / duration);
 
             if (useSlide)
