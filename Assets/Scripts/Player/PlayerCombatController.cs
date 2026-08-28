@@ -45,6 +45,9 @@ public class PlayerCombatController : MonoBehaviour
     private PlayerController pController;
     private PlayerEquipmentManager equipmentManager;
 
+    public bool IsAttacking => isAttacking;
+    public bool IsParrying => isParrying;
+
     private void Awake()
     {
         pController = GetComponent<PlayerController>();
@@ -130,7 +133,7 @@ public class PlayerCombatController : MonoBehaviour
         }
     }
 
-    private void StopAttacking()
+    public void StopAttacking()
     {
         isAttacking = false;
     }
