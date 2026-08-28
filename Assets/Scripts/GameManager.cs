@@ -50,11 +50,6 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayer();
 
-        if (worldMapState != null)
-        {
-            worldMapState.ResetState();
-        }
-
         ClearPlayerInventory();
         ClearPlayerEquipment();
 
@@ -65,6 +60,13 @@ public class GameManager : MonoBehaviour
         }
 
         yield return LoadSceneAdditive(defaultStartSceneName);
+        yield return null;
+
+        if (worldMapState != null)
+        {
+            worldMapState.ResetState();
+        }
+
         PlacePlayerAtAnchor(defaultSpawnAnchorID);
     }
 
@@ -74,11 +76,6 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayer();
 
-        if (worldMapState != null)
-        {
-            worldMapState.ResetState();
-        }
-
         SaveManager targetSaveManager = GetSaveManager();
         SaveData data = targetSaveManager != null ? targetSaveManager.LoadGame() : null;
 
@@ -86,6 +83,9 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("[GameManager] No save data found — falling back to new game.");
             yield return LoadSceneAdditive(defaultStartSceneName);
+            yield return null;
+            
+            if (worldMapState != null) worldMapState.ResetState();
             PlacePlayerAtAnchor(defaultSpawnAnchorID);
             yield break;
         }
@@ -102,10 +102,15 @@ public class GameManager : MonoBehaviour
             : defaultSpawnAnchorID;
 
         yield return LoadSceneAdditive(sceneToLoad);
+        yield return null;
 
         if (worldMapState != null && data.progress != null && data.progress.unlockedFastTravelIDs != null)
         {
             worldMapState.LoadFromSaveIDs(data.progress.unlockedFastTravelIDs);
+        }
+        else if (worldMapState != null)
+        {
+            worldMapState.ResetState();
         }
 
         PlacePlayerAtAnchor(anchorToUse);
