@@ -11,6 +11,26 @@ public class EquipmentDisplay : MonoBehaviour
 
     private PlayerEquipmentManager equipmentManager;
 
+    private void OnEnable()
+    {
+        if (equipmentManager == null)
+        {
+            equipmentManager = Object.FindFirstObjectByType<PlayerEquipmentManager>();
+        }
+
+        if (equipmentManager != null)
+        {
+            equipmentManager.OnEquipmentChanged -= RefreshEquipmentUI;
+            equipmentManager.OnEquipmentChanged += RefreshEquipmentUI;
+            RefreshEquipmentUI();
+        }
+    }
+
+    private void OnDisable()
+    {
+        UnbindManager();
+    }
+
     private void OnDestroy()
     {
         UnbindManager();
@@ -22,7 +42,7 @@ public class EquipmentDisplay : MonoBehaviour
 
         equipmentManager = manager;
 
-        if (equipmentManager != null)
+        if (equipmentManager != null && gameObject.activeInHierarchy)
         {
             equipmentManager.OnEquipmentChanged += RefreshEquipmentUI;
             RefreshEquipmentUI();
