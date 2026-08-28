@@ -21,6 +21,8 @@ public class PlayerHurtBox : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (Invulnerable) return;
+        
+        //Debug.Log($"Player Hurt Box triggered by: {other.name}");
 
         var hitbox = other.GetComponent<HitBox>();
         if (hitbox == null || !hitbox.IsActive) return;
@@ -28,10 +30,7 @@ public class PlayerHurtBox : MonoBehaviour
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
 
         if (parryWindowOpen && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
-        {
-            combatController.OnParrySuccess(hitbox.gameObject);
             return;
-        } 
         
         stats.TakeDamage(hitbox.Damage);
     }

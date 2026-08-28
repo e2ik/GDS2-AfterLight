@@ -11,7 +11,8 @@ namespace Enemies
         public ParryDirection CurrentParryDirection { get; set; }
         public bool ParryWindowOpen { get; private set; }
         
-        public void EnableHitbox() => hitbox.Activate(CurrentDamage, CurrentParryDirection);
+        public void EnableHitbox() => hitbox.Enable(CurrentDamage, CurrentParryDirection);
+        public void DisableHitbox() => hitbox.Disable();
  
         public void EnableIFrames() => hurtbox.Invulnerable = true;
         public void DisableIFrames() => hurtbox.Invulnerable = false;

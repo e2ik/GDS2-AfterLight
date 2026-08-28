@@ -15,9 +15,13 @@ namespace Enemies
         [SerializeField] private BehaviorGraphAgent behaviorAgent;
         [SerializeField] private Animator animator;
         [SerializeField] private Rigidbody2D rb2D;
+        [SerializeField] private float attackCooldown;
+        
 
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
+
+        private float attackCooldownTimer;
 
         private void Awake()
         {
@@ -47,12 +51,18 @@ namespace Enemies
 
             animator.SetFloat("Speed", Mathf.Abs(Context.Body.linearVelocityX));
 
+            attackCooldownTimer = Mathf.Max(0, attackCooldownTimer - Time.deltaTime);
+            
             bool attackReady = false;
-            foreach (AttackInstance attack in attacks)
+
+            if (attackCooldownTimer <= 0)
             {
-                attack.Tick(Context, Time.deltaTime);
-                if (!IsAttacking && attack.IsValid)
-                    attackReady = true;
+                foreach (AttackInstance attack in attacks)
+                {
+                    attack.Tick(Context, Time.deltaTime);
+                    if (!IsAttacking && attack.IsValid)
+                        attackReady = true;
+                }
             }
 
             behaviorAgent.BlackboardReference.SetVariableValue("TargetVisible", Context.TargetVisible);
@@ -99,6 +109,7 @@ namespace Enemies
         {
             IsAttacking = false;
             Context.IsAttacking = false;
+            attackCooldownTimer = attackCooldown;
         }
         
 #if UNITY_EDITOR

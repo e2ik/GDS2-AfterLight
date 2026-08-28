@@ -30,7 +30,6 @@ public partial class AttackAction : Action
         
         if (!_enemy.TrySelectAttack(out _selected))
         {
-            Debug.LogWarning("AttackAction: no valid attack available.");
             return Status.Failure;
         }
         

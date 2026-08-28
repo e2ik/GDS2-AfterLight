@@ -23,7 +23,6 @@ namespace Enemies.ModuleScripts.Observation
             if (hit == null)
             {
                 ctx.TargetVisible = false;
-                Debug.Log("Target Visible: " + ctx.TargetVisible);
                 return;
             }
 
@@ -33,8 +32,6 @@ namespace Enemies.ModuleScripts.Observation
             ctx.TargetVisible = !losBlocked;
             ctx.Target = hit.transform;
             ctx.TargetPosition = hit.transform.position;
-            
-            Debug.Log("Target Visible: " + ctx.TargetVisible);
         }
         
         public void DebugDrawOverlapBox(Vector2 center, Vector2 size, float angle, Color color)

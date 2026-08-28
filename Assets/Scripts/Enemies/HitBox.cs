@@ -19,10 +19,14 @@ namespace Enemies
             col.enabled = false;
         }
 
-        public void Activate(int damage, ParryDirection parryDirection)
+        public void Enable(int damage, ParryDirection parryDirection)
         {
             Damage = damage;
+            col.enabled = true;
             ParryDirection = parryDirection;
         }
+
+        public void Disable() => col.enabled = false;
+        
     }
 }
