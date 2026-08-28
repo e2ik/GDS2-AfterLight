@@ -6,12 +6,12 @@ namespace Enemies
     [RequireComponent(typeof(Collider2D))]
     public class HurtBox : MonoBehaviour
     {
-        [SerializeField] private EnemyHealth health;
+        public EnemyHealth Health { get; private set; }
         public bool Invulnerable;
 
         private void Start()
         {
-            health = transform.parent.parent.GetComponent<EnemyHealth>();
+            Health = transform.parent.parent.GetComponent<EnemyHealth>();
         }
     }
 }
