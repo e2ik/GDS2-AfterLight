@@ -42,6 +42,8 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float attackCoolDown = 0.2f;
     [SerializeField] private float counterAttackWindow = 0.5f;
 
+    private float attackBufferTimer;
+    private float attackBufferTime => parryBufferTime;
     private Vector2 attackDir;
     private Vector2 attackRange;
     private Vector2 attackCenter;
@@ -88,6 +90,8 @@ public class PlayerCombatController : MonoBehaviour
         // Countdown Input Buffer
         if (parryBufferTimer > 0f)
             parryBufferTimer -= Time.deltaTime;
+        if (attackBufferTimer > 0f)
+            attackBufferTimer -= Time.deltaTime;
 
         // Active Parry Window
         if (isParrying)
@@ -186,7 +190,7 @@ public class PlayerCombatController : MonoBehaviour
         }
 
         //slow down surroundings for effect when successful parry/counter attacking?
-        Time.timeScale = 0.7f;
+        //Time.timeScale = 0.7f;
         isCounterAttacking = true;
         Invoke(nameof(EndCounterAttackWindow), counterAttackWindow);
 
@@ -196,7 +200,7 @@ public class PlayerCombatController : MonoBehaviour
     private void EndCounterAttackWindow()
     {
         isCounterAttacking = false;
-        Time.timeScale = 1f;
+        //Time.timeScale = 1f;
     }
 
     public void CancelParry()
@@ -222,6 +226,17 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleAttack()
     {
+        
+        if (attackBufferTimer > 0f && CanAct())
+        {
+            ExecuteAttack();
+        }
+    }
+
+    private void ExecuteAttack()
+    {
+        attackBufferTimer = 0f;
+        
         if (isAttacking)
             attackTimer = attackCoolDown;
         else
@@ -344,6 +359,7 @@ public class PlayerCombatController : MonoBehaviour
     public void OnAttack()
     {
         attackPressed = true;
+        attackBufferTimer = attackBufferTime;
     }
 
     public void OnSAttack(InputValue value)
