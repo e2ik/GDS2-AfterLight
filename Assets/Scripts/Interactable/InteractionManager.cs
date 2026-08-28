@@ -57,6 +57,12 @@ public class InteractionManager : MonoBehaviour
 
         if (currentInteractable != null && interactAction.WasPressedThisFrame())
         {
+            if (currentInteractable.ShouldStopPlayerMovement)
+            {
+                // Freeze movement using your built-in counter system
+                playerController.FreezeMovement(true);
+            }
+
             currentInteractable.Interact(player);
         }
     }

@@ -14,6 +14,8 @@ public class NPCDialogue : MonoBehaviour, IInteractable
 
     public string InteractionPrompt => interactionPrompt;
 
+    public bool ShouldStopPlayerMovement => false;
+
     public bool CanInteract
     {
         get

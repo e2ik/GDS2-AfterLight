@@ -7,10 +7,22 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    public enum GameState
+    {
+        Title,
+        Game,
+        Pause
+    }
+
+    [Header("State Debug")]
+    [SerializeField] private GameState currentState = GameState.Title;
+    public GameState CurrentState => currentState;
+
     [Header("Scene Names")]
     [SerializeField] private string masterSceneName = "WorldMaster";
     [SerializeField] private string defaultStartSceneName = "StartingArea";
     [SerializeField] private string defaultSpawnAnchorID = "DefaultSpawn";
+    [SerializeField] private string titleSceneName = "TitleScene";
 
     [Header("Player")]
     [SerializeField] private GameObject playerPrefab;
@@ -21,10 +33,18 @@ public class GameManager : MonoBehaviour
 
     private GameObject _playerInstance;
     private Player player;
+    public Player Player { get => player; }
+
+    private UIManager uiManager;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this) 
+        { 
+            Destroy(gameObject); 
+            return; 
+        }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
@@ -33,6 +53,76 @@ public class GameManager : MonoBehaviour
     {
         return saveManager != null ? saveManager : SaveManager.Instance;
     }
+
+    private UIManager GetUIManager()
+    {
+        if (uiManager == null)
+        {
+            uiManager = FindFirstObjectByType<UIManager>();
+        }
+        return uiManager;
+    }
+
+    #region State Machine Logic
+
+    public void TogglePause()
+    {
+        if (currentState == GameState.Game)
+        {
+            SetState(GameState.Pause);
+        }
+        else if (currentState == GameState.Pause)
+        {
+            SetState(GameState.Game);
+        }
+    }
+
+    private void SetState(GameState newState)
+    {
+        if (currentState == newState) return;
+
+        // Disallow transitioning directly between Title and Pause
+        if ((currentState == GameState.Title && newState == GameState.Pause) ||
+            (currentState == GameState.Pause && newState == GameState.Title))
+        {
+            Debug.LogWarning($"[GameManager] Invalid state transition from {currentState} to {newState}");
+            return;
+        }
+
+        currentState = newState;
+
+        switch (currentState)
+        {
+            case GameState.Title:
+                Time.timeScale = 1f;
+                GetUIManager()?.SetPauseCanvasActive(false);
+                break;
+
+            case GameState.Game:
+                Time.timeScale = 1f;
+                GetUIManager()?.SetPauseCanvasActive(false);
+
+                if (player != null && player.Controller != null)
+                {
+                    player.Controller.FreezeMovement(false);
+                }
+                break;
+
+            case GameState.Pause:
+                Time.timeScale = 0f;
+                GetUIManager()?.SetPauseCanvasActive(true);
+
+                if (player != null && player.Controller != null)
+                {
+                    player.Controller.FreezeMovement(true);
+                }
+                break;
+        }
+    }
+
+    #endregion
+
+    #region Flow Routines
 
     public void NewGame()
     {
@@ -44,16 +134,16 @@ public class GameManager : MonoBehaviour
         StartCoroutine(LoadGameRoutine());
     }
 
+    public void ReturnToTitle()
+    {
+        StartCoroutine(ReturnToTitleRoutine());
+    }
+
     private IEnumerator NewGameRoutine()
     {
         yield return LoadMasterSceneSingle();
 
         SpawnPlayer();
-
-        if (worldMapState != null)
-        {
-            worldMapState.ResetState();
-        }
 
         ClearPlayerInventory();
         ClearPlayerEquipment();
@@ -65,7 +155,15 @@ public class GameManager : MonoBehaviour
         }
 
         yield return LoadSceneAdditive(defaultStartSceneName);
+        yield return null;
+
+        if (worldMapState != null)
+        {
+            worldMapState.ResetState();
+        }
+
         PlacePlayerAtAnchor(defaultSpawnAnchorID);
+        SetState(GameState.Game);
     }
 
     private IEnumerator LoadGameRoutine()
@@ -74,11 +172,6 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayer();
 
-        if (worldMapState != null)
-        {
-            worldMapState.ResetState();
-        }
-
         SaveManager targetSaveManager = GetSaveManager();
         SaveData data = targetSaveManager != null ? targetSaveManager.LoadGame() : null;
 
@@ -86,7 +179,12 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("[GameManager] No save data found — falling back to new game.");
             yield return LoadSceneAdditive(defaultStartSceneName);
+            yield return null;
+            
+            if (worldMapState != null) worldMapState.ResetState();
             PlacePlayerAtAnchor(defaultSpawnAnchorID);
+
+            SetState(GameState.Game);
             yield break;
         }
 
@@ -102,14 +200,42 @@ public class GameManager : MonoBehaviour
             : defaultSpawnAnchorID;
 
         yield return LoadSceneAdditive(sceneToLoad);
+        yield return null;
 
         if (worldMapState != null && data.progress != null && data.progress.unlockedFastTravelIDs != null)
         {
             worldMapState.LoadFromSaveIDs(data.progress.unlockedFastTravelIDs);
         }
+        else if (worldMapState != null)
+        {
+            worldMapState.ResetState();
+        }
 
         PlacePlayerAtAnchor(anchorToUse);
+        SetState(GameState.Game);
     }
+
+    private IEnumerator ReturnToTitleRoutine()
+    {
+        SetState(GameState.Title);
+
+        if (_playerInstance != null)
+        {
+            Destroy(_playerInstance);
+            _playerInstance = null;
+            player = null;
+        }
+
+        AsyncOperation loadTitle = SceneManager.LoadSceneAsync(titleSceneName, LoadSceneMode.Single);
+        while (!loadTitle.isDone)
+        {
+            yield return null;
+        }
+    }
+
+    #endregion
+
+    #region Scene & Player Management
 
     private IEnumerator LoadMasterSceneSingle()
     {
@@ -118,6 +244,7 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
+        uiManager = FindFirstObjectByType<UIManager>();
     }
 
     private IEnumerator LoadSceneAdditive(string sceneName)
@@ -193,6 +320,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Inventory & Equipment Data Handling
+
     private void LoadPlayerInventory(InventorySaveData inventoryData)
     {
         if (_playerInstance == null) return;
@@ -214,29 +345,31 @@ public class GameManager : MonoBehaviour
 
     private void LoadPlayerEquipment(SaveData data)
     {
-        Player player = FindFirstObjectByType<Player>();
-        if (player == null || player.Equipment == null) return;
+        Player p = FindFirstObjectByType<Player>();
+        if (p == null || p.Equipment == null) return;
 
-        player.Equipment.LoadEquippedGearSaveData(data.equippedGear);
+        p.Equipment.LoadEquippedGearSaveData(data.equippedGear);
 
         if (data.equippedSecondaryGem != null && !string.IsNullOrEmpty(data.equippedSecondaryGem.InstTemplateID))
         {
-            player.Equipment.EquipSecondaryGem(data.equippedSecondaryGem);
+            p.Equipment.EquipSecondaryGem(data.equippedSecondaryGem);
         }
         else
         {
-            player.Equipment.ClearSecondaryGem();
+            p.Equipment.ClearSecondaryGem();
         }
     }
 
     private void ClearPlayerEquipment()
     {
-        Player player = FindFirstObjectByType<Player>();
-        if (player == null || player.Equipment == null) return;
+        Player p = FindFirstObjectByType<Player>();
+        if (p == null || p.Equipment == null) return;
 
-        player.Equipment.ClearAllGear();
-        player.Equipment.ClearSecondaryGem();
-        player.Equipment.ClearWeapon();
-        player.Equipment.ClearSpecialAttack();
+        p.Equipment.ClearAllGear();
+        p.Equipment.ClearSecondaryGem();
+        p.Equipment.ClearWeapon();
+        p.Equipment.ClearSpecialAttack();
     }
+
+    #endregion
 }

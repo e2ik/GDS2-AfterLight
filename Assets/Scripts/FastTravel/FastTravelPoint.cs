@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class FastTravelPoint : MonoBehaviour, IInteractable
@@ -8,18 +9,90 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
     [Header("Interaction Settings")]
     [SerializeField] private bool canBeInteractedWith = true;
+    [SerializeField] private float mapOpenDelay = 0.5f;
 
-    public bool CanInteract => canBeInteractedWith;
+    private static readonly int IsDiscoveredHash = Animator.StringToHash("isDiscovered");
+    private static readonly int IsIdleHash = Animator.StringToHash("isIdle");
+    private static readonly int IsInteractedHash = Animator.StringToHash("isInteracted");
 
-    public string InteractionPrompt => worldMapState.IsUnlocked(nodeData) 
+    private Animator anim;
+    private bool isInteracting = false;
+
+    private void Awake()
+    {
+        anim = GetComponent<Animator>();
+    }
+
+    private void OnEnable()
+    {
+        if (worldMapState != null)
+        {
+            worldMapState.OnNodeUnlocked += OnNodeUnlocked;
+            worldMapState.OnStateLoaded += UpdateVisualState;
+            worldMapState.OnStateReset += UpdateVisualState;
+        }
+        UpdateVisualState();
+    }
+
+    private void OnDisable()
+    {
+        if (worldMapState != null)
+        {
+            worldMapState.OnNodeUnlocked -= OnNodeUnlocked;
+            worldMapState.OnStateLoaded -= UpdateVisualState;
+            worldMapState.OnStateReset -= UpdateVisualState;
+        }
+    }
+
+    private void Start()
+    {
+        UpdateVisualState();
+    }
+
+    private void OnNodeUnlocked(FastTravelNodeSO unlockedNode)
+    {
+        if (unlockedNode == nodeData && !isInteracting)
+        {
+            UpdateVisualState();
+        }
+    }
+
+    public bool CanInteract
+    {
+        get
+        {
+            if (MapUIManager.Instance != null && MapUIManager.Instance.IsMapOpen)
+                return false;
+
+            return canBeInteractedWith && !isInteracting;
+        }
+    }
+
+    public string InteractionPrompt => (worldMapState != null && worldMapState.IsUnlocked(nodeData))
         ? $"Travel from {nodeData.displayName}" 
         : $"Unlock {nodeData.displayName}";
+
+    public bool ShouldStopPlayerMovement => true;
 
     public void Interact(Player player)
     {
         if (!CanInteract) return;
 
-        if (!worldMapState.IsUnlocked(nodeData))
+        StartCoroutine(InteractionRoutine());
+    }
+
+    private IEnumerator InteractionRoutine()
+    {
+        isInteracting = true;
+
+        if (anim != null)
+        {
+            anim.SetTrigger(IsInteractedHash);
+        }
+
+        bool isAlreadyUnlocked = worldMapState != null && worldMapState.IsUnlocked(nodeData);
+
+        if (!isAlreadyUnlocked && worldMapState != null)
         {
             worldMapState.UnlockNode(nodeData);
         }
@@ -28,18 +101,29 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
         {
             SaveManager.Instance.SaveProgressAtLocation(nodeData.targetSceneName, nodeData.spawnAnchorID);
         }
-        else
+
+        if (!isAlreadyUnlocked && mapOpenDelay > 0f)
         {
-            Debug.LogError("SaveManager Instance is missing from the scene!");
+            yield return new WaitForSeconds(mapOpenDelay);
         }
+
+        UpdateVisualState();
 
         if (MapUIManager.Instance != null)
         {
             MapUIManager.Instance.OpenMap(nodeData);
         }
-        else
-        {
-            Debug.LogError("MapUIManager Instance is missing from the scene!");
-        }
+
+        isInteracting = false;
+    }
+
+    public void UpdateVisualState()
+    {
+        if (anim == null || worldMapState == null || nodeData == null) return;
+
+        bool isUnlocked = worldMapState.IsUnlocked(nodeData);
+
+        anim.SetBool(IsDiscoveredHash, isUnlocked);
+        anim.SetBool(IsIdleHash, !isUnlocked);
     }
 }

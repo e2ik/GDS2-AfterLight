@@ -13,6 +13,8 @@ namespace Enemies.ModuleScripts
         
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
+            if (ctx.IsAttacking) return;
+            
             int dir = ctx.FacingRight ? 1 : -1;
             Vector2 origin = ctx.Self.position;
 

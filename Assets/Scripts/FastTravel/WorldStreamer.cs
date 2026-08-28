@@ -8,6 +8,7 @@ public class WorldStreamer : MonoBehaviour
     public static WorldStreamer Instance { get; private set; }
 
     public bool IsFastTraveling { get; set; } = false;
+    public bool IsAligning { get; private set; } = false;
 
     private HashSet<string> loadingScenes = new HashSet<string>();
 
@@ -32,6 +33,7 @@ public class WorldStreamer : MonoBehaviour
 
     private IEnumerator StreamAndAlignRoutine(string sceneToLoad, string sourceAnchorID, string targetAnchorID)
     {
+        IsAligning = true;
         loadingScenes.Add(sceneToLoad);
 
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneToLoad, LoadSceneMode.Additive);
@@ -46,7 +48,10 @@ public class WorldStreamer : MonoBehaviour
             targetAnchor.SceneRoot.position += positionOffset;
         }
 
+        yield return null;
+
         loadingScenes.Remove(sceneToLoad);
+        IsAligning = false;
     }
 
     private SceneAnchor FindAnchor(string anchorID)

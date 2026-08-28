@@ -150,7 +150,7 @@ public class DialogueManager : MonoBehaviour
 
         if (currentPlayer != null)
         {
-            currentPlayer.Controller.MovementEnabled = false;
+            currentPlayer.Controller.InputEnabled = false;
             currentPlayer.InteractionManager.InteractionEnabled = false;
         }
 
@@ -361,7 +361,7 @@ public class DialogueManager : MonoBehaviour
 
         if (currentPlayer != null)
         {
-            currentPlayer.Controller.MovementEnabled = true;
+            currentPlayer.Controller.InputEnabled = true;
             currentPlayer.InteractionManager.InteractionEnabled = true;
         }
 

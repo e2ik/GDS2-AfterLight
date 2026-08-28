@@ -11,11 +11,10 @@ GameObject:
   - component: {fileID: 6231625418547740632}
   - component: {fileID: 3024282185278052449}
   - component: {fileID: 5011396066847478461}
-  - component: {fileID: 1521051261008522368}
   - component: {fileID: 3741899294261406425}
   - component: {fileID: 1037170224883650968}
-  - component: {fileID: 6183684701131280056}
-  m_Layer: 8
+  - component: {fileID: 5891478009599138281}
+  m_Layer: 9
   m_Name: Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -64,24 +63,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.Enemy
   observationSO: {fileID: 11400000, guid: 507f599106ab90f40a26514267cdd09a, type: 2}
-  attacks: []
+  attacks:
+  - Attack: {fileID: 11400000, guid: 07bfc0d7bf7394d459124971720a7609, type: 2}
+    Weight: 70
+  - Attack: {fileID: 11400000, guid: 4ee9678fb011504499f712298cb8787a, type: 2}
+    Weight: 30
   behaviorAgent: {fileID: 3741899294261406425}
   animator: {fileID: 3422330860409311587}
   rb2D: {fileID: 1037170224883650968}
---- !u!114 &1521051261008522368
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1508996274877242485}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b64c839ba1fd3804bab730ccee5c28ca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Enemies.AttackEvents
-  hitbox: {fileID: 8255842453170479238}
-  hurtbox: {fileID: 2803622147759670400}
+  attackCooldown: 0.5
 --- !u!114 &3741899294261406425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -138,8 +128,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &6183684701131280056
-BoxCollider2D:
+--- !u!70 &5891478009599138281
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -172,18 +162,9 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.047068834, y: 0.010898709}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.5676875, y: 1.0033386}
-  m_EdgeRadius: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.5, y: 1}
+  m_Direction: 0
 --- !u!1 &3861998898545050931
 GameObject:
   m_ObjectHideFlags: 0
@@ -195,7 +176,8 @@ GameObject:
   - component: {fileID: 421764455095116228}
   - component: {fileID: 9016610030483811910}
   - component: {fileID: 3422330860409311587}
-  m_Layer: 8
+  - component: {fileID: 1758176749675598398}
+  m_Layer: 9
   m_Name: Graphics
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -300,6 +282,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1758176749675598398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3861998898545050931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b64c839ba1fd3804bab730ccee5c28ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.AttackEvents
+  hitbox: {fileID: 8255842453170479238}
+  hurtbox: {fileID: 2803622147759670400}
 --- !u!1 &7655709470947892358
 GameObject:
   m_ObjectHideFlags: 0
@@ -311,7 +307,7 @@ GameObject:
   - component: {fileID: 5941124416988594395}
   - component: {fileID: 1691160875376365278}
   - component: {fileID: 8255842453170479238}
-  m_Layer: 8
+  m_Layer: 11
   m_Name: HitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -340,7 +336,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7655709470947892358}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
@@ -391,7 +387,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe9e8143c53f5294a85d5656f0abcf20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.HitBox
-  col: {fileID: 0}
+  col: {fileID: 1691160875376365278}
 --- !u!1 &8116198673704997885
 GameObject:
   m_ObjectHideFlags: 0
@@ -403,7 +399,7 @@ GameObject:
   - component: {fileID: 7166656262927269922}
   - component: {fileID: 8061515899177227973}
   - component: {fileID: 2803622147759670400}
-  m_Layer: 8
+  m_Layer: 11
   m_Name: HurtBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -483,5 +479,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34cd1348375f97c429228f4206c139b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.HurtBox
-  health: {fileID: 3024282185278052449}
   Invulnerable: 0

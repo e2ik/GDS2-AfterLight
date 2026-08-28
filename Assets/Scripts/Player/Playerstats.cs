@@ -86,6 +86,8 @@ public class PlayerStats : MonoBehaviour
         currentHealth = Mathf.Max(0f, currentHealth - effectiveDamage);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
+        Debug.Log($"Player took {rawDamage} damage. Current Health: {currentHealth}");
+        
         if (currentHealth <= 0f)
             Die();
     }

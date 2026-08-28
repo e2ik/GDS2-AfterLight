@@ -7,12 +7,32 @@ public class InventoryDisplay : MonoBehaviour
     [SerializeField] private Transform slotContainer;
     [SerializeField] private GameObject slotPrefab;
 
+    [Header("Animation Reference")]
+    [SerializeField] private UIWindowAnimator windowAnimator;
+
     private CanvasGroup canvasGroup;
     private PlayerInventoryManager invManager;
+    private bool isVisible = false;
 
     private void Awake()
     {
         canvasGroup = GetComponent<CanvasGroup>();
+
+        if (windowAnimator == null)
+            windowAnimator = GetComponent<UIWindowAnimator>();
+    }
+
+    private void Start()
+    {
+        if (windowAnimator != null)
+        {
+            windowAnimator.InstantHide();
+            isVisible = false;
+        }
+        else
+        {
+            SetVisibility(false);
+        }
     }
 
     private void OnDestroy()
@@ -43,25 +63,44 @@ public class InventoryDisplay : MonoBehaviour
                 equipManager.OnEquipmentChanged += RefreshUI;
             }
 
-            RefreshUI();
+            if (isVisible)
+            {
+                RefreshUI();
+            }
         }
     }
 
     public void ToggleInventory()
     {
-        bool isVisible = canvasGroup.alpha > 0f;
         SetVisibility(!isVisible);
     }
 
     public void SetVisibility(bool visible)
     {
-        canvasGroup.alpha = visible ? 1f : 0f;
-        canvasGroup.interactable = visible;
-        canvasGroup.blocksRaycasts = visible;
+        isVisible = visible;
 
-        if (visible)
+        if (windowAnimator != null)
         {
-            RefreshUI();
+            if (visible)
+            {
+                RefreshUI();
+                windowAnimator.Show();
+            }
+            else
+            {
+                windowAnimator.Hide();
+            }
+        }
+        else if (canvasGroup != null)
+        {
+            canvasGroup.alpha = visible ? 1f : 0f;
+            canvasGroup.interactable = visible;
+            canvasGroup.blocksRaycasts = visible;
+
+            if (visible)
+            {
+                RefreshUI();
+            }
         }
     }
 

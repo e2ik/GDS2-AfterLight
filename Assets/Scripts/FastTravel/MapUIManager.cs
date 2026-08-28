@@ -4,12 +4,13 @@ using UnityEngine.UI;
 public class MapUIManager : MonoBehaviour
 {
     public static MapUIManager Instance { get; private set; }
+    public bool IsMapOpen { get; private set; }
 
     [Header("Data References")]
     [SerializeField] private WorldMapStateSO worldMapState;
 
     [Header("UI References")]
-    [SerializeField] private GameObject mapWindow;
+    [SerializeField] private UIWindowAnimator mapWindowAnimator; 
     [SerializeField] private RectTransform mapContainer;
     [SerializeField] private FastTravelNodeUI nodeButtonPrefab;
     [SerializeField] private Button closeButton;
@@ -28,19 +29,36 @@ public class MapUIManager : MonoBehaviour
         if (closeButton != null)
             closeButton.onClick.AddListener(CloseMap);
 
-        mapWindow.SetActive(false);
+        // Instantly hide the map UI when the scene boots up
+        if (mapWindowAnimator != null)
+        {
+            mapWindowAnimator.InstantHide();
+        }
+        
+        IsMapOpen = false;
     }
 
     public void OpenMap(FastTravelNodeSO originNode)
     {
+        IsMapOpen = true;
         currentNode = originNode;
-        mapWindow.SetActive(true);
         RefreshMapNodes();
+        
+        if (mapWindowAnimator != null)
+            mapWindowAnimator.Show(true);
     }
 
     public void CloseMap()
     {
-        mapWindow.SetActive(false);
+        IsMapOpen = false;
+
+        if (GameManager.Instance?.Player?.Controller != null)
+        {
+            GameManager.Instance.Player.Controller.FreezeMovement(false);
+        }
+
+        if (mapWindowAnimator != null)
+            mapWindowAnimator.Hide();
     }
 
     private void RefreshMapNodes()

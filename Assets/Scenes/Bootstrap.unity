@@ -163,9 +163,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53d6205038a0a31468c335e174d35f11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  currentState: 0
   masterSceneName: WorldMaster
   defaultStartSceneName: Tutorial
   defaultSpawnAnchorID: start
+  titleSceneName: Bootstrap
   playerPrefab: {fileID: 6310612592100663882, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
   worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
   saveManager: {fileID: 78526259}
