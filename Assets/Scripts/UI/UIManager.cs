@@ -5,6 +5,10 @@ public class UIManager : MonoBehaviour
     [Header("UI Canvas References")]
     [SerializeField] private GameObject pauseCanvas;
     
+    [Header("Player UI References")]
+    [SerializeField] private PlayerHealthBar healthBar;
+    [SerializeField] private PlayerEnergyBar energyBar;
+
     private UIWindowAnimator pauseAnimator;
 
     public GameObject PauseCanvas => pauseCanvas;
@@ -23,6 +27,22 @@ public class UIManager : MonoBehaviour
             {
                 pauseCanvas.SetActive(false);
             }
+        }
+    }
+
+    public void InitializePlayerUI(PlayerStats stats)
+    {
+        if (healthBar != null && stats != null)
+        {
+            healthBar.BindStats(stats);
+        }
+    }
+
+    public void InitializePlayerUI(PlayerCombatController combatController)
+    {
+        if (energyBar != null && combatController != null)
+        {
+            energyBar.BindStats(combatController);
         }
     }
 

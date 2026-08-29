@@ -28,4 +28,18 @@ public class Player : MonoBehaviour
         Equipment = GetComponent<PlayerEquipmentManager>();
         CombatController = GetComponent<PlayerCombatController>();
     }
+
+    private void Start()
+    {
+        UIManager uiManager = FindFirstObjectByType<UIManager>();
+        if (uiManager != null)
+        {
+            uiManager.InitializePlayerUI(Stats);
+            uiManager.InitializePlayerUI(CombatController);
+        }
+        else
+        {
+            Debug.LogWarning("No UIManager found in the scene. Player UI will not be initialized.");
+        }
+    }
 }

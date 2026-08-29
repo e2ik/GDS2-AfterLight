@@ -39,6 +39,7 @@ public class PlayerStats : MonoBehaviour
         RecalculateStats();
 
         currentHealth = maxHealth;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
     private void OnEnable()

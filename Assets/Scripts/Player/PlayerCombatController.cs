@@ -82,6 +82,9 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float successfulParryVisualDuration = 0.15f;
     private bool isParrySuccess;
     private Coroutine parrySuccessResetCoroutine;
+
+    // UI additions
+    public event Action<float, float> OnEnergyChanged;
     
 
     private void Awake()
@@ -89,6 +92,11 @@ public class PlayerCombatController : MonoBehaviour
         pStats = GetComponent<PlayerStats>();
         pController = GetComponent<PlayerController>();
         equipmentManager = GetComponent<PlayerEquipmentManager>();
+    }
+
+    private void Start()
+    {
+        OnEnergyChanged?.Invoke(SkillMeter, 1f);
     }
 
     private void Update()
@@ -376,6 +384,7 @@ public class PlayerCombatController : MonoBehaviour
     public void ChargeSkillMeter(float amount)
     {
         SkillMeter = Mathf.Clamp(SkillMeter + amount, 0f, 1f);
+        OnEnergyChanged?.Invoke(SkillMeter, 1f); // UI
         Debug.Log("skill charge: " + SkillMeter);
         if (SkillMeter.Equals(1f))
             skillReady = true;
@@ -404,6 +413,8 @@ public class PlayerCombatController : MonoBehaviour
             isSkilling = true;
             CurrentSkillGemName = specialDef.GemName;
             specialDef.Execute(context, baseDamage);
+
+            OnEnergyChanged?.Invoke(0f, 1f); // I have no idea how it's keeping track of the skillmeter
             
             // Invoke(nameof(EndSkill), 0.2f); // change to animation trigger
         }
