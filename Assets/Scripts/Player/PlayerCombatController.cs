@@ -73,7 +73,12 @@ public class PlayerCombatController : MonoBehaviour
     private PlayerEquipmentManager equipmentManager;
 
     public bool IsAttacking => isAttacking;
-    public bool IsParrying => isParrying || isParryInRecovery; // just for now we can make visual distinction later
+    // just for now we can make visual distinction later
+    public bool IsParrying => isParrying || isParryInRecovery;
+    public bool IsSkilling => isSkilling;
+    public string CurrentSkillGemName { get; private set; }
+    // for successful parry since it cancels parry states
+    public event Action OnParrySuccess;
     
 
     private void Awake()
@@ -215,6 +220,8 @@ public class PlayerCombatController : MonoBehaviour
         //Time.timeScale = 0.7f;
         isCounterAttacking = true;
         Invoke(nameof(EndCounterAttackWindow), counterAttackWindow);
+
+        OnParrySuccess?.Invoke();
 
         Debug.Log("PARRY SUCCESSFUL!");
     }
@@ -373,15 +380,19 @@ public class PlayerCombatController : MonoBehaviour
 
             AttackContext context = equipmentManager.GetModifiedAttackContext();
             float baseDamage = equipmentManager.EquippedWeapon.BaseWeaponDamage + (pStats != null ? pStats.TotalAttack : 0);
+
+            isSkilling = true;
+            CurrentSkillGemName = specialDef.GemName;
             specialDef.Execute(context, baseDamage);
             
-            Invoke(nameof(EndSkill), 0.2f); // change to animation trigger
+            // Invoke(nameof(EndSkill), 0.2f); // change to animation trigger
         }
     }
 
     public void EndSkill()
     {
         isSkilling = false;
+        CurrentSkillGemName = string.Empty;
     }
 
     #endregion
