@@ -22,7 +22,7 @@ public class PlayerCombatController : MonoBehaviour
 
     // how long a parry button press stays queued in memory if pressed early
     [SerializeField] private float parryBufferTime = 0.15f;
-
+    
     private float parryActiveTimer;
     private float parryRecoveryTimer;
     private float parryBufferTimer;
@@ -62,6 +62,9 @@ public class PlayerCombatController : MonoBehaviour
     private bool skillPressed;
     private bool skillReleased;
     private bool isSkilling;
+    [Range(0f, 1f)] public float SkillMeter { get; private set; }
+    [SerializeField] private float chargeSkillAmount = 0.2f;
+    private bool skillReady;
 
     private float verticalInput;
     private PlayerStats pStats;
@@ -96,6 +99,18 @@ public class PlayerCombatController : MonoBehaviour
             parryBufferTimer -= Time.deltaTime;
         if (attackBufferTimer > 0f)
             attackBufferTimer -= Time.deltaTime;
+        if (skillBufferTimer > 0f)
+            skillBufferTimer -= Time.deltaTime;
+        
+        if (isAttacking)
+            attackTimer = attackCoolDown;
+        else
+            attackTimer -= Time.deltaTime;
+        
+        if (isSkilling) 
+            skillTimer = skillCoolDown;
+        else 
+            skillTimer -= Time.deltaTime;
 
         // Active Parry Window
         if (isParrying)
@@ -180,13 +195,15 @@ public class PlayerCombatController : MonoBehaviour
         return false;
     }
 
-    public void OnSuccessfulParry()
+    private void OnSuccessfulParry()
     {
         // Cancel timers and restore movement instantly on successful parry
         isParrying = false;
         isParryInRecovery = false;
         parryActiveTimer = 0f;
         parryRecoveryTimer = 0f;
+        
+        ChargeSkillMeter(chargeSkillAmount);
 
         if (pController != null)
         {
@@ -240,11 +257,6 @@ public class PlayerCombatController : MonoBehaviour
     private void ExecuteAttack()
     {
         attackBufferTimer = 0f;
-        
-        if (isAttacking)
-            attackTimer = attackCoolDown;
-        else
-            attackTimer -= Time.deltaTime;
 
         if (attackPressed && attackTimer <= 0f && CanAct())
         {
@@ -292,7 +304,7 @@ public class PlayerCombatController : MonoBehaviour
             
             Debug.Log("Primary Attack executed.");
             
-            Invoke(nameof(StopAttacking), attackDuration);
+            Invoke(nameof(EndAttack), attackDuration); // change to animation trigger
         }
     }
 
@@ -314,7 +326,7 @@ public class PlayerCombatController : MonoBehaviour
         }
     }
 
-    public void StopAttacking()
+    public void EndAttack()
     {
         isAttacking = false;
     }
@@ -326,20 +338,24 @@ public class PlayerCombatController : MonoBehaviour
     private void HandleSkill()
     {
 
-        if (skillBufferTimer > 0f && CanAct())
+        if (skillBufferTimer > 0f && CanAct() && skillReady)
         {
             ExecuteSkill();
         }
+    }
+
+    public void ChargeSkillMeter(float amount)
+    {
+        SkillMeter = Mathf.Clamp(SkillMeter + amount, 0f, 1f);
+        Debug.Log("skill charge: " + SkillMeter);
+        if (SkillMeter.Equals(1f))
+            skillReady = true;
     }
     
     private void ExecuteSkill()
     {
         skillBufferTimer = 0f;
-
-        if (isSkilling) 
-            skillTimer = skillCoolDown;
-        else 
-            skillTimer -= Time.deltaTime;
+        skillReady = false;
         
         if (skillPressed && skillTimer <= 0f && CanAct())
         {
@@ -353,8 +369,16 @@ public class PlayerCombatController : MonoBehaviour
             }
 
             AttackContext context = equipmentManager.GetModifiedAttackContext();
-            specialDef.Execute(context);
+            float baseDamage = equipmentManager.EquippedWeapon.BaseWeaponDamage + (pStats != null ? pStats.TotalAttack : 0);
+            specialDef.Execute(context, baseDamage);
+            
+            Invoke(nameof(EndSkill), 0.2f); // change to animation trigger
         }
+    }
+
+    public void EndSkill()
+    {
+        isSkilling = false;
     }
 
     #endregion

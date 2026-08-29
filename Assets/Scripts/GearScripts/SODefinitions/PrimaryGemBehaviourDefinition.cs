@@ -5,5 +5,8 @@ public abstract class PrimaryGemBehaviourDefinition : InventoryItemBase, IPrimar
 {
     public string GemName;
     public string GemAttackDescription;
-    public abstract void Execute(AttackContext context);
+    [Header("Active Skill Vars")]
+    public float SkillRange;
+    public float SkillDamageModifier = 1f;
+    public abstract void Execute(AttackContext context, float baseDamage);
 }

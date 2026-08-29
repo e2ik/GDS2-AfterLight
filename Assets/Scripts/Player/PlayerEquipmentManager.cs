@@ -209,7 +209,8 @@ public class PlayerEquipmentManager : MonoBehaviour
         AttackContext context = new AttackContext
         {
             BaseAttackDamage = totalBaseAndGearAttack + (equippedWeapon != null ? equippedWeapon.BaseWeaponDamage : 0f),
-            BaseAttackCrit = equippedWeapon != null ? equippedWeapon.BaseWeaponCrit : 0f
+            BaseAttackCrit = equippedWeapon != null ? equippedWeapon.BaseWeaponCrit : 0f,
+            BaseAttackRange = equippedWeapon != null ? equippedWeapon.BaseWeaponRange : 0f
         };
 
         if (secondaryGem != null && !string.IsNullOrEmpty(secondaryGem.InstTemplateID))

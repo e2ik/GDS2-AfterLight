@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IPrimaryGemBehaviour
 {
-    void Execute(AttackContext context);
+    void Execute(AttackContext context, float baseDamage);
 }
