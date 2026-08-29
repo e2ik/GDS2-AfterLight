@@ -10,11 +10,9 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     public bool CanInteract => canInteract;
     public bool ShouldStopPlayerMovement => shouldStopPlayer;
 
-    [SerializeField] private GameObject exteriorRoot;
-    [SerializeField] private GameObject interiorRoot;
+    [SerializeField] private SceneAreaState sceneAreaState;
     [SerializeField] private CanvasGroup fadeCanvas;
     [SerializeField] private float fadeDuration = 0.5f;
-    private bool isInside;
 
     public void Interact(Player player)
     {
@@ -28,9 +26,8 @@ public class TransitionDoor : MonoBehaviour, IInteractable
 
         yield return Fade(0f, 1f);
 
-        isInside = !isInside;
-        exteriorRoot.SetActive(!isInside);
-        interiorRoot.SetActive(isInside);
+        AreaSide newSide = sceneAreaState.CurrentSide == AreaSide.Interior ? AreaSide.Exterior : AreaSide.Interior;
+        sceneAreaState.SetSide(newSide);
 
         yield return Fade(1f, 0f);
 

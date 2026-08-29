@@ -103,6 +103,11 @@ public class SaveManager : MonoBehaviour
         _currentSaveData.progress.lastVisitedSceneName = sceneName;
         _currentSaveData.progress.lastSpawnAnchorID = anchorID;
 
+        if (GameManager.Instance != null)
+        {
+            _currentSaveData.progress.lastAreaSide = GameManager.Instance.CurrentAreaSide;
+        }
+
         if (worldMapState != null)
         {
             _currentSaveData.progress.unlockedFastTravelIDs = worldMapState.ToSaveIDs();

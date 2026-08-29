@@ -18,6 +18,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameState currentState = GameState.Title;
     public GameState CurrentState => currentState;
 
+    [Header("Area State")]
+    [SerializeField] private AreaSide currentAreaSide = AreaSide.Exterior;
+    public AreaSide CurrentAreaSide => currentAreaSide;
+
+    public event System.Action<AreaSide> OnAreaSideChanged;
+
     [Header("Scene Names")]
     [SerializeField] private string masterSceneName = "WorldMaster";
     [SerializeField] private string defaultStartSceneName = "StartingArea";
@@ -62,6 +68,32 @@ public class GameManager : MonoBehaviour
         }
         return uiManager;
     }
+
+    #region Area State
+
+    public void SetAreaSide(AreaSide side)
+    {
+        if (currentAreaSide == side) return;
+        currentAreaSide = side;
+        OnAreaSideChanged?.Invoke(side);
+    }
+
+    public void ApplyAreaSide(AreaSide side)
+    {
+        SceneAreaState[] areaStates = FindObjectsByType<SceneAreaState>(FindObjectsSortMode.None);
+        if (areaStates.Length == 0)
+        {
+            SetAreaSide(side);
+            return;
+        }
+
+        foreach (var areaState in areaStates)
+        {
+            areaState.SetSide(side);
+        }
+    }
+
+    #endregion
 
     #region State Machine Logic
 
@@ -201,6 +233,10 @@ public class GameManager : MonoBehaviour
 
         yield return LoadSceneAdditive(sceneToLoad);
         yield return null;
+
+        AreaSide savedSide = (data.progress != null) ? data.progress.lastAreaSide : AreaSide.Exterior;
+        SetAreaSide(savedSide);
+        ApplyAreaSide(savedSide);
 
         if (worldMapState != null && data.progress != null && data.progress.unlockedFastTravelIDs != null)
         {

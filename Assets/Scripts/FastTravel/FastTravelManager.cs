@@ -21,10 +21,13 @@ public class FastTravelManager : MonoBehaviour
     public void TravelTo(FastTravelNodeSO node)
     {
         if (node == null) return;
-        StartCoroutine(FastTravelRoutine(node));
+
+        AreaSide sideAtInteract = GameManager.Instance != null ? GameManager.Instance.CurrentAreaSide : AreaSide.Exterior;
+
+        StartCoroutine(FastTravelRoutine(node, sideAtInteract));
     }
 
-    private IEnumerator FastTravelRoutine(FastTravelNodeSO destination)
+    private IEnumerator FastTravelRoutine(FastTravelNodeSO destination, AreaSide sideAtInteract)
     {
         string targetScene = destination.targetSceneName;
 
@@ -68,13 +71,18 @@ public class FastTravelManager : MonoBehaviour
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null)
         {
+            GameManager.Instance?.ApplyAreaSide(sideAtInteract);
+
             Transform anchorTransform = FindAnchorTransform(destination.spawnAnchorID);
 
             if (anchorTransform != null)
             {
                 player.transform.position = anchorTransform.position;
+
                 CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
-                cam?.SnapToTarget(); // need this since not all scenes are aligned
+                cam?.SnapToTarget();
+
+                SaveManager.Instance?.SaveProgressAtLocation(targetScene, destination.spawnAnchorID);
             }
             else
             {

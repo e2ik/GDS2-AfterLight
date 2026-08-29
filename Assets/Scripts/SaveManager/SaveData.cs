@@ -41,6 +41,7 @@ public class ProgressSaveData
     public List<string> unlockedFastTravelIDs;
     public string lastVisitedSceneName;
     public string lastSpawnAnchorID;
+    public AreaSide lastAreaSide;
 }
 
 [System.Serializable]
