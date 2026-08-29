@@ -154,13 +154,13 @@ public class GameManager : MonoBehaviour
             targetSaveManager.CreateNewSaveData();
         }
 
-        yield return LoadSceneAdditive(defaultStartSceneName);
-        yield return null;
-
         if (worldMapState != null)
         {
             worldMapState.ResetState();
         }
+
+        yield return LoadSceneAdditive(defaultStartSceneName);
+        yield return null;
 
         PlacePlayerAtAnchor(defaultSpawnAnchorID);
         SetState(GameState.Game);
@@ -367,8 +367,8 @@ public class GameManager : MonoBehaviour
 
         p.Equipment.ClearAllGear();
         p.Equipment.ClearSecondaryGem();
-        p.Equipment.ClearWeapon();
-        p.Equipment.ClearSpecialAttack();
+        // p.Equipment.ClearWeapon(); <-- not yet implemented do not clear
+        // p.Equipment.ClearSpecialAttack(); <-- not yet implemented do not clear
     }
 
     #endregion
