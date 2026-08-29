@@ -40,6 +40,8 @@ public class PrefabSpawner : MonoBehaviour
             }
         }
         spawnedEnemy = Instantiate(prefabToSpawn, transform.position, transform.rotation);
+        spawnedEnemy.transform.parent = transform;
+
     }
 
     private void OnDrawGizmos()
