@@ -77,8 +77,6 @@ public class PlayerCombatController : MonoBehaviour
     public bool IsParrying => isParrying || isParryInRecovery;
     public bool IsSkilling => isSkilling;
     public string CurrentSkillGemName { get; private set; }
-    // for successful parry since it cancels parry states
-    public event Action OnParrySuccess;
     
 
     private void Awake()
@@ -168,7 +166,6 @@ public class PlayerCombatController : MonoBehaviour
     private void ExecuteParry()
     {
         parryBufferTimer = 0f;
-
         isParrying = true;
         isParryInRecovery = false;
         parryActiveTimer = parryActiveDuration;
@@ -193,6 +190,7 @@ public class PlayerCombatController : MonoBehaviour
 
     public bool CheckParry(ParryDirection incomingDirection)
     {
+
         if (isParrying && parryDir == incomingDirection)
         {
             OnSuccessfulParry();
@@ -203,7 +201,6 @@ public class PlayerCombatController : MonoBehaviour
 
     private void OnSuccessfulParry()
     {
-        // Cancel timers and restore movement instantly on successful parry
         isParrying = false;
         isParryInRecovery = false;
         parryActiveTimer = 0f;
@@ -212,18 +209,13 @@ public class PlayerCombatController : MonoBehaviour
         ChargeSkillMeter(chargeSkillAmount);
 
         if (pController != null)
-        {
             pController.FreezeMovement(false);
-        }
 
-        //slow down surroundings for effect when successful parry/counter attacking?
-        //Time.timeScale = 0.7f;
         isCounterAttacking = true;
+        CancelInvoke(nameof(EndCounterAttackWindow));
         Invoke(nameof(EndCounterAttackWindow), counterAttackWindow);
 
-        OnParrySuccess?.Invoke();
-
-        Debug.Log("PARRY SUCCESSFUL!");
+        Debug.Log("Successful Parry!");
     }
 
     private void EndCounterAttackWindow()

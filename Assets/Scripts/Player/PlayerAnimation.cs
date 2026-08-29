@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Animator))]
@@ -17,41 +18,19 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsParryingHash = Animator.StringToHash("isParrying");
     private static readonly int IsAttackingHash = Animator.StringToHash("isAttacking");
     private static readonly int IsSkillingHash = Animator.StringToHash("isSkilling");
-    private static readonly int SuccessfulParryHash = Animator.StringToHash("parrySuccess");
 
     private string lastPlayedSkill = string.Empty;
+
+    [Header("Parry Settings")]
+    [SerializeField] private float minParryDisplayDuration = 0.25f; 
+    private bool isParryAnimationLocked = false;
+    private Coroutine parryLockCoroutine;
 
     private void Awake()
     {
         player = GetComponentInParent<Player>();
         animator = GetComponent<Animator>();
         if (rb == null) rb = GetComponentInParent<Rigidbody2D>();
-    }
-
-    private void Start()
-    {
-        if (player != null && player.CombatController != null)
-        {
-            // Re-subscribe safely in case player reference wasn't bound in OnEnable
-            player.CombatController.OnParrySuccess -= TriggerSuccessfulParry;
-            player.CombatController.OnParrySuccess += TriggerSuccessfulParry;
-        }
-    }
-
-    private void OnEnable()
-    {
-        if (player != null && player.CombatController != null)
-        {
-            player.CombatController.OnParrySuccess += TriggerSuccessfulParry;
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (player != null && player.CombatController != null)
-        {
-            player.CombatController.OnParrySuccess -= TriggerSuccessfulParry;
-        }
     }
 
     private void Update()
@@ -66,8 +45,28 @@ public class PlayerAnimation : MonoBehaviour
         bool isSkilling = player.CombatController.IsSkilling;
         animator.SetBool(IsSkillingHash, isSkilling);
 
-        // freezes all anystates if skilling
-        if (isSkilling) return;
+        if (isSkilling)
+        {
+            isParryAnimationLocked = false; // Reset lock on skill
+            return;
+        }
+
+        bool actualIsParrying = player.CombatController.IsParrying;
+
+        if (actualIsParrying && !isParryAnimationLocked)
+        {
+            if (parryLockCoroutine != null) StopCoroutine(parryLockCoroutine);
+            parryLockCoroutine = StartCoroutine(LockParryAnimation());
+        }
+
+        if (ShouldInterruptParry())
+        {
+            isParryAnimationLocked = false;
+            if (parryLockCoroutine != null) StopCoroutine(parryLockCoroutine);
+        }
+
+        bool visualIsParrying = actualIsParrying || isParryAnimationLocked;
+        animator.SetBool(IsParryingHash, visualIsParrying);
 
         animator.SetFloat(SpeedHash, Mathf.Abs(rb.linearVelocityX));
         animator.SetFloat(YVelocityHash, rb.linearVelocityY);
@@ -76,9 +75,37 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetBool(IsDashingHash, player.Controller.IsDashing);
         animator.SetBool(IsDirectionalDashHash, player.Controller.IsDirectionalDash);
         animator.SetBool(IsChargingSkillHash, player.Controller.IsChargingSkill);
-        animator.SetBool(IsParryingHash, player.CombatController.IsParrying);
         animator.SetBool(IsAttackingHash, player.CombatController.IsAttacking);
-        animator.SetBool(IsSkillingHash, player.CombatController.IsSkilling);
+    }
+
+    private bool ShouldInterruptParry()
+    {
+        // Add any action here that SHOULD break out of the parry animation early
+        return player.Controller.IsDashing || 
+               player.Controller.IsDirectionalDash || 
+               player.CombatController.IsAttacking || 
+               !player.Controller.IsGrounded;
+    }
+
+    private IEnumerator LockParryAnimation()
+    {
+        isParryAnimationLocked = true;
+        float timer = 0f;
+
+        while (timer < minParryDisplayDuration)
+        {
+            // If interrupted mid-frame, exit early
+            if (ShouldInterruptParry())
+            {
+                isParryAnimationLocked = false;
+                yield break;
+            }
+
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        isParryAnimationLocked = false;
     }
 
     private void HandleSkillAnimation()
@@ -99,14 +126,8 @@ public class PlayerAnimation : MonoBehaviour
         }
     }
 
-    public  void EndSkillAnimation()
+    public void EndSkillAnimation()
     {
         player.CombatController.EndSkill();
-    }
-
-    private void TriggerSuccessfulParry()
-    {
-        animator.SetBool(IsParryingHash, false);
-        animator.SetTrigger(SuccessfulParryHash);
     }
 }
