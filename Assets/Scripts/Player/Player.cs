@@ -34,8 +34,7 @@ public class Player : MonoBehaviour
         UIManager uiManager = FindFirstObjectByType<UIManager>();
         if (uiManager != null)
         {
-            uiManager.InitializePlayerUI(Stats);
-            uiManager.InitializePlayerUI(CombatController);
+            uiManager.InitializePlayerUI(this.gameObject);
         }
         else
         {

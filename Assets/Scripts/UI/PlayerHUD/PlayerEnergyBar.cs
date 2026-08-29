@@ -8,7 +8,7 @@ public class PlayerEnergyBar : MonoBehaviour
 
     private PlayerCombatController currentStats;
 
-    public void BindStats(PlayerCombatController stats)
+    public void BindCombat(PlayerCombatController stats)
     {
         if (currentStats != null)
         {

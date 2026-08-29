@@ -415,6 +415,7 @@ public class PlayerCombatController : MonoBehaviour
             specialDef.Execute(context, baseDamage);
 
             OnEnergyChanged?.Invoke(0f, 1f); // I have no idea how it's keeping track of the skillmeter
+            SkillMeter = 0f;
             
             // Invoke(nameof(EndSkill), 0.2f); // change to animation trigger
         }

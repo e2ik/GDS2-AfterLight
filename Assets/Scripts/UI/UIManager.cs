@@ -8,10 +8,14 @@ public class UIManager : MonoBehaviour
     [Header("Player UI References")]
     [SerializeField] private PlayerHealthBar healthBar;
     [SerializeField] private PlayerEnergyBar energyBar;
+    [SerializeField] private PlayerSkillIcon skillIcon;
 
     private UIWindowAnimator pauseAnimator;
 
     public GameObject PauseCanvas => pauseCanvas;
+    public PlayerHealthBar HealthBar => healthBar;
+    public PlayerEnergyBar EnergyBar => energyBar;
+    public PlayerSkillIcon SkillIcon => skillIcon;
 
     private void Awake()
     {
@@ -30,19 +34,26 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void InitializePlayerUI(PlayerStats stats)
+    public void InitializePlayerUI(GameObject playerObject)
     {
-        if (healthBar != null && stats != null)
-        {
-            healthBar.BindStats(stats);
-        }
-    }
+        if (playerObject == null) return;
 
-    public void InitializePlayerUI(PlayerCombatController combatController)
-    {
-        if (energyBar != null && combatController != null)
+        if (healthBar != null && playerObject.TryGetComponent(out PlayerStats health))
         {
-            energyBar.BindStats(combatController);
+            healthBar.BindStats(health);
+        }
+
+        if (energyBar != null && playerObject.TryGetComponent(out PlayerCombatController energy))
+        {
+            energyBar.BindCombat(energy);
+        }
+
+        if (skillIcon != null)
+        {
+            playerObject.TryGetComponent(out PlayerEquipmentManager equipment);
+            playerObject.TryGetComponent(out PlayerCombatController skill);
+            
+            skillIcon.Bind(equipment, skill);
         }
     }
 
