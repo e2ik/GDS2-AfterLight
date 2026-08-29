@@ -2,6 +2,7 @@ using System;
 using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public enum ParryDirection
 {
@@ -74,9 +75,13 @@ public class PlayerCombatController : MonoBehaviour
 
     public bool IsAttacking => isAttacking;
     // just for now we can make visual distinction later
-    public bool IsParrying => isParrying || isParryInRecovery;
+    public bool IsParrying => isParrying || isParryInRecovery || isParrySuccess;
     public bool IsSkilling => isSkilling;
     public string CurrentSkillGemName { get; private set; }
+    // parry anim sorry I can't control this cleanly in Anim script
+    [SerializeField] private float successfulParryVisualDuration = 0.15f;
+    private bool isParrySuccess;
+    private Coroutine parrySuccessResetCoroutine;
     
 
     private void Awake()
@@ -214,8 +219,22 @@ public class PlayerCombatController : MonoBehaviour
         isCounterAttacking = true;
         CancelInvoke(nameof(EndCounterAttackWindow));
         Invoke(nameof(EndCounterAttackWindow), counterAttackWindow);
+    
+        // Start Coroutine to set and hold isParrySuccess
+        if (parrySuccessResetCoroutine != null)
+            StopCoroutine(parrySuccessResetCoroutine);
+
+        parrySuccessResetCoroutine = StartCoroutine(ExtendParryAnim(successfulParryVisualDuration));
 
         Debug.Log("Successful Parry!");
+    }
+
+    private IEnumerator ExtendParryAnim(float delay)
+    {
+        isParrySuccess = true;
+        yield return new WaitForSeconds(delay);
+        isParrySuccess = false;
+        parrySuccessResetCoroutine = null;
     }
 
     private void EndCounterAttackWindow()
@@ -226,10 +245,16 @@ public class PlayerCombatController : MonoBehaviour
 
     public void CancelParry()
     {
-        if (!isParrying && !isParryInRecovery) return;
+        // Stop lingering success animation coroutine
+        if (parrySuccessResetCoroutine != null)
+        {
+            StopCoroutine(parrySuccessResetCoroutine);
+            parrySuccessResetCoroutine = null;
+        }
 
         isParrying = false;
         isParryInRecovery = false;
+        isParrySuccess = false;
         parryActiveTimer = 0f;
         parryRecoveryTimer = 0f;
 
@@ -260,6 +285,8 @@ public class PlayerCombatController : MonoBehaviour
 
         if (attackPressed && attackTimer <= 0f && CanAct())
         {
+            CancelParry();
+
             attackPressed = false;
             
             if (equipmentManager.EquippedWeapon == null)
@@ -361,6 +388,7 @@ public class PlayerCombatController : MonoBehaviour
         
         if (skillPressed && skillTimer <= 0f && CanAct())
         {
+            CancelParry();
             PrimaryGemBehaviourDefinition specialDef = equipmentManager.SpecialAttackDef;
 
             if (specialDef == null)
