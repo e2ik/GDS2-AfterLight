@@ -24,10 +24,6 @@ public class SaveManager : MonoBehaviour
         {
             LoadGame();
         }
-        else
-        {
-            CreateNewSaveData();
-        }
     }
 
     public void CreateNewSaveData()
@@ -66,9 +62,8 @@ public class SaveManager : MonoBehaviour
     {
         if (!HasSaveFile)
         {
-            Debug.LogWarning("No save file found. Initializing default data.");
-            CreateNewSaveData();
-            return _currentSaveData;
+            Debug.LogWarning("[SaveManager] No save file found. Returning null without creating a file.");
+            return null;
         }
 
         try
@@ -79,7 +74,7 @@ public class SaveManager : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError($"[SaveManager] Failed to load save file: {e.Message}");
-            _currentSaveData = new SaveData();
+            return null;
         }
 
         EnsureDataIntegrity();
@@ -88,7 +83,7 @@ public class SaveManager : MonoBehaviour
 
     private void EnsureDataIntegrity()
     {
-        if (_currentSaveData == null) _currentSaveData = new SaveData();
+        if (_currentSaveData == null) return;
         if (_currentSaveData.progress == null) _currentSaveData.progress = new ProgressSaveData();
         if (_currentSaveData.chestData == null) _currentSaveData.chestData = new ChestSaveData();
         if (_currentSaveData.chestData.openedChestIDs == null) 
@@ -100,6 +95,12 @@ public class SaveManager : MonoBehaviour
 
     public void SaveProgressAtLocation(string sceneName, string anchorID)
     {
+        if (_currentSaveData == null)
+        {
+            _currentSaveData = new SaveData();
+            EnsureDataIntegrity();
+        }
+
         _currentSaveData.progress.lastVisitedSceneName = sceneName;
         _currentSaveData.progress.lastSpawnAnchorID = anchorID;
 
@@ -152,17 +153,23 @@ public class SaveManager : MonoBehaviour
 
     public void SaveInventory(InventorySaveData data)
     {
-        _currentSaveData.inventoryData = data;
+        if (_currentSaveData != null)
+        {
+            _currentSaveData.inventoryData = data;
+        }
     }
 
     private void OnApplicationQuit()
     {
-        CommitToDisk();
+        if (_currentSaveData != null && HasSaveFile)
+        {
+            CommitToDisk();
+        }
     }
 
     private void OnApplicationPause(bool pauseStatus)
     {
-        if (pauseStatus)
+        if (pauseStatus && _currentSaveData != null && HasSaveFile)
         {
             CommitToDisk();
         }
