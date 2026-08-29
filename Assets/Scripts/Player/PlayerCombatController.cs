@@ -55,6 +55,7 @@ public class PlayerCombatController : MonoBehaviour
     private bool isCounterAttacking;
 
     [Header("Skill Settings")]
+    [SerializeField] private bool skillMeterAlwaysFull;
     [SerializeField] private float skillCoolDown = 0.2f;
     private float skillBufferTimer;
     private float skillBufferTime => attackBufferTime;
@@ -303,8 +304,6 @@ public class PlayerCombatController : MonoBehaviour
                 HitEnemy(enemiesInRange);
             
             Debug.Log("Primary Attack executed.");
-            
-            Invoke(nameof(EndAttack), attackDuration); // change to animation trigger
         }
     }
 
@@ -329,6 +328,7 @@ public class PlayerCombatController : MonoBehaviour
     public void EndAttack()
     {
         isAttacking = false;
+        Debug.Log("attack finished");
     }
 
     #endregion
@@ -337,8 +337,11 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleSkill()
     {
-
-        if (skillBufferTimer > 0f && CanAct() && skillReady)
+        if (skillBufferTimer > 0f && CanAct() && skillMeterAlwaysFull)
+        {
+            ExecuteSkill();
+        }
+        else if (skillBufferTimer > 0f && CanAct() && skillReady)
         {
             ExecuteSkill();
         }
