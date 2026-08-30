@@ -31,7 +31,7 @@ namespace Enemies
         private void OnDisable()
         {
             Context.Health.OnDamaged -= OnDamaged;
-            Context.Health.OnDamaged -= OnDamaged;
+            Context.Health.OnDeath -= OnDeath;
         }
 
 
