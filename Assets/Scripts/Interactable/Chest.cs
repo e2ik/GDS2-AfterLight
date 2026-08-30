@@ -5,6 +5,7 @@ public class Chest : MonoBehaviour, IInteractable
     private bool isOpened = false;
 
     private string chestID;
+    public string ChestID => chestID;
 
     [Header("Loot Configuration")]
     [SerializeField] private InventoryItemBase lootItem;
@@ -19,25 +20,20 @@ public class Chest : MonoBehaviour, IInteractable
     public bool CanInteract => !isOpened;
     public bool ShouldStopPlayerMovement => false;
 
-    private void OnValidate()
+    private void Awake()
     {
-        if (string.IsNullOrEmpty(chestID))
-        {
-            GenerateUniqueID();
-        }
+        chestID = GetHierarchyPath(transform);
     }
 
-    [ContextMenu("Generate Unique ID")]
-    private void GenerateUniqueID()
+    private string GetHierarchyPath(Transform current)
     {
-        // Creates a deterministic ID using Scene name + transform position + sibling index
-        string sceneName = gameObject.scene.name;
-        Vector3 pos = transform.position;
-        chestID = $"{sceneName}_{gameObject.name}_{pos.x:F1}_{pos.y:F1}_{pos.z:F1}";
-        
-#if UNITY_EDITOR
-        UnityEditor.EditorUtility.SetDirty(this);
-#endif
+        string path = current.name;
+        while (current.parent != null)
+        {
+            current = current.parent;
+            path = current.name + "/" + path + $"[{current.GetSiblingIndex()}]";
+        }
+        return $"{gameObject.scene.name}:{path}[{transform.GetSiblingIndex()}]";
     }
 
     private void Start()
@@ -75,15 +71,12 @@ public class Chest : MonoBehaviour, IInteractable
         Vector3 spawnPosition = transform.position + new Vector3(0f, 0.5f, 0f);
 
         WorldItem droppedItem = Instantiate(worldItemPrefab, spawnPosition, Quaternion.identity);
-        
         droppedItem.Initialize(lootItem);
 
         float randomX = Random.Range(minHorizontalAngle, maxHorizontalAngle);
         Vector2 popDirection = new Vector2(randomX, 1.0f).normalized;
 
         droppedItem.PopOut(popDirection, popForce);
-
-        Debug.Log($"Chest opened! Popped {lootItem.UIName} out of the chest.");
     }
 
     private void CompleteOpening()
