@@ -41,6 +41,13 @@ public class NPCDialogue : MonoBehaviour, IInteractable
         if (!CanInteract)
             return;
 
+        // zero playermovement
+        Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+
+        if (rb != null)
+            rb.linearVelocity = Vector2.zero;
+
+
         DialogueData dialogue = conversations[conversationIndex];
 
         if (dialogue == null)

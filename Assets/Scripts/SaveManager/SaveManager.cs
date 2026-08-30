@@ -98,15 +98,11 @@ public class SaveManager : MonoBehaviour
             _currentSaveData.equippedGear = new System.Collections.Generic.List<EquippedGearSaveData>();
     }
 
-    public void SaveProgressAtLocation(string sceneName, string anchorID)
+    public void SaveProgressAtLocation(string sceneName, string anchorID, AreaSide side)
     {
         _currentSaveData.progress.lastVisitedSceneName = sceneName;
         _currentSaveData.progress.lastSpawnAnchorID = anchorID;
-
-        if (GameManager.Instance != null)
-        {
-            _currentSaveData.progress.lastAreaSide = GameManager.Instance.CurrentAreaSide;
-        }
+        _currentSaveData.progress.lastAreaSide = side; // <--- Set explicit side
 
         if (worldMapState != null)
         {
@@ -127,6 +123,12 @@ public class SaveManager : MonoBehaviour
         }
 
         CommitToDisk();
+    }
+
+    public void SaveProgressAtLocation(string sceneName, string anchorID)
+    {
+        AreaSide currentSide = GameManager.Instance != null ? GameManager.Instance.CurrentAreaSide : AreaSide.Exterior;
+        SaveProgressAtLocation(sceneName, anchorID, currentSide);
     }
 
     public bool IsChestOpened(string chestID)

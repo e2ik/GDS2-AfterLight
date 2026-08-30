@@ -37,14 +37,15 @@ public class FastTravelManager : MonoBehaviour
             SceneManager.SetActiveScene(masterScene);
         }
 
-        if (!SceneManager.GetSceneByName(targetScene).isLoaded)
+    if (!SceneManager.GetSceneByName(targetScene).isLoaded)
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetScene, LoadSceneMode.Additive);
+        while (!asyncLoad.isDone)
         {
-            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetScene, LoadSceneMode.Additive);
-            while (!asyncLoad.isDone)
-            {
-                yield return null;
-            }
+            yield return null;
         }
+        yield return null; 
+    }
 
         List<Scene> scenesToUnload = new List<Scene>();
         for (int i = 0; i < SceneManager.sceneCount; i++)
@@ -82,7 +83,7 @@ public class FastTravelManager : MonoBehaviour
                 CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
                 cam?.SnapToTarget();
 
-                SaveManager.Instance?.SaveProgressAtLocation(targetScene, destination.spawnAnchorID);
+                SaveManager.Instance?.SaveProgressAtLocation(targetScene, destination.spawnAnchorID, sideAtInteract);
             }
             else
             {
@@ -93,14 +94,21 @@ public class FastTravelManager : MonoBehaviour
 
     public Transform FindAnchorTransform(string anchorID)
     {
-        FastTravelSpawnAnchor[] anchors = Object.FindObjectsByType<FastTravelSpawnAnchor>(FindObjectsSortMode.None);
+        FastTravelSpawnAnchor[] anchors = Object.FindObjectsByType<FastTravelSpawnAnchor>(
+            FindObjectsInactive.Include, 
+            FindObjectsSortMode.None
+        );
+
         foreach (var anchor in anchors)
         {
             if (anchor.AnchorID == anchorID)
             {
+                anchor.gameObject.SetActive(true);
                 return anchor.transform;
             }
         }
+
+        Debug.LogWarning($"[FastTravelManager] Spawn anchor '{anchorID}' could not be found among {anchors.Length} total anchors.");
         return null;
     }
 }
