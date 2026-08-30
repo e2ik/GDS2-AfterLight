@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PrefabSpawner : MonoBehaviour
 {
@@ -7,17 +8,43 @@ public class PrefabSpawner : MonoBehaviour
     [SerializeField] private GameObject prefabToSpawn;
     [SerializeField] private bool spawnOnStart = true;
 
+    [Header("Area Configuration")]
+    [SerializeField] private AreaSide targetAreaSide = AreaSide.Exterior;
+
     private GameObject spawnedEnemy;
+    private Coroutine spawnCoroutine;
 
     private void Start()
     {
         if (spawnOnStart)
         {
-            SpawnEnemy();
+            TrySpawn();
         }
     }
 
-    public void SpawnEnemy()
+    private void Update()
+    {
+        if (GameManager.Instance == null) return;
+
+        bool isCurrentArea = GameManager.Instance.CurrentAreaSide == targetAreaSide;
+
+        if (!isCurrentArea && spawnedEnemy != null)
+        {
+            DespawnEnemy();
+        }
+        else if (isCurrentArea && spawnedEnemy == null && spawnCoroutine == null)
+        {
+            TrySpawn();
+        }
+    }
+
+    public void ForceRespawn()
+    {
+        DespawnEnemy();
+        TrySpawn();
+    }
+
+    public void TrySpawn()
     {
         if (prefabToSpawn == null)
         {
@@ -27,11 +54,36 @@ public class PrefabSpawner : MonoBehaviour
 
         if (spawnedEnemy != null) return;
 
-        StartCoroutine(WaitAndSpawnRoutine());
+        if (spawnCoroutine != null)
+        {
+            StopCoroutine(spawnCoroutine);
+        }
+
+        spawnCoroutine = StartCoroutine(WaitAndSpawnRoutine());
+    }
+
+    public void DespawnEnemy()
+    {
+        if (spawnCoroutine != null)
+        {
+            StopCoroutine(spawnCoroutine);
+            spawnCoroutine = null;
+        }
+
+        if (spawnedEnemy != null)
+        {
+            Destroy(spawnedEnemy);
+            spawnedEnemy = null;
+        }
     }
 
     private IEnumerator WaitAndSpawnRoutine()
     {
+        while (GameManager.Instance == null)
+        {
+            yield return null;
+        }
+
         if (WorldStreamer.Instance != null)
         {
             while (WorldStreamer.Instance.IsAligning)
@@ -40,7 +92,35 @@ public class PrefabSpawner : MonoBehaviour
             }
         }
 
+        if (GameManager.Instance.CurrentAreaSide != targetAreaSide)
+        {
+            spawnCoroutine = null;
+            yield break;
+        }
+
+        if (!gameObject.scene.isLoaded)
+        {
+            spawnCoroutine = null;
+            yield break;
+        }
+
         spawnedEnemy = Instantiate(prefabToSpawn, transform.position, transform.rotation);
+
+        Vector3 pos = spawnedEnemy.transform.position;
+        spawnedEnemy.transform.position = new Vector3(pos.x, pos.y, 0f);
+
+        Scene masterScene = SceneManager.GetActiveScene();
+        if (spawnedEnemy.scene != masterScene)
+        {
+            SceneManager.MoveGameObjectToScene(spawnedEnemy, masterScene);
+        }
+
+        spawnCoroutine = null;
+    }
+
+    private void OnDisable()
+    {
+        DespawnEnemy();
     }
 
     private void OnDrawGizmos()
@@ -65,7 +145,7 @@ public class PrefabSpawner : MonoBehaviour
             }
         }
 
-        Gizmos.color = Color.red;
+        Gizmos.color = targetAreaSide == AreaSide.Interior ? Color.blue : Color.red;
         Gizmos.DrawWireSphere(transform.position, 0.5f);
     }
 }

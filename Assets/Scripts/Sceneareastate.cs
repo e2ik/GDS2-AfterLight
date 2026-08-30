@@ -4,28 +4,22 @@ public class SceneAreaState : MonoBehaviour
 {
     [SerializeField] private GameObject exteriorRoot;
     [SerializeField] private GameObject interiorRoot;
-    [SerializeField] private AreaSide startingSide = AreaSide.Exterior;
 
-    public AreaSide CurrentSide { get; private set; }
+    public AreaSide CurrentSide { get; private set; } = AreaSide.Exterior;
 
-    private void Awake()
+    private void Start()
     {
-        CurrentSide = startingSide;
-        ApplyState();
-        GameManager.Instance?.SetAreaSide(CurrentSide);
+        if (GameManager.Instance != null)
+        {
+            SetSide(GameManager.Instance.CurrentAreaSide);
+        }
     }
 
     public void SetSide(AreaSide side)
     {
-        CurrentSide = side;
-        ApplyState();
-        GameManager.Instance?.SetAreaSide(CurrentSide);
-    }
+        CurrentSide = side; // Store current side
 
-    private void ApplyState()
-    {
-        bool isInterior = CurrentSide == AreaSide.Interior;
-        if (exteriorRoot != null) exteriorRoot.SetActive(!isInterior);
-        if (interiorRoot != null) interiorRoot.SetActive(isInterior);
+        if (exteriorRoot != null) exteriorRoot.SetActive(side == AreaSide.Exterior);
+        if (interiorRoot != null) interiorRoot.SetActive(side == AreaSide.Interior);
     }
 }

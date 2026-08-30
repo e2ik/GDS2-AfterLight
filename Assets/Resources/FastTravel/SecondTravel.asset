@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3379828e0524ad549ae4d127ab5e3ff1, type: 3}
-  m_Name: FirstTravel
+  m_Name: SecondTravel
   m_EditorClassIdentifier: Assembly-CSharp::FastTravelNodeSO
-  nodeID: first
-  displayName: First Point
-  mapUIPosition: {x: 0.5, y: 0.6}
-  targetSceneName: Tutorial_next
-  spawnAnchorID: firsttravel
+  nodeID: second
+  displayName: Second Point
+  mapUIPosition: {x: 0.8, y: 0.7}
+  targetSceneName: Tutorial_next2
+  spawnAnchorID: secondtravel

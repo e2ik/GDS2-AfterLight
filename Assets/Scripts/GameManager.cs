@@ -194,6 +194,9 @@ public class GameManager : MonoBehaviour
         yield return LoadSceneAdditive(defaultStartSceneName);
         yield return null;
 
+        SetAreaSide(AreaSide.Interior);
+        ApplyAreaSide(AreaSide.Interior);
+
         PlacePlayerAtAnchor(defaultSpawnAnchorID);
         SetState(GameState.Game);
     }

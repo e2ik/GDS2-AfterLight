@@ -38,6 +38,24 @@ public class WorldStreamer : MonoBehaviour
 
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneToLoad, LoadSceneMode.Additive);
         while (!asyncLoad.isDone) yield return null;
+        yield return null;
+
+        Scene newlyLoadedScene = SceneManager.GetSceneByName(sceneToLoad);
+
+        if (GameManager.Instance != null && newlyLoadedScene.IsValid())
+        {
+            AreaSide currentSide = GameManager.Instance.CurrentAreaSide;
+            
+            GameObject[] rootObjects = newlyLoadedScene.GetRootGameObjects();
+            foreach (GameObject root in rootObjects)
+            {
+                SceneAreaState[] areaStates = root.GetComponentsInChildren<SceneAreaState>(true);
+                foreach (var state in areaStates)
+                {
+                    state.SetSide(currentSide);
+                }
+            }
+        }
 
         SceneAnchor sourceAnchor = FindAnchor(sourceAnchorID);
         SceneAnchor targetAnchor = FindAnchor(targetAnchorID);
@@ -47,8 +65,10 @@ public class WorldStreamer : MonoBehaviour
             Vector3 positionOffset = sourceAnchor.transform.position - targetAnchor.transform.position;
             targetAnchor.SceneRoot.position += positionOffset;
         }
-
-        yield return null;
+        else
+        {
+            Debug.LogWarning($"[WorldStreamer] Alignment failed. Source '{sourceAnchorID}' or Target '{targetAnchorID}' missing.");
+        }
 
         loadingScenes.Remove(sceneToLoad);
         IsAligning = false;
@@ -56,7 +76,11 @@ public class WorldStreamer : MonoBehaviour
 
     private SceneAnchor FindAnchor(string anchorID)
     {
-        SceneAnchor[] anchors = Object.FindObjectsByType<SceneAnchor>(FindObjectsSortMode.None);
+        SceneAnchor[] anchors = Object.FindObjectsByType<SceneAnchor>(
+            FindObjectsInactive.Include, 
+            FindObjectsSortMode.None
+        );
+
         foreach (var anchor in anchors)
         {
             if (anchor.AnchorID == anchorID) return anchor;
