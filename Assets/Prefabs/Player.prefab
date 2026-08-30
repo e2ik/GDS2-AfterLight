@@ -256,7 +256,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 8
-  jumpForce: 15
+  jumpForce: 20
   tapJumpMultiplier: 0.2
   normGravity: 5
   jumpGravity: 4
@@ -297,7 +297,10 @@ MonoBehaviour:
   attackDuration: 0.5
   attackCoolDown: 0.2
   counterAttackWindow: 0.5
+  skillMeterAlwaysFull: 0
   skillCoolDown: 0.2
+  chargeSkillAmount: 0.2
+  successfulParryVisualDuration: 0.15
 --- !u!114 &4877809276059888347
 MonoBehaviour:
   m_ObjectHideFlags: 0
