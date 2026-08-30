@@ -408,20 +408,38 @@ public class PlayerCombatController : MonoBehaviour
             
             isSkilling = true;
             CurrentSkillGemName = specialDef.GemName;
-            skillCoroutine = StartCoroutine(PerformSkill(skillDamageTick, specialDef));
 
+            switch (specialDef.SkillType)
+            {
+                case SkillType.Single:
+                    PerformSingleSkill(specialDef);
+                    break;
+                case SkillType.Timed:
+                    skillCoroutine = StartCoroutine(PerformTimedSkill(skillDamageTick, specialDef));
+                    break;
+                default:
+                    Debug.Log("Current SkillType not implemented!");
+                    break;
+            }
+            
             OnEnergyChanged?.Invoke(0f, 1f); // I have no idea how it's keeping track of the skillmeter
         }
     }
 
-    IEnumerator PerformSkill(float tick, PrimaryGemBehaviourDefinition def)
+    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def)
     {
         AttackContext context = Player.Equipment.GetModifiedAttackContext();
-        float baseDamage = Player.Equipment.EquippedWeapon.BaseWeaponDamage + (Player.Stats != null ? Player.Stats.TotalAttack : 0);
+        float damage = Player.Equipment.EquippedWeapon.BaseWeaponDamage + (Player.Stats != null ? Player.Stats.TotalAttack : 0);
+        def.Execute(context, damage);
+    }
+    IEnumerator PerformTimedSkill(float tick, PrimaryGemBehaviourDefinition def)
+    {
+        AttackContext context = Player.Equipment.GetModifiedAttackContext();
+        float damage = Player.Equipment.EquippedWeapon.BaseWeaponDamage + (Player.Stats != null ? Player.Stats.TotalAttack : 0);
         
         while(isSkilling)
         {
-            def.Execute(context, baseDamage);
+            def.Execute(context, damage);
             yield return new WaitForSeconds(tick);
         }
     }
