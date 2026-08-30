@@ -4,7 +4,7 @@ public class Chest : MonoBehaviour, IInteractable
 {
     private bool isOpened = false;
 
-    private string chestID;
+    [SerializeField] private string chestID;
 
     [Header("Loot Configuration")]
     [SerializeField] private InventoryItemBase lootItem;
@@ -18,27 +18,6 @@ public class Chest : MonoBehaviour, IInteractable
     public string InteractionPrompt => "Open Chest";
     public bool CanInteract => !isOpened;
     public bool ShouldStopPlayerMovement => false;
-
-    private void OnValidate()
-    {
-        if (string.IsNullOrEmpty(chestID))
-        {
-            GenerateUniqueID();
-        }
-    }
-
-    [ContextMenu("Generate Unique ID")]
-    private void GenerateUniqueID()
-    {
-        // Creates a deterministic ID using Scene name + transform position + sibling index
-        string sceneName = gameObject.scene.name;
-        Vector3 pos = transform.position;
-        chestID = $"{sceneName}_{gameObject.name}_{pos.x:F1}_{pos.y:F1}_{pos.z:F1}";
-        
-#if UNITY_EDITOR
-        UnityEditor.EditorUtility.SetDirty(this);
-#endif
-    }
 
     private void Start()
     {
