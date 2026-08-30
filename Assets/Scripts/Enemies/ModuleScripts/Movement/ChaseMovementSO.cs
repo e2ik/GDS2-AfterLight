@@ -1,6 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.UIElements;
 
 namespace Enemies.ModuleScripts
 {
