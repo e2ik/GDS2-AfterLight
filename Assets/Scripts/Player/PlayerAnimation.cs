@@ -6,8 +6,6 @@ public class PlayerAnimation : MonoBehaviour
     private Player player;
     private Rigidbody2D rb;
     private Animator animator;
-    private SpriteRenderer sr;
-    private Color ogColor;
 
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
     private static readonly int YVelocityHash = Animator.StringToHash("yVelocity");
@@ -27,10 +25,6 @@ public class PlayerAnimation : MonoBehaviour
         player = GetComponentInParent<Player>();
         animator = GetComponent<Animator>();
         if (rb == null) rb = GetComponentInParent<Rigidbody2D>();
-        if (sr == null) {
-            sr = GetComponentInParent<SpriteRenderer>();
-            ogColor = sr.color;
-        }
     }
 
     private void Update()
@@ -78,22 +72,5 @@ public class PlayerAnimation : MonoBehaviour
     public  void EndSkillAnimation()
     {
         player.CombatController.EndSkill();
-    }
-
-    public void FlashRedOnHit()
-    {
-        sr.color = Color.red;
-        Invoke("ResetColor", 0.1f);
-    }
-
-    private void ResetColor()
-    {
-        sr.color = ogColor;
-    }
-
-    public void FlashGreenOnParrySuccess()
-    {
-        sr.color = Color.green;
-        Invoke("ResetColor", 0.1f);
     }
 }

@@ -69,7 +69,9 @@ public class PlayerCombatController : MonoBehaviour
     private bool skillReady;
 
     private float verticalInput;
-    private Player Player;
+    private PlayerStats pStats;
+    private PlayerController pController;
+    private PlayerEquipmentManager equipmentManager;
 
     public bool IsAttacking => isAttacking;
     // just for now we can make visual distinction later
@@ -87,7 +89,9 @@ public class PlayerCombatController : MonoBehaviour
 
     private void Awake()
     {
-        Player = GetComponentInParent<Player>();
+        pStats = GetComponent<PlayerStats>();
+        pController = GetComponent<PlayerController>();
+        equipmentManager = GetComponent<PlayerEquipmentManager>();
     }
 
     private void Start()
@@ -97,7 +101,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void Update()
     {
-        if (!Player.Controller.InputEnabled) return;
+        if (!pController.InputEnabled) return;
 
         HandleParry();
         HandleAttack();
@@ -146,17 +150,17 @@ public class PlayerCombatController : MonoBehaviour
                 isParryInRecovery = false;
                 
                 // Unfreeze player movement when recovery finishes
-                if (Player.Controller != null)
-                    Player.Controller.FreezeMovement(false);
+                if (pController != null)
+                    pController.FreezeMovement(false);
             }
         }
     }
 
     private bool CanAct()
     {
-        return Player.Controller.InputEnabled 
-            && !Player.Controller.IsWallSliding 
-            && !Player.Controller.IsChargingSkill 
+        return pController.InputEnabled 
+            && !pController.IsWallSliding 
+            && !pController.IsChargingSkill 
             && !isParrying 
             && !isParryInRecovery 
             && !isAttacking;
@@ -179,8 +183,8 @@ public class PlayerCombatController : MonoBehaviour
         isParryInRecovery = false;
         parryActiveTimer = parryActiveDuration;
         
-        if (Player.Controller != null) 
-            Player.Controller.FreezeMovement(true);
+        if (pController != null) 
+            pController.FreezeMovement(true);
 
         parryDir = GetInputDirection();
 
@@ -189,10 +193,10 @@ public class PlayerCombatController : MonoBehaviour
 
     private ParryDirection GetInputDirection()
     {
-        ParryDirection inputDir = Player.Controller.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
+        ParryDirection inputDir = pController.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
         if (verticalInput > 0.01f) 
             inputDir = ParryDirection.Up;
-        else if (verticalInput < -0.01f && !Player.Controller.IsGrounded) 
+        else if (verticalInput < -0.01f && !pController.IsGrounded) 
             inputDir = ParryDirection.Down;
         return inputDir;
     }
@@ -210,8 +214,6 @@ public class PlayerCombatController : MonoBehaviour
 
     private void OnSuccessfulParry()
     {
-        Player.Animation.FlashGreenOnParrySuccess();
-
         isParrying = false;
         isParryInRecovery = false;
         parryActiveTimer = 0f;
@@ -219,8 +221,8 @@ public class PlayerCombatController : MonoBehaviour
         
         ChargeSkillMeter(chargeSkillAmount);
 
-        if (Player.Controller != null)
-            Player.Controller.FreezeMovement(false);
+        if (pController != null)
+            pController.FreezeMovement(false);
 
         isCounterAttacking = true;
         CancelInvoke(nameof(EndCounterAttackWindow));
@@ -265,10 +267,10 @@ public class PlayerCombatController : MonoBehaviour
         parryRecoveryTimer = 0f;
 
         // Reset movement freeze and gravity state
-        if (Player.Controller != null)
+        if (pController != null)
         {
-            Player.Controller.FreezeMovement(false);
-            // Player.Controller.SetParryGravity(false);
+            pController.FreezeMovement(false);
+            // pController.SetParryGravity(false);
         }
     }
 
@@ -295,7 +297,7 @@ public class PlayerCombatController : MonoBehaviour
 
             attackPressed = false;
             
-            if (Player.Equipment.EquippedWeapon == null)
+            if (equipmentManager.EquippedWeapon == null)
             {
                 Debug.LogWarning("[PlayerCombatController] Cannot attack: No weapon equipped.");
                 attackPressed = false;
@@ -313,7 +315,7 @@ public class PlayerCombatController : MonoBehaviour
             };
 
             attackCenter = attackOrigin.position;
-            float weaponRange = Player.Equipment.EquippedWeapon.BaseWeaponRange;
+            float weaponRange = equipmentManager.EquippedWeapon.BaseWeaponRange;
             if (attackDir == Vector2.left || attackDir == Vector2.right)
             {
                 attackRange = new Vector2(weaponRange, attackWidth);
@@ -327,8 +329,8 @@ public class PlayerCombatController : MonoBehaviour
                     : new Vector2(0f, -attackRange.y / 2);
             }
 
-            attackDamage = Player.Equipment.EquippedWeapon.BaseWeaponDamage + (Player.Stats != null ? Player.Stats.TotalAttack : 0);
-            attackCrit = Player.Equipment.EquippedWeapon.BaseWeaponCrit;
+            attackDamage = equipmentManager.EquippedWeapon.BaseWeaponDamage + (pStats != null ? pStats.TotalAttack : 0);
+            attackCrit = equipmentManager.EquippedWeapon.BaseWeaponCrit;
             
             Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
 
@@ -396,7 +398,7 @@ public class PlayerCombatController : MonoBehaviour
         if (skillPressed && skillTimer <= 0f && CanAct())
         {
             CancelParry();
-            PrimaryGemBehaviourDefinition specialDef = Player.Equipment.SpecialAttackDef;
+            PrimaryGemBehaviourDefinition specialDef = equipmentManager.SpecialAttackDef;
 
             if (specialDef == null)
             {
@@ -405,8 +407,8 @@ public class PlayerCombatController : MonoBehaviour
                 return;
             }
 
-            AttackContext context = Player.Equipment.GetModifiedAttackContext();
-            float baseDamage = Player.Equipment.EquippedWeapon.BaseWeaponDamage + (Player.Stats != null ? Player.Stats.TotalAttack : 0);
+            AttackContext context = equipmentManager.GetModifiedAttackContext();
+            float baseDamage = equipmentManager.EquippedWeapon.BaseWeaponDamage + (pStats != null ? pStats.TotalAttack : 0);
 
             isSkilling = true;
             CurrentSkillGemName = specialDef.GemName;

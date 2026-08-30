@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca334159b860b7943b6e9457654eb9b5, type: 3}
   m_Name: SlamAttackTempEnemy
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.MeleeAttack
-  range: 30
-  cooldownDuration: 2
+  range: 2.5
+  cooldownDuration: 3
   clip: {fileID: 7400000, guid: 1c041f7b11f6b8d4faaee1e2c52b3558, type: 2}
   damage: 20
   placeholderClipName: EmptyAttack
