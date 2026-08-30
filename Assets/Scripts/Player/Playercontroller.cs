@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
@@ -81,6 +82,7 @@ public class PlayerController : MonoBehaviour
     // Movement Freeze State just incase multiple systems need to freeze movement
     // that system needs to be responsible for decrementing the count tho
     private int movementFreezeCount = 0;
+    private bool isStaggered;
     public bool IsMovementFrozen => movementFreezeCount > 0;
 
     public bool InputEnabled { get; set; } = true;    
@@ -93,6 +95,10 @@ public class PlayerController : MonoBehaviour
     public bool IsChargingSkill => isChargingSkill;
     public bool IsDirectionalDash { get; private set; }
     private bool isParryGravityActive;
+    public bool IsStaggered => isStaggered;
+
+    private Coroutine hitStaggerRoutine;
+    [SerializeField] private float defaultStaggerDur = 1f;
 
     private void Awake()
     {
@@ -162,7 +168,27 @@ public class PlayerController : MonoBehaviour
     
     private bool CanMove()
     {
-        return InputEnabled && !IsMovementFrozen && !isWallJumping && !isDashing && !isChargingSkill;
+        return InputEnabled && !IsMovementFrozen && !isWallJumping && !isDashing && !isChargingSkill && !isStaggered;
+    }
+
+    public void HitStagger()
+    {
+        if(hitStaggerRoutine != null)
+            StopCoroutine(hitStaggerRoutine);
+        hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(defaultStaggerDur));
+    }
+    public void HitStagger(float duration)
+    {
+        if(hitStaggerRoutine != null)
+            StopCoroutine(hitStaggerRoutine);
+        hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(duration));
+    }
+    private IEnumerator HitStaggerCoroutine(float duration)
+    {
+        isStaggered = true;
+        yield return new WaitForSeconds(duration);
+        isStaggered = false;
+        hitStaggerRoutine = null;
     }
     
     private void HandleMovement()
