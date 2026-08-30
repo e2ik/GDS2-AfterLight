@@ -39,6 +39,7 @@ public class PrefabSpawner : MonoBehaviour
                 yield return null;
             }
         }
+
         spawnedEnemy = Instantiate(prefabToSpawn, transform.position, transform.rotation);
         spawnedEnemy.transform.parent = transform;
 
@@ -46,6 +47,26 @@ public class PrefabSpawner : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (!Application.isPlaying && prefabToSpawn != null)
+        {
+            SpriteRenderer sr = prefabToSpawn.GetComponentInChildren<SpriteRenderer>();
+            if (sr != null && sr.sprite != null)
+            {
+                Sprite sprite = sr.sprite;
+                float width = (sprite.rect.width / sprite.pixelsPerUnit) * transform.localScale.x;
+                float height = (sprite.rect.height / sprite.pixelsPerUnit) * transform.localScale.y;
+                Rect spriteRect = new Rect(
+                    transform.position.x - (width / 2f),
+                    transform.position.y - (height / 2f),
+                    width,
+                    height
+                );
+
+                Gizmos.DrawGUITexture(spriteRect, sprite.texture);
+                return;
+            }
+        }
+
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, 0.5f);
     }

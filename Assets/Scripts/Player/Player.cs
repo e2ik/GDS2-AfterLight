@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerInventoryManager))]
 [RequireComponent(typeof(PlayerEquipmentManager))]
 [RequireComponent(typeof(PlayerCombatController))]
+[RequireComponent(typeof(PlayerAnimation))]
 public class Player : MonoBehaviour
 {
     public PlayerInput Input { get; private set; }
@@ -17,6 +18,7 @@ public class Player : MonoBehaviour
     public PlayerInventoryManager Inventory { get; private set; }
     public PlayerEquipmentManager Equipment { get; private set; }
     public PlayerCombatController CombatController { get; private set; }
+    public PlayerAnimation Animation { get; private set; }
 
     private void Awake()
     {
@@ -27,6 +29,7 @@ public class Player : MonoBehaviour
         Inventory = GetComponent<PlayerInventoryManager>();
         Equipment = GetComponent<PlayerEquipmentManager>();
         CombatController = GetComponent<PlayerCombatController>();
+        Animation = GetComponent<PlayerAnimation>();
     }
 
     private void Start()
