@@ -445,12 +445,7 @@ public class PlayerController : MonoBehaviour
             skillReleased = true;
         }
     }
-
-    public void OnInteract()
-    {
-        interactPressed = true;
-    }
-
+    
     public void OnInventory()
     {
         inventoryPressed = true;

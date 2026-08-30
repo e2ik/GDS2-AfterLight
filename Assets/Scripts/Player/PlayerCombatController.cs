@@ -58,6 +58,7 @@ public class PlayerCombatController : MonoBehaviour
     [Header("Skill Settings")]
     [SerializeField] private bool skillMeterAlwaysFull;
     [SerializeField] private float skillCoolDown = 0.2f;
+    [SerializeField] private float skillDamageTick = 0.33f;
     private float skillBufferTimer;
     private float skillBufferTime => attackBufferTime;
     private float skillTimer;
@@ -80,6 +81,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float successfulParryVisualDuration = 0.15f;
     private bool isParrySuccess;
     private Coroutine parrySuccessResetCoroutine;
+    private Coroutine skillCoroutine;
 
     // UI additions
     public event Action<float, float> OnEnergyChanged;
@@ -199,7 +201,6 @@ public class PlayerCombatController : MonoBehaviour
 
     public bool CheckParry(ParryDirection incomingDirection)
     {
-
         if (isParrying && parryDir == incomingDirection)
         {
             OnSuccessfulParry();
@@ -382,7 +383,7 @@ public class PlayerCombatController : MonoBehaviour
     public void ChargeSkillMeter(float amount)
     {
         SkillMeter = Mathf.Clamp(SkillMeter + amount, 0f, 1f);
-        OnEnergyChanged?.Invoke(SkillMeter, 1f); // UI
+        OnEnergyChanged?.Invoke(SkillMeter, 1f);
         Debug.Log("skill charge: " + SkillMeter);
         if (SkillMeter.Equals(1f))
             skillReady = true;
@@ -467,5 +468,9 @@ public class PlayerCombatController : MonoBehaviour
         if (attackOrigin == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(attackCenter, attackRange);
+        if (Player == null) return;
+        if (Player.Equipment == null) return;
+        if (Player.Equipment.SpecialAttackDef == null) return;
+        Gizmos.DrawWireSphere(transform.position, Player.Equipment.SpecialAttackDef.SkillRange);
     }
 }
