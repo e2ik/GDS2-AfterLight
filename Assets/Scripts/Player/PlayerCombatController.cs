@@ -3,6 +3,7 @@ using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using Unity.VisualScripting;
 
 public enum ParryDirection
 {
@@ -247,7 +248,6 @@ public class PlayerCombatController : MonoBehaviour
     private void EndCounterAttackWindow()
     {
         isCounterAttacking = false;
-        //Time.timeScale = 1f;
     }
 
     public void CancelParry()
@@ -392,10 +392,10 @@ public class PlayerCombatController : MonoBehaviour
     private void ExecuteSkill()
     {
         skillBufferTimer = 0f;
-        skillReady = false;
         
         if (skillPressed && skillTimer <= 0f && CanAct())
         {
+            skillReady = false;
             CancelParry();
             PrimaryGemBehaviourDefinition specialDef = Player.Equipment.SpecialAttackDef;
 
@@ -405,18 +405,24 @@ public class PlayerCombatController : MonoBehaviour
                 skillPressed = false;
                 return;
             }
-
-            AttackContext context = Player.Equipment.GetModifiedAttackContext();
-            float baseDamage = Player.Equipment.EquippedWeapon.BaseWeaponDamage + (Player.Stats != null ? Player.Stats.TotalAttack : 0);
-
+            
             isSkilling = true;
             CurrentSkillGemName = specialDef.GemName;
-            specialDef.Execute(context, baseDamage);
+            skillCoroutine = StartCoroutine(PerformSkill(skillDamageTick, specialDef));
 
             OnEnergyChanged?.Invoke(0f, 1f); // I have no idea how it's keeping track of the skillmeter
-            SkillMeter = 0f;
-            
-            // Invoke(nameof(EndSkill), 0.2f); // change to animation trigger
+        }
+    }
+
+    IEnumerator PerformSkill(float tick, PrimaryGemBehaviourDefinition def)
+    {
+        AttackContext context = Player.Equipment.GetModifiedAttackContext();
+        float baseDamage = Player.Equipment.EquippedWeapon.BaseWeaponDamage + (Player.Stats != null ? Player.Stats.TotalAttack : 0);
+        
+        while(isSkilling)
+        {
+            def.Execute(context, baseDamage);
+            yield return new WaitForSeconds(tick);
         }
     }
 
