@@ -203,6 +203,7 @@ MonoBehaviour:
   wallSlideUpwardDampening: 0.9
   wallCheckNormalThreshold: 0.5
   dashVelocity: 15
+  backDashMultiplier: 0.5
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -409,8 +410,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 1, y: 2}
+  m_Offset: {x: 0.087902665, y: -0.07115939}
+  m_Size: {x: 0.82419467, y: 2.1423187}
   m_Direction: 0
 --- !u!61 &7665356309269939156
 BoxCollider2D:
