@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -26,6 +27,16 @@ public class PlayerController : MonoBehaviour
     private bool jumpPressed;
     private bool jumpReleased;
     private float coyoteTimeCounter;
+
+    [Header("Knockback")] 
+    [SerializeField] private float lightForce = 8f;
+    [SerializeField] private float lightStaggerDuration = 0.1f;
+    [SerializeField] private float mediumForce = 10f;
+    [SerializeField] private float mediumStaggerDuration = 0.2f;
+    [SerializeField] private float heavyForce = 14f;
+    [SerializeField] private float heavyStaggerDuration = 0.4f;
+    private bool isStaggered;
+    private Coroutine hitStaggerRoutine;
     
     [Header("Wall Movement")] 
     [SerializeField] private float wallSlideSpeed = 2f;
@@ -86,7 +97,6 @@ public class PlayerController : MonoBehaviour
 
     // Movement Freeze State
     private int movementFreezeCount = 0;
-    private bool isStaggered;
     public bool IsMovementFrozen => movementFreezeCount > 0;
 
     public bool InputEnabled { get; set; } = true;    
@@ -100,9 +110,6 @@ public class PlayerController : MonoBehaviour
     public bool IsDirectionalDash { get; private set; }
     private bool isParryGravityActive;
     public bool IsStaggered => isStaggered;
-
-    private Coroutine hitStaggerRoutine;
-    [SerializeField] private float defaultStaggerDur = 1f;
 
     private void Awake()
     {
@@ -175,18 +182,30 @@ public class PlayerController : MonoBehaviour
         return InputEnabled && !IsMovementFrozen && !isWallJumping && !isDashing && !isChargingSkill && !isStaggered && !isWallSliding;
     }
 
-    public void HitStagger()
+    public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce)
     {
+        Vector2 forceType = attackForce switch
+        {
+            AttackForce.Zero => Vector2.zero,
+            AttackForce.Light => new Vector2(lightForce, lightStaggerDuration),
+            AttackForce.Medium => new Vector2(mediumForce, mediumStaggerDuration),
+            AttackForce.Heavy => new Vector2(heavyForce, heavyStaggerDuration),
+            _ => ForceOutOfRange()
+        };
+        
+        Vector2 dir = (Vector2)transform.position - sourcePosition;
+        rb.AddForce(dir.normalized * forceType.x, ForceMode2D.Impulse);
+        
+        Debug.Log("Hit in Direction: " + dir.normalized + " for force: " + forceType.x);
         if (hitStaggerRoutine != null)
             StopCoroutine(hitStaggerRoutine);
-        hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(defaultStaggerDur));
+        hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(forceType.y));
     }
 
-    public void HitStagger(float duration)
+    private Vector2 ForceOutOfRange()
     {
-        if (hitStaggerRoutine != null)
-            StopCoroutine(hitStaggerRoutine);
-        hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(duration));
+        Debug.LogWarning("AttackForce Enum not implemented into PlayerController.ApplyKnockback(...)");
+        return Vector2.zero;
     }
 
     private IEnumerator HitStaggerCoroutine(float duration)

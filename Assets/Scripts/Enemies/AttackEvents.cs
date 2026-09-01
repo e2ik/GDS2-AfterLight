@@ -9,9 +9,10 @@ namespace Enemies
  
         public int CurrentDamage { get; set; }
         public ParryDirection CurrentParryDirection { get; set; }
+        public AttackForce CurrentAttackForce { get; set; }
         public bool ParryWindowOpen { get; private set; }
         
-        public void EnableHitbox() => hitbox.Enable(CurrentDamage, CurrentParryDirection);
+        public void EnableHitbox() => hitbox.Enable(CurrentDamage, CurrentParryDirection, CurrentAttackForce);
         public void DisableHitbox() => hitbox.Disable();
  
         public void EnableIFrames() => hurtbox.Invulnerable = true;

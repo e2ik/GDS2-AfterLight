@@ -10,6 +10,7 @@ namespace Enemies
         public AttackEvents SourceEvents { get; private set; }
         public int Damage { get; private set; }
         public ParryDirection ParryDirection { get; private set; }
+        public AttackForce AttackForce { get; private set; }
         public bool IsActive => col.enabled;
 
         private void Start()
@@ -19,11 +20,12 @@ namespace Enemies
             col.enabled = false;
         }
 
-        public void Enable(int damage, ParryDirection parryDirection)
+        public void Enable(int damage, ParryDirection parryDirection, AttackForce attackForce)
         {
             Damage = damage;
             col.enabled = true;
             ParryDirection = parryDirection;
+            AttackForce = attackForce;
         }
 
         public void Disable() => col.enabled = false;

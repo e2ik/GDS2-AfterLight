@@ -13,6 +13,14 @@ public enum ParryDirection
     Right
 }
 
+public enum AttackForce
+{
+    Zero,
+    Light,
+    Medium,
+    Heavy
+}
+
 public class PlayerCombatController : MonoBehaviour
 {
     [Header("Parry Settings")]
