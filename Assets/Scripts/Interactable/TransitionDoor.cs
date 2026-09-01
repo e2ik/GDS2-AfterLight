@@ -44,12 +44,6 @@ public class TransitionDoor : MonoBehaviour, IInteractable
                 GameManager.Instance.SetAreaSide(newSide);
                 GameManager.Instance.ApplyAreaSide(newSide);
             }
-
-            if (SaveManager.Instance?.GetSaveData()?.progress != null)
-            {
-                SaveManager.Instance.GetSaveData().progress.lastAreaSide = newSide;
-                SaveManager.Instance.CommitToDisk();
-            }
         }
 
         yield return Fade(1f, 0f);
