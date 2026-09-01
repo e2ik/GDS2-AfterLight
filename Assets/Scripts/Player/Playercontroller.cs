@@ -18,9 +18,9 @@ public class PlayerController : MonoBehaviour
     private float velocityPower = 1.2f;
     private float friction = 0.2f;
     
-    [SerializeField] private float normGravity;
-    [SerializeField] private float jumpGravity;
-    [SerializeField] private float fallGravity;
+    [SerializeField] private float normGravity = 3f;
+    [SerializeField] private float jumpGravity = 2.5f;
+    [SerializeField] private float fallGravity = 4.5f;
     
     [SerializeField] private float coyoteTime = 0.15f;
     private bool jumpPressed;
@@ -42,6 +42,7 @@ public class PlayerController : MonoBehaviour
     
     [Header("Dash Movement")]
     [SerializeField] private float dashVelocity = 20f;
+    [SerializeField] [Range(0.1f, 1f)] private float backDashMultiplier = 0.5f;
     private float dashDuration = 0.2f;
     private bool dashPressed;
     private bool dashReleased;
@@ -56,7 +57,7 @@ public class PlayerController : MonoBehaviour
     private bool isChargingSkill;
     private float chargingSkillTimer;
     private float chargingSkillMinDur = 0.4f;
-    private float chargingSkillMaxDur;
+    private float chargingSkillMaxDur = 1.5f;
 
     private bool inventoryPressed;
     private bool interactPressed;
@@ -80,6 +81,7 @@ public class PlayerController : MonoBehaviour
     private InputAction sAttackAction;
     private InputAction inventoryAction;
     private float horizontalInput;
+    private float verticalInput;
     private Vector2 jumpInput;
 
     // Movement Freeze State
@@ -141,6 +143,7 @@ public class PlayerController : MonoBehaviour
         HandleJump();
         HandleWallJump();
         HandleDash();
+        HandleSkillCharging();
             
         GravityState();
     }
@@ -212,7 +215,7 @@ public class PlayerController : MonoBehaviour
 
         rb.AddForce(movement * Vector2.right);
 
-        if (isGrounded && horizontalInput < 0.01f)
+        if (isGrounded && Mathf.Abs(horizontalInput) < 0.01f)
         {
             float f = Mathf.Min(Mathf.Abs(rb.linearVelocityX), Mathf.Abs(friction));
             f *= Mathf.Sign(rb.linearVelocityX);
@@ -231,12 +234,20 @@ public class PlayerController : MonoBehaviour
         
         if (jumpPressed && coyoteTimeCounter > 0f && !isWallSliding)
         {
+            if (verticalInput < -0.5f && TryPassThroughPlatform())
+            {
+                jumpPressed = false;
+                jumpReleased = false;
+                return;
+            }
+
             if (!isGrounded) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             jumpPressed = false;
             jumpReleased = false;
             coyoteTimeCounter = 0f;
         }
+
         if (jumpReleased)
         {
             if (rb.linearVelocityY > 0)
@@ -258,7 +269,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (onWall && !isGrounded && horizontalInput != 0)
+        if (onWall && !isGrounded && Mathf.Abs(horizontalInput) > 0.1f)
             wallCoyoteTimer = coyoteTime;
         else
             wallCoyoteTimer -= Time.fixedDeltaTime;
@@ -308,8 +319,8 @@ public class PlayerController : MonoBehaviour
 
             if (FacingDirection != wallJumpDirection)
             {
-                FacingDirection *= -1;
-                transform.localScale = new Vector3(FacingDirection, transform.localScale.y);
+                FacingDirection = (int)wallJumpDirection;
+                transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
             }
             Invoke(nameof(StopWallJumping), wallJumpDuration);
         }
@@ -341,7 +352,9 @@ public class PlayerController : MonoBehaviour
 
             isDashing = true;
             
-            if (horizontalInput != 0)
+            float activeDashDuration = dashDuration;
+
+            if (Mathf.Abs(horizontalInput) > 0.1f)
             {
                 IsDirectionalDash = true;
                 dashDirection = Mathf.Sign(horizontalInput);
@@ -350,6 +363,7 @@ public class PlayerController : MonoBehaviour
             {
                 IsDirectionalDash = false;
                 dashDirection = -FacingDirection;
+                activeDashDuration = dashDuration * backDashMultiplier;
             }
 
             var targetSpeed = dashDirection * dashVelocity;
@@ -357,7 +371,9 @@ public class PlayerController : MonoBehaviour
 
             dashPressed = false;
             dashReleased = false;
-            Invoke(nameof(StopDashing), dashDuration);
+
+            CancelInvoke(nameof(StopDashing));
+            Invoke(nameof(StopDashing), activeDashDuration);
         }
 
         if (dashReleased)
@@ -429,7 +445,7 @@ public class PlayerController : MonoBehaviour
         else if (horizontalInput < -0.01f)
             FacingDirection = -1;
         
-        transform.localScale = new Vector3(FacingDirection, transform.localScale.y);
+        transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
     }
 
     private void GravityState()
@@ -438,9 +454,9 @@ public class PlayerController : MonoBehaviour
         {
             rb.gravityScale = 0f;
         }
-        else if (rb.linearVelocityY > 0.1)
+        else if (rb.linearVelocityY > 0.1f)
             rb.gravityScale = jumpGravity;
-        else if (rb.linearVelocityY < -0.1)
+        else if (rb.linearVelocityY < -0.1f)
             rb.gravityScale = fallGravity;
         else
             rb.gravityScale = normGravity;
@@ -450,7 +466,17 @@ public class PlayerController : MonoBehaviour
 
     public void OnMove()
     {
-        horizontalInput = moveAction.ReadValue<Vector2>().x;
+        Vector2 rawInput = moveAction.ReadValue<Vector2>();
+        verticalInput = rawInput.y;
+        
+        if (Mathf.Abs(rawInput.x) > 0.1f)
+        {
+            horizontalInput = Mathf.Sign(rawInput.x) * Mathf.Clamp01(rawInput.magnitude);
+        }
+        else
+        {
+            horizontalInput = 0f;
+        }
     }
 
     public void OnJump(InputValue value)
@@ -525,11 +551,6 @@ public class PlayerController : MonoBehaviour
         bool rightOnGround = rightHit.collider != null && rightHit.normal.y > 0.6f;
 
         isGrounded = leftOnGround || rightOnGround;
-
-        if (isGrounded && (!leftOnGround || !rightOnGround) && Mathf.Abs(horizontalInput) < 0.01f)
-        {
-            rb.linearVelocityX = 0f;
-        }
     }
 
     private void WallCheckUpdate()
@@ -543,21 +564,37 @@ public class PlayerController : MonoBehaviour
         float checkDir = Mathf.Sign(horizontalInput);
         float rayLength = bounds.extents.x + wallCheckDistance;
 
-        Vector2 headOrigin  = new Vector2(bounds.center.x, bounds.max.y - (bounds.size.y * 0.10f)); // 90% height
-        Vector2 chestOrigin = new Vector2(bounds.center.x, bounds.center.y + (bounds.extents.y * 0.2f)); // 60% height
-        Vector2 waistOrigin = new Vector2(bounds.center.x, bounds.min.y + (bounds.size.y * 0.30f)); // 30% height
+        Vector2 headOrigin  = new Vector2(bounds.center.x, bounds.max.y - (bounds.size.y * 0.10f));
+        Vector2 chestOrigin = new Vector2(bounds.center.x, bounds.center.y + (bounds.extents.y * 0.2f));
+        Vector2 waistOrigin = new Vector2(bounds.center.x, bounds.min.y + (bounds.size.y * 0.30f));
 
         RaycastHit2D headHit  = Physics2D.Raycast(headOrigin,  Vector2.right * checkDir, rayLength, groundLayer);
         RaycastHit2D chestHit = Physics2D.Raycast(chestOrigin, Vector2.right * checkDir, rayLength, groundLayer);
         RaycastHit2D waistHit = Physics2D.Raycast(waistOrigin, Vector2.right * checkDir, rayLength, groundLayer);
 
-        if (headHit.collider != null && (chestHit.collider != null || waistHit.collider != null))
+        int hitCount = 0;
+        Vector2 hitNormal = Vector2.zero;
+
+        if (headHit.collider != null && Mathf.Abs(headHit.normal.x) > wallCheckNormalThreshold)
         {
-            if (Mathf.Abs(headHit.normal.x) > wallCheckNormalThreshold)
-            {
-                onWall = true;
-                lastWallNormal = headHit.normal;
-            }
+            hitCount++;
+            hitNormal = headHit.normal;
+        }
+        if (chestHit.collider != null && Mathf.Abs(chestHit.normal.x) > wallCheckNormalThreshold)
+        {
+            hitCount++;
+            hitNormal = chestHit.normal;
+        }
+        if (waistHit.collider != null && Mathf.Abs(waistHit.normal.x) > wallCheckNormalThreshold)
+        {
+            hitCount++;
+            hitNormal = waistHit.normal;
+        }
+
+        if (hitCount >= 2)
+        {
+            onWall = true;
+            lastWallNormal = hitNormal;
         }
     }
 
@@ -576,7 +613,6 @@ public class PlayerController : MonoBehaviour
 
         Gizmos.color = onWall ? Color.green : Color.red;
 
-        // Visualizing the full 3-point height check
         Vector2 headOrigin  = new Vector2(bounds.center.x, bounds.max.y - (bounds.size.y * 0.10f));
         Vector2 chestOrigin = new Vector2(bounds.center.x, bounds.center.y + (bounds.extents.y * 0.2f));
         Vector2 waistOrigin = new Vector2(bounds.center.x, bounds.min.y + (bounds.size.y * 0.30f));
@@ -586,8 +622,36 @@ public class PlayerController : MonoBehaviour
         Gizmos.DrawLine(waistOrigin, waistOrigin + Vector2.right * checkDir * rayLength);
     }
 
+    private bool TryPassThroughPlatform()
+    {
+        Bounds bounds = GetPlayerBounds();
+        RaycastHit2D hit = Physics2D.Raycast(bounds.center, Vector2.down, bounds.extents.y + 0.2f, groundLayer);
 
-    // helper
+        if (hit.collider != null && hit.collider.GetComponent<PlatformEffector2D>() != null)
+        {
+            StartCoroutine(DisableCollisionRoutine(hit.collider));
+            return true;
+        }
+
+        return false;
+    }
+
+    private IEnumerator DisableCollisionRoutine(Collider2D platformCollider)
+    {
+        foreach (var playerCol in playerColliders)
+        {
+            Physics2D.IgnoreCollision(playerCol, platformCollider, true);
+        }
+
+        yield return new WaitForSeconds(0.25f);
+
+        foreach (var playerCol in playerColliders)
+        {
+            if (platformCollider != null)
+                Physics2D.IgnoreCollision(playerCol, platformCollider, false);
+        }
+    }
+
     private Bounds GetPlayerBounds()
     {
         if (playerColliders == null || playerColliders.Length == 0)
