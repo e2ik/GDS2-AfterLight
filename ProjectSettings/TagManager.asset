@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - EnemyHurtBox
+  - Navigation Modifier
   layers:
   - Default
   - TransparentFX
@@ -39,6 +40,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 633413543
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

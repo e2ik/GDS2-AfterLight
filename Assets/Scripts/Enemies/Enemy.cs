@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Behavior;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Enemies
 {
@@ -52,6 +53,10 @@ namespace Enemies
             };
 
             Context.AttackStopDistance = attacks.Count > 0 ? attacks.Min(a => a.Attack.Range) : 0.1f;
+            Context.HomePosition = transform.position;
+            Context.NavPath = new NavMeshPath();
+            Context.NoiseSeed = UnityEngine.Random.value * 1000f;
+
         }
 
         private void Update()
@@ -67,16 +72,14 @@ namespace Enemies
             
             bool attackReady = false;
 
-            if (attackCooldownTimer <= 0)
+           
+            foreach (AttackInstance attack in attacks)
             {
-                foreach (AttackInstance attack in attacks)
-                {
-                    attack.Tick(Context, Time.deltaTime);
-                    if (!IsAttacking && attack.IsValid)
-                        attackReady = true;
-                }
+                attack.Tick(Context, Time.deltaTime);
+                if (attackCooldownTimer <= 0 && !IsAttacking && Context.CanReachTarget && attack.IsValid)
+                    attackReady = true;
             }
-
+            
             behaviorAgent.BlackboardReference.SetVariableValue("TargetVisible", Context.TargetVisible);
             behaviorAgent.BlackboardReference.SetVariableValue("TargetPosition", Context.TargetPosition);
             behaviorAgent.BlackboardReference.SetVariableValue("AttackReady", attackReady);
