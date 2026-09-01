@@ -261,8 +261,10 @@ MonoBehaviour:
   normGravity: 5
   jumpGravity: 4
   fallGravity: 11
-  coyoteTime: 0.15
+  coyoteTime: 0.1
   wallSlideSpeed: 2
+  wallJumpCounterStrength: 0.1
+  wallSlideUpwardDampening: 0.9
   dashVelocity: 15
   groundCheck: {fileID: 7522278443075006567}
   groundLayer:
@@ -272,6 +274,7 @@ MonoBehaviour:
   wallLayer:
     serializedVersion: 2
     m_Bits: 128
+  defaultStaggerDur: 1
 --- !u!114 &3547647608137716798
 MonoBehaviour:
   m_ObjectHideFlags: 0

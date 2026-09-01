@@ -28,6 +28,8 @@ public class PlayerController : MonoBehaviour
     
     [Header("Wall Movement")] 
     [SerializeField] private float wallSlideSpeed = 2f;
+    [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
+    [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     private bool isWallSliding;
     private bool isWallJumping;
     private float wallJumpDirection;
@@ -134,9 +136,8 @@ public class PlayerController : MonoBehaviour
         WallCheckUpdate();
 
         HandleMovement();
-        HandleJump();
-        
         HandleWallSlide();
+        HandleJump();
         HandleWallJump();
         HandleDash();
             
@@ -168,7 +169,7 @@ public class PlayerController : MonoBehaviour
     
     private bool CanMove()
     {
-        return InputEnabled && !IsMovementFrozen && !isWallJumping && !isDashing && !isChargingSkill && !isStaggered;
+        return InputEnabled && !IsMovementFrozen && !isWallJumping && !isDashing && !isChargingSkill && !isStaggered && !isWallSliding;
     }
 
     public void HitStagger()
@@ -193,12 +194,20 @@ public class PlayerController : MonoBehaviour
     
     private void HandleMovement()
     {
-        if (!CanMove()) return;
+        bool wallJumpNeutral = isWallJumping && Mathf.Abs(horizontalInput) < 0.01f;
+
+        if ((!CanMove() && !isWallJumping) || wallJumpNeutral) return;
 
         float targetSpeed = horizontalInput * moveSpeed;
         float speedDif = targetSpeed - rb.linearVelocityX;
         float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? acceleration : deceleration;
         float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, velocityPower) * Mathf.Sign(speedDif);
+
+        if (isWallJumping && horizontalInput != 0f && Mathf.Sign(horizontalInput) != Mathf.Sign(wallJumpDirection))
+        {
+            movement *= wallJumpCounterStrength;
+        }
+
         rb.AddForce(movement * Vector2.right);
 
         if (isGrounded && horizontalInput < 0.01f)
@@ -218,7 +227,7 @@ public class PlayerController : MonoBehaviour
         else
             coyoteTimeCounter -= Time.fixedDeltaTime;
         
-        if (jumpPressed && coyoteTimeCounter > 0f)
+        if (jumpPressed && coyoteTimeCounter > 0f && !isWallSliding)
         {
             if (!isGrounded) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
@@ -237,6 +246,7 @@ public class PlayerController : MonoBehaviour
     }
 
     private float wallCoyoteTimer;
+    private bool wasWallSliding;
 
     private void HandleWallSlide()
     {
@@ -249,11 +259,17 @@ public class PlayerController : MonoBehaviour
         if (onWall && !isGrounded && horizontalInput != 0)
             wallCoyoteTimer = coyoteTime;
         else
-            wallCoyoteTimer -= Time.deltaTime;
+            wallCoyoteTimer -= Time.fixedDeltaTime;
         
         if (onWall && !isGrounded && wallCoyoteTimer > 0)
         {
             isWallSliding = true;
+
+            if (rb.linearVelocityY > 0f)
+            {
+                rb.linearVelocityY *= wallSlideUpwardDampening;
+            }
+
             rb.linearVelocityY = Mathf.Clamp(rb.linearVelocityY, -wallSlideSpeed, float.MaxValue);
         }
         else
@@ -267,19 +283,26 @@ public class PlayerController : MonoBehaviour
         if (isWallSliding)
         {
             isWallJumping = false;
-            wallJumpDirection = -FacingDirection;
+
+            if (!wasWallSliding)
+                wallJumpDirection = -FacingDirection;
+
             wallJumpTimer = wallJumpLeniency;
-            
             CancelInvoke(nameof(StopWallJumping));
         }
         else
-            wallJumpTimer -= Time.deltaTime;
+            wallJumpTimer -= Time.fixedDeltaTime;
+
+        wasWallSliding = isWallSliding;
 
         if (jumpPressed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
+            rb.linearVelocity = Vector2.zero;
             rb.AddForce(new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y), ForceMode2D.Impulse);
             wallJumpTimer = 0f;
+            jumpPressed = false;
+            jumpReleased = false;
 
             if (FacingDirection != wallJumpDirection)
             {
