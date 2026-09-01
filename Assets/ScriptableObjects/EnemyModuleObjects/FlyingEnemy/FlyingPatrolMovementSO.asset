@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: FlyingPatrolMovementSO
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Movement.FlyingPatrolMovementSO
   patrolRadius: 3
-  moveSpeed: 2
+  moveSpeed: 1.25
   cornerReachDistance: 0.2
   minWaitAtWaypoint: 0.5
-  maxWaitAtWaypoint: 3
+  maxWaitAtWaypoint: 1.5
   navMeshSampleDistance: 2
-  wobbleAmplitude: 1
-  wobbleFrequency: 0.5
+  wobbleAmplitude: 0.75
+  wobbleFrequency: 2.5
