@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Collider2D))]
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerController : MonoBehaviour
 {
@@ -30,6 +31,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float wallSlideSpeed = 2f;
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
+    [SerializeField] private float wallCheckNormalThreshold = 0.5f;
     private bool isWallSliding;
     private bool isWallJumping;
     private float wallJumpDirection;
@@ -59,30 +61,28 @@ public class PlayerController : MonoBehaviour
     private bool inventoryPressed;
     private bool interactPressed;
 
-    [Header("Ground & Wall Check")] 
-    [SerializeField] private Transform groundCheck;
+    [Header("Detection Settings")] 
     public LayerMask groundLayer;
-    private bool isGrounded;
-    private float groundCheckRadius = 0.2f;
+    [SerializeField] private float groundCheckDistance = 0.05f;
+    [SerializeField] private float wallCheckDistance = 0.05f;
+    [SerializeField] private float edgeMargin = 0.05f;
     
-    [SerializeField] private Transform wallCheck; 
-    public LayerMask wallLayer;
+    private bool isGrounded;
     private bool onWall;
-    private float wallCheckRadius = 0.2f;
+    private Vector2 lastWallNormal;
     
     private Rigidbody2D rb;
+    private Collider2D[] playerColliders;
     private PlayerEquipmentManager equipmentManager;
 
     private InputAction moveAction;
-    
     private InputAction attackAction;
     private InputAction sAttackAction;
     private InputAction inventoryAction;
     private float horizontalInput;
     private Vector2 jumpInput;
 
-    // Movement Freeze State just incase multiple systems need to freeze movement
-    // that system needs to be responsible for decrementing the count tho
+    // Movement Freeze State
     private int movementFreezeCount = 0;
     private bool isStaggered;
     public bool IsMovementFrozen => movementFreezeCount > 0;
@@ -105,6 +105,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        playerColliders = GetComponents<Collider2D>();
         equipmentManager = GetComponent<PlayerEquipmentManager>();
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
@@ -157,13 +158,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // incase you wanna be able to parry in the air
     public void SetParryGravity(bool active)
     {
         isParryGravityActive = active;
         if (active)
         {
-            rb.linearVelocity = Vector2.zero; // Freeze instantly in place example
+            rb.linearVelocity = Vector2.zero;
         }
     }
     
@@ -174,16 +174,18 @@ public class PlayerController : MonoBehaviour
 
     public void HitStagger()
     {
-        if(hitStaggerRoutine != null)
+        if (hitStaggerRoutine != null)
             StopCoroutine(hitStaggerRoutine);
         hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(defaultStaggerDur));
     }
+
     public void HitStagger(float duration)
     {
-        if(hitStaggerRoutine != null)
+        if (hitStaggerRoutine != null)
             StopCoroutine(hitStaggerRoutine);
         hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(duration));
     }
+
     private IEnumerator HitStaggerCoroutine(float duration)
     {
         isStaggered = true;
@@ -330,15 +332,13 @@ public class PlayerController : MonoBehaviour
             PlayerCombatController combatController = GetComponent<PlayerCombatController>();
             if (combatController != null && combatController.IsParrying)
             {
-                combatController.CancelParry(); // Interrupt parry
+                combatController.CancelParry();
             }
             else if (IsMovementFrozen)
             {
-                // If movement is frozen by another state (e.g. dialogue), block dash
                 return; 
             }
 
-            // Proceed with normal dash execution
             isDashing = true;
             
             if (horizontalInput != 0)
@@ -512,19 +512,97 @@ public class PlayerController : MonoBehaviour
 
     private void GroundCheckUpdate()
     {
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        Bounds bounds = GetPlayerBounds();
+        
+        Vector2 leftFoot = new Vector2(bounds.min.x + edgeMargin, bounds.min.y + 0.02f);
+        Vector2 rightFoot = new Vector2(bounds.max.x - edgeMargin, bounds.min.y + 0.02f);
+        float rayDistance = groundCheckDistance + 0.04f;
+
+        RaycastHit2D leftHit = Physics2D.Raycast(leftFoot, Vector2.down, rayDistance, groundLayer);
+        RaycastHit2D rightHit = Physics2D.Raycast(rightFoot, Vector2.down, rayDistance, groundLayer);
+
+        bool leftOnGround = leftHit.collider != null && leftHit.normal.y > 0.6f;
+        bool rightOnGround = rightHit.collider != null && rightHit.normal.y > 0.6f;
+
+        isGrounded = leftOnGround || rightOnGround;
+
+        if (isGrounded && (!leftOnGround || !rightOnGround) && Mathf.Abs(horizontalInput) < 0.01f)
+        {
+            rb.linearVelocityX = 0f;
+        }
     }
 
     private void WallCheckUpdate()
     {
-        onWall = Physics2D.OverlapCircle(wallCheck.position, wallCheckRadius, wallLayer);
+        onWall = false;
+
+        if (isGrounded) return;
+        if (Mathf.Abs(horizontalInput) < 0.1f) return;
+
+        Bounds bounds = GetPlayerBounds();
+        float checkDir = Mathf.Sign(horizontalInput);
+        float rayLength = bounds.extents.x + wallCheckDistance;
+
+        Vector2 headOrigin  = new Vector2(bounds.center.x, bounds.max.y - (bounds.size.y * 0.10f)); // 90% height
+        Vector2 chestOrigin = new Vector2(bounds.center.x, bounds.center.y + (bounds.extents.y * 0.2f)); // 60% height
+        Vector2 waistOrigin = new Vector2(bounds.center.x, bounds.min.y + (bounds.size.y * 0.30f)); // 30% height
+
+        RaycastHit2D headHit  = Physics2D.Raycast(headOrigin,  Vector2.right * checkDir, rayLength, groundLayer);
+        RaycastHit2D chestHit = Physics2D.Raycast(chestOrigin, Vector2.right * checkDir, rayLength, groundLayer);
+        RaycastHit2D waistHit = Physics2D.Raycast(waistOrigin, Vector2.right * checkDir, rayLength, groundLayer);
+
+        if (headHit.collider != null && (chestHit.collider != null || waistHit.collider != null))
+        {
+            if (Mathf.Abs(headHit.normal.x) > wallCheckNormalThreshold)
+            {
+                onWall = true;
+                lastWallNormal = headHit.normal;
+            }
+        }
+    }
+
+    private bool IsWallTallEnough(RaycastHit2D hit, Bounds playerBounds)
+    {
+        Vector2 headLevelPoint = new Vector2(hit.point.x + (hit.normal.x * -0.05f), playerBounds.max.y);
+        RaycastHit2D heightCheck = Physics2D.Raycast(headLevelPoint, Vector2.down, playerBounds.size.y, groundLayer);
+        return heightCheck.collider != null;
     }
 
     private void OnDrawGizmosSelected()
     {
-        if (groundCheck == null || wallCheck == null) return;
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
-        Gizmos.DrawWireSphere(wallCheck.position, wallCheckRadius);
+        Bounds bounds = GetPlayerBounds();
+        float checkDir = FacingDirection;
+        float rayLength = bounds.extents.x + wallCheckDistance;
+
+        Gizmos.color = onWall ? Color.green : Color.red;
+
+        // Visualizing the full 3-point height check
+        Vector2 headOrigin  = new Vector2(bounds.center.x, bounds.max.y - (bounds.size.y * 0.10f));
+        Vector2 chestOrigin = new Vector2(bounds.center.x, bounds.center.y + (bounds.extents.y * 0.2f));
+        Vector2 waistOrigin = new Vector2(bounds.center.x, bounds.min.y + (bounds.size.y * 0.30f));
+
+        Gizmos.DrawLine(headOrigin,  headOrigin  + Vector2.right * checkDir * rayLength);
+        Gizmos.DrawLine(chestOrigin, chestOrigin + Vector2.right * checkDir * rayLength);
+        Gizmos.DrawLine(waistOrigin, waistOrigin + Vector2.right * checkDir * rayLength);
+    }
+
+
+    // helper
+    private Bounds GetPlayerBounds()
+    {
+        if (playerColliders == null || playerColliders.Length == 0)
+        {
+            playerColliders = GetComponents<Collider2D>();
+        }
+
+        if (playerColliders == null || playerColliders.Length == 0) 
+            return new Bounds(transform.position, Vector3.one);
+
+        Bounds bounds = playerColliders[0].bounds;
+        for (int i = 1; i < playerColliders.Length; i++)
+        {
+            bounds.Encapsulate(playerColliders[i].bounds);
+        }
+        return bounds;
     }
 }
