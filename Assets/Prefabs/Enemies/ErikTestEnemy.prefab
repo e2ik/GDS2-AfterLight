@@ -198,7 +198,7 @@ GameObject:
   - component: {fileID: 7603609893098896341}
   - component: {fileID: 2968184197812120870}
   - component: {fileID: 59898807662759673}
-  m_Layer: 9
+  m_Layer: 12
   m_Name: ErikTestEnemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -297,7 +297,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 1000
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 1
@@ -361,7 +361,7 @@ GameObject:
   - component: {fileID: 5107996575365250629}
   - component: {fileID: 1943101255374262222}
   - component: {fileID: 2769822166128368776}
-  m_Layer: 9
+  m_Layer: 12
   m_Name: Graphics
   m_TagString: Untagged
   m_Icon: {fileID: 0}
