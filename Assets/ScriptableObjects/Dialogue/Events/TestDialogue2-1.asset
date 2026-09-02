@@ -10,11 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c09c11e19b6b44a68868910cee0b3520, type: 3}
-  m_Name: TestDialogue2-2
+  m_Name: TestDialogue2-1
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
-  textSpeed: 0.15
   lines:
-  - speakerName: NPC2
-    portrait: {fileID: 21300000, guid: 59b043d8136f0a24a83af7021a897168, type: 3}
-    text: ......
-    typingSound: {fileID: 0}
+  - speaker: {fileID: 11400000, guid: 18f9277453a7f4b5499890ca9646b5cc, type: 2}
+    text: what?
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 18f9277453a7f4b5499890ca9646b5cc, type: 2}
+    text: i dont talk to stranger
+    overrideTextSpeed: 0
+    textSpeed: 0.03
+    effect: 0
