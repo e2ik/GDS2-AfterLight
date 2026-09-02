@@ -210,7 +210,9 @@ public class PlayerEquipmentManager : MonoBehaviour
         {
             BaseAttackDamage = totalBaseAndGearAttack + (equippedWeapon != null ? equippedWeapon.BaseWeaponDamage : 0f),
             BaseAttackCrit = equippedWeapon != null ? equippedWeapon.BaseWeaponCrit : 0f,
-            BaseAttackRange = equippedWeapon != null ? equippedWeapon.BaseWeaponRange : 0f
+            BaseAttackRange = equippedWeapon != null ? equippedWeapon.BaseWeaponRange : 0f,
+            Runner = this,
+            OriginPoint = gameObject.transform.position
         };
 
         if (secondaryGem != null && !string.IsNullOrEmpty(secondaryGem.InstTemplateID))
