@@ -3,26 +3,47 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewDialogue", menuName = "Dialogue/Dialogue Data")]
 public class DialogueData : ScriptableObject
 {
-    [Header("Dialogue Settings")] 
-    [SerializeField] private float textSpeed = 0.03f; // so some npc might talk fast, some slow
     [SerializeField] private DialogueLine[] lines;
-
     public DialogueLine[] Lines => lines;
-    public float TextSpeed => textSpeed;
 }
-
 [System.Serializable]
 public class DialogueLine
 {
-    [SerializeField] private string speakerName;
-    [SerializeField] private Sprite portrait;
+    [SerializeField] private CharacterData speaker;
 
     [TextArea(2, 5)]
     [SerializeField] private string text;
-    [SerializeField] private AudioClip typingSound;
 
-    public string SpeakerName => speakerName;
-    public Sprite Portrait => portrait;
+    [Header("Optional Overrides")]
+    [SerializeField] private bool overrideTextSpeed;
+    [SerializeField] private float textSpeed = 0.03f; // will be ignored unless overrideTextSpeed is true
+
+    [Header("Dialogue Effects")]
+    [SerializeField] private DialogueEffect effect;
+
+    public CharacterData Speaker => speaker;
     public string Text => text;
-    public AudioClip TypingSound => typingSound;
+
+    public bool OverrideTextSpeed => overrideTextSpeed;
+
+    public float TextSpeed
+    {
+        get
+        {
+            if (overrideTextSpeed) return textSpeed;
+            if (speaker != null) return speaker.DefaultTextSpeed;
+            
+            return 0.03f;
+        }
+    }
+
+    public DialogueEffect Effect => effect;
+}
+
+public enum DialogueEffect
+{ // for later dynamic dialogue???? 
+    Default,
+    Scary,
+    Angry,
+    Shout
 }

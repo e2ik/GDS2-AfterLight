@@ -10,15 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c09c11e19b6b44a68868910cee0b3520, type: 3}
-  m_Name: TestDialogue1
+  m_Name: TestDialogue2-2
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
-  textSpeed: 0.03
   lines:
-  - speakerName: NPC1
-    portrait: {fileID: 21300000, guid: 59b043d8136f0a24a83af7021a897168, type: 3}
-    text: Welcome to the Playtest!
-    typingSound: {fileID: 0}
-  - speakerName: NPC1
-    portrait: {fileID: 21300000, guid: 59b043d8136f0a24a83af7021a897168, type: 3}
-    text: This is example of our DIalogue System
-    typingSound: {fileID: 0}
+  - speaker: {fileID: 11400000, guid: 18f9277453a7f4b5499890ca9646b5cc, type: 2}
+    text: ......
+    overrideTextSpeed: 0
+    textSpeed: 0.03
+    effect: 0

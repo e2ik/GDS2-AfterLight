@@ -5,7 +5,7 @@ public struct AttackContext{
     public GameObject PlayerGO{get;}
     public PlayerController PlayerController{get;}
     //This is what to use for running coroutines in the execute function of Primary Behviour.
-    public MonoBehaviour Runner{get;}
+    public MonoBehaviour Runner;
     //Mutables
     public Vector2 OriginPoint;
     public float BaseAttackDamage;

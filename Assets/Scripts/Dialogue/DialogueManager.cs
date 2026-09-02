@@ -214,19 +214,26 @@ public class DialogueManager : MonoBehaviour
     {
         DialogueLine line = currentDialogue.Lines[currentLineIndex];
 
-        characterNameText.text = line.SpeakerName;
-
-        if (line.Portrait != null)
+        if (line.Speaker != null)
         {
-            characterPortrait.sprite = line.Portrait;
-            characterPortrait.gameObject.SetActive(true);
+            characterNameText.text = line.Speaker.CharacterName;
+
+            if (line.Speaker.Portrait != null)
+            {
+                characterPortrait.sprite = line.Speaker.Portrait;
+                characterPortrait.gameObject.SetActive(true);
+            }
+            else
+            {
+                characterPortrait.gameObject.SetActive(false);
+            }
         }
         else
         {
+            characterNameText.text = "";
             characterPortrait.gameObject.SetActive(false);
         }
 
-        // Keep indicator visible while the line is typing.
         if (nextDialogueIndicator != null)
         {
             nextDialogueIndicator.SetActive(true);
@@ -251,7 +258,7 @@ public class DialogueManager : MonoBehaviour
 
             PlayTypingSound(line);
 
-            yield return new WaitForSeconds(currentDialogue.TextSpeed);
+            yield return new WaitForSeconds(line.TextSpeed);
         }
 
         isTyping = false;
@@ -292,10 +299,13 @@ public class DialogueManager : MonoBehaviour
         if (dialogueAudioSource == null)
             return;
 
-        if (line.TypingSound == null)
+        if (line.Speaker == null)
             return;
 
-        dialogueAudioSource.PlayOneShot(line.TypingSound);
+        if (line.Speaker.TypingSound == null)
+            return;
+
+        dialogueAudioSource.PlayOneShot(line.Speaker.TypingSound);
     }
 
     private void PlaySlideIn()
