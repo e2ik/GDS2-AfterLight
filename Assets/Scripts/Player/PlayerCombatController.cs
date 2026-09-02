@@ -336,8 +336,8 @@ public class PlayerCombatController : MonoBehaviour
                     : new Vector2(0f, -attackRange.y / 2);
             }
 
-            
-            attackDamage = Player.Stats != null ? Player.Stats.TotalAttack : 0f;
+
+            attackDamage = GetDamage();
             attackCrit = Player.Equipment != null ? Player.Equipment.EquippedWeapon.BaseWeaponCrit : 0f;
             
             Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
@@ -347,6 +347,11 @@ public class PlayerCombatController : MonoBehaviour
             
             Debug.Log("Primary Attack executed.");
         }
+    }
+
+    private float GetDamage()
+    {
+        return attackDamage = Player.Stats != null ? Player.Stats.TotalAttack : 0f;
     }
 
     private void HitEnemy(Collider2D[] enemiesInRange)
@@ -380,13 +385,9 @@ public class PlayerCombatController : MonoBehaviour
     private void HandleSkill()
     {
         if (skillBufferTimer > 0f && CanAct() && skillMeterAlwaysFull)
-        {
             ExecuteSkill();
-        }
         else if (skillBufferTimer > 0f && CanAct() && skillReady)
-        {
             ExecuteSkill();
-        }
     }
 
     public void ChargeSkillMeter(float amount)
@@ -438,14 +439,13 @@ public class PlayerCombatController : MonoBehaviour
     private void PerformSingleSkill(PrimaryGemBehaviourDefinition def)
     {
         AttackContext context = Player.Equipment.GetModifiedAttackContext();
-        float damage = Player.Equipment.EquippedWeapon.BaseWeaponDamage + (Player.Stats != null ? Player.Stats.TotalAttack : 0);
+        float damage = GetDamage();
         def.Execute(context, damage);
     }
     IEnumerator PerformTimedSkill(float tick, PrimaryGemBehaviourDefinition def)
     {
         AttackContext context = Player.Equipment.GetModifiedAttackContext();
-        float damage = Player.Equipment.EquippedWeapon.BaseWeaponDamage + (Player.Stats != null ? Player.Stats.TotalAttack : 0);
-        
+        float damage = GetDamage();
         while(isSkilling)
         {
             def.Execute(context, damage);
