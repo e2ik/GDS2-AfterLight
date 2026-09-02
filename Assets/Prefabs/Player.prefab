@@ -198,6 +198,12 @@ MonoBehaviour:
   jumpGravity: 4
   fallGravity: 11
   coyoteTime: 0.1
+  lightForce: 8
+  lightStaggerDuration: 0.1
+  mediumForce: 10
+  mediumStaggerDuration: 0.2
+  heavyForce: 14
+  heavyStaggerDuration: 0.4
   wallSlideSpeed: 2
   wallJumpCounterStrength: 0.1
   wallSlideUpwardDampening: 0.9
@@ -210,7 +216,6 @@ MonoBehaviour:
   groundCheckDistance: 0.2
   wallCheckDistance: 0.2
   edgeMargin: 0.05
-  defaultStaggerDur: 1
 --- !u!114 &3547647608137716798
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -230,15 +235,15 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 2560
-  critDamageMultiplier: 2
+  critDamageMultiplier: 1.33
   counterAttackMultiplier: 1.2
-  attackWidth: 1.5
+  attackWidth: 2
   attackDuration: 0.5
   attackCoolDown: 0.2
   counterAttackWindow: 0.5
   skillMeterAlwaysFull: 0
   skillCoolDown: 0.2
-  skillDamageTick: 0.33
+  skillDamageTick: 0.16
   chargeSkillAmount: 0.2
   successfulParryVisualDuration: 0.15
 --- !u!114 &4877809276059888347

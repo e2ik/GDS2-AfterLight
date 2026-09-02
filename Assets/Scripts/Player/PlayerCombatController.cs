@@ -44,10 +44,10 @@ public class PlayerCombatController : MonoBehaviour
     [Header("Attack Settings")]
     [SerializeField] private Transform attackOrigin;
     public LayerMask enemyLayer;
-    [SerializeField] private float critDamageMultiplier = 2f;
+    [SerializeField] private float critDamageMultiplier = 1.33f;
 
     [SerializeField] private float counterAttackMultiplier = 1.2f;
-    [SerializeField] private float attackWidth = 1.5f;
+    [SerializeField] private float attackWidth = 2f;
     [SerializeField] private float attackDuration = 0.3f;
     [SerializeField] private float attackCoolDown = 0.2f;
     [SerializeField] private float counterAttackWindow = 0.5f;
@@ -67,7 +67,7 @@ public class PlayerCombatController : MonoBehaviour
     [Header("Skill Settings")]
     [SerializeField] private bool skillMeterAlwaysFull;
     [SerializeField] private float skillCoolDown = 0.2f;
-    [SerializeField] private float skillDamageTick = 0.33f;
+    [SerializeField] private float skillDamageTick = 0.16f;
     private float skillBufferTimer;
     private float skillBufferTime => attackBufferTime;
     private float skillTimer;
@@ -336,8 +336,9 @@ public class PlayerCombatController : MonoBehaviour
                     : new Vector2(0f, -attackRange.y / 2);
             }
 
-            attackDamage = Player.Equipment.EquippedWeapon.BaseWeaponDamage + (Player.Stats != null ? Player.Stats.TotalAttack : 0);
-            attackCrit = Player.Equipment.EquippedWeapon.BaseWeaponCrit;
+            
+            attackDamage = Player.Stats != null ? Player.Stats.TotalAttack : 0f;
+            attackCrit = Player.Equipment != null ? Player.Equipment.EquippedWeapon.BaseWeaponCrit : 0f;
             
             Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
 

@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
@@ -7,7 +8,7 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float currentHealth;
 
     [Header("Base Stats")]
-    [SerializeField] private float baseAttack = 10f;
+    [SerializeField] private float baseAttack = 10f; //using weapon base attack, not sure if this is needed since you will always have a weapon
     [SerializeField] private float baseDefense = 5f;
     [SerializeField] private float baseHumanity = 10f;
 
@@ -21,7 +22,7 @@ public class PlayerStats : MonoBehaviour
 
     public float MaxHealth => maxHealth;
     public float CurrentHealth => currentHealth;
-    public float TotalAttack => baseAttack + gearAttackBonus;
+    public float TotalAttack => UpdateAttackDisplay();
     public float TotalDefense => baseDefense + gearDefenseBonus;
     public float TotalHumanity => baseHumanity + gearHumanityBonus;
     public bool IsDead => currentHealth <= 0f;
@@ -52,6 +53,14 @@ public class PlayerStats : MonoBehaviour
     {
         if (equipmentManager != null)
             equipmentManager.OnEquipmentChanged -= RecalculateStats;
+    }
+
+    private float UpdateAttackDisplay()
+    {
+        if(equipmentManager == null || equipmentManager.EquippedWeapon == null)
+            return  gearAttackBonus;
+        Debug.Log("WeaponBaseDamage: " + equipmentManager.EquippedWeapon.BaseWeaponDamage + ", GearBonus: " + gearAttackBonus);
+        return equipmentManager.EquippedWeapon.BaseWeaponDamage + gearAttackBonus;
     }
 
     public void RecalculateStats()
