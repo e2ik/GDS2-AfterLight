@@ -26,6 +26,7 @@ namespace GameUI
             bool wasEmpty = openWindows.Count == 0;
 
             openWindows.Push(window);
+            window.transform.SetAsLastSibling();
             window.HandleOpened();
 
             if (wasEmpty && window.BlocksPlayerInput) { Time.timeScale = 0f; Debug.Log("TimeScale: " + Time.timeScale); }
