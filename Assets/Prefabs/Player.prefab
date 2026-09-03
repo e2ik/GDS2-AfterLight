@@ -194,27 +194,35 @@ MonoBehaviour:
   moveSpeed: 8
   jumpForce: 20
   tapJumpMultiplier: 0.2
+  acceleration: 8
+  deceleration: 8
+  velocityPower: 1.2
+  friction: 0.2
+  normGravity: 5
+  jumpGravity: 4
+  fallGravity: 11
+  coyoteTime: 0.1
+  wallSlideSpeed: 2
+  wallJumpCounterStrength: 0.1
+  wallSlideUpwardDampening: 0.9
+  wallCheckNormalThreshold: 0.5
+  wallJumpForce: {x: 10, y: 16}
+  wallJumpDuration: 0.4
+  dashVelocity: 15
+  backDashMultiplier: 0.5
+  dashDuration: 0.2
+  dashCoolDown: 0.2
   hazardousLayers:
     serializedVersion: 2
     m_Bits: 4096
   hazardousKnockbackForce: 12
   hazardousStaggerDuration: 0.3
-  normGravity: 5
-  jumpGravity: 4
-  fallGravity: 11
-  coyoteTime: 0.1
   lightForce: 8
   lightStaggerDuration: 0.1
   mediumForce: 10
   mediumStaggerDuration: 0.2
   heavyForce: 14
   heavyStaggerDuration: 0.4
-  wallSlideSpeed: 2
-  wallJumpCounterStrength: 0.1
-  wallSlideUpwardDampening: 0.9
-  wallCheckNormalThreshold: 0.5
-  dashVelocity: 15
-  backDashMultiplier: 0.5
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -236,6 +244,7 @@ MonoBehaviour:
   parryActiveDuration: 0.2
   parryRecoveryDuration: 0
   parryBufferTime: 0.15
+  successfulParryVisualDuration: 0.15
   attackOrigin: {fileID: 6444912443510829891}
   enemyLayer:
     serializedVersion: 2
@@ -248,12 +257,12 @@ MonoBehaviour:
   counterAttackWindow: 0.5
   skillMeterAlwaysFull: 1
   skillCoolDown: 0.2
-  skillDamageTick: 0.16
   chargingSkillMinDur: 0.4
   chargingSkillMaxDur: 1.5
   fullChargeDamageMultiplier: 1.5
+  skillHoldThreshold: 0.12
+  skillReleaseBufferTime: 0.08
   chargeSkillAmount: 0.2
-  successfulParryVisualDuration: 0.15
 --- !u!114 &4877809276059888347
 MonoBehaviour:
   m_ObjectHideFlags: 0

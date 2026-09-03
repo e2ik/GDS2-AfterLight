@@ -4,21 +4,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
 
-public enum ParryDirection
-{
-    Up,
-    Down,
-    Left,
-    Right
-}
-
-public enum AttackForce
-{
-    Zero,
-    Light,
-    Medium,
-    Heavy
-}
+public enum ParryDirection { Up, Down, Left, Right }
+public enum AttackForce { Zero, Light, Medium, Heavy }
 
 public class PlayerCombatController : MonoBehaviour
 {
@@ -26,20 +13,21 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float parryActiveDuration = 0.2f;
     [SerializeField] private float parryRecoveryDuration = 0.3f;
     [SerializeField] private float parryBufferTime = 0.15f;
+    [SerializeField] private float successfulParryVisualDuration = 0.15f;
     
     private float parryActiveTimer;
     private float parryRecoveryTimer;
     private float parryBufferTimer;
-
-    private bool isParrying;           // True during Active Window only
-    private bool isParryInRecovery;    // True during Recovery Window only
+    private bool isParrying;
+    private bool isParryInRecovery;
+    private bool isParrySuccess;
     private ParryDirection parryDir;
+    private Coroutine parrySuccessResetCoroutine;
 
     [Header("Attack Settings")]
     [SerializeField] private Transform attackOrigin;
     public LayerMask enemyLayer;
     [SerializeField] private float critDamageMultiplier = 1.33f;
-
     [SerializeField] private float counterAttackMultiplier = 1.2f;
     [SerializeField] private float attackWidth = 2f;
     [SerializeField] private float attackDuration = 0.3f;
@@ -47,8 +35,6 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float counterAttackWindow = 0.5f;
 
     private float attackBufferTimer;
-    private float attackBufferTime => parryBufferTime;
-    private Vector2 attackDir;
     private Vector2 attackRange;
     private Vector2 attackCenter;
     private float attackDamage;
@@ -61,26 +47,23 @@ public class PlayerCombatController : MonoBehaviour
     [Header("Skill Settings")]
     [SerializeField] private bool skillMeterAlwaysFull;
     [SerializeField] private float skillCoolDown = 0.2f;
-    [SerializeField] private float skillDamageTick = 0.16f;
     [SerializeField] private float chargingSkillMinDur = 0.4f;
     [SerializeField] private float chargingSkillMaxDur = 1.5f;
     [SerializeField] private float fullChargeDamageMultiplier = 1.5f;
     [SerializeField] private float skillHoldThreshold = 0.12f;
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
+    [SerializeField] private float chargeSkillAmount = 0.2f;
 
     private float skillBufferTimer;
-    private float skillBufferTime => skillReleaseBufferTime;
     private float skillTimer;
     private bool skillPressed;
-    private bool skillReleased;
     private bool isSkilling;
     private bool skillButtonHeld;
     private bool isChargingSkill;
     private float chargingSkillTimer;
     private bool skillFiredThisHold;
-    [Range(0f, 1f)] public float SkillMeter { get; private set; }
-    [SerializeField] private float chargeSkillAmount = 0.2f;
     private bool skillReady;
+    private Coroutine skillCoroutine;
 
     private float verticalInput;
     private Player Player;
@@ -90,23 +73,30 @@ public class PlayerCombatController : MonoBehaviour
     public bool IsSkilling => isSkilling;
     public bool IsChargingSkill => isChargingSkill;
     public string CurrentSkillGemName { get; private set; }
-    
-    [SerializeField] private float successfulParryVisualDuration = 0.15f;
-    private bool isParrySuccess;
-    private Coroutine parrySuccessResetCoroutine;
-    private Coroutine skillCoroutine;
 
-    // UI additions
-    public event Action<float, float> OnEnergyChanged;
-
-    private void Awake()
-    {
-        Player = GetComponentInParent<Player>();
+    private float _skillMeter;
+    public float SkillMeter 
+    { 
+        get => skillMeterAlwaysFull ? 1f : _skillMeter; 
+        private set => _skillMeter = value; 
     }
 
-    private void Start()
+    public event Action<float, float> OnEnergyChanged;
+
+    private void Awake() => Player = GetComponentInParent<Player>();
+
+    private void Start() 
     {
+        if (skillMeterAlwaysFull) SkillMeter = 1f;
         OnEnergyChanged?.Invoke(SkillMeter, 1f);
+    }
+
+    private void OnValidate()
+    {
+        if (Application.isPlaying)
+        {
+            OnEnergyChanged?.Invoke(SkillMeter, 1f);
+        }
     }
 
     private void Update()
@@ -121,37 +111,24 @@ public class PlayerCombatController : MonoBehaviour
         if (skillButtonHeld)
         {
             chargingSkillTimer += Time.deltaTime;
-
-            PrimaryGemBehaviourDefinition specialDef = Player.Equipment?.SpecialAttackDef;
+            var specialDef = Player.Equipment?.SpecialAttackDef;
 
             if (specialDef != null && specialDef.SkillExecutionType == SkillExecutionType.Charged)
             {
                 if (chargingSkillTimer >= skillHoldThreshold && !Player.Controller.IsChargingSkill)
-                {
                     Player.Controller.SetSkillCharging(true);
-                }
             }
         }
     }
 
     private void UpdateTimers()
     {
-        if (parryBufferTimer > 0f)
-            parryBufferTimer -= Time.deltaTime;
-        if (attackBufferTimer > 0f)
-            attackBufferTimer -= Time.deltaTime;
-        if (skillBufferTimer > 0f)
-            skillBufferTimer -= Time.deltaTime;
+        if (parryBufferTimer > 0f) parryBufferTimer -= Time.deltaTime;
+        if (attackBufferTimer > 0f) attackBufferTimer -= Time.deltaTime;
+        if (skillBufferTimer > 0f) skillBufferTimer -= Time.deltaTime;
         
-        if (isAttacking)
-            attackTimer = attackCoolDown;
-        else
-            attackTimer -= Time.deltaTime;
-        
-        if (isSkilling) 
-            skillTimer = skillCoolDown;
-        else 
-            skillTimer -= Time.deltaTime;
+        attackTimer = isAttacking ? attackCoolDown : attackTimer - Time.deltaTime;
+        skillTimer = isSkilling ? skillCoolDown : skillTimer - Time.deltaTime;
 
         if (isParrying)
         {
@@ -170,9 +147,7 @@ public class PlayerCombatController : MonoBehaviour
             if (parryRecoveryTimer <= 0f)
             {
                 isParryInRecovery = false;
-                
-                if (Player.Controller != null)
-                    Player.Controller.FreezeMovement(false);
+                Player.Controller?.FreezeMovement(false);
             }
         }
     }
@@ -202,10 +177,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleParry()
     {
-        if (parryBufferTimer > 0f && CanAct())
-        {
-            ExecuteParry();
-        }
+        if (parryBufferTimer > 0f && CanAct()) ExecuteParry();
     }
 
     private void ExecuteParry()
@@ -214,23 +186,15 @@ public class PlayerCombatController : MonoBehaviour
         isParrying = true;
         isParryInRecovery = false;
         parryActiveTimer = parryActiveDuration;
-        
-        if (Player.Controller != null) 
-            Player.Controller.FreezeMovement(true);
-
+        Player.Controller?.FreezeMovement(true);
         parryDir = GetInputDirection();
-
-        Debug.Log($"Parry Executed! Direction: {parryDir}");
     }
 
     private ParryDirection GetInputDirection()
     {
-        ParryDirection inputDir = Player.Controller.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
-        if (verticalInput > 0.01f) 
-            inputDir = ParryDirection.Up;
-        else if (verticalInput < -0.01f && !Player.Controller.IsGrounded) 
-            inputDir = ParryDirection.Down;
-        return inputDir;
+        if (verticalInput > 0.01f) return ParryDirection.Up;
+        if (verticalInput < -0.01f && !Player.Controller.IsGrounded) return ParryDirection.Down;
+        return Player.Controller.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
     }
 
     public bool CheckParry(ParryDirection incomingDirection)
@@ -246,27 +210,15 @@ public class PlayerCombatController : MonoBehaviour
     private void OnSuccessfulParry()
     {
         Player.Animation.FlashGreenOnParrySuccess();
+        CancelParry();
 
-        isParrying = false;
-        isParryInRecovery = false;
-        parryActiveTimer = 0f;
-        parryRecoveryTimer = 0f;
-        
         ChargeSkillMeter(chargeSkillAmount);
-
-        if (Player.Controller != null)
-            Player.Controller.FreezeMovement(false);
-
         isCounterAttacking = true;
+        
         CancelInvoke(nameof(EndCounterAttackWindow));
         Invoke(nameof(EndCounterAttackWindow), counterAttackWindow);
-    
-        if (parrySuccessResetCoroutine != null)
-            StopCoroutine(parrySuccessResetCoroutine);
 
         parrySuccessResetCoroutine = StartCoroutine(ExtendParryAnim(successfulParryVisualDuration));
-
-        Debug.Log("Successful Parry!");
     }
 
     private IEnumerator ExtendParryAnim(float delay)
@@ -277,10 +229,7 @@ public class PlayerCombatController : MonoBehaviour
         parrySuccessResetCoroutine = null;
     }
 
-    private void EndCounterAttackWindow()
-    {
-        isCounterAttacking = false;
-    }
+    private void EndCounterAttackWindow() => isCounterAttacking = false;
 
     public void CancelParry()
     {
@@ -290,16 +239,9 @@ public class PlayerCombatController : MonoBehaviour
             parrySuccessResetCoroutine = null;
         }
 
-        isParrying = false;
-        isParryInRecovery = false;
-        isParrySuccess = false;
-        parryActiveTimer = 0f;
-        parryRecoveryTimer = 0f;
-
-        if (Player.Controller != null)
-        {
-            Player.Controller.FreezeMovement(false);
-        }
+        isParrying = isParryInRecovery = isParrySuccess = false;
+        parryActiveTimer = parryRecoveryTimer = 0f;
+        Player.Controller?.FreezeMovement(false);
     }
 
     #endregion
@@ -308,10 +250,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleAttack()
     {
-        if (attackBufferTimer > 0f && CanAct())
-        {
-            ExecuteAttack();
-        }
+        if (attackBufferTimer > 0f && CanAct()) ExecuteAttack();
     }
 
     private void ExecuteAttack()
@@ -321,82 +260,50 @@ public class PlayerCombatController : MonoBehaviour
         if (attackPressed && attackTimer <= 0f && CanAct())
         {
             CancelParry();
-
             attackPressed = false;
-            
-            if (Player.Equipment.EquippedWeapon == null)
-            {
-                Debug.LogWarning("[PlayerCombatController] Cannot attack: No weapon equipped.");
-                attackPressed = false;
-                return;
-            }
+
+            if (Player.Equipment.EquippedWeapon == null) return;
 
             isAttacking = true;
-
-            attackDir = GetInputDirection() switch
+            Vector2 attackDir = GetInputDirection() switch
             {
                 ParryDirection.Up => Vector2.up,
                 ParryDirection.Down => Vector2.down,
                 ParryDirection.Left => Vector2.left,
-                ParryDirection.Right => Vector2.right,
-                _ => Vector2.zero
+                _ => Vector2.right
             };
 
-            attackCenter = attackOrigin.position;
             float weaponRange = Player.Equipment.EquippedWeapon.BaseWeaponRange;
-            if (attackDir == Vector2.left || attackDir == Vector2.right)
-            {
-                attackRange = new Vector2(weaponRange, attackWidth);
-                attackCenter += new Vector2(attackDir.x * (attackRange.x / 2), 0f);
-            }
-            else
-            {
-                attackRange = new Vector2(attackWidth, weaponRange);
-                attackCenter += attackDir == Vector2.up 
-                    ? new Vector2(0f, attackRange.y / 2) 
-                    : new Vector2(0f, -attackRange.y / 2);
-            }
+            bool isHorizontal = attackDir.x != 0f;
+
+            attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
+            attackCenter = (Vector2)attackOrigin.position + (attackDir * (weaponRange * 0.5f));
 
             attackDamage = GetDamage();
-            attackCrit = Player.Equipment != null ? Player.Equipment.EquippedWeapon.BaseWeaponCrit : 0f;
-            
-            Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
+            attackCrit = Player.Equipment.EquippedWeapon.BaseWeaponCrit;
 
-            if (enemiesInRange.Length > 0)
-                HitEnemy(enemiesInRange);
-            
-            Debug.Log("Primary Attack executed.");
+            Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
+            if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange);
         }
     }
 
-    private float GetDamage()
-    {
-        return attackDamage = Player.Stats != null ? Player.Stats.TotalAttack : 0f;
-    }
+    private float GetDamage() => Player.Stats != null ? Player.Stats.TotalAttack : 0f;
 
     private void HitEnemy(Collider2D[] enemiesInRange)
     {
-        float dmgAmount = attackDamage;
-        if (isCounterAttacking)
-            dmgAmount *= counterAttackMultiplier;
-        
-        dmgAmount *= (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f);
+        float dmg = attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
+        dmg *= (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f);
 
         foreach (var col in enemiesInRange)
         {
-            if (!col.CompareTag("EnemyHurtBox"))
-                continue;
-            
-            if (col.transform.root.TryGetComponent(out EnemyHealth enemyHealth)) 
-                enemyHealth.ApplyDamage((int)dmgAmount);
+            if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
+            {
+                enemyHealth.ApplyDamage((int)dmg);
+            }
         }
     }
 
-    public void EndAttack()
-    {
-        isAttacking = false;
-        Debug.Log("attack finished");
-    }
+    public void EndAttack() => isAttacking = false;
 
     #endregion
 
@@ -404,30 +311,29 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleSkill()
     {
-        if (skillBufferTimer > 0f && CanReleaseSkill() && skillMeterAlwaysFull)
+        bool isReadyToFire = skillMeterAlwaysFull || SkillMeter > 0f;
+        if (skillBufferTimer > 0f && CanReleaseSkill() && isReadyToFire)
+        {
             ExecuteSkill();
-        else if (skillBufferTimer > 0f && CanReleaseSkill() && skillReady)
-            ExecuteSkill();
+        }
     }
 
     public void ChargeSkillMeter(float amount)
     {
-        SkillMeter = Mathf.Clamp(SkillMeter + amount, 0f, 1f);
+        SkillMeter = Mathf.Clamp01(SkillMeter + amount);
         OnEnergyChanged?.Invoke(SkillMeter, 1f);
-        Debug.Log("skill charge: " + SkillMeter);
-        if (SkillMeter.Equals(1f))
-            skillReady = true;
+        if (Mathf.Approximately(SkillMeter, 1f)) skillReady = true;
     }
-    
+
     private void ExecuteSkill()
     {
         skillBufferTimer = 0f;
-        
+
         if (skillPressed && skillTimer <= 0f && CanReleaseSkill())
         {
             skillReady = false;
             CancelParry();
-            PrimaryGemBehaviourDefinition specialDef = Player.Equipment.SpecialAttackDef;
+            var specialDef = Player.Equipment.SpecialAttackDef;
 
             if (specialDef == null)
             {
@@ -435,63 +341,91 @@ public class PlayerCombatController : MonoBehaviour
                 Player.Controller.SetSkillCharging(false);
                 return;
             }
-            
+
             isSkilling = true;
             CurrentSkillGemName = specialDef.GemName;
-            
+
             bool wasCharged = chargingSkillTimer >= chargingSkillMinDur;
             float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
             float chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
 
             Player.Controller.SetSkillCharging(false);
+            if (wasCharged) Player.Controller.SetSkillGravityZero(true);
 
-            if (wasCharged)
+            if (specialDef.SkillExecutionType == SkillExecutionType.Held)
             {
-                Player.Controller.SetSkillGravityZero(true);
+                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef));
             }
-
-            switch (specialDef.SkillType)
+            else
             {
-                case SkillType.Single:
+                if (specialDef.SkillType == SkillType.Single)
+                {
+                    SkillMeter = 0f;
+                    OnEnergyChanged?.Invoke(SkillMeter, 1f);
                     PerformSingleSkill(specialDef, chargeDamageMultiplier);
-                    break;
-                case SkillType.Timed:
-                    skillCoroutine = StartCoroutine(PerformTimedSkill(skillDamageTick, specialDef, chargeDamageMultiplier));
-                    break;
-                default:
-                    EndSkill();
-                    break;
+                }
+                else if (specialDef.SkillType == SkillType.Timed)
+                {
+                    skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier));
+                }
             }
-            
-            OnEnergyChanged?.Invoke(0f, 1f);
         }
     }
 
-    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float chargeDamageMultiplier)
+    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float multiplier)
     {
-        AttackContext context = Player.Equipment.GetModifiedAttackContext();
-        float damage = GetDamage() * chargeDamageMultiplier;
-        def.Execute(context, damage);
+        def.Execute(Player.Equipment.GetModifiedAttackContext(), GetDamage() * multiplier);
     }
-    
-    IEnumerator PerformTimedSkill(float tick, PrimaryGemBehaviourDefinition def, float chargeDamageMultiplier)
+
+    private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f)
     {
-        AttackContext context = Player.Equipment.GetModifiedAttackContext();
-        float damage = GetDamage() * chargeDamageMultiplier;
-        while(isSkilling)
+        var context = Player.Equipment.GetModifiedAttackContext();
+        float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : 0.16f;
+
+        bool isHeld = def.SkillExecutionType == SkillExecutionType.Held;
+        float totalTicks = chargingSkillMaxDur / tick;
+        float energyCostPerTick = 1f / totalTicks;
+
+        if (!isHeld && !skillMeterAlwaysFull)
         {
-            def.Execute(context, damage);
-            yield return new WaitForSeconds(tick);
+            SkillMeter = 0f;
+            OnEnergyChanged?.Invoke(SkillMeter, 1f);
         }
+
+        while (isSkilling && (skillMeterAlwaysFull || (isHeld ? SkillMeter > 0f : true)))
+        {
+            float dynamicRampMultiplier = fixedChargeMultiplier;
+
+            if (isHeld && !skillMeterAlwaysFull)
+            {
+                SkillMeter = Mathf.Clamp01(SkillMeter - energyCostPerTick);
+                OnEnergyChanged?.Invoke(SkillMeter, 1f);
+
+                float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
+                dynamicRampMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
+            }
+
+            float currentTickDamage = GetDamage() * dynamicRampMultiplier;
+            def.Execute(context, currentTickDamage);
+
+            yield return new WaitForSeconds(tick);
+
+            if (isHeld) chargingSkillTimer += tick;
+        }
+
+        EndSkill();
     }
 
     public void EndSkill()
     {
-        isSkilling = false;
-        isChargingSkill = false;
-        skillButtonHeld = false;
-        CurrentSkillGemName = string.Empty;
+        if (skillCoroutine != null)
+        {
+            StopCoroutine(skillCoroutine);
+            skillCoroutine = null;
+        }
 
+        isSkilling = isChargingSkill = skillButtonHeld = false;
+        CurrentSkillGemName = string.Empty;
         Player.Controller.SetSkillGravityZero(false);
     }
 
@@ -499,44 +433,30 @@ public class PlayerCombatController : MonoBehaviour
 
     #region Input Handlers
 
-    public void OnMove(InputValue value)
-    {
-        verticalInput = value.Get<Vector2>().y;
-    }
-
-    public void OnParry()
-    {
-        parryBufferTimer = parryBufferTime;
-    }
-
-    public void OnAttack()
-    {
-        attackPressed = true;
-        attackBufferTimer = attackBufferTime;
-    }
+    public void OnMove(InputValue value) => verticalInput = value.Get<Vector2>().y;
+    public void OnParry() => parryBufferTimer = parryBufferTime;
+    public void OnAttack() { attackPressed = true; attackBufferTimer = parryBufferTime; }
 
     public void OnSAttack(InputValue value)
     {
-        // Block all skill inputs while wall sliding
         if (Player.Controller.IsWallSliding) return;
 
-        PrimaryGemBehaviourDefinition specialDef = Player.Equipment?.SpecialAttackDef;
+        var specialDef = Player.Equipment?.SpecialAttackDef;
 
         if (value.isPressed)
         {
+            if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;
+
             skillButtonHeld = true;
             chargingSkillTimer = 0f;
             skillFiredThisHold = false;
 
-            // --- HELD SKILLS: Fire immediately on press ---
             if (specialDef != null && specialDef.SkillExecutionType == SkillExecutionType.Held)
             {
-                skillPressed = true;
-                skillBufferTimer = skillBufferTime;
+                TriggerSkillRelease();
                 return;
             }
 
-            // --- CHARGED SKILLS ---
             isChargingSkill = true;
             CancelInvoke(nameof(AutoFireAtMaxCharge));
             Invoke(nameof(AutoFireAtMaxCharge), chargingSkillMaxDur);
@@ -544,47 +464,35 @@ public class PlayerCombatController : MonoBehaviour
         else
         {
             skillButtonHeld = false;
-            skillReleased = true;
 
-            // --- HELD SKILLS: Release check ---
             if (specialDef != null && specialDef.SkillExecutionType == SkillExecutionType.Held)
             {
                 if (isSkilling)
                 {
-                    float minDuration = specialDef.MinimumHeldDuration;
-
-                    if (chargingSkillTimer < minDuration)
-                    {
-                        float remainingTime = minDuration - chargingSkillTimer;
-                        StartCoroutine(DelayedEndSkill(remainingTime));
-                    }
-                    else
-                    {
-                        EndSkill();
-                    }
+                    float remaining = specialDef.MinimumHeldDuration - chargingSkillTimer;
+                    if (remaining > 0f) StartCoroutine(DelayedEndSkill(remaining));
+                    else EndSkill();
                 }
                 return;
             }
 
-            // --- CHARGED SKILLS ---
             isChargingSkill = false;
             StopChargingPhysics();
 
-            if (skillFiredThisHold) return;
-
-            skillPressed = true;
-            skillBufferTimer = skillBufferTime;
+            if (!skillFiredThisHold) TriggerSkillRelease();
         }
+    }
+
+    private void TriggerSkillRelease()
+    {
+        skillPressed = true;
+        skillBufferTimer = skillReleaseBufferTime;
     }
 
     private IEnumerator DelayedEndSkill(float delay)
     {
         yield return new WaitForSeconds(delay);
-
-        if (!skillButtonHeld && isSkilling)
-        {
-            EndSkill();
-        }
+        if (!skillButtonHeld && isSkilling) EndSkill();
     }
 
     private void AutoFireAtMaxCharge()
@@ -592,13 +500,10 @@ public class PlayerCombatController : MonoBehaviour
         if (!skillButtonHeld) return;
 
         chargingSkillTimer = chargingSkillMaxDur;
-        skillButtonHeld = false; 
-        isChargingSkill = false;
-        
+        skillButtonHeld = isChargingSkill = false;
         skillFiredThisHold = true;
-        skillPressed = true;
-        skillBufferTimer = skillBufferTime;
 
+        TriggerSkillRelease();
         StopChargingPhysics();
     }
 
@@ -609,15 +514,11 @@ public class PlayerCombatController : MonoBehaviour
     }
 
     #endregion
-    
+
     private void OnDrawGizmosSelected()
     {
         if (attackOrigin == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(attackCenter, attackRange);
-        if (Player == null) return;
-        if (Player.Equipment == null) return;
-        if (Player.Equipment.SpecialAttackDef == null) return;
-        Gizmos.DrawWireSphere(transform.position, Player.Equipment.SpecialAttackDef.SkillRange);
     }
 }
