@@ -430,6 +430,21 @@ public class PlayerCombatController : MonoBehaviour
         Player.Controller.SetSkillGravityZero(false);
     }
 
+    public void CancelSkillStates()
+    {
+        isChargingSkill = false;
+        isSkilling = false;
+        skillButtonHeld = false;
+        skillFiredThisHold = true;
+
+        var playerController = Player.Controller;
+        if (playerController != null)
+        {
+            playerController.SetSkillCharging(false);
+            playerController.SetSkillGravityZero(false);
+        }
+    }
+
     #endregion
 
     #region Input Handlers
