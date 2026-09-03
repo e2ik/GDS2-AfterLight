@@ -172,7 +172,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleJump()
     {
-        if (!CanMove()) return;
+        if (!CanMove() || isSkillGravityZeroed) return;
 
         coyoteTimeCounter = isGrounded ? coyoteTime : coyoteTimeCounter - Time.fixedDeltaTime;
 
