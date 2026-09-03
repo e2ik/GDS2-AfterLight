@@ -18,6 +18,11 @@ public class PlayerController : MonoBehaviour
     private float deceleration = 8f;
     private float velocityPower = 1.2f;
     private float friction = 0.2f;
+
+    [Header("Knockback")] 
+    [SerializeField] private LayerMask hazardousLayers;
+    [SerializeField] private float hazardousKnockbackForce = 12f;
+    [SerializeField] private float hazardousStaggerDuration = 0.3f;
     
     [SerializeField] private float normGravity = 3f;
     [SerializeField] private float jumpGravity = 2.5f;
@@ -182,6 +187,7 @@ public class PlayerController : MonoBehaviour
         return InputEnabled && !IsMovementFrozen && !isWallJumping && !isDashing && !isChargingSkill && !isStaggered && !isWallSliding;
     }
 
+    // on hit knockback
     public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce)
     {
         Vector2 forceType = attackForce switch
@@ -194,6 +200,9 @@ public class PlayerController : MonoBehaviour
         };
         
         Vector2 dir = (Vector2)transform.position - sourcePosition;
+
+        // zero out first
+        rb.linearVelocity = Vector2.zero;
         rb.AddForce(dir.normalized * forceType.x, ForceMode2D.Impulse);
         
         Debug.Log("Hit in Direction: " + dir.normalized + " for force: " + forceType.x);
@@ -687,5 +696,31 @@ public class PlayerController : MonoBehaviour
             bounds.Encapsulate(playerColliders[i].bounds);
         }
         return bounds;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        HandleHazardousCollision(collision);
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        HandleHazardousCollision(collision);
+    }
+
+    private void HandleHazardousCollision(Collision2D collision)
+    {
+        if (((1 << collision.gameObject.layer) & hazardousLayers) == 0) return;
+        if (isStaggered) return;
+
+        ContactPoint2D contact = collision.GetContact(0);
+        rb.linearVelocity = Vector2.zero;
+        float horizontalDir = transform.position.x >= contact.point.x ? 1f : -1f;
+        Vector2 knockbackDir = new Vector2(horizontalDir, 1f).normalized;
+        rb.AddForce(knockbackDir * hazardousKnockbackForce, ForceMode2D.Impulse);
+        if (hitStaggerRoutine != null)
+            StopCoroutine(hitStaggerRoutine);
+
+        hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(hazardousStaggerDuration));
     }
 }

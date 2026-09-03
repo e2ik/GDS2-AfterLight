@@ -194,6 +194,11 @@ MonoBehaviour:
   moveSpeed: 8
   jumpForce: 20
   tapJumpMultiplier: 0.2
+  hazardousLayers:
+    serializedVersion: 2
+    m_Bits: 4096
+  hazardousKnockbackForce: 12
+  hazardousStaggerDuration: 0.3
   normGravity: 5
   jumpGravity: 4
   fallGravity: 11
