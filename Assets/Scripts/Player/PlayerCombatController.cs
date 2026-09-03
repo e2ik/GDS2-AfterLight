@@ -69,7 +69,8 @@ public class PlayerCombatController : MonoBehaviour
     private Player Player;
 
     public bool IsAttacking => isAttacking;
-    public bool IsParrying => isParrying || isParryInRecovery || isParrySuccess;
+    public bool IsParrying => isParrying || isParryInRecovery;
+    public bool IsParrySuccess => isParrySuccess;
     public bool IsSkilling => isSkilling;
     public bool IsChargingSkill => isChargingSkill;
     public string CurrentSkillGemName { get; private set; }

@@ -313,6 +313,10 @@ public class PlayerController : MonoBehaviour
 
     public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce)
     {
+        PlayerAnimation playerAnim = GetComponent<PlayerAnimation>();
+        if (playerAnim != null) playerAnim.PlayHurtAnimation();
+        else Debug.LogWarning("PlayerAnimation component not found on PlayerController. Cannot play hurt animation.");
+
         Vector2 forceData = attackForce switch
         {
             AttackForce.Light => new Vector2(lightForce, lightStaggerDuration),

@@ -97,8 +97,6 @@ public class PlayerStats : MonoBehaviour
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
         Debug.Log($"Player took dmg:{rawDamage} - def:{TotalDefense} for {effectiveDamage} damage. Current Health: {currentHealth}");
-        PlayerAnimation pAnim = GetComponent<PlayerAnimation>();
-        pAnim.FlashRedOnHit();
         
         if (currentHealth <= 0f)
             Die();
