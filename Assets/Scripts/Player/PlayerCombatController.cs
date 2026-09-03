@@ -347,8 +347,15 @@ public class PlayerCombatController : MonoBehaviour
             CurrentSkillGemName = specialDef.GemName;
 
             bool wasCharged = chargingSkillTimer >= chargingSkillMinDur;
-            float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
-            float chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
+            float chargeDamageMultiplier = 1f;
+
+            if (wasCharged)
+            {
+                float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
+                chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
+            }
+
+            Debug.Log($"Timer: {chargingSkillTimer:F2} | WasCharged: {wasCharged} | Multiplier: {chargeDamageMultiplier:F2} | Final Dmg: {GetDamage() * chargeDamageMultiplier}");
 
             Player.Controller.SetSkillCharging(false);
             if (wasCharged) Player.Controller.SetSkillGravityZero(true);

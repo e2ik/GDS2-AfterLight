@@ -15,11 +15,14 @@ MonoBehaviour:
   ItemID: 
   UIName: Piercing Gem
   UISprite: {fileID: 0}
-  GemName: Piercing Gem
+  GemName: PierceAttack
   GemAttackDescription: Piercing Enemies For Big Damage
   SkillType: 0
+  SkillExecutionType: 0
   SkillRange: 3.5
-  SkillDamageModifier: 1.3
+  SkillDamageModifier: 2
+  MinimumHeldDuration: 0.25
+  EnergyDrainTick: 0
   hitBoxWidth: 3
   travelSpeed: 20
   testVisPrefab: {fileID: 8155712458646908664, guid: 82bc404b70174d0cf8760b3da1823fe5, type: 3}
