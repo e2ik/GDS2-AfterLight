@@ -3,7 +3,6 @@ using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
-using Unity.VisualScripting;
 
 public enum ParryDirection
 {
@@ -68,12 +67,22 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private bool skillMeterAlwaysFull;
     [SerializeField] private float skillCoolDown = 0.2f;
     [SerializeField] private float skillDamageTick = 0.16f;
+    [SerializeField] private float chargingSkillMinDur = 0.4f;
+    [SerializeField] private float chargingSkillMaxDur = 1.5f;
+    [SerializeField] private float fullChargeDamageMultiplier = 1.5f;
+    [SerializeField] private float skillHoldThreshold = 0.12f; // Fast, responsive hold buffer
+    [SerializeField] private float skillReleaseBufferTime = 0.08f; // Short, responsive release buffer
+
     private float skillBufferTimer;
-    private float skillBufferTime => attackBufferTime;
+    private float skillBufferTime => skillReleaseBufferTime; // better response
     private float skillTimer;
     private bool skillPressed;
     private bool skillReleased;
     private bool isSkilling;
+    private bool skillButtonHeld;
+    private bool isChargingSkill;
+    private float chargingSkillTimer;
+    private bool skillFiredThisHold;
     [Range(0f, 1f)] public float SkillMeter { get; private set; }
     [SerializeField] private float chargeSkillAmount = 0.2f;
     private bool skillReady;
@@ -85,6 +94,7 @@ public class PlayerCombatController : MonoBehaviour
     // just for now we can make visual distinction later
     public bool IsParrying => isParrying || isParryInRecovery || isParrySuccess;
     public bool IsSkilling => isSkilling;
+    public bool IsChargingSkill => isChargingSkill;
     public string CurrentSkillGemName { get; private set; }
     // parry anim sorry I can't control this cleanly in Anim script
     [SerializeField] private float successfulParryVisualDuration = 0.15f;
@@ -114,6 +124,17 @@ public class PlayerCombatController : MonoBehaviour
         HandleAttack();
         HandleSkill();
         UpdateTimers();
+
+        if (skillButtonHeld)
+        {
+            chargingSkillTimer += Time.deltaTime;
+
+            // Triggers as soon as it passes the fast hold threshold (0.12s)
+            if (chargingSkillTimer >= skillHoldThreshold && !Player.Controller.IsChargingSkill)
+            {
+                Player.Controller.SetSkillCharging(true);
+            }
+        }
     }
 
     private void UpdateTimers()
@@ -170,7 +191,18 @@ public class PlayerCombatController : MonoBehaviour
             && !Player.Controller.IsChargingSkill 
             && !isParrying 
             && !isParryInRecovery 
-            && !isAttacking;
+            && !isAttacking
+            && !isSkilling;
+    }
+
+    private bool CanReleaseSkill()
+    {
+        return Player.Controller.InputEnabled 
+            && !Player.Controller.IsWallSliding 
+            && !isParrying 
+            && !isParryInRecovery 
+            && !isAttacking
+            && !isSkilling;
     }
 
     #region Parry Logic
@@ -318,7 +350,8 @@ public class PlayerCombatController : MonoBehaviour
                 ParryDirection.Up => Vector2.up,
                 ParryDirection.Down => Vector2.down,
                 ParryDirection.Left => Vector2.left,
-                ParryDirection.Right => Vector2.right
+                ParryDirection.Right => Vector2.right,
+                _ => Vector2.zero
             };
 
             attackCenter = attackOrigin.position;
@@ -384,9 +417,9 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleSkill()
     {
-        if (skillBufferTimer > 0f && CanAct() && skillMeterAlwaysFull)
+        if (skillBufferTimer > 0f && CanReleaseSkill() && skillMeterAlwaysFull)
             ExecuteSkill();
-        else if (skillBufferTimer > 0f && CanAct() && skillReady)
+        else if (skillBufferTimer > 0f && CanReleaseSkill() && skillReady)
             ExecuteSkill();
     }
 
@@ -403,7 +436,7 @@ public class PlayerCombatController : MonoBehaviour
     {
         skillBufferTimer = 0f;
         
-        if (skillPressed && skillTimer <= 0f && CanAct())
+        if (skillPressed && skillTimer <= 0f && CanReleaseSkill())
         {
             skillReady = false;
             CancelParry();
@@ -411,41 +444,52 @@ public class PlayerCombatController : MonoBehaviour
 
             if (specialDef == null)
             {
-                Debug.LogWarning("[PlayerCombatController] Cannot execute Special Attack: No Primary Gem equipped.");
                 skillPressed = false;
+                Player.Controller.SetSkillCharging(false);
                 return;
             }
             
             isSkilling = true;
             CurrentSkillGemName = specialDef.GemName;
+            
+            bool wasCharged = chargingSkillTimer >= chargingSkillMinDur;
+            float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
+            float chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
+
+            Player.Controller.SetSkillCharging(false);
+
+            if (wasCharged)
+            {
+                Player.Controller.SetSkillGravityZero(true);
+            }
 
             switch (specialDef.SkillType)
             {
                 case SkillType.Single:
-                    PerformSingleSkill(specialDef);
+                    PerformSingleSkill(specialDef, chargeDamageMultiplier);
                     break;
                 case SkillType.Timed:
-                    skillCoroutine = StartCoroutine(PerformTimedSkill(skillDamageTick, specialDef));
+                    skillCoroutine = StartCoroutine(PerformTimedSkill(skillDamageTick, specialDef, chargeDamageMultiplier));
                     break;
                 default:
-                    Debug.Log("Current SkillType not implemented!");
+                    EndSkill();
                     break;
             }
             
-            OnEnergyChanged?.Invoke(0f, 1f); // I have no idea how it's keeping track of the skillmeter
+            OnEnergyChanged?.Invoke(0f, 1f);
         }
     }
 
-    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def)
+    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float chargeDamageMultiplier)
     {
         AttackContext context = Player.Equipment.GetModifiedAttackContext();
-        float damage = GetDamage();
+        float damage = GetDamage() * chargeDamageMultiplier;
         def.Execute(context, damage);
     }
-    IEnumerator PerformTimedSkill(float tick, PrimaryGemBehaviourDefinition def)
+    IEnumerator PerformTimedSkill(float tick, PrimaryGemBehaviourDefinition def, float chargeDamageMultiplier)
     {
         AttackContext context = Player.Equipment.GetModifiedAttackContext();
-        float damage = GetDamage();
+        float damage = GetDamage() * chargeDamageMultiplier;
         while(isSkilling)
         {
             def.Execute(context, damage);
@@ -456,7 +500,12 @@ public class PlayerCombatController : MonoBehaviour
     public void EndSkill()
     {
         isSkilling = false;
+        isChargingSkill = false;
+        skillButtonHeld = false;
         CurrentSkillGemName = string.Empty;
+
+        // Turn off zero gravity and restore standard fall physics
+        Player.Controller.SetSkillGravityZero(false);
     }
 
     #endregion
@@ -483,15 +532,49 @@ public class PlayerCombatController : MonoBehaviour
     {
         if (value.isPressed)
         {
-            skillPressed = true;
-            skillReleased = false;
-            skillBufferTimer = skillBufferTime;
+            skillButtonHeld = true;
+            isChargingSkill = true;
+            chargingSkillTimer = 0f;
+            skillFiredThisHold = false;
+
+            CancelInvoke(nameof(AutoFireAtMaxCharge));
+            Invoke(nameof(AutoFireAtMaxCharge), chargingSkillMaxDur);
         }
         else
         {
-            skillPressed = false;
             skillReleased = true;
+            skillButtonHeld = false;
+            isChargingSkill = false;
+
+            // Release physics freeze & gravity immediately when key is released
+            StopChargingPhysics();
+
+            if (skillFiredThisHold) return;
+
+            skillPressed = true;
+            skillBufferTimer = skillBufferTime;
         }
+    }
+
+    private void AutoFireAtMaxCharge()
+    {
+        if (!skillButtonHeld) return;
+
+        chargingSkillTimer = chargingSkillMaxDur;
+        skillButtonHeld = false; 
+        isChargingSkill = false;
+        
+        skillFiredThisHold = true;
+        skillPressed = true;
+        skillBufferTimer = skillBufferTime;
+
+        StopChargingPhysics();
+    }
+
+    private void StopChargingPhysics()
+    {
+        Player.Controller.SetSkillCharging(false);
+        CancelInvoke(nameof(AutoFireAtMaxCharge));
     }
 
     #endregion

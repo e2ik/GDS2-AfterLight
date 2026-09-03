@@ -67,13 +67,9 @@ public class PlayerController : MonoBehaviour
     private float dashCoolDown = 0.2f;
     private float dashTimer;
 
-    [Header("Skill Charge Movement")] 
-    private bool skillPressed;
-    private bool skillReleased;
-    private bool isChargingSkill;
-    private float chargingSkillTimer;
-    private float chargingSkillMinDur = 0.4f;
-    private float chargingSkillMaxDur = 1.5f;
+    [Header("Skill Charge Movement")]
+    private bool isChargingSkillPhysics;
+    private bool isSkillGravityZeroed;
 
     private bool inventoryPressed;
     private bool interactPressed;
@@ -111,7 +107,7 @@ public class PlayerController : MonoBehaviour
     public bool IsGrounded => isGrounded;
     public bool IsWallSliding => isWallSliding;
     public bool IsDashing => isDashing;
-    public bool IsChargingSkill => isChargingSkill;
+    public bool IsChargingSkill => isChargingSkillPhysics;
     public bool IsDirectionalDash { get; private set; }
     private bool isParryGravityActive;
     public bool IsStaggered => isStaggered;
@@ -155,8 +151,12 @@ public class PlayerController : MonoBehaviour
         HandleJump();
         HandleWallJump();
         HandleDash();
-        HandleSkillCharging();
-            
+
+        if (isChargingSkillPhysics)
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+
         GravityState();
     }
 
@@ -181,10 +181,31 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = Vector2.zero;
         }
     }
-    
-    private bool CanMove()
+
+    public void SetSkillCharging(bool active)
     {
-        return InputEnabled && !IsMovementFrozen && !isWallJumping && !isDashing && !isChargingSkill && !isStaggered && !isWallSliding;
+        isChargingSkillPhysics = active;
+        if (active)
+        {
+            rb.linearVelocity = Vector2.zero; // Fully freezes position on charge start
+        }
+    }
+
+    public void SetSkillGravityZero(bool active)
+    {
+        isSkillGravityZeroed = active;
+
+        if (!active)
+        {
+            // Force Rigidbody back to standard/fall gravity immediately
+            GravityState(); 
+        }
+    }
+    
+    public bool CanMove()
+    {
+        // Blocks movement ONLY while actively charging (isChargingSkillPhysics == true)
+        return InputEnabled && !isWallJumping && !isDashing && !isChargingSkillPhysics && !isStaggered && !isWallSliding;
     }
 
     // on hit knockback
@@ -416,34 +437,6 @@ public class PlayerController : MonoBehaviour
         isDashing = false;
     }
 
-    private void HandleSkillCharging()
-    {
-        if (isChargingSkill)
-            chargingSkillTimer += Time.deltaTime;
-        
-        if (!isChargingSkill && skillPressed && !IsMovementFrozen)
-        {
-            isChargingSkill = true;
-            rb.linearVelocityY = 0;
-            skillPressed = false;
-            skillReleased = false;
-
-            chargingSkillTimer = 0f;
-            Invoke(nameof(StopChargingSkill), chargingSkillMaxDur);
-        }
-        if (skillReleased && chargingSkillTimer >= chargingSkillMinDur)
-        {
-            isChargingSkill = false;
-            skillPressed = false;
-            skillReleased = false;
-        }
-    }
-
-    private void StopChargingSkill()
-    {
-        isChargingSkill = false;
-    }
-    
     private InventoryDisplay inventoryDisplay;
 
     private void PerformInventoryAction()
@@ -478,7 +471,7 @@ public class PlayerController : MonoBehaviour
 
     private void GravityState()
     { 
-        if (isParryGravityActive || isChargingSkill)
+        if (isParryGravityActive || isChargingSkillPhysics || isSkillGravityZeroed)
         {
             rb.gravityScale = 0f;
         }
@@ -535,20 +528,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void OnSAttack(InputValue value)
-    {
-        if (value.isPressed)
-        {
-            skillPressed = true;
-            skillReleased = false;
-        }
-        else
-        {
-            skillPressed = false;
-            skillReleased = true;
-        }
-    }
-    
+    // SAttack input is now handled solely by PlayerCombatController,
+    // which owns both charge-validity rules and what a charged/uncharged
+    // skill release does. PlayerController no longer listens for it.
+
     public void OnInventory()
     {
         inventoryPressed = true;
