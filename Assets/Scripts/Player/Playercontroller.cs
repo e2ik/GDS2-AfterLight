@@ -87,6 +87,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Collider2D[] playerColliders;
     private PlayerEquipmentManager equipmentManager;
+    private PlayerCombatController combatController;
 
     private InputAction moveAction;
     private InputAction attackAction;
@@ -117,6 +118,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         playerColliders = GetComponents<Collider2D>();
         equipmentManager = GetComponent<PlayerEquipmentManager>();
+        combatController = GetComponent<PlayerCombatController>();
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions["Move"];
@@ -152,11 +154,6 @@ public class PlayerController : MonoBehaviour
         HandleWallJump();
         HandleDash();
 
-        if (isChargingSkillPhysics)
-        {
-            rb.linearVelocity = Vector2.zero;
-        }
-
         GravityState();
     }
 
@@ -187,7 +184,8 @@ public class PlayerController : MonoBehaviour
         isChargingSkillPhysics = active;
         if (active)
         {
-            rb.linearVelocity = Vector2.zero; // Fully freezes position on charge start
+            rb.linearVelocity = Vector2.zero;
+            isWallSliding = false;
         }
     }
 
@@ -195,20 +193,23 @@ public class PlayerController : MonoBehaviour
     {
         isSkillGravityZeroed = active;
 
-        if (!active)
+        if (active)
         {
-            // Force Rigidbody back to standard/fall gravity immediately
+            // Zero out linear velocity so existing momentum doesn't cause drift
+            rb.linearVelocity = Vector2.zero; 
+            rb.gravityScale = 0f;
+        }
+        else
+        {
             GravityState(); 
         }
     }
     
     public bool CanMove()
     {
-        // Blocks movement ONLY while actively charging (isChargingSkillPhysics == true)
         return InputEnabled && !isWallJumping && !isDashing && !isChargingSkillPhysics && !isStaggered && !isWallSliding;
     }
 
-    // on hit knockback
     public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce)
     {
         Vector2 forceType = attackForce switch
@@ -222,11 +223,9 @@ public class PlayerController : MonoBehaviour
         
         Vector2 dir = (Vector2)transform.position - sourcePosition;
 
-        // zero out first
         rb.linearVelocity = Vector2.zero;
         rb.AddForce(dir.normalized * forceType.x, ForceMode2D.Impulse);
         
-        Debug.Log("Hit in Direction: " + dir.normalized + " for force: " + forceType.x);
         if (hitStaggerRoutine != null)
             StopCoroutine(hitStaggerRoutine);
         hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(forceType.y));
@@ -312,7 +311,8 @@ public class PlayerController : MonoBehaviour
 
     private void HandleWallSlide()
     {
-        if (IsMovementFrozen)
+        // Cancel wall sliding if charging a skill or executing an active skill
+        if (IsMovementFrozen || isChargingSkillPhysics || (combatController != null && combatController.IsSkilling))
         {
             isWallSliding = false;
             return;
@@ -389,7 +389,6 @@ public class PlayerController : MonoBehaviour
 
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
-            PlayerCombatController combatController = GetComponent<PlayerCombatController>();
             if (combatController != null && combatController.IsParrying)
             {
                 combatController.CancelParry();
@@ -528,10 +527,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // SAttack input is now handled solely by PlayerCombatController,
-    // which owns both charge-validity rules and what a charged/uncharged
-    // skill release does. PlayerController no longer listens for it.
-
     public void OnInventory()
     {
         inventoryPressed = true;
@@ -568,7 +563,8 @@ public class PlayerController : MonoBehaviour
     {
         onWall = false;
 
-        if (isGrounded) return;
+        // Skip wall detection entirely while charging or skilling
+        if (isGrounded || isChargingSkillPhysics || (combatController != null && combatController.IsSkilling)) return;
         if (Mathf.Abs(horizontalInput) < 0.1f) return;
 
         Bounds bounds = GetPlayerBounds();
@@ -683,11 +679,15 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        bool isChargingOrSkilling = isChargingSkillPhysics || combatController.IsSkilling;
+        if (isChargingOrSkilling || isStaggered) return;
         HandleHazardousCollision(collision);
     }
 
     private void OnCollisionStay2D(Collision2D collision)
     {
+        bool isChargingOrSkilling = isChargingSkillPhysics || combatController.IsSkilling;
+        if (isChargingOrSkilling || isStaggered) return;
         HandleHazardousCollision(collision);
     }
 
