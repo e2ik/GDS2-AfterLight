@@ -62,7 +62,7 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetBool(IsWallSlidingHash, player.Controller.IsWallSliding);
         animator.SetBool(IsDashingHash, player.Controller.IsDashing);
         animator.SetBool(IsDirectionalDashHash, player.Controller.IsDirectionalDash);
-        animator.SetBool(IsChargingSkillHash, player.Controller.IsChargingSkill);
+        animator.SetBool(IsChargingSkillHash, player.CombatController.IsChargingSkill);
     }
 
     private void HandleSkillAnimation()
