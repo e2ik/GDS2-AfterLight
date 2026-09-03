@@ -4,7 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Spin Attack Gem", menuName = "Primary Gems/Spin Attack Gem")]
 public class SwordAOEGem : PrimaryGemBehaviourDefinition
 {
-    public override void Execute(AttackContext context, float baseDamage)
+    public override void Execute(AttackContext context, float baseDamage, float chargeAmount = 0f)
     {
         Debug.Log("Spin To Win");
         

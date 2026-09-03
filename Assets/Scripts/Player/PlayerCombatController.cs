@@ -178,7 +178,8 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleParry()
     {
-        if (parryBufferTimer > 0f && CanAct()) ExecuteParry();
+        if (parryBufferTimer > 0f && CanAct())
+            ExecuteParry();
     }
 
     private void ExecuteParry()
@@ -330,52 +331,51 @@ public class PlayerCombatController : MonoBehaviour
     {
         skillBufferTimer = 0f;
 
-        if (skillPressed && skillTimer <= 0f && CanReleaseSkill())
+        if (!skillPressed || !(skillTimer <= 0f) || !CanReleaseSkill()) return;
+        
+        skillReady = false;
+        CancelParry();
+        var specialDef = Player.Equipment.SpecialAttackDef;
+
+        if (specialDef == null)
         {
-            skillReady = false;
-            CancelParry();
-            var specialDef = Player.Equipment.SpecialAttackDef;
-
-            if (specialDef == null)
-            {
-                skillPressed = false;
-                Player.Controller.SetSkillCharging(false);
-                return;
-            }
-
-            isSkilling = true;
-            CurrentSkillGemName = specialDef.GemName;
-
-            bool wasCharged = chargingSkillTimer >= chargingSkillMinDur;
-            float chargeDamageMultiplier = 1f;
-
-            if (wasCharged)
-            {
-                float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
-                chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
-            }
-
-            Debug.Log($"Timer: {chargingSkillTimer:F2} | WasCharged: {wasCharged} | Multiplier: {chargeDamageMultiplier:F2} | Final Dmg: {GetDamage() * chargeDamageMultiplier}");
-
+            skillPressed = false;
             Player.Controller.SetSkillCharging(false);
-            if (wasCharged) Player.Controller.SetSkillGravityZero(true);
+            return;
+        }
 
-            if (specialDef.SkillExecutionType == SkillExecutionType.Held)
+        isSkilling = true;
+        CurrentSkillGemName = specialDef.GemName;
+
+        bool wasCharged = chargingSkillTimer >= chargingSkillMinDur;
+        float chargeDamageMultiplier = 1f;
+
+        if (wasCharged)
+        {
+            float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
+            chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
+        }
+
+        Debug.Log($"Timer: {chargingSkillTimer:F2} | WasCharged: {wasCharged} | Multiplier: {chargeDamageMultiplier:F2} | Final Dmg: {GetDamage() * chargeDamageMultiplier}");
+
+        Player.Controller.SetSkillCharging(false);
+        if (wasCharged) Player.Controller.SetSkillGravityZero(true);
+
+        if (specialDef.SkillExecutionType == SkillExecutionType.Held)
+        {
+            skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef));
+        }
+        else
+        {
+            if (specialDef.SkillType == SkillType.Single)
             {
-                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef));
+                SkillMeter = 0f;
+                OnEnergyChanged?.Invoke(SkillMeter, 1f);
+                PerformSingleSkill(specialDef, chargeDamageMultiplier);
             }
-            else
+            else if (specialDef.SkillType == SkillType.Timed)
             {
-                if (specialDef.SkillType == SkillType.Single)
-                {
-                    SkillMeter = 0f;
-                    OnEnergyChanged?.Invoke(SkillMeter, 1f);
-                    PerformSingleSkill(specialDef, chargeDamageMultiplier);
-                }
-                else if (specialDef.SkillType == SkillType.Timed)
-                {
-                    skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier));
-                }
+                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier));
             }
         }
     }

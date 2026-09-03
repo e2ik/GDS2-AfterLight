@@ -15,7 +15,9 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
 
     [SerializeField]
     private GameObject testVisPrefab;
-    public override void Execute(AttackContext context, float baseDamage)
+
+    private Vector2 direction;
+    public override void Execute(AttackContext context, float baseDamage, float chargeAmount = 0f)
     {
         Debug.Log("Pierce To Win");
 
@@ -27,11 +29,11 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
         }
         PlayerCombatController pCombat = player.GetComponent<PlayerCombatController>();
         Vector2 center = player.transform.position;
-        Vector2 attackDirection = center *= Vector2.right;
-        context.Runner.StartCoroutine(AttackRoutine(context, hitBoxWidth, travelSpeed, pCombat));
+        direction = player.GetComponent<Player>()?.Controller?.FacingDirection == 1 ? Vector2.right : Vector2.left;
+        context.Runner.StartCoroutine(AttackRoutine(context, pCombat));
     }
 
-    private IEnumerator AttackRoutine(AttackContext context, float hitBoxWidth, float travelSpeed, PlayerCombatController playerCombat)
+    private IEnumerator AttackRoutine(AttackContext context, PlayerCombatController playerCombat)
     {
         float distanceTravelled = 0f;
         var enemiesHit = new HashSet<Collider2D>();
@@ -42,7 +44,7 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
             float step = travelSpeed * Time.deltaTime;
             distanceTravelled += step;
 
-            Vector2 hitPosition = context.OriginPoint + Vector2.right * distanceTravelled;
+            Vector2 hitPosition = context.OriginPoint + direction * distanceTravelled;
             Collider2D[] hitsAtPos = Physics2D.OverlapBoxAll(hitPosition, new Vector2(hitBoxWidth, hitBoxWidth), 0f, playerCombat.enemyLayer);
             if (hitsAtPos.Count() > 0)
             {
