@@ -9,6 +9,7 @@ public class WorldStreamer : MonoBehaviour
 
     public bool IsFastTraveling { get; set; } = false;
     public bool IsAligning { get; private set; } = false;
+    private string currentLoadedStreamedScene;
 
     private HashSet<string> loadingScenes = new HashSet<string>();
 
