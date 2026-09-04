@@ -6,9 +6,13 @@ namespace GameUI
     public class PauseWindow : UIWindow
     {
         [SerializeField] private Button resumeButton;
-        [SerializeField] private Button returnToTitleButton;
         [SerializeField] private Button quitButton;
+        [SerializeField] private Button returnToTitleButton;
+
         [SerializeField] private ConfirmWindow confirmWindow;
+
+        [SerializeField] private Button settingsButton;
+        [SerializeField] private SettingsWindow settingsWindow;
 
         protected override void Awake()
         {
@@ -17,6 +21,7 @@ namespace GameUI
             resumeButton.onClick.AddListener(HandleResumeClicked);
             returnToTitleButton.onClick.AddListener(HandleReturnToTitleClicked);
             quitButton.onClick.AddListener(HandleQuitClicked);
+            settingsButton.onClick.AddListener(HandleSettingsClicked);
         }
 
         private void HandleResumeClicked()
@@ -31,8 +36,6 @@ namespace GameUI
                 onConfirmCallback: () =>
                 {
                     UIManager.Instance.Close(this);
-                    // TODO: GameManager.Instance.ReturnToTitle() once this is wired into the real game.
-                    // Left as a log for now since there's no GameManager in this sandbox scene.
                     Debug.Log("Would return to title here.");
                 }
             );
@@ -45,6 +48,10 @@ namespace GameUI
 #else
             Application.Quit();
 #endif
+        }
+        private void HandleSettingsClicked()
+        {
+            UIManager.Instance.Open(settingsWindow);
         }
     }
 }

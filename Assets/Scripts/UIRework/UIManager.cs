@@ -1,11 +1,14 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace GameUI
 {
     public class UIManager : MonoBehaviour
     {
         public static UIManager Instance { get; private set; }
+
+        [SerializeField] private InputActionAsset actionAsset;
 
         private readonly Stack<UIWindow> openWindows = new Stack<UIWindow>();
 
@@ -17,6 +20,8 @@ namespace GameUI
                 return;
             }
             Instance = this;
+
+            InputRebindSaver.Load(actionAsset);
         }
 
         public void Open(UIWindow window)
