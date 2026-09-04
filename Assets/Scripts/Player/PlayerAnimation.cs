@@ -94,6 +94,7 @@ public class PlayerAnimation : MonoBehaviour
     {
         animator.SetTrigger(IsHurtHash);
         FlashRedOnHit();
+        CamControls.Shake(0.1f, 0.5f);
     }
 
     public void FlashRedOnHit()
@@ -108,6 +109,27 @@ public class PlayerAnimation : MonoBehaviour
     public void FlashGreenOnParrySuccess()
     {
         StartFlashColor(Color.green, 0.15f);
+
+        Collider2D playerCollider = player.GetComponent<Collider2D>();
+        Vector2 spawnPosition = transform.position;
+
+        if (playerCollider != null)
+        {
+            Bounds bounds = playerCollider.bounds;
+            Vector2 center = bounds.center;
+            float randomX = Random.Range(0.4f, 0.7f);
+            float facingDir = player.Controller != null ? player.Controller.FacingDirection : 1f;
+            float horizontalOffset = (bounds.extents.x + randomX) * facingDir;
+            float randomY = Random.Range(-bounds.extents.y + 0.7f, bounds.extents.y - 0.7f);
+
+            spawnPosition = new Vector2(center.x + horizontalOffset, center.y + randomY);
+        }
+
+        // play effect
+        PSpawner.Spawn("spark", spawnPosition);
+
+        // shake cam
+        CamControls.Shake(0.15f, 0.1f);
     }
 
     #endregion

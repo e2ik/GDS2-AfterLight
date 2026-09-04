@@ -198,15 +198,15 @@ public class PlayerCombatController : MonoBehaviour
         return Player.Controller.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
     }
 
-    public bool CheckParry(ParryDirection incomingDirection)
+public bool CheckParry(ParryDirection incomingDirection)
+{
+    if (isParrying && parryDir == incomingDirection)
     {
-        if (isParrying && parryDir == incomingDirection)
-        {
-            OnSuccessfulParry();
-            return true;
-        }
-        return false;
+        OnSuccessfulParry();
+        return true;
     }
+    return false;
+}
 
     private void OnSuccessfulParry()
     {
