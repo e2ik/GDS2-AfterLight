@@ -133,6 +133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.AttackEvents
   hitbox: {fileID: 8255842453170479238}
   hurtbox: {fileID: 2803622147759670400}
+  vfxBox: {fileID: 0}
 --- !u!1 &1508996274877242485
 GameObject:
   m_ObjectHideFlags: 0
@@ -196,11 +197,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.Enemy
   observationSO: {fileID: 11400000, guid: a9905b082a0714b4d92b813f6e97f2e4, type: 2}
-  attacks: []
+  attacks:
+  - Attack: {fileID: 11400000, guid: 230da04fd7229084e810a6f816e8cf2d, type: 2}
+    Weight: 80
+  - Attack: {fileID: 11400000, guid: 599aae841ff1c2d4fb62f1953df19d53, type: 2}
+    Weight: 20
   behaviorAgent: {fileID: 3741899294261406425}
   animator: {fileID: 1017631902712577609}
   rb2D: {fileID: 1037170224883650968}
-  attackCooldown: 0.25
+  attackCooldown: 1
 --- !u!114 &3741899294261406425
 MonoBehaviour:
   m_ObjectHideFlags: 0

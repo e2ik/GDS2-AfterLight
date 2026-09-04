@@ -441,21 +441,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: FlyingEnemy
       objectReference: {fileID: 0}
-    - target: {fileID: 1520577482391205407, guid: 9966fcda4c52b2648beb4e12c56869cb, type: 3}
-      propertyPath: m_IsTrigger
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5011396066847478461, guid: 9966fcda4c52b2648beb4e12c56869cb, type: 3}
-      propertyPath: attacks.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5011396066847478461, guid: 9966fcda4c52b2648beb4e12c56869cb, type: 3}
-      propertyPath: attacks.Array.data[0].Attack
-      value: 
-      objectReference: {fileID: 11400000, guid: 230da04fd7229084e810a6f816e8cf2d, type: 2}
     - target: {fileID: 5011396066847478461, guid: 9966fcda4c52b2648beb4e12c56869cb, type: 3}
       propertyPath: attacks.Array.data[0].Weight
-      value: 100
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 5011396066847478461, guid: 9966fcda4c52b2648beb4e12c56869cb, type: 3}
+      propertyPath: attacks.Array.data[1].Weight
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 6231625418547740632, guid: 9966fcda4c52b2648beb4e12c56869cb, type: 3}
       propertyPath: m_LocalPosition.x
