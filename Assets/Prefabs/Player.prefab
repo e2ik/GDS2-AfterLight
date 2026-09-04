@@ -255,7 +255,7 @@ MonoBehaviour:
   attackDuration: 0.5
   attackCoolDown: 0.2
   counterAttackWindow: 0.5
-  skillMeterAlwaysFull: 1
+  skillMeterAlwaysFull: 0
   skillCoolDown: 0.2
   chargingSkillMinDur: 0.4
   chargingSkillMaxDur: 1.5
@@ -263,6 +263,7 @@ MonoBehaviour:
   skillHoldThreshold: 0.12
   skillReleaseBufferTime: 0.08
   chargeSkillAmount: 0.2
+  skillActivationCost: 0.1
 --- !u!114 &4877809276059888347
 MonoBehaviour:
   m_ObjectHideFlags: 0

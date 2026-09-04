@@ -53,6 +53,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float skillHoldThreshold = 0.12f;
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
     [SerializeField] private float chargeSkillAmount = 0.2f;
+    [Range(0.1f, 1f)] public float skillActivationCost;
 
     private float skillBufferTimer;
     private float skillTimer;
@@ -62,7 +63,6 @@ public class PlayerCombatController : MonoBehaviour
     private bool isChargingSkill;
     private float chargingSkillTimer;
     private bool skillFiredThisHold;
-    private bool skillReady;
     private Coroutine skillCoroutine;
 
     private float verticalInput;
@@ -166,12 +166,12 @@ public class PlayerCombatController : MonoBehaviour
 
     private bool CanReleaseSkill()
     {
-        return Player.Controller.InputEnabled 
-            && !Player.Controller.IsWallSliding 
-            && !isParrying 
-            && !isParryInRecovery 
-            && !isAttacking
-            && !isSkilling;
+        return Player.Controller.InputEnabled
+               && !Player.Controller.IsWallSliding
+               && !isParrying
+               && !isParryInRecovery
+               && !isAttacking
+               && !isSkilling;
     }
 
     #region Parry Logic
@@ -313,7 +313,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleSkill()
     {
-        bool isReadyToFire = skillMeterAlwaysFull || SkillMeter > 0f;
+        bool isReadyToFire = skillMeterAlwaysFull || SkillMeter >= skillActivationCost;
         if (skillBufferTimer > 0f && CanReleaseSkill() && isReadyToFire)
         {
             ExecuteSkill();
@@ -324,7 +324,6 @@ public class PlayerCombatController : MonoBehaviour
     {
         SkillMeter = Mathf.Clamp01(SkillMeter + amount);
         OnEnergyChanged?.Invoke(SkillMeter, 1f);
-        if (Mathf.Approximately(SkillMeter, 1f)) skillReady = true;
     }
 
     private void ExecuteSkill()
@@ -333,7 +332,6 @@ public class PlayerCombatController : MonoBehaviour
 
         if (!skillPressed || !(skillTimer <= 0f) || !CanReleaseSkill()) return;
         
-        skillReady = false;
         CancelParry();
         var specialDef = Player.Equipment.SpecialAttackDef;
 
@@ -349,14 +347,15 @@ public class PlayerCombatController : MonoBehaviour
 
         bool wasCharged = chargingSkillTimer >= chargingSkillMinDur;
         float chargeDamageMultiplier = 1f;
+        float chargeRatio = 0f;
 
-        if (wasCharged)
-        {
-            float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
-            chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
+        if (wasCharged) 
+        { 
+            chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer); 
+            chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio); 
         }
-
-        Debug.Log($"Timer: {chargingSkillTimer:F2} | WasCharged: {wasCharged} | Multiplier: {chargeDamageMultiplier:F2} | Final Dmg: {GetDamage() * chargeDamageMultiplier}");
+        
+        Debug.Log($"Timer: {chargingSkillTimer:F2} | WasCharged: {wasCharged} | ChargePercentage: {chargeRatio:F2} | Multiplier: {chargeDamageMultiplier:F2} | Final Dmg: {GetDamage() * chargeDamageMultiplier}");
 
         Player.Controller.SetSkillCharging(false);
         if (wasCharged) Player.Controller.SetSkillGravityZero(true);
@@ -371,7 +370,7 @@ public class PlayerCombatController : MonoBehaviour
             {
                 SkillMeter = 0f;
                 OnEnergyChanged?.Invoke(SkillMeter, 1f);
-                PerformSingleSkill(specialDef, chargeDamageMultiplier);
+                PerformSingleSkill(specialDef, chargeRatio, chargeDamageMultiplier);
             }
             else if (specialDef.SkillType == SkillType.Timed)
             {
@@ -380,9 +379,9 @@ public class PlayerCombatController : MonoBehaviour
         }
     }
 
-    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float multiplier)
+    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float chargePercentage, float multiplier)
     {
-        def.Execute(Player.Equipment.GetModifiedAttackContext(), GetDamage() * multiplier);
+        def.Execute(Player.Equipment.GetModifiedAttackContext(), GetDamage() * multiplier, chargePercentage);
     }
 
     private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f)
