@@ -12,6 +12,9 @@ namespace Enemies
                 return diff.x >= 0f ? ParryDirection.Right : ParryDirection.Left;
 
             return diff.y >= 0f ? ParryDirection.Up : ParryDirection.Down;
-        }  
+        }
+
+        public static ParryDirection GetDirectionFromVelocity(Vector2 velocity) =>
+            GetAttackDirection(-velocity, Vector2.zero);
     }
 }

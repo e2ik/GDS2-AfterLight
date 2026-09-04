@@ -1407,7 +1407,7 @@ GameObject:
   m_Component:
   - component: {fileID: 609978573}
   - component: {fileID: 609978574}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Square (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1488,6 +1488,95 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1001 &620457710
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3485468964012457384, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: groundLayers.m_Bits
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 3485468964012457384, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: obstacleLayer.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 3485468964012457384, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: obstacleLayers.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 6502403106020412924, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_NavMeshData
+      value: 
+      objectReference: {fileID: 23800000, guid: 8eb95691b4945fa4d8d4521953a0bf77, type: 2}
+    - target: {fileID: 6502403106020412924, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_UseGeometry
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 13.040254
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 19.7722
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8201766080922993444, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9003766466624037469, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_Name
+      value: NavMesh
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
 --- !u!1 &638848451
 GameObject:
   m_ObjectHideFlags: 0
@@ -1636,7 +1725,7 @@ GameObject:
   m_Component:
   - component: {fileID: 667286150}
   - component: {fileID: 667286151}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Square (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3456,7 +3545,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1495134520}
   - component: {fileID: 1495134521}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: ground (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4287,7 +4376,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1710261766}
   - component: {fileID: 1710261767}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: ground (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5233,3 +5322,4 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1085938262}
+  - {fileID: 620457710}

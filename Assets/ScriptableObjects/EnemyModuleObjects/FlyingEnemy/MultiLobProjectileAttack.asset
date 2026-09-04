@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f5ae828e1d92a54c9ebad168293629e, type: 3}
+  m_Name: MultiLobProjectileAttack
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.ProjectileAttackSO
+  range: 5
+  cooldownDuration: 3
+  projectilePrefab: {fileID: 6559660887865809959, guid: 3a83574d3758d374c9b8cd25495ca35f, type: 3}
+  damage: 1
+  launchAngleDegrees: 55
+  launchSpeed: 8
+  shotCount: 3
+  shotSpacingDegrees: 12
+  clip: {fileID: 0}
+  placeholderClipName: AttackPlaceholder
+  attackStateName: Attack

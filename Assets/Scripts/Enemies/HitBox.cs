@@ -13,7 +13,7 @@ namespace Enemies
         public AttackForce AttackForce { get; private set; }
         public bool IsActive => col.enabled;
 
-        private void Start()
+        private void Awake()
         {
             col = GetComponent<Collider2D>();
             SourceEvents = GetComponentInParent<AttackEvents>();
@@ -27,6 +27,8 @@ namespace Enemies
             ParryDirection = parryDirection;
             AttackForce = attackForce;
         }
+
+        public void UpdateParryDirection(ParryDirection direction) => ParryDirection = direction;
 
         public void Disable() => col.enabled = false;
         

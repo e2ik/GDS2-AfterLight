@@ -28,11 +28,16 @@ public class PlayerHurtBox : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (Invulnerable) return;        
-        //Debug.Log($"Player Hurt Box triggered by: {other.name}");
-
         var hitbox = other.GetComponent<HitBox>();
         if (hitbox == null || !hitbox.IsActive) return;
+        
+        TakeHit(hitbox);
+    }
+
+    public void TakeHit(HitBox hitbox)
+    {
+        if (Invulnerable) return;        
+        //Debug.Log($"Player Hurt Box triggered by: {other.name}");
 
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
 
@@ -40,7 +45,7 @@ public class PlayerHurtBox : MonoBehaviour
             return;
 
         bool isChargedSkillExecuting = combatController != null && combatController.IsSkilling &&
-            (combatController.GetComponentInParent<Player>()?.Equipment?.SpecialAttackDef?.SkillExecutionType == SkillExecutionType.Charged);
+                                       (combatController.GetComponentInParent<Player>()?.Equipment?.SpecialAttackDef?.SkillExecutionType == SkillExecutionType.Charged);
 
         if (isChargedSkillExecuting) return;
         
@@ -48,7 +53,7 @@ public class PlayerHurtBox : MonoBehaviour
 
         //Vector2 contactPoint = col.ClosestPoint(other.transform.position);
         //Vector2 direction = contactPoint - (Vector2)other.transform.root.transform.position;
-        Vector2 sourcePosition = other.transform.root.transform.position;
+        Vector2 sourcePosition = hitbox.transform.root.transform.position;
         if (!combatController.IsSkilling && !combatController.IsChargingSkill)
         {
             playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce);
