@@ -14,7 +14,7 @@ public class PSpawner : MonoBehaviour
     }
 
     [SerializeField] private List<ParticleMapping> database = new List<ParticleMapping>();
-    
+
     private Dictionary<string, Queue<ParticleSystem>> _pools;
     private Dictionary<string, ParticleSystem> _prefabs;
 
@@ -53,19 +53,30 @@ public class PSpawner : MonoBehaviour
     {
         ParticleSystem ps = Instantiate(prefab, transform);
         ps.gameObject.SetActive(false);
-        
+
         var main = ps.main;
         main.stopAction = ParticleSystemStopAction.Disable;
-        
+
         return ps;
     }
 
-    public static ParticleSystem Spawn(string key, Vector3 position, Quaternion? rotation = null)
+    public static ParticleSystem Spawn(string key, Vector3 position, Quaternion? rotation = null, Transform parent = null)
     {
         ParticleSystem ps = GetPooledInstance(key);
         if (ps == null) return null;
 
-        ps.transform.position = position;
+        if (parent != null)
+        {
+            ps.transform.SetParent(parent, worldPositionStays: false);
+            ps.transform.localPosition = parent.InverseTransformPoint(position);
+            ps.transform.localRotation = Quaternion.identity;
+        }
+        else
+        {
+            ps.transform.SetParent(Instance.transform, worldPositionStays: true);
+            ps.transform.position = position;
+        }
+
         ps.transform.rotation = rotation ?? Quaternion.identity;
         ps.gameObject.SetActive(true);
         ps.Play(true);

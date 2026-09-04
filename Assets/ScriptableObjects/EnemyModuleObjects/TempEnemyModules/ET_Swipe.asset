@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca334159b860b7943b6e9457654eb9b5, type: 3}
   m_Name: ET_Swipe
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.MeleeAttack
-  range: 20
+  range: 10
   cooldownDuration: 5
-  clip: {fileID: 7400000, guid: 0495b935db9b4db4d9af8be0210ba396, type: 2}
+  clip: {fileID: 7400000, guid: cf0b3d4188a4df44684f0385dc963b97, type: 2}
   damage: 20
-  attackForce: 1
+  attackForce: 2
   placeholderClipName: EmptyAttack
   attackStateName: Attack

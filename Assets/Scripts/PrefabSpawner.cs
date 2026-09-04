@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(SpriteRenderer))]
 public class PrefabSpawner : MonoBehaviour
 {
     [Header("Spawn Configuration")]
@@ -13,6 +14,19 @@ public class PrefabSpawner : MonoBehaviour
 
     private GameObject spawnedEnemy;
     private Coroutine spawnCoroutine;
+
+    private void Awake()
+    {
+        if (prefabToSpawn == null)
+        {
+            Debug.LogWarning($"[PrefabSpawner] No prefab assigned on {gameObject.name}");
+        }
+        SpriteRenderer previewRenderer = GetComponent<SpriteRenderer>();
+        if (previewRenderer != null)
+        {
+            previewRenderer.sprite = null;
+        }
+    }
 
     private void Start()
     {
@@ -123,29 +137,20 @@ public class PrefabSpawner : MonoBehaviour
         DespawnEnemy();
     }
 
-    private void OnDrawGizmos()
+#if UNITY_EDITOR
+    private void OnValidate()
     {
-        if (!Application.isPlaying && prefabToSpawn != null)
-        {
-            SpriteRenderer sr = prefabToSpawn.GetComponentInChildren<SpriteRenderer>();
-            if (sr != null && sr.sprite != null)
-            {
-                Sprite sprite = sr.sprite;
-                float width = (sprite.rect.width / sprite.pixelsPerUnit) * transform.localScale.x;
-                float height = (sprite.rect.height / sprite.pixelsPerUnit) * transform.localScale.y;
-                Rect spriteRect = new Rect(
-                    transform.position.x - (width / 2f),
-                    transform.position.y - (height / 2f),
-                    width,
-                    height
-                );
+        SpriteRenderer previewRenderer = GetComponent<SpriteRenderer>();
+        if (previewRenderer == null) return;
 
-                Gizmos.DrawGUITexture(spriteRect, sprite.texture);
-                return;
-            }
+        if (prefabToSpawn == null)
+        {
+            previewRenderer.sprite = null;
+            return;
         }
 
-        Gizmos.color = targetAreaSide == AreaSide.Interior ? Color.blue : Color.red;
-        Gizmos.DrawWireSphere(transform.position, 0.5f);
+        SpriteRenderer prefabSr = prefabToSpawn.GetComponentInChildren<SpriteRenderer>();
+        previewRenderer.sprite = prefabSr != null ? prefabSr.sprite : null;
     }
+#endif
 }
