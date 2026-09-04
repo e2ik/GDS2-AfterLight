@@ -43,6 +43,19 @@ namespace GameUI
             OnWindowClosed();
         }
 
+        internal void SetInteractable(bool interactable)
+        {
+            animator.SetInteractable(interactable);
+        }
+
+        internal void Reselect()
+        {
+            if (firstSelected != null)
+            {
+                EventSystem.current?.SetSelectedGameObject(firstSelected.gameObject);
+            }
+        }
+
         protected virtual void OnWindowOpened() { }
         protected virtual void OnWindowClosed() { }
 

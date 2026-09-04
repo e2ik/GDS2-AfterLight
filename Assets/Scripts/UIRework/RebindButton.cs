@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using static UnityEngine.InputSystem.InputActionRebindingExtensions;
@@ -49,6 +50,7 @@ namespace GameUI
 
             InputAction action = actionReference.action;
             action.Disable();
+            UIManager.Instance.SuppressCancel = true;
 
             rebindingOperation = action.PerformInteractiveRebinding(bindingIndex)
                 .WithControlsExcluding("Mouse")
@@ -88,6 +90,9 @@ namespace GameUI
 
             RefreshDisplay();
             InputRebindSaver.Save(actionReference.action.actionMap.asset);
+
+            EventSystem.current?.SetSelectedGameObject(rebindButton.gameObject);
+            UIManager.Instance.SuppressCancel = false;
         }
 
         private bool IsDuplicateElsewhere(string newPath)

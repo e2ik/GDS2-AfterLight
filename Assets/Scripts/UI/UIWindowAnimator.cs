@@ -111,6 +111,13 @@ public class UIWindowAnimator : MonoBehaviour
         activeAnimation = StartCoroutine(AnimateWindow(false));
     }
 
+    public void SetInteractable(bool interactable)
+    {
+        EnsureInitialized();
+        canvasGroup.interactable = interactable;
+        canvasGroup.blocksRaycasts = interactable;
+    }
+
     private IEnumerator AnimateWindow(bool show)
     {
         float time = 0f;
