@@ -34,25 +34,22 @@ public class PlayerHurtBox : MonoBehaviour
         TakeHit(hitbox);
     }
 
-    public void TakeHit(HitBox hitbox)
+    public bool TakeHit(HitBox hitbox)
     {
-        if (Invulnerable) return;        
-        //Debug.Log($"Player Hurt Box triggered by: {other.name}");
+        if (Invulnerable) return false;        
 
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
 
         if (parryWindowOpen && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
-            return;
+            return false; // Successfully parried! Did not take damage.
 
         bool isChargedSkillExecuting = combatController != null && combatController.IsSkilling &&
-                                       (combatController.GetComponentInParent<Player>()?.Equipment?.SpecialAttackDef?.SkillExecutionType == SkillExecutionType.Charged);
+                                    (combatController.GetComponentInParent<Player>()?.Equipment?.SpecialAttackDef?.SkillExecutionType == SkillExecutionType.Charged);
 
-        if (isChargedSkillExecuting) return;
+        if (isChargedSkillExecuting) return false;
         
         stats.TakeDamage(hitbox.Damage);
 
-        //Vector2 contactPoint = col.ClosestPoint(other.transform.position);
-        //Vector2 direction = contactPoint - (Vector2)other.transform.root.transform.position;
         Vector2 sourcePosition = hitbox.transform.root.transform.position;
         if (!combatController.IsSkilling && !combatController.IsChargingSkill)
         {
@@ -64,5 +61,7 @@ public class PlayerHurtBox : MonoBehaviour
             combatController.EndSkill();
             playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce);
         }
+
+        return true; // Successfully took the hit.
     }
 }

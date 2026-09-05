@@ -111,13 +111,10 @@ MonoBehaviour:
   lifetime: 15
   attackForce: 1
   gravityScale: 2
-  explosionRadius: 1
-  hurtboxMask:
+  explosionRadius: 1.25
+  playerMask:
     serializedVersion: 2
     m_Bits: 8
-  explodeIgnoreMask:
-    serializedVersion: 2
-    m_Bits: 14849
   collideWithMask:
     serializedVersion: 2
     m_Bits: 72
@@ -145,7 +142,7 @@ Rigidbody2D:
     serializedVersion: 2
     m_Bits: 0
   m_Interpolate: 1
-  m_SleepingMode: 1
+  m_SleepingMode: 0
   m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!58 &4151367156301090719
@@ -182,8 +179,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 0.49999997
+  m_Offset: {x: 0.0015036265, y: 0}
+  m_Radius: 0.43835717
 --- !u!114 &5186317559378152056
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -209,6 +206,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b64c839ba1fd3804bab730ccee5c28ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.AttackEvents
-  hitbox: {fileID: 0}
+  hitbox: {fileID: 5186317559378152056}
   hurtbox: {fileID: 0}
   vfxBox: {fileID: 0}

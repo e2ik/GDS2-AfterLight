@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using UnityEngine;
 
 namespace Enemies.ProjectileScripts
@@ -7,73 +6,89 @@ namespace Enemies.ProjectileScripts
     {
         [SerializeField] private float gravityScale = 2f;
         [SerializeField] private float explosionRadius = 1.5f;
-        [SerializeField] private LayerMask hurtboxMask;
-        [SerializeField] private LayerMask explodeIgnoreMask;
+        [SerializeField] private LayerMask playerMask;
         [SerializeField] private LayerMask collideWithMask;
+
+        // guard against multiple hits (player has more than 1 collider)
+        private bool hasTriggered = false;
         
         protected override void OnLaunch(Vector2 initialVelocity)
         {
+            hasTriggered = false;
             Rb.gravityScale = gravityScale;
             Rb.linearVelocity = initialVelocity;
         }
 
-        private void FixedUpdate()
-        {
-            Collider2D hitHurtbox = Physics2D.OverlapCircle(transform.position, 0.2f, hurtboxMask);
-            if (hitHurtbox != null && hitHurtbox.TryGetComponent<PlayerHurtBox>(out var hurtBox))
-            {
-                Explode();
-            }
-        }
-
         protected override bool OnHitTrigger(Collider2D other)
         {
-            // ignore self
+            if (hasTriggered) return false;
+
             if (other.transform.IsChildOf(transform) || transform.IsChildOf(other.transform))
                 return false;
 
-            // ignored layers
-            if ((explodeIgnoreMask.value & (1 << other.gameObject.layer)) != 0)
-                return false;
-
-            if ((collideWithMask.value & (1 << other.gameObject.layer)) == 0)
-                return false;
-
-            // player filtering
-            bool isPlayer = other.GetComponentInParent<PlayerHurtBox>() != null;
-            if (isPlayer)
+            PlayerHurtBox hurtBox = other.GetComponentInParent<PlayerHurtBox>();
+            if (hurtBox != null || ((1 << other.gameObject.layer) & playerMask) != 0)
             {
-                if (other.TryGetComponent<PlayerHurtBox>(out var hurtBox))
-                {
-                    Explode();
-                    return true;
-                }
+                if (hurtBox == null)
+                    hurtBox = other.GetComponentInChildren<PlayerHurtBox>();
 
-                Collider2D nearbyHurtbox = Physics2D.OverlapCircle(transform.position, 0.5f, hurtboxMask);
-                if (nearbyHurtbox != null)
-                {
-                    Explode();
-                    return true;
-                }
-
-                return false;
+                hasTriggered = true;
+                TryExplodeOrParry(hurtBox);
+                return true; 
             }
 
-            Explode();
-            return true;
+            if ((collideWithMask.value & (1 << other.gameObject.layer)) != 0)
+            {
+                hasTriggered = true;
+                Explode(); 
+                return true; 
+            }
+
+            return false;
         }
 
-        private void Explode()
+        private void TryExplodeOrParry(PlayerHurtBox directHitBox = null)
         {
-            var hits = Physics2D.OverlapCircleAll(transform.position, explosionRadius, hurtboxMask);
+            bool wasParried = false;
 
+            if (directHitBox != null)
+            {
+                if (!directHitBox.TakeHit(HitBox))
+                {
+                    wasParried = true;
+                }
+            }
+
+            if (wasParried)
+            {
+                return; 
+            }
+
+            Explode(directHitBox);
+        }
+
+        private void Explode(PlayerHurtBox directHitBox = null)
+        {
+            PSpawner.Spawn("anticipation", transform.position, Quaternion.identity);
+
+            var hits = Physics2D.OverlapCircleAll(transform.position, explosionRadius, playerMask);
             foreach (var hit in hits)
             {
-                if (hit.TryGetComponent(out PlayerHurtBox hurtBox))
+                PlayerHurtBox hurtBox = hit.GetComponentInParent<PlayerHurtBox>();
+                if (hurtBox == null)
+                    hurtBox = hit.GetComponentInChildren<PlayerHurtBox>();
+
+                if (hurtBox != null && hurtBox != directHitBox)
+                {
                     hurtBox.TakeHit(HitBox);
+                }
             }
-            // prevent multiple explosions
-            gameObject.SetActive(false);
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, explosionRadius);
         }
     }
 }
