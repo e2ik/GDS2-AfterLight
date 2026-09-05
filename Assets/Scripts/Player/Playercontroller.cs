@@ -78,6 +78,7 @@ public class PlayerController : MonoBehaviour
     public bool IsChargingSkill => isChargingSkillPhysics;
     public bool IsDirectionalDash { get; private set; }
     public bool IsStaggered => isStaggered;
+    public bool IsNeutralDash => isDashing && !IsDirectionalDash;
 
     private bool IsSkillActive => isChargingSkillPhysics || (combatController != null && combatController.IsSkilling);
 
@@ -137,7 +138,7 @@ public class PlayerController : MonoBehaviour
         isSkillGravityZeroed = active;
         if (active)
         {
-            rb.linearVelocity = Vector2.zero; // Halts momentum drift instantly
+            rb.linearVelocity = Vector2.zero;
             rb.gravityScale = 0f;
         }
         else
@@ -265,11 +266,22 @@ public class PlayerController : MonoBehaviour
 
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
-            if (combatController != null && combatController.IsParrying) combatController.CancelParry();
-            else if (IsMovementFrozen) return;
+            if (combatController != null)
+            {
+                if (combatController.IsParrying) combatController.CancelParry();
+                if (combatController.IsAttacking)
+                {
+                    combatController.ForceCancelAttack();
+                }
+            }
+            
+            if (IsMovementFrozen) return;
 
             isDashing = true;
             isDashLocked = false;
+            
+            combatController?.NotifyDashInputReceived();
+
             float activeDuration = dashDuration;
 
             if (Mathf.Abs(horizontalInput) > 0.1f)
@@ -296,22 +308,23 @@ public class PlayerController : MonoBehaviour
 
     public void SetDashLockedDuringAttack(bool locked)
     {
-        isDashLocked = locked;
         if (locked)
         {
             CancelInvoke(nameof(StopDashing));
             isDashing = true;
+            isDashLocked = true;
         }
         else
         {
+            isDashLocked = false;
             StopDashing();
         }
     }
 
     private void StopDashing() 
     {
-        if (isDashLocked) return;
         isDashing = false;
+        isDashLocked = false;
     }
 
     private void UpdateGravity()

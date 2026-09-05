@@ -35,7 +35,12 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float attackCoolDown = 0.2f;
     [SerializeField] private float counterAttackWindow = 0.5f;
 
+    [Header("Dash Conflict Settings")]
+    [SerializeField] private float dashAttackConflictWindow = 0.2f;
+    private float dashAttackBlockTimer;
+
     private float attackBufferTimer;
+    private float attackDurationTimer;
     private Vector2 attackRange;
     private Vector2 attackCenter;
     private float attackDamage;
@@ -137,9 +142,19 @@ public class PlayerCombatController : MonoBehaviour
         if (parryBufferTimer > 0f) parryBufferTimer -= Time.deltaTime;
         if (attackBufferTimer > 0f) attackBufferTimer -= Time.deltaTime;
         if (skillBufferTimer > 0f) skillBufferTimer -= Time.deltaTime;
+        if (dashAttackBlockTimer > 0f) dashAttackBlockTimer -= Time.deltaTime;
         
         attackTimer = isAttacking ? attackCoolDown : attackTimer - Time.deltaTime;
         skillTimer = isSkilling ? skillCoolDown : skillTimer - Time.deltaTime;
+
+        if (isAttacking)
+        {
+            attackDurationTimer -= Time.deltaTime;
+            if (attackDurationTimer <= 0f)
+            {
+                EndAttack(); // Failsafe triggered if animation event is skipped/missed
+            }
+        }
 
         if (isParrying)
         {
@@ -168,7 +183,7 @@ public class PlayerCombatController : MonoBehaviour
         return Player.Controller.InputEnabled 
             && !Player.Controller.IsWallSliding 
             && !Player.Controller.IsChargingSkill 
-            && !isParrying 
+            && !Player.Controller.IsNeutralDash
             && !isParryInRecovery 
             && !isAttacking
             && !isSkilling;
@@ -208,15 +223,15 @@ public class PlayerCombatController : MonoBehaviour
         return Player.Controller.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
     }
 
-public bool CheckParry(ParryDirection incomingDirection)
-{
-    if (isParrying && parryDir == incomingDirection)
+    public bool CheckParry(ParryDirection incomingDirection)
     {
-        OnSuccessfulParry();
-        return true;
+        if (isParrying && parryDir == incomingDirection)
+        {
+            OnSuccessfulParry();
+            return true;
+        }
+        return false;
     }
-    return false;
-}
 
     private void OnSuccessfulParry()
     {
@@ -261,6 +276,8 @@ public bool CheckParry(ParryDirection incomingDirection)
 
     private void HandleAttack()
     {
+        if (dashAttackBlockTimer > 0f) return;
+
         if (attackBufferTimer > 0f && CanAct()) ExecuteAttack();
     }
 
@@ -276,6 +293,7 @@ public bool CheckParry(ParryDirection incomingDirection)
             if (Player.Equipment.EquippedWeapon == null) return;
 
             isAttacking = true;
+            attackDurationTimer = attackDuration;
             
             // Clear tracking list for the new swing
             enemiesHitThisAttack.Clear();
@@ -334,6 +352,7 @@ public bool CheckParry(ParryDirection incomingDirection)
     public void EndAttack() 
     {
         isAttacking = false;
+        attackDurationTimer = 0f;
 
         if (Player.Controller != null)
         {
@@ -389,8 +408,6 @@ public bool CheckParry(ParryDirection incomingDirection)
                 float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
                 chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
             }
-
-            Debug.Log($"Timer: {chargingSkillTimer:F2} | WasCharged: {wasCharged} | Multiplier: {chargeDamageMultiplier:F2} | Final Dmg: {GetDamage() * chargeDamageMultiplier}");
 
             Player.Controller.SetSkillCharging(false);
             if (wasCharged) Player.Controller.SetSkillGravityZero(true);
@@ -494,6 +511,11 @@ public bool CheckParry(ParryDirection incomingDirection)
     public void OnMove(InputValue value) => verticalInput = value.Get<Vector2>().y;
     public void OnParry() => parryBufferTimer = parryBufferTime;
     public void OnAttack() { attackPressed = true; attackBufferTimer = parryBufferTime; }
+    
+    public void NotifyDashInputReceived()
+    {
+        dashAttackBlockTimer = dashAttackConflictWindow;
+    }
 
     public void OnSAttack(InputValue value)
     {
@@ -576,6 +598,7 @@ public bool CheckParry(ParryDirection incomingDirection)
         if (isAttacking)
         {
             isAttacking = false;
+            attackDurationTimer = 0f;
             enemiesHitThisAttack.Clear();
             
             if (Player.Controller != null)

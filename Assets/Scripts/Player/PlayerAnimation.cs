@@ -48,7 +48,6 @@ public class PlayerAnimation : MonoBehaviour
 
     private void UpdateAnimationParameters()
     {
-        // Directly driven by your updated PlayerCombatController state
         animator.SetBool(IsParryingHash, player.CombatController.IsParrying);
         animator.SetBool(IsParrySuccessHash, player.CombatController.IsParrySuccess);
         animator.SetBool(IsAttackingHash, player.CombatController.IsAttacking);
@@ -117,18 +116,15 @@ public class PlayerAnimation : MonoBehaviour
         {
             Bounds bounds = playerCollider.bounds;
             Vector2 center = bounds.center;
-            float randomX = Random.Range(0.4f, 0.7f);
+            float randomX = UnityEngine.Random.Range(0.4f, 0.7f);
             float facingDir = player.Controller != null ? player.Controller.FacingDirection : 1f;
             float horizontalOffset = (bounds.extents.x + randomX) * facingDir;
-            float randomY = Random.Range(-bounds.extents.y + 0.7f, bounds.extents.y - 0.7f);
+            float randomY = UnityEngine.Random.Range(-bounds.extents.y + 0.7f, bounds.extents.y - 0.7f);
 
             spawnPosition = new Vector2(center.x + horizontalOffset, center.y + randomY);
         }
 
-        // play effect
         PSpawner.Spawn("spark", spawnPosition);
-
-        // shake cam
         CamControls.Shake(0.15f, 0.1f);
     }
 
