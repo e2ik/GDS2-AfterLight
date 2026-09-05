@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,6 +13,8 @@ public class WorldStreamer : MonoBehaviour
     private string currentLoadedStreamedScene;
 
     private HashSet<string> loadingScenes = new HashSet<string>();
+
+    public event Action<Scene> OnSceneStreamed;
 
     private void Awake()
     {
@@ -46,7 +49,7 @@ public class WorldStreamer : MonoBehaviour
         if (GameManager.Instance != null && newlyLoadedScene.IsValid())
         {
             AreaSide currentSide = GameManager.Instance.CurrentAreaSide;
-            
+
             GameObject[] rootObjects = newlyLoadedScene.GetRootGameObjects();
             foreach (GameObject root in rootObjects)
             {
@@ -73,12 +76,14 @@ public class WorldStreamer : MonoBehaviour
 
         loadingScenes.Remove(sceneToLoad);
         IsAligning = false;
+
+        OnSceneStreamed?.Invoke(newlyLoadedScene);
     }
 
     private SceneAnchor FindAnchor(string anchorID)
     {
-        SceneAnchor[] anchors = Object.FindObjectsByType<SceneAnchor>(
-            FindObjectsInactive.Include, 
+        SceneAnchor[] anchors = UnityEngine.Object.FindObjectsByType<SceneAnchor>(
+            FindObjectsInactive.Include,
             FindObjectsSortMode.None
         );
 
