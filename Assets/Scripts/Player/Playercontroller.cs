@@ -79,6 +79,7 @@ public class PlayerController : MonoBehaviour
     public bool IsDirectionalDash { get; private set; }
     public bool IsStaggered => isStaggered;
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
+    public bool IsInvulnerable => isDashing && !IsDirectionalDash;
 
     private bool IsSkillActive => isChargingSkillPhysics || (combatController != null && combatController.IsSkilling);
 
@@ -186,6 +187,8 @@ public class PlayerController : MonoBehaviour
                 jumpPressed = jumpReleased = false;
                 return;
             }
+
+            combatController?.ForceCancelAttack();
 
             if (!isGrounded) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);

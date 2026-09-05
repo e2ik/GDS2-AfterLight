@@ -35,6 +35,17 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float attackCoolDown = 0.2f;
     [SerializeField] private float counterAttackWindow = 0.5f;
 
+    [Header("Combo Settings")]
+    [SerializeField] private int maxComboCount = 3;
+    [SerializeField] private float comboResetDelay = 1.0f;
+
+    private int currentComboIndex = 0;
+    private bool canBufferNextCombo = false;
+    private bool comboQueued = false;
+    private float comboResetTimer;
+    private float[] comboDamageMultipliers = new float[] { 1.0f, 1.25f, 1.5f };
+    public int CurrentComboIndex => currentComboIndex;
+
     [Header("Dash Conflict Settings")]
     [SerializeField] private float dashAttackConflictWindow = 0.2f;
     private float dashAttackBlockTimer;
@@ -185,7 +196,16 @@ public class PlayerCombatController : MonoBehaviour
             && !Player.Controller.IsChargingSkill 
             && !Player.Controller.IsNeutralDash
             && !isParryInRecovery 
-            && !isAttacking
+            && !isSkilling;
+    }
+
+    private bool CanBufferAttack()
+    {
+        return Player.Controller.InputEnabled 
+            && !Player.Controller.IsWallSliding 
+            && !Player.Controller.IsChargingSkill 
+            && !Player.Controller.IsNeutralDash
+            && !isParryInRecovery 
             && !isSkilling;
     }
 
@@ -208,6 +228,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void ExecuteParry()
     {
+        ForceCancelAttack();
         parryBufferTimer = 0f;
         isParrying = true;
         isParryInRecovery = false;
@@ -272,30 +293,46 @@ public class PlayerCombatController : MonoBehaviour
 
     #endregion
 
-    #region Attack Logic
+    #region Attack & Combo Logic
 
     private void HandleAttack()
     {
         if (dashAttackBlockTimer > 0f) return;
 
+        if (attackBufferTimer > 0f && isAttacking && canBufferNextCombo && CanBufferAttack())
+        {
+            comboQueued = true;
+            attackBufferTimer = 0f;
+        }
+
         if (attackBufferTimer > 0f && CanAct()) ExecuteAttack();
+        if (comboQueued && !isAttacking && attackTimer <= 0f && CanBufferAttack()) ExecuteAttack();
+
+        if (currentComboIndex > 0 && !isAttacking)
+        {
+            comboResetTimer += Time.deltaTime;
+            if (comboResetTimer >= comboResetDelay) ResetCombo();
+        }
     }
 
     private void ExecuteAttack()
     {
         attackBufferTimer = 0f;
 
-        if (attackPressed && attackTimer <= 0f && CanAct())
+        if ((canBufferNextCombo && comboQueued) || (!isAttacking && attackTimer <= 0f && CanAct()))
         {
             CancelParry();
             attackPressed = false;
+            comboQueued = false;
+            canBufferNextCombo = false;
 
             if (Player.Equipment.EquippedWeapon == null) return;
+
+            currentComboIndex = (currentComboIndex % maxComboCount) + 1;
 
             isAttacking = true;
             attackDurationTimer = attackDuration;
             
-            // Clear tracking list for the new swing
             enemiesHitThisAttack.Clear();
 
             if (Player.Controller != null && Player.Controller.IsDashing)
@@ -328,7 +365,15 @@ public class PlayerCombatController : MonoBehaviour
         if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange);
     }
 
-    private float GetDamage() => Player.Stats != null ? Player.Stats.TotalAttack : 0f;
+    private float GetDamage()
+    {
+        float baseDmg = Player.Stats != null ? Player.Stats.TotalAttack : 0f;
+
+        int multiplierIndex = Mathf.Clamp(currentComboIndex - 1, 0, comboDamageMultipliers.Length - 1);
+        float comboMultiplier = comboDamageMultipliers[multiplierIndex];
+
+        return baseDmg * comboMultiplier;
+    }
 
     private void HitEnemy(Collider2D[] enemiesInRange)
     {
@@ -353,11 +398,24 @@ public class PlayerCombatController : MonoBehaviour
     {
         isAttacking = false;
         attackDurationTimer = 0f;
+        canBufferNextCombo = false;
+
+        if (!comboQueued)
+        {
+            ResetCombo();
+        }
 
         if (Player.Controller != null)
         {
             Player.Controller.SetDashLockedDuringAttack(false);
         }
+    }
+
+    private void ResetCombo()
+    {
+        currentComboIndex = 0;
+        comboQueued = false;
+        canBufferNextCombo = false;
     }
 
     #endregion
@@ -506,11 +564,23 @@ public class PlayerCombatController : MonoBehaviour
 
     #endregion
 
-    #region Input Handlers
+    #region Input Handlers & Animator Hooks
 
     public void OnMove(InputValue value) => verticalInput = value.Get<Vector2>().y;
     public void OnParry() => parryBufferTimer = parryBufferTime;
-    public void OnAttack() { attackPressed = true; attackBufferTimer = parryBufferTime; }
+    
+    public void OnAttack() 
+    { 
+        if (IsParrying) return;
+
+        attackPressed = true; 
+        attackBufferTimer = parryBufferTime; 
+        
+        if (isAttacking && canBufferNextCombo)
+        {
+            comboQueued = true;
+        }
+    }
     
     public void NotifyDashInputReceived()
     {
@@ -595,17 +665,28 @@ public class PlayerCombatController : MonoBehaviour
 
     public void ForceCancelAttack()
     {
-        if (isAttacking)
+        isAttacking = false;
+        attackDurationTimer = 0f;
+        enemiesHitThisAttack.Clear();
+        ResetCombo();
+        
+        attackBufferTimer = 0f; 
+
+        if (Player.Controller != null)
         {
-            isAttacking = false;
-            attackDurationTimer = 0f;
-            enemiesHitThisAttack.Clear();
-            
-            if (Player.Controller != null)
-            {
-                Player.Controller.SetDashLockedDuringAttack(false);
-            }
+            Player.Controller.SetDashLockedDuringAttack(false);
         }
+    }
+
+    public void OpenComboWindow()
+    {
+        canBufferNextCombo = true;
+        comboResetTimer = 0f;
+    }
+
+    public void CloseComboWindow()
+    {
+        canBufferNextCombo = false;
     }
 
     #endregion

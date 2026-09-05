@@ -23,9 +23,11 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsAttackingHash = Animator.StringToHash("isAttacking");
     private static readonly int IsSkillingHash = Animator.StringToHash("isSkilling");
     private static readonly int IsHurtHash = Animator.StringToHash("Hurt");
+    private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
 
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
+    private bool wasInvulnerable;
 
     private void Awake()
     {
@@ -44,13 +46,23 @@ public class PlayerAnimation : MonoBehaviour
         if (player == null || rb == null) return;
         UpdateAnimationParameters();
         HandleSkillAnimation();
+        HandleInvulnerabilityVisuals();
     }
 
     private void UpdateAnimationParameters()
     {
-        animator.SetBool(IsParryingHash, player.CombatController.IsParrying);
+        bool isParrying = player.CombatController.IsParrying;
+
+        animator.SetBool(IsParryingHash, isParrying);
         animator.SetBool(IsParrySuccessHash, player.CombatController.IsParrySuccess);
-        animator.SetBool(IsAttackingHash, player.CombatController.IsAttacking);
+
+        // If we are parrying, force attack parameters off completely so they can't override it
+        bool isAttacking = isParrying ? false : player.CombatController.IsAttacking;
+        int attackIndex = isParrying ? 0 : player.CombatController.CurrentComboIndex;
+
+        animator.SetBool(IsAttackingHash, isAttacking);
+        animator.SetInteger(AttackIndexHash, attackIndex);
+
         animator.SetBool(IsSkillingHash, player.CombatController.IsSkilling);
 
         if (player.CombatController.IsSkilling) return;
@@ -145,6 +157,28 @@ public class PlayerAnimation : MonoBehaviour
         yield return new WaitForSeconds(duration);
         sr.color = ogColor;
         flashColorCoroutine = null;
+    }
+
+    private void HandleInvulnerabilityVisuals()
+    {
+        if (sr == null || player == null || player.Controller == null) return;
+
+        bool isInvuln = player.Controller.IsInvulnerable;
+
+        if (flashColorCoroutine != null) return;
+
+        if (isInvuln)
+        {
+            Color invulnColor = ogColor;
+            invulnColor.a = 0.5f; 
+            sr.color = invulnColor;
+            wasInvulnerable = true;
+        }
+        else if (wasInvulnerable)
+        {
+            sr.color = ogColor;
+            wasInvulnerable = false;
+        }
     }
 
     #endregion

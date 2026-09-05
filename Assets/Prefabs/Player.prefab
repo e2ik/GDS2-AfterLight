@@ -255,6 +255,8 @@ MonoBehaviour:
   attackDuration: 0.5
   attackCoolDown: 0.2
   counterAttackWindow: 0.5
+  maxComboCount: 3
+  comboResetDelay: 1
   dashAttackConflictWindow: 0.05
   skillMeterAlwaysFull: 1
   skillCoolDown: 0.2
@@ -566,4 +568,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHurtBox
   stats: {fileID: 6264206310521610964}
   combatController: {fileID: 3547647608137716798}
-  Invulnerable: 0
