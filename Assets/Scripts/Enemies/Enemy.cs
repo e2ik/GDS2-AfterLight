@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework;
 using Unity.Behavior;
 using UnityEngine;
 using UnityEngine.AI;
@@ -130,6 +131,11 @@ namespace Enemies
         private void OnDamaged(int amount, int currentHealth)
         {
             Debug.Log($"Enemy blud was damaged for {amount}. Current Health: {currentHealth}");
+
+            // if we're able to get the attack type e.g. zero, light medium
+            // on < light we trigger anim (this acts as an interrupt with no other code changes)
+            // since attack is decided by the animation
+            if (!Context.IsAttacking) animator.SetTrigger("Hurt");
         }
 
         private void OnDeath()
