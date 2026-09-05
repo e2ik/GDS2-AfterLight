@@ -14,7 +14,7 @@ namespace Enemies.ModuleScripts.Attacks
 
         public override void Begin(EnemyContext ctx)
         {
-            ctx.OverrideController[placeholderClipName] = clip;
+            ctx.OverrideController[ctx.PlaceholderClip] = clip;
 
             var events = ctx.Self.GetComponentInChildren<AttackEvents>();
             events.CurrentDamage = damage;
@@ -22,11 +22,14 @@ namespace Enemies.ModuleScripts.Attacks
             events.CurrentAttackForce = attackForce;
             
             ctx.Animator.Play(attackStateName, 0, 0f);
+            ctx.Animator.Update(0f);
         }
 
         public override bool IsFinished(EnemyContext ctx)
         {
             AnimatorStateInfo state = ctx.Animator.GetCurrentAnimatorStateInfo(0);
+            
+            Debug.Log($"{name}: normalizedTime={state.normalizedTime:F2}, isAttackState={state.IsName("Attack")}");
 
             return state.normalizedTime >= 1f && !state.IsName(attackStateName);
         } 

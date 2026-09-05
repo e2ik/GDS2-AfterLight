@@ -18,6 +18,7 @@ namespace Enemies
         [SerializeField] private Animator animator;
         [SerializeField] private Rigidbody2D rb2D;
         [SerializeField] private float attackCooldown;
+        [SerializeField] private string placeholderClipName = "EmptyAttack";
 
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
@@ -42,6 +43,14 @@ namespace Enemies
             var overrideController = new AnimatorOverrideController(animator.runtimeAnimatorController);
             animator.runtimeAnimatorController = overrideController;
 
+            var overridesList = new List<KeyValuePair<AnimationClip, AnimationClip>>(overrideController.overridesCount);
+            overrideController.GetOverrides(overridesList);
+            AnimationClip placeholderClip =
+                overridesList.FirstOrDefault(pair => pair.Key.name == placeholderClipName).Key;
+            
+            if(placeholderClip == null)
+                Debug.LogError($"{name}: no clip named '{placeholderClipName}' found in the base Animator Controller");
+
             Context = new EnemyContext()
             {
                 Self = transform,
@@ -50,6 +59,7 @@ namespace Enemies
                 Behavior = behaviorAgent,
                 Animator = animator,
                 OverrideController = overrideController,
+                PlaceholderClip = placeholderClip,
                 FacingRight = true
             };
 

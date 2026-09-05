@@ -19,8 +19,9 @@ namespace Enemies.ModuleScripts.Attacks
         
         public override void Begin(EnemyContext ctx)
         {
-            ctx.OverrideController[placeholderClipName] = clip;
+            ctx.OverrideController[ctx.PlaceholderClip] = clip;
             ctx.Animator.Play(attackStateName, 0, 0f);
+            ctx.Animator.Update(0f);
             
             int facing = ctx.FacingRight ? 1 : -1;
             float startAngle = launchAngleDegrees - shotSpacingDegrees * (shotCount - 1) / 2f;
