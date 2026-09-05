@@ -79,6 +79,7 @@ public class PlayerController : MonoBehaviour
     public bool IsDirectionalDash { get; private set; }
     public bool IsStaggered => isStaggered;
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
+    public bool IsInvulnerable => isDashing && !IsDirectionalDash;
 
     private bool IsSkillActive => isChargingSkillPhysics || (combatController != null && combatController.IsSkilling);
 

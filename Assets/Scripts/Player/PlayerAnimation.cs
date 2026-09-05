@@ -26,6 +26,7 @@ public class PlayerAnimation : MonoBehaviour
 
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
+    private bool wasInvulnerable;
 
     private void Awake()
     {
@@ -44,6 +45,7 @@ public class PlayerAnimation : MonoBehaviour
         if (player == null || rb == null) return;
         UpdateAnimationParameters();
         HandleSkillAnimation();
+        HandleInvulnerabilityVisuals();
     }
 
     private void UpdateAnimationParameters()
@@ -145,6 +147,28 @@ public class PlayerAnimation : MonoBehaviour
         yield return new WaitForSeconds(duration);
         sr.color = ogColor;
         flashColorCoroutine = null;
+    }
+
+    private void HandleInvulnerabilityVisuals()
+    {
+        if (sr == null || player == null || player.Controller == null) return;
+
+        bool isInvuln = player.Controller.IsInvulnerable;
+
+        if (flashColorCoroutine != null) return;
+
+        if (isInvuln)
+        {
+            Color invulnColor = ogColor;
+            invulnColor.a = 0.5f; 
+            sr.color = invulnColor;
+            wasInvulnerable = true;
+        }
+        else if (wasInvulnerable)
+        {
+            sr.color = ogColor;
+            wasInvulnerable = false;
+        }
     }
 
     #endregion

@@ -9,7 +9,12 @@ public class PlayerHurtBox : MonoBehaviour
     [SerializeField] private PlayerCombatController combatController;
     private PlayerController playerController;
     private Collider2D col;
-    public bool Invulnerable;
+    private bool manualInvulnerable;
+    public bool Invulnerable 
+    { 
+        get => manualInvulnerable || (playerController != null && playerController.IsInvulnerable);
+        set => manualInvulnerable = value;
+    }
 
     private void Awake()
     {
