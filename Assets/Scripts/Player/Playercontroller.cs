@@ -188,6 +188,8 @@ public class PlayerController : MonoBehaviour
                 return;
             }
 
+            combatController?.ForceCancelAttack();
+
             if (!isGrounded) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             jumpPressed = jumpReleased = false;

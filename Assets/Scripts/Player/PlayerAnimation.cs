@@ -23,6 +23,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsAttackingHash = Animator.StringToHash("isAttacking");
     private static readonly int IsSkillingHash = Animator.StringToHash("isSkilling");
     private static readonly int IsHurtHash = Animator.StringToHash("Hurt");
+    private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
 
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
@@ -50,9 +51,18 @@ public class PlayerAnimation : MonoBehaviour
 
     private void UpdateAnimationParameters()
     {
-        animator.SetBool(IsParryingHash, player.CombatController.IsParrying);
+        bool isParrying = player.CombatController.IsParrying;
+
+        animator.SetBool(IsParryingHash, isParrying);
         animator.SetBool(IsParrySuccessHash, player.CombatController.IsParrySuccess);
-        animator.SetBool(IsAttackingHash, player.CombatController.IsAttacking);
+
+        // If we are parrying, force attack parameters off completely so they can't override it
+        bool isAttacking = isParrying ? false : player.CombatController.IsAttacking;
+        int attackIndex = isParrying ? 0 : player.CombatController.CurrentComboIndex;
+
+        animator.SetBool(IsAttackingHash, isAttacking);
+        animator.SetInteger(AttackIndexHash, attackIndex);
+
         animator.SetBool(IsSkillingHash, player.CombatController.IsSkilling);
 
         if (player.CombatController.IsSkilling) return;

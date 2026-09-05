@@ -59,7 +59,7 @@ public class PlayerStats : MonoBehaviour
     {
         if(equipmentManager == null || equipmentManager.EquippedWeapon == null)
             return  gearAttackBonus;
-        Debug.Log("WeaponBaseDamage: " + equipmentManager.EquippedWeapon.BaseWeaponDamage + ", GearBonus: " + gearAttackBonus);
+        // Debug.Log("WeaponBaseDamage: " + equipmentManager.EquippedWeapon.BaseWeaponDamage + ", GearBonus: " + gearAttackBonus);
         return equipmentManager.EquippedWeapon.BaseWeaponDamage + gearAttackBonus;
     }
 
