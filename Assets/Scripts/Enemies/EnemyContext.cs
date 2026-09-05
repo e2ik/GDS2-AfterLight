@@ -16,6 +16,7 @@ namespace Enemies
         public bool FacingRight;
         public bool IsAttacking;
         public float AttackStopDistance;
+        public AttackForce CurrentAttackForce;
         public AnimationClip PlaceholderClip;
 
         public Vector3 HomePosition;

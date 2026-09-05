@@ -145,7 +145,13 @@ namespace Enemies
             // if we're able to get the attack type e.g. zero, light medium
             // on < light we trigger anim (this acts as an interrupt with no other code changes)
             // since attack is decided by the animation
-            if (!Context.IsAttacking) animator.SetTrigger("Hurt");
+
+            //Debug.Log("Current Attack Force " + Context.CurrentAttackForce + " Is Attacking: " + Context.IsAttacking);
+            
+            if (!Context.IsAttacking || (Context.CurrentAttackForce == AttackForce.Light) || Context.CurrentAttackForce == AttackForce.Zero) 
+                animator.SetTrigger("Hurt");
+                
+            
         }
 
         private void OnDeath()
