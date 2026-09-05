@@ -41,16 +41,24 @@ public class WorldStreamer : MonoBehaviour
         loadingScenes.Add(sceneToLoad);
 
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneToLoad, LoadSceneMode.Additive);
-        while (!asyncLoad.isDone) yield return null;
-        yield return null;
+        
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
 
         Scene newlyLoadedScene = SceneManager.GetSceneByName(sceneToLoad);
+
+        GameObject[] rootObjects = newlyLoadedScene.GetRootGameObjects();
+        foreach (GameObject root in rootObjects)
+        {
+            root.SetActive(false);
+        }
 
         if (GameManager.Instance != null && newlyLoadedScene.IsValid())
         {
             AreaSide currentSide = GameManager.Instance.CurrentAreaSide;
 
-            GameObject[] rootObjects = newlyLoadedScene.GetRootGameObjects();
             foreach (GameObject root in rootObjects)
             {
                 SceneAreaState[] areaStates = root.GetComponentsInChildren<SceneAreaState>(true);
@@ -72,6 +80,11 @@ public class WorldStreamer : MonoBehaviour
         else
         {
             Debug.LogWarning($"[WorldStreamer] Alignment failed. Source '{sourceAnchorID}' or Target '{targetAnchorID}' missing.");
+        }
+
+        foreach (GameObject root in rootObjects)
+        {
+            root.SetActive(true);
         }
 
         loadingScenes.Remove(sceneToLoad);
