@@ -73,6 +73,8 @@ public class PlayerController : MonoBehaviour
     public bool IsGrounded => isGrounded;
     public bool IsWallSliding => isWallSliding;
     public bool IsDashing => isDashing;
+    private bool isDashLocked;
+    public bool IsDashLocked => isDashLocked;
     public bool IsChargingSkill => isChargingSkillPhysics;
     public bool IsDirectionalDash { get; private set; }
     public bool IsStaggered => isStaggered;
@@ -267,6 +269,7 @@ public class PlayerController : MonoBehaviour
             else if (IsMovementFrozen) return;
 
             isDashing = true;
+            isDashLocked = false;
             float activeDuration = dashDuration;
 
             if (Mathf.Abs(horizontalInput) > 0.1f)
@@ -291,7 +294,25 @@ public class PlayerController : MonoBehaviour
         if (dashReleased) dashPressed = dashReleased = false;
     }
 
-    private void StopDashing() => isDashing = false;
+    public void SetDashLockedDuringAttack(bool locked)
+    {
+        isDashLocked = locked;
+        if (locked)
+        {
+            CancelInvoke(nameof(StopDashing));
+            isDashing = true;
+        }
+        else
+        {
+            StopDashing();
+        }
+    }
+
+    private void StopDashing() 
+    {
+        if (isDashLocked) return;
+        isDashing = false;
+    }
 
     private void UpdateGravity()
     {
@@ -313,6 +334,8 @@ public class PlayerController : MonoBehaviour
 
     public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce)
     {
+        if (combatController != null) combatController.ForceCancelAttack();
+
         PlayerAnimation playerAnim = GetComponent<PlayerAnimation>();
         if (playerAnim != null) playerAnim.PlayHurtAnimation();
         else Debug.LogWarning("PlayerAnimation component not found on PlayerController. Cannot play hurt animation.");
@@ -455,6 +478,8 @@ public class PlayerController : MonoBehaviour
     private void HandleHazardousCollision(Collision2D col)
     {
         if (((1 << col.gameObject.layer) & hazardousLayers) == 0 || isStaggered || IsSkillActive) return;
+
+        if (combatController != null) combatController.ForceCancelAttack();
 
         ContactPoint2D contact = col.GetContact(0);
         rb.linearVelocity = Vector2.zero;

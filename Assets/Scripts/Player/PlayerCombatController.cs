@@ -3,6 +3,7 @@ using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System.Collections.Generic;
 
 public enum ParryDirection { Up, Down, Left, Right }
 public enum AttackForce { Zero, Light, Medium, Heavy }
@@ -43,6 +44,9 @@ public class PlayerCombatController : MonoBehaviour
     private bool attackPressed;
     private bool isAttacking;
     private bool isCounterAttacking;
+
+    // hit enemies
+    private HashSet<EnemyHealth> enemiesHitThisAttack = new HashSet<EnemyHealth>();
 
     [Header("Skill Settings")]
     [SerializeField] private bool skillMeterAlwaysFull;
@@ -108,6 +112,12 @@ public class PlayerCombatController : MonoBehaviour
         HandleAttack();
         HandleSkill();
         UpdateTimers();
+
+        // check for hits everyframe while attacking, in case enemies enter the hitbox mid-attack
+        if (isAttacking && Player.Equipment?.EquippedWeapon != null)
+        {
+            PerformAttackHitboxCheck();
+        }
 
         if (skillButtonHeld)
         {
@@ -266,26 +276,38 @@ public bool CheckParry(ParryDirection incomingDirection)
             if (Player.Equipment.EquippedWeapon == null) return;
 
             isAttacking = true;
-            Vector2 attackDir = GetInputDirection() switch
+            
+            // Clear tracking list for the new swing
+            enemiesHitThisAttack.Clear();
+
+            if (Player.Controller != null && Player.Controller.IsDashing)
             {
-                ParryDirection.Up => Vector2.up,
-                ParryDirection.Down => Vector2.down,
-                ParryDirection.Left => Vector2.left,
-                _ => Vector2.right
-            };
-
-            float weaponRange = Player.Equipment.EquippedWeapon.BaseWeaponRange;
-            bool isHorizontal = attackDir.x != 0f;
-
-            attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
-            attackCenter = (Vector2)attackOrigin.position + (attackDir * (weaponRange * 0.5f));
-
-            attackDamage = GetDamage();
-            attackCrit = Player.Equipment.EquippedWeapon.BaseWeaponCrit;
-
-            Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
-            if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange);
+                Player.Controller.SetDashLockedDuringAttack(true);
+            }
         }
+    }
+
+    private void PerformAttackHitboxCheck()
+    {
+        Vector2 attackDir = GetInputDirection() switch
+        {
+            ParryDirection.Up => Vector2.up,
+            ParryDirection.Down => Vector2.down,
+            ParryDirection.Left => Vector2.left,
+            _ => Vector2.right
+        };
+
+        float weaponRange = Player.Equipment.EquippedWeapon.BaseWeaponRange;
+        bool isHorizontal = attackDir.x != 0f;
+
+        attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
+        attackCenter = (Vector2)attackOrigin.position + (attackDir * (weaponRange * 0.5f));
+
+        attackDamage = GetDamage();
+        attackCrit = Player.Equipment.EquippedWeapon.BaseWeaponCrit;
+
+        Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
+        if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange);
     }
 
     private float GetDamage() => Player.Stats != null ? Player.Stats.TotalAttack : 0f;
@@ -299,12 +321,25 @@ public bool CheckParry(ParryDirection incomingDirection)
         {
             if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
             {
-                enemyHealth.ApplyDamage((int)dmg);
+                // Only damage each enemy once per attack swing
+                if (!enemiesHitThisAttack.Contains(enemyHealth))
+                {
+                    enemiesHitThisAttack.Add(enemyHealth);
+                    enemyHealth.ApplyDamage((int)dmg);
+                }
             }
         }
     }
 
-    public void EndAttack() => isAttacking = false;
+    public void EndAttack() 
+    {
+        isAttacking = false;
+
+        if (Player.Controller != null)
+        {
+            Player.Controller.SetDashLockedDuringAttack(false);
+        }
+    }
 
     #endregion
 
@@ -534,6 +569,20 @@ public bool CheckParry(ParryDirection incomingDirection)
     {
         Player.Controller.SetSkillCharging(false);
         CancelInvoke(nameof(AutoFireAtMaxCharge));
+    }
+
+    public void ForceCancelAttack()
+    {
+        if (isAttacking)
+        {
+            isAttacking = false;
+            enemiesHitThisAttack.Clear();
+            
+            if (Player.Controller != null)
+            {
+                Player.Controller.SetDashLockedDuringAttack(false);
+            }
+        }
     }
 
     #endregion
