@@ -168,6 +168,8 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
+        if (isChargingSkillPhysics || isSkillGravityZeroed) return;
+        
         bool wallJumpNeutral = isWallJumping && Mathf.Abs(horizontalInput) < 0.01f;
         if ((!CanMove() && !isWallJumping) || wallJumpNeutral) return;
 
@@ -203,6 +205,7 @@ public class PlayerController : MonoBehaviour
             }
 
             combatController?.ForceCancelAttack();
+            combatController?.NotifyJumpInputReceived();
 
             if (!isGrounded) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
@@ -245,7 +248,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleWallJump()
     {
-        if (IsMovementFrozen) return;
+        if (IsMovementFrozen || isChargingSkillPhysics || isSkillGravityZeroed || combatController.IsChargingSkill) return;
 
         if (isWallSliding)
         {
@@ -264,6 +267,8 @@ public class PlayerController : MonoBehaviour
         if (jumpPressed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
+            combatController?.ForceCancelAttack();
+            combatController?.NotifyJumpInputReceived();
             rb.linearVelocity = Vector2.zero;
             rb.AddForce(new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y), ForceMode2D.Impulse);
             currentSurfaceNormal = new Vector2(-wallJumpDirection, 0f);

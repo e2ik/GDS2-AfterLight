@@ -46,9 +46,12 @@ public class PlayerCombatController : MonoBehaviour
     private float[] comboDamageMultipliers = new float[] { 1.0f, 1.25f, 1.5f };
     public int CurrentComboIndex => currentComboIndex;
 
-    [Header("Dash Conflict Settings")]
+    // prevents simultaneous inputs, else it sort of bricks the animator, as long as it is short enough it's hard to notice
+    [Header("Input Conflict Settings")]
     [SerializeField] private float dashAttackConflictWindow = 0.2f;
     private float dashAttackBlockTimer;
+    [SerializeField] private float jumpAttackConflictWindow = 0.2f;
+    private float jumpAttackBlockTimer;
 
     private float attackBufferTimer;
     private float attackDurationTimer;
@@ -136,12 +139,25 @@ public class PlayerCombatController : MonoBehaviour
         HandleSkill();
         UpdateTimers();
 
+        // check for hits every frame while attacking, in case enemies enter the hitbox mid-attack
         if (isAttacking && Player.Equipment?.EquippedWeapon != null)
         {
             PerformAttackHitboxCheck();
         }
 
         if (!skillButtonHeld) return;
+
+        if (Player.Controller.IsWallSliding)
+        {
+            CancelInvoke(nameof(AutoFireAtMaxCharge));
+            skillButtonHeld = false;
+            isChargingSkill = false;
+            skillFiredThisHold = true;
+            StopChargingPhysics();
+            return;
+        }
+
+        if (jumpAttackBlockTimer > 0f) return;
 
         chargingSkillTimer += Time.deltaTime;
 
@@ -193,6 +209,7 @@ public class PlayerCombatController : MonoBehaviour
         if (attackBufferTimer > 0f) attackBufferTimer -= Time.deltaTime;
         if (skillBufferTimer > 0f) skillBufferTimer -= Time.deltaTime;
         if (dashAttackBlockTimer > 0f) dashAttackBlockTimer -= Time.deltaTime;
+        if (jumpAttackBlockTimer > 0f) jumpAttackBlockTimer -= Time.deltaTime;
 
         attackTimer = isAttacking ? attackCoolDown : attackTimer - Time.deltaTime;
         skillTimer = isSkilling ? skillCoolDown : skillTimer - Time.deltaTime;
@@ -253,10 +270,10 @@ public class PlayerCombatController : MonoBehaviour
     private bool CanReleaseSkill()
     {
         return Player.Controller.InputEnabled
-               && !Player.Controller.IsWallSliding
-               && !isParrying
-               && !isParryInRecovery
-               && !isSkilling;
+            && !Player.Controller.IsWallSliding
+            && !isParrying
+            && !isParryInRecovery
+            && !isSkilling;
     }
 
     #region Parry Logic
@@ -338,6 +355,7 @@ public class PlayerCombatController : MonoBehaviour
     private void HandleAttack()
     {
         if (dashAttackBlockTimer > 0f) return;
+        if (jumpAttackBlockTimer > 0f) return;
 
         if (attackBufferTimer > 0f && isAttacking && canBufferNextCombo && CanBufferAttack())
         {
@@ -418,12 +436,13 @@ public class PlayerCombatController : MonoBehaviour
     private void HitEnemy(Collider2D[] enemiesInRange)
     {
         float dmg = attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
-        dmg *= (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f);
+        dmg *= (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f); //! flagging this needs proper logic later
 
         foreach (var col in enemiesInRange)
         {
             if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
             {
+                // Only damage each enemy once per attack swing
                 if (!enemiesHitThisAttack.Contains(enemyHealth))
                 {
                     enemiesHitThisAttack.Add(enemyHealth);
@@ -630,14 +649,18 @@ public class PlayerCombatController : MonoBehaviour
         dashAttackBlockTimer = dashAttackConflictWindow;
     }
 
+    public void NotifyJumpInputReceived()
+    {
+        jumpAttackBlockTimer = jumpAttackConflictWindow;
+    }
+
     public void OnSAttack(InputValue value)
     {
-        if (Player.Controller.IsWallSliding) return;
-
         var specialDef = Player.Equipment?.SpecialAttackDef;
 
         if (value.isPressed)
         {
+            if (Player.Controller.IsWallSliding) return; // can't start a skill while wall-sliding
             if (specialDef == null) return;
             if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;
 
@@ -655,7 +678,7 @@ public class PlayerCombatController : MonoBehaviour
             isChargingSkill = true;
             singleSkillCostTick = specialDef.SkillCost / chargingSkillMaxDur;
             CancelInvoke(nameof(AutoFireAtMaxCharge));
-            Invoke(nameof(AutoFireAtMaxCharge), chargingSkillMaxDur); // Invoke requires a zero-arg method
+            Invoke(nameof(AutoFireAtMaxCharge), chargingSkillMaxDur);
         }
         else
         {
