@@ -94,6 +94,8 @@ public class PlayerCombatController : MonoBehaviour
     public bool IsSkilling => isSkilling;
     public bool IsChargingSkill => isChargingSkill;
     public string CurrentSkillGemName { get; private set; }
+    public float ChargingSkillTimer => chargingSkillTimer;
+    public float ChargingSkillMaxDur => chargingSkillMaxDur;
 
     private float _skillMeter;
     public float SkillMeter 
@@ -215,7 +217,6 @@ public class PlayerCombatController : MonoBehaviour
             && !Player.Controller.IsWallSliding 
             && !isParrying 
             && !isParryInRecovery 
-            && !isAttacking
             && !isSkilling;
     }
 
@@ -446,6 +447,8 @@ public class PlayerCombatController : MonoBehaviour
         {
             skillReady = false;
             CancelParry();
+            ForceCancelAttack();
+            
             var specialDef = Player.Equipment.SpecialAttackDef;
 
             if (specialDef == null)
@@ -571,7 +574,7 @@ public class PlayerCombatController : MonoBehaviour
     
     public void OnAttack() 
     { 
-        if (IsParrying) return;
+        if (IsParrying || isChargingSkill) return;
 
         attackPressed = true; 
         attackBufferTimer = parryBufferTime; 
@@ -596,6 +599,8 @@ public class PlayerCombatController : MonoBehaviour
         if (value.isPressed)
         {
             if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;
+
+            ForceCancelAttack();
 
             skillButtonHeld = true;
             chargingSkillTimer = 0f;

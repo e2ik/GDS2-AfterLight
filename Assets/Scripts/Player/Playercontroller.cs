@@ -156,7 +156,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public bool CanMove() => InputEnabled && !isWallJumping && !isDashing && !isChargingSkillPhysics && !isStaggered && !isWallSliding;
+    public bool CanMove() => InputEnabled
+                            && !isWallJumping
+                            && !isDashing
+                            && !isChargingSkillPhysics
+                            && !isStaggered
+                            && !isWallSliding
+                            && !combatController.IsChargingSkill;
 
     #region Movement Handlers
 
@@ -286,6 +292,7 @@ public class PlayerController : MonoBehaviour
         {
             if (combatController != null)
             {
+                if (combatController.IsChargingSkill) return;
                 if (combatController.IsParrying) combatController.CancelParry();
                 if (combatController.IsAttacking)
                 {
