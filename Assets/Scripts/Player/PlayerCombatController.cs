@@ -10,9 +10,8 @@ public enum AttackForce { Zero, Light, Medium, Heavy }
 
 public class PlayerCombatController : MonoBehaviour
 {
-    [Header("Parry Settings")] [SerializeField]
-    private float parryActiveDuration = 0.2f;
-
+    [Header("Parry Settings")]
+    [SerializeField] private float parryActiveDuration = 0.2f;
     [SerializeField] private float parryRecoveryDuration = 0.3f;
     [SerializeField] private float parryBufferTime = 0.15f;
     [SerializeField] private float successfulParryVisualDuration = 0.15f;
@@ -26,9 +25,8 @@ public class PlayerCombatController : MonoBehaviour
     private ParryDirection parryDir;
     private Coroutine parrySuccessResetCoroutine;
 
-    [Header("Attack Settings")] [SerializeField]
-    private Transform attackOrigin;
-
+    [Header("Attack Settings")]
+    [SerializeField] private Transform attackOrigin;
     public LayerMask enemyLayer;
     [SerializeField] private float critDamageMultiplier = 1.33f;
     [SerializeField] private float counterAttackMultiplier = 1.2f;
@@ -37,9 +35,8 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float attackCoolDown = 0.2f;
     [SerializeField] private float counterAttackWindow = 0.5f;
 
-    [Header("Combo Settings")] [SerializeField]
-    private int maxComboCount = 3;
-
+    [Header("Combo Settings")]
+    [SerializeField] private int maxComboCount = 3;
     [SerializeField] private float comboResetDelay = 1.0f;
 
     private int currentComboIndex = 0;
@@ -49,9 +46,8 @@ public class PlayerCombatController : MonoBehaviour
     private float[] comboDamageMultipliers = new float[] { 1.0f, 1.25f, 1.5f };
     public int CurrentComboIndex => currentComboIndex;
 
-    [Header("Dash Conflict Settings")] [SerializeField]
-    private float dashAttackConflictWindow = 0.2f;
-
+    [Header("Dash Conflict Settings")]
+    [SerializeField] private float dashAttackConflictWindow = 0.2f;
     private float dashAttackBlockTimer;
 
     private float attackBufferTimer;
@@ -68,9 +64,8 @@ public class PlayerCombatController : MonoBehaviour
     // hit enemies
     private HashSet<EnemyHealth> enemiesHitThisAttack = new HashSet<EnemyHealth>();
 
-    [Header("Skill Settings")] [SerializeField]
-    private bool skillMeterAlwaysFull;
-
+    [Header("Skill Settings")]
+    [SerializeField] private bool skillMeterAlwaysFull;
     [SerializeField] private float skillCoolDown = 0.2f;
     [SerializeField] private float chargingSkillMinDur = 0.4f;
     [SerializeField] private float chargingSkillMaxDur = 1.5f; // must be 1 or more
@@ -102,9 +97,10 @@ public class PlayerCombatController : MonoBehaviour
     public bool IsSkilling => isSkilling;
     public bool IsChargingSkill => isChargingSkill;
     public string CurrentSkillGemName { get; private set; }
+    public float ChargingSkillTimer => chargingSkillTimer;
+    public float ChargingSkillMaxDur => chargingSkillMaxDur;
 
     private float _skillMeter;
-
     public float SkillMeter
     {
         get => skillMeterAlwaysFull ? 1f : _skillMeter;
@@ -140,7 +136,6 @@ public class PlayerCombatController : MonoBehaviour
         HandleSkill();
         UpdateTimers();
 
-        // check for hits everyframe while attacking, in case enemies enter the hitbox mid-attack
         if (isAttacking && Player.Equipment?.EquippedWeapon != null)
         {
             PerformAttackHitboxCheck();
@@ -236,21 +231,23 @@ public class PlayerCombatController : MonoBehaviour
     private bool CanAct()
     {
         return Player.Controller.InputEnabled
-               && !Player.Controller.IsWallSliding
-               && !Player.Controller.IsChargingSkill
-               && !Player.Controller.IsNeutralDash
-               && !isParryInRecovery
-               && !isSkilling;
+            && !Player.Controller.IsWallSliding
+            && !Player.Controller.IsChargingSkill
+            && !isChargingSkill
+            && !Player.Controller.IsNeutralDash
+            && !isParryInRecovery
+            && !isSkilling;
     }
 
     private bool CanBufferAttack()
     {
         return Player.Controller.InputEnabled
-               && !Player.Controller.IsWallSliding
-               && !Player.Controller.IsChargingSkill
-               && !Player.Controller.IsNeutralDash
-               && !isParryInRecovery
-               && !isSkilling;
+            && !Player.Controller.IsWallSliding
+            && !Player.Controller.IsChargingSkill
+            && !isChargingSkill
+            && !Player.Controller.IsNeutralDash
+            && !isParryInRecovery
+            && !isSkilling;
     }
 
     private bool CanReleaseSkill()
@@ -259,7 +256,6 @@ public class PlayerCombatController : MonoBehaviour
                && !Player.Controller.IsWallSliding
                && !isParrying
                && !isParryInRecovery
-               && !isAttacking
                && !isSkilling;
     }
 
@@ -267,8 +263,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleParry()
     {
-        if (parryBufferTimer > 0f && CanAct())
-            ExecuteParry();
+        if (parryBufferTimer > 0f && CanAct()) ExecuteParry();
     }
 
     private void ExecuteParry()
@@ -296,7 +291,6 @@ public class PlayerCombatController : MonoBehaviour
             OnSuccessfulParry();
             return true;
         }
-
         return false;
     }
 
@@ -351,16 +345,13 @@ public class PlayerCombatController : MonoBehaviour
             attackBufferTimer = 0f;
         }
 
-        if (attackBufferTimer > 0f && CanAct())
-            ExecuteAttack();
-        if (comboQueued && !isAttacking && attackTimer <= 0f && CanBufferAttack())
-            ExecuteAttack();
+        if (attackBufferTimer > 0f && CanAct()) ExecuteAttack();
+        if (comboQueued && !isAttacking && attackTimer <= 0f && CanBufferAttack()) ExecuteAttack();
 
         if (currentComboIndex > 0 && !isAttacking)
         {
             comboResetTimer += Time.deltaTime;
-            if (comboResetTimer >= comboResetDelay)
-                ResetCombo();
+            if (comboResetTimer >= comboResetDelay) ResetCombo();
         }
     }
 
@@ -473,7 +464,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleSkill()
     {
-        SkillActivationCost = currentSkillDef.SkillCost;
+        SkillActivationCost = currentSkillDef != null ? currentSkillDef.SkillCost : 0f;
         bool isReadyToFire = skillMeterAlwaysFull || SkillMeter >= SkillActivationCost;
         if (skillBufferTimer > 0f && CanReleaseSkill() && isReadyToFire)
         {
@@ -495,6 +486,8 @@ public class PlayerCombatController : MonoBehaviour
 
         skillPressed = false;
         CancelParry();
+        ForceCancelAttack(); // a skill firing mid-swing interrupts the attack
+
         var specialDef = Player.Equipment.SpecialAttackDef;
 
         if (specialDef == null)
@@ -516,9 +509,6 @@ public class PlayerCombatController : MonoBehaviour
             chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
         }
 
-        Debug.Log(
-            $"Timer: {chargingSkillTimer:F2} | WasCharged: {wasCharged} | ChargePercentage: {chargeRatio:F2} | Multiplier: {chargeDamageMultiplier:F2} | Final Dmg: {GetDamage() * chargeDamageMultiplier}");
-
         Player.Controller.SetSkillCharging(false);
         if (wasCharged) Player.Controller.SetSkillGravityZero(true);
 
@@ -535,7 +525,7 @@ public class PlayerCombatController : MonoBehaviour
             }
             else if (specialDef.SkillType == SkillType.Timed)
             {
-                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier));
+                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier, chargeRatio));
             }
         }
     }
@@ -547,7 +537,7 @@ public class PlayerCombatController : MonoBehaviour
         def.Execute(Player.Equipment.GetModifiedAttackContext(), GetDamage() * multiplier, chargePercentage);
     }
 
-    IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
+    private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
     {
         var context = Player.Equipment.GetModifiedAttackContext();
         float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : 0.16f;
@@ -565,6 +555,7 @@ public class PlayerCombatController : MonoBehaviour
         while (isSkilling && (skillMeterAlwaysFull || (isHeld ? SkillMeter > 0f : true)))
         {
             float dynamicRampMultiplier = fixedChargeMultiplier;
+            float currentChargePercentage = chargePercentage;
 
             if (isHeld && !skillMeterAlwaysFull)
             {
@@ -573,10 +564,11 @@ public class PlayerCombatController : MonoBehaviour
 
                 float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
                 dynamicRampMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
+                currentChargePercentage = chargeRatio;
             }
 
             float currentTickDamage = GetDamage() * dynamicRampMultiplier;
-            def.Execute(context, currentTickDamage);
+            def.Execute(context, currentTickDamage, currentChargePercentage);
 
             yield return new WaitForSeconds(tick);
 
@@ -620,20 +612,20 @@ public class PlayerCombatController : MonoBehaviour
 
     public void OnMove(InputValue value) => verticalInput = value.Get<Vector2>().y;
     public void OnParry() => parryBufferTimer = parryBufferTime;
-    
-    public void OnAttack() 
-    { 
-        if (IsParrying) return;
 
-        attackPressed = true; 
-        attackBufferTimer = parryBufferTime; 
-        
+    public void OnAttack()
+    {
+        if (IsParrying || isChargingSkill) return;
+
+        attackPressed = true;
+        attackBufferTimer = parryBufferTime;
+
         if (isAttacking && canBufferNextCombo)
         {
             comboQueued = true;
         }
     }
-    
+
     public void NotifyDashInputReceived()
     {
         dashAttackBlockTimer = dashAttackConflictWindow;
@@ -660,7 +652,7 @@ public class PlayerCombatController : MonoBehaviour
                 TriggerSkillRelease();
                 return;
             }
-            
+
             isChargingSkill = true;
             singleSkillCostTick = specialDef.SkillCost / chargingSkillMaxDur;
             CancelInvoke(nameof(AutoFireAtMaxCharge));
@@ -724,8 +716,8 @@ public class PlayerCombatController : MonoBehaviour
         attackDurationTimer = 0f;
         enemiesHitThisAttack.Clear();
         ResetCombo();
-        
-        attackBufferTimer = 0f; 
+
+        attackBufferTimer = 0f;
 
         if (Player.Controller != null)
         {
