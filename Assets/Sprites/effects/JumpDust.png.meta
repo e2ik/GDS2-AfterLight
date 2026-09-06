@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: 3c040346f9c1bea48aff0db6c41412e0
+guid: 551250e504d4c414b87b35ba8548fe6a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2225338236292208000
-    second: p_dash_0
+      213: 4440833088395176774
+    second: JumpDust_0
+  - first:
+      213: -3037459652910195590
+    second: JumpDust_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -51,7 +54,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 9
+  spritePixelsToUnits: 16
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -126,13 +129,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: p_dash_0
+      name: JumpDust_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 64
-        height: 32
+        y: 16
+        width: 16
+        height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,20 +144,42 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 08a65b81aa20e11e0800000000000000
-      internalID: -2225338236292208000
+      spriteID: 64b68945a2201ad30800000000000000
+      internalID: 4440833088395176774
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: p_dash_1
+      name: JumpDust_1
       rect:
         serializedVersion: 2
-        x: 64
-        y: 0
-        width: 64
-        height: 32
+        x: 16
+        y: 16
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7cd4b0f986c8d5d0800000000000000
+      internalID: -3037459652910195590
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JumpDust_2
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 16
+        width: 16
+        height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -163,20 +188,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 69335f902639a6e4e837eddfb750e29d
-      internalID: -814832095
+      spriteID: 6aafd92bedf154d40867c6a744a35f0e
+      internalID: -74373644
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: p_dash_2
+      name: JumpDust_3
       rect:
         serializedVersion: 2
-        x: 128
+        x: 0
         y: 0
-        width: 64
-        height: 32
+        width: 16
+        height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -185,8 +210,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 658c790dfb0f5cc42b274e05625e075c
-      internalID: 42150773
+      spriteID: 74d7cafbcb1751f4987e32737ac14e3d
+      internalID: -1963378835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JumpDust_4
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: de3ec1a817bcb284ab24b8fed8845e57
+      internalID: -1790731465
       vertices: []
       indices: 
       edges: []
@@ -195,7 +242,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 68d412c518913fe49a3d9f17a8837309
     internalID: 0
     vertices: []
     indices: 
@@ -205,11 +252,13 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      p_dash_0: -2225338236292208000
-      p_dash_1: -814832095
-      p_dash_2: 42150773
+      JumpDust_0: 4440833088395176774
+      JumpDust_1: -3037459652910195590
+      JumpDust_2: -74373644
+      JumpDust_3: -1963378835
+      JumpDust_4: -1790731465
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

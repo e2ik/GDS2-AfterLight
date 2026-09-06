@@ -10,13 +10,12 @@ public enum AttackForce { Zero, Light, Medium, Heavy }
 
 public class PlayerCombatController : MonoBehaviour
 {
-    [Header("Parry Settings")] [SerializeField]
-    private float parryActiveDuration = 0.2f;
-
+    [Header("Parry Settings")]
+    [SerializeField] private float parryActiveDuration = 0.2f;
     [SerializeField] private float parryRecoveryDuration = 0.3f;
     [SerializeField] private float parryBufferTime = 0.15f;
     [SerializeField] private float successfulParryVisualDuration = 0.15f;
-
+    
     private float parryActiveTimer;
     private float parryRecoveryTimer;
     private float parryBufferTimer;
@@ -26,9 +25,8 @@ public class PlayerCombatController : MonoBehaviour
     private ParryDirection parryDir;
     private Coroutine parrySuccessResetCoroutine;
 
-    [Header("Attack Settings")] [SerializeField]
-    private Transform attackOrigin;
-
+    [Header("Attack Settings")]
+    [SerializeField] private Transform attackOrigin;
     public LayerMask enemyLayer;
     [SerializeField] private float critDamageMultiplier = 1.33f;
     [SerializeField] private float counterAttackMultiplier = 1.2f;
@@ -37,9 +35,8 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float attackCoolDown = 0.2f;
     [SerializeField] private float counterAttackWindow = 0.5f;
 
-    [Header("Combo Settings")] [SerializeField]
-    private int maxComboCount = 3;
-
+    [Header("Combo Settings")]
+    [SerializeField] private int maxComboCount = 3;
     [SerializeField] private float comboResetDelay = 1.0f;
 
     private int currentComboIndex = 0;
@@ -49,9 +46,8 @@ public class PlayerCombatController : MonoBehaviour
     private float[] comboDamageMultipliers = new float[] { 1.0f, 1.25f, 1.5f };
     public int CurrentComboIndex => currentComboIndex;
 
-    [Header("Dash Conflict Settings")] [SerializeField]
-    private float dashAttackConflictWindow = 0.2f;
-
+    [Header("Dash Conflict Settings")]
+    [SerializeField] private float dashAttackConflictWindow = 0.2f;
     private float dashAttackBlockTimer;
 
     private float attackBufferTimer;
@@ -68,19 +64,16 @@ public class PlayerCombatController : MonoBehaviour
     // hit enemies
     private HashSet<EnemyHealth> enemiesHitThisAttack = new HashSet<EnemyHealth>();
 
-    [Header("Skill Settings")] [SerializeField]
-    private bool skillMeterAlwaysFull;
-
+    [Header("Skill Settings")]
+    [SerializeField] private bool skillMeterAlwaysFull;
     [SerializeField] private float skillCoolDown = 0.2f;
     [SerializeField] private float chargingSkillMinDur = 0.4f;
-    [SerializeField] private float chargingSkillMaxDur = 1.5f; // must be 1 or more
+    [SerializeField] private float chargingSkillMaxDur = 1.5f;
     [SerializeField] private float fullChargeDamageMultiplier = 1.5f;
     [SerializeField] private float skillHoldThreshold = 0.12f;
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
     [SerializeField] private float chargeSkillAmount = 0.2f;
-    [Range(0.1f, 1f)] public float SkillActivationCost { get; private set; }
 
-    private PrimaryGemBehaviourDefinition currentSkillDef;
     private float skillBufferTimer;
     private float skillTimer;
     private bool skillPressed;
@@ -89,9 +82,8 @@ public class PlayerCombatController : MonoBehaviour
     private bool isChargingSkill;
     private float chargingSkillTimer;
     private bool skillFiredThisHold;
+    private bool skillReady;
     private Coroutine skillCoroutine;
-    private float singleSkillCostTick;
-    private float singleSkillChargeCost;
 
     private float verticalInput;
     private Player Player;
@@ -102,20 +94,21 @@ public class PlayerCombatController : MonoBehaviour
     public bool IsSkilling => isSkilling;
     public bool IsChargingSkill => isChargingSkill;
     public string CurrentSkillGemName { get; private set; }
+    public float ChargingSkillTimer => chargingSkillTimer;
+    public float ChargingSkillMaxDur => chargingSkillMaxDur;
 
     private float _skillMeter;
-
-    public float SkillMeter
-    {
-        get => skillMeterAlwaysFull ? 1f : _skillMeter;
-        private set => _skillMeter = value;
+    public float SkillMeter 
+    { 
+        get => skillMeterAlwaysFull ? 1f : _skillMeter; 
+        private set => _skillMeter = value; 
     }
 
     public event Action<float, float> OnEnergyChanged;
 
     private void Awake() => Player = GetComponentInParent<Player>();
 
-    private void Start()
+    private void Start() 
     {
         if (skillMeterAlwaysFull) SkillMeter = 1f;
         OnEnergyChanged?.Invoke(SkillMeter, 1f);
@@ -133,8 +126,6 @@ public class PlayerCombatController : MonoBehaviour
     {
         if (!Player.Controller.InputEnabled) return;
 
-        currentSkillDef = Player.Equipment?.SpecialAttackDef;
-
         HandleParry();
         HandleAttack();
         HandleSkill();
@@ -146,49 +137,16 @@ public class PlayerCombatController : MonoBehaviour
             PerformAttackHitboxCheck();
         }
 
-        if (!skillButtonHeld) return;
-
-        chargingSkillTimer += Time.deltaTime;
-
-        if (currentSkillDef != null && currentSkillDef.SkillExecutionType == SkillExecutionType.Charged)
+        if (skillButtonHeld)
         {
-            if (chargingSkillTimer >= skillHoldThreshold)
+            chargingSkillTimer += Time.deltaTime;
+            var specialDef = Player.Equipment?.SpecialAttackDef;
+
+            if (specialDef != null && specialDef.SkillExecutionType == SkillExecutionType.Charged)
             {
-                if (!Player.Controller.IsChargingSkill)
-                {
+                if (chargingSkillTimer >= skillHoldThreshold && !Player.Controller.IsChargingSkill)
                     Player.Controller.SetSkillCharging(true);
-                }
-
-                SingleSkillChargeCost();
             }
-        }
-    }
-
-    private void SingleSkillChargeCost()
-    {
-        if (skillMeterAlwaysFull || !isChargingSkill) return;
-
-        float maxCost = currentSkillDef.SkillCost;
-        float availableCost = SkillMeter - maxCost;
-
-        if (availableCost <= 0f || singleSkillChargeCost >= maxCost)
-        {
-            AutoFireAtMaxCharge(true, chargingSkillTimer);
-            return;
-        }
-
-        float amount = singleSkillCostTick * Time.deltaTime;
-        amount = Mathf.Min(amount, maxCost - singleSkillChargeCost);
-
-        SkillMeter -= amount;
-        singleSkillChargeCost += amount;
-        OnEnergyChanged?.Invoke(SkillMeter, 1f);
-
-        if (SkillMeter <= maxCost)
-        {
-            SkillMeter = currentSkillDef.SkillCost;
-            OnEnergyChanged?.Invoke(SkillMeter, 1f);
-            AutoFireAtMaxCharge(true, chargingSkillTimer);
         }
     }
 
@@ -198,7 +156,7 @@ public class PlayerCombatController : MonoBehaviour
         if (attackBufferTimer > 0f) attackBufferTimer -= Time.deltaTime;
         if (skillBufferTimer > 0f) skillBufferTimer -= Time.deltaTime;
         if (dashAttackBlockTimer > 0f) dashAttackBlockTimer -= Time.deltaTime;
-
+        
         attackTimer = isAttacking ? attackCoolDown : attackTimer - Time.deltaTime;
         skillTimer = isSkilling ? skillCoolDown : skillTimer - Time.deltaTime;
 
@@ -235,40 +193,38 @@ public class PlayerCombatController : MonoBehaviour
 
     private bool CanAct()
     {
-        return Player.Controller.InputEnabled
-               && !Player.Controller.IsWallSliding
-               && !Player.Controller.IsChargingSkill
-               && !Player.Controller.IsNeutralDash
-               && !isParryInRecovery
-               && !isSkilling;
+        return Player.Controller.InputEnabled 
+            && !Player.Controller.IsWallSliding 
+            && !Player.Controller.IsChargingSkill 
+            && !Player.Controller.IsNeutralDash
+            && !isParryInRecovery 
+            && !isSkilling;
     }
 
     private bool CanBufferAttack()
     {
-        return Player.Controller.InputEnabled
-               && !Player.Controller.IsWallSliding
-               && !Player.Controller.IsChargingSkill
-               && !Player.Controller.IsNeutralDash
-               && !isParryInRecovery
-               && !isSkilling;
+        return Player.Controller.InputEnabled 
+            && !Player.Controller.IsWallSliding 
+            && !Player.Controller.IsChargingSkill 
+            && !Player.Controller.IsNeutralDash
+            && !isParryInRecovery 
+            && !isSkilling;
     }
 
     private bool CanReleaseSkill()
     {
-        return Player.Controller.InputEnabled
-               && !Player.Controller.IsWallSliding
-               && !isParrying
-               && !isParryInRecovery
-               && !isAttacking
-               && !isSkilling;
+        return Player.Controller.InputEnabled 
+            && !Player.Controller.IsWallSliding 
+            && !isParrying 
+            && !isParryInRecovery 
+            && !isSkilling;
     }
 
     #region Parry Logic
 
     private void HandleParry()
     {
-        if (parryBufferTimer > 0f && CanAct())
-            ExecuteParry();
+        if (parryBufferTimer > 0f && CanAct()) ExecuteParry();
     }
 
     private void ExecuteParry()
@@ -296,7 +252,6 @@ public class PlayerCombatController : MonoBehaviour
             OnSuccessfulParry();
             return true;
         }
-
         return false;
     }
 
@@ -307,7 +262,7 @@ public class PlayerCombatController : MonoBehaviour
 
         ChargeSkillMeter(chargeSkillAmount);
         isCounterAttacking = true;
-
+        
         CancelInvoke(nameof(EndCounterAttackWindow));
         Invoke(nameof(EndCounterAttackWindow), counterAttackWindow);
 
@@ -351,16 +306,13 @@ public class PlayerCombatController : MonoBehaviour
             attackBufferTimer = 0f;
         }
 
-        if (attackBufferTimer > 0f && CanAct())
-            ExecuteAttack();
-        if (comboQueued && !isAttacking && attackTimer <= 0f && CanBufferAttack())
-            ExecuteAttack();
+        if (attackBufferTimer > 0f && CanAct()) ExecuteAttack();
+        if (comboQueued && !isAttacking && attackTimer <= 0f && CanBufferAttack()) ExecuteAttack();
 
         if (currentComboIndex > 0 && !isAttacking)
         {
             comboResetTimer += Time.deltaTime;
-            if (comboResetTimer >= comboResetDelay)
-                ResetCombo();
+            if (comboResetTimer >= comboResetDelay) ResetCombo();
         }
     }
 
@@ -381,7 +333,7 @@ public class PlayerCombatController : MonoBehaviour
 
             isAttacking = true;
             attackDurationTimer = attackDuration;
-
+            
             enemiesHitThisAttack.Clear();
 
             if (Player.Controller != null && Player.Controller.IsDashing)
@@ -443,7 +395,7 @@ public class PlayerCombatController : MonoBehaviour
         }
     }
 
-    public void EndAttack()
+    public void EndAttack() 
     {
         isAttacking = false;
         attackDurationTimer = 0f;
@@ -473,8 +425,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleSkill()
     {
-        SkillActivationCost = currentSkillDef.SkillCost;
-        bool isReadyToFire = skillMeterAlwaysFull || SkillMeter >= SkillActivationCost;
+        bool isReadyToFire = skillMeterAlwaysFull || SkillMeter > 0f;
         if (skillBufferTimer > 0f && CanReleaseSkill() && isReadyToFire)
         {
             ExecuteSkill();
@@ -485,69 +436,69 @@ public class PlayerCombatController : MonoBehaviour
     {
         SkillMeter = Mathf.Clamp01(SkillMeter + amount);
         OnEnergyChanged?.Invoke(SkillMeter, 1f);
+        if (Mathf.Approximately(SkillMeter, 1f)) skillReady = true;
     }
 
     private void ExecuteSkill()
     {
         skillBufferTimer = 0f;
 
-        if (!skillPressed || !(skillTimer <= 0f) || !CanReleaseSkill()) return;
-
-        skillPressed = false;
-        CancelParry();
-        var specialDef = Player.Equipment.SpecialAttackDef;
-
-        if (specialDef == null)
+        if (skillPressed && skillTimer <= 0f && CanReleaseSkill())
         {
+            skillReady = false;
+            CancelParry();
+            ForceCancelAttack();
+            
+            var specialDef = Player.Equipment.SpecialAttackDef;
+
+            if (specialDef == null)
+            {
+                skillPressed = false;
+                Player.Controller.SetSkillCharging(false);
+                return;
+            }
+
+            isSkilling = true;
+            CurrentSkillGemName = specialDef.GemName;
+
+            bool wasCharged = chargingSkillTimer >= chargingSkillMinDur;
+            float chargeDamageMultiplier = 1f;
+
+            if (wasCharged)
+            {
+                float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
+                chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
+            }
+
             Player.Controller.SetSkillCharging(false);
-            return;
-        }
+            if (wasCharged) Player.Controller.SetSkillGravityZero(true);
 
-        isSkilling = true;
-        CurrentSkillGemName = specialDef.GemName;
-
-        bool wasCharged = chargingSkillTimer >= chargingSkillMinDur;
-        float chargeDamageMultiplier = 1f;
-        float chargeRatio = 0f;
-
-        if (wasCharged)
-        {
-            chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
-            chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
-        }
-
-        Debug.Log(
-            $"Timer: {chargingSkillTimer:F2} | WasCharged: {wasCharged} | ChargePercentage: {chargeRatio:F2} | Multiplier: {chargeDamageMultiplier:F2} | Final Dmg: {GetDamage() * chargeDamageMultiplier}");
-
-        Player.Controller.SetSkillCharging(false);
-        if (wasCharged) Player.Controller.SetSkillGravityZero(true);
-
-        if (specialDef.SkillExecutionType == SkillExecutionType.Held)
-        {
-            skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef));
-        }
-        else
-        {
-            if (specialDef.SkillType == SkillType.Single)
+            if (specialDef.SkillExecutionType == SkillExecutionType.Held)
             {
-                PerformSingleSkill(specialDef, chargeRatio, chargeDamageMultiplier);
-                EndSkill();
+                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef));
             }
-            else if (specialDef.SkillType == SkillType.Timed)
+            else
             {
-                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier));
+                if (specialDef.SkillType == SkillType.Single)
+                {
+                    SkillMeter = 0f;
+                    OnEnergyChanged?.Invoke(SkillMeter, 1f);
+                    PerformSingleSkill(specialDef, chargeDamageMultiplier);
+                }
+                else if (specialDef.SkillType == SkillType.Timed)
+                {
+                    skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier));
+                }
             }
         }
     }
 
-    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float chargePercentage, float multiplier)
+    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float multiplier)
     {
-        SkillMeter -= SkillActivationCost;
-        OnEnergyChanged?.Invoke(SkillMeter, 1f);
-        def.Execute(Player.Equipment.GetModifiedAttackContext(), GetDamage() * multiplier, chargePercentage);
+        def.Execute(Player.Equipment.GetModifiedAttackContext(), GetDamage() * multiplier);
     }
 
-    IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
+    private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f)
     {
         var context = Player.Equipment.GetModifiedAttackContext();
         float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : 0.16f;
@@ -558,7 +509,7 @@ public class PlayerCombatController : MonoBehaviour
 
         if (!isHeld && !skillMeterAlwaysFull)
         {
-            SkillMeter -= SkillActivationCost;
+            SkillMeter = 0f;
             OnEnergyChanged?.Invoke(SkillMeter, 1f);
         }
 
@@ -623,7 +574,7 @@ public class PlayerCombatController : MonoBehaviour
     
     public void OnAttack() 
     { 
-        if (IsParrying) return;
+        if (IsParrying || isChargingSkill) return;
 
         attackPressed = true; 
         attackBufferTimer = parryBufferTime; 
@@ -647,22 +598,21 @@ public class PlayerCombatController : MonoBehaviour
 
         if (value.isPressed)
         {
-            if (specialDef == null) return;
             if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;
+
+            ForceCancelAttack();
 
             skillButtonHeld = true;
             chargingSkillTimer = 0f;
-            singleSkillChargeCost = 0f;
             skillFiredThisHold = false;
 
-            if (specialDef.SkillExecutionType == SkillExecutionType.Held)
+            if (specialDef != null && specialDef.SkillExecutionType == SkillExecutionType.Held)
             {
                 TriggerSkillRelease();
                 return;
             }
-            
+
             isChargingSkill = true;
-            singleSkillCostTick = specialDef.SkillCost / chargingSkillMaxDur;
             CancelInvoke(nameof(AutoFireAtMaxCharge));
             Invoke(nameof(AutoFireAtMaxCharge), chargingSkillMaxDur);
         }
@@ -700,11 +650,11 @@ public class PlayerCombatController : MonoBehaviour
         if (!skillButtonHeld && isSkilling) EndSkill();
     }
 
-    private void AutoFireAtMaxCharge(bool triggeredEarly = false, float chargingDur = 0f)
+    private void AutoFireAtMaxCharge()
     {
         if (!skillButtonHeld) return;
 
-        chargingSkillTimer = triggeredEarly ? chargingDur : chargingSkillMaxDur;
+        chargingSkillTimer = chargingSkillMaxDur;
         skillButtonHeld = isChargingSkill = false;
         skillFiredThisHold = true;
 
