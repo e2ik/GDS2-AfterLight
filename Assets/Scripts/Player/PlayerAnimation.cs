@@ -24,6 +24,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsSkillingHash = Animator.StringToHash("isSkilling");
     private static readonly int IsHurtHash = Animator.StringToHash("Hurt");
     private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
+    private static readonly int IsAboutToLandHash = Animator.StringToHash("isAboutToLand");
 
     [Header("Wall Slide Effects")]
     [SerializeField] private ParticleSystem wallSlideParticleSystem;
@@ -65,6 +66,8 @@ public class PlayerAnimation : MonoBehaviour
     private void UpdateAnimationParameters()
     {
         bool isParrying = player.CombatController.IsParrying;
+        bool aboutToLand = player.Controller.IsAboutToLand(out RaycastHit2D hit);
+        animator.SetBool(IsAboutToLandHash, aboutToLand);
 
         animator.SetBool(IsParryingHash, isParrying);
         animator.SetBool(IsParrySuccessHash, player.CombatController.IsParrySuccess);

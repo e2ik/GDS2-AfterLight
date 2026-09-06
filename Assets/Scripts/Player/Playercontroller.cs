@@ -485,6 +485,35 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
+    public bool IsAboutToLand(out RaycastHit2D hitInfo, float lookAheadDistance = 0.5f)
+    {
+        hitInfo = default;
+
+        if (isGrounded || rb.linearVelocityY >= -0.1f) return false;
+
+        Bounds bounds = GetPlayerBounds();
+        Vector2 leftFoot = new Vector2(bounds.min.x + edgeMargin, bounds.min.y);
+        Vector2 rightFoot = new Vector2(bounds.max.x - edgeMargin, bounds.min.y);
+
+        float dynamicDist = Mathf.Min(Mathf.Abs(rb.linearVelocityY) * Time.fixedDeltaTime + lookAheadDistance, 1.5f);
+
+        RaycastHit2D leftHit = Physics2D.Raycast(leftFoot, Vector2.down, dynamicDist, groundLayer);
+        RaycastHit2D rightHit = Physics2D.Raycast(rightFoot, Vector2.down, dynamicDist, groundLayer);
+
+        if (leftHit.collider != null && leftHit.normal.y > 0.6f)
+        {
+            hitInfo = leftHit;
+            return true;
+        }
+        if (rightHit.collider != null && rightHit.normal.y > 0.6f)
+        {
+            hitInfo = rightHit;
+            return true;
+        }
+
+        return false;
+    }
+
     private Bounds GetPlayerBounds()
     {
         if (playerColliders == null || playerColliders.Length == 0) playerColliders = GetComponents<Collider2D>();
