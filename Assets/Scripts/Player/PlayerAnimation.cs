@@ -24,12 +24,6 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsSkillingHash = Animator.StringToHash("isSkilling");
     private static readonly int IsHurtHash = Animator.StringToHash("Hurt");
     private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
-    private static readonly int IsAboutToLandHash = Animator.StringToHash("isAboutToLand");
-    private static readonly int ChargeProgressHash = Animator.StringToHash("ChargeProgress");
-
-    [Header("particle prefabs")]
-    [SerializeField] private ParticleSystem wallSlideParticleSystem;
-    [SerializeField] private ParticleSystem skillChargeParticleSystem;
 
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
@@ -45,24 +39,6 @@ public class PlayerAnimation : MonoBehaviour
             sr = GetComponentInParent<SpriteRenderer>();
             if (sr != null) ogColor = sr.color;
         }
-
-        if (wallSlideParticleSystem == null)
-        {
-            Transform wallSlideTransform = transform.Find("WallSlide");
-            if (wallSlideTransform != null)
-            {
-                wallSlideParticleSystem = wallSlideTransform.GetComponent<ParticleSystem>();
-            }
-        }
-
-        if (skillChargeParticleSystem == null)
-        {
-            Transform skillChargeTransform = transform.Find("SkillCharge");
-            if (skillChargeTransform != null)
-            {
-                skillChargeParticleSystem = skillChargeTransform.GetComponent<ParticleSystem>();
-            }
-        }
     }
 
     private void Update()
@@ -71,34 +47,25 @@ public class PlayerAnimation : MonoBehaviour
         UpdateAnimationParameters();
         HandleSkillAnimation();
         HandleInvulnerabilityVisuals();
-        HandleWallSlideVisuals();
-        HandleSkillChargeVisuals();
     }
 
     private void UpdateAnimationParameters()
     {
         bool isParrying = player.CombatController.IsParrying;
-        bool aboutToLand = player.Controller.IsAboutToLand(out RaycastHit2D hit);
-        animator.SetBool(IsAboutToLandHash, aboutToLand);
-
-        animator.SetBool(IsChargingSkillHash, player.CombatController.IsChargingSkill);
-        float maxDur = player.CombatController.ChargingSkillMaxDur;
-        float chargeProgress = Mathf.Clamp01(player.CombatController.ChargingSkillTimer / maxDur);
-        animator.SetFloat(ChargeProgressHash, chargeProgress);
 
         animator.SetBool(IsParryingHash, isParrying);
         animator.SetBool(IsParrySuccessHash, player.CombatController.IsParrySuccess);
 
-        bool isSkilling = player.CombatController.IsSkilling;
-        bool isAttacking = (isParrying || isSkilling) ? false : player.CombatController.IsAttacking;
-        int attackIndex = (isParrying || isSkilling) ? 0 : player.CombatController.CurrentComboIndex;
+        // If we are parrying, force attack parameters off completely so they can't override it
+        bool isAttacking = isParrying ? false : player.CombatController.IsAttacking;
+        int attackIndex = isParrying ? 0 : player.CombatController.CurrentComboIndex;
 
         animator.SetBool(IsAttackingHash, isAttacking);
         animator.SetInteger(AttackIndexHash, attackIndex);
 
-        animator.SetBool(IsSkillingHash, isSkilling);
+        animator.SetBool(IsSkillingHash, player.CombatController.IsSkilling);
 
-        if (isSkilling) return;
+        if (player.CombatController.IsSkilling) return;
 
         animator.SetFloat(SpeedHash, Mathf.Abs(rb.linearVelocityX));
         animator.SetFloat(YVelocityHash, rb.linearVelocityY);
@@ -175,26 +142,6 @@ public class PlayerAnimation : MonoBehaviour
 
     #endregion
 
-    public void TriggerJumpEffect(bool isWallJump, float wallDir = 0f)
-    {
-        if (player == null || player.Controller == null) return;
-
-        Vector2 spawnPosition = player.Controller.LastHitPoint;
-        Vector2 normal = player.Controller.CurrentSurfaceNormal;
-
-        // Fallback in case it ever triggers without a valid hit cached
-        if (spawnPosition == Vector2.zero)
-        {
-            spawnPosition = transform.position;
-            normal = isWallJump ? new Vector2(-wallDir, 0f) : Vector2.up;
-        }
-
-        float angle = Mathf.Atan2(normal.y, normal.x) * Mathf.Rad2Deg - 90f;
-        Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
-
-        PSpawner.Spawn("JumpDust", spawnPosition, rotation);
-    }
-
     #region Helper Methods
 
     private void StartFlashColor(Color flashColor, float duration)
@@ -231,54 +178,6 @@ public class PlayerAnimation : MonoBehaviour
         {
             sr.color = ogColor;
             wasInvulnerable = false;
-        }
-    }
-
-    private void HandleWallSlideVisuals()
-    {
-        if (wallSlideParticleSystem == null || player.Controller == null) return;
-
-        bool isWallSliding = player.Controller.IsWallSliding;
-
-        if (isWallSliding)
-        {
-            if (!wallSlideParticleSystem.isEmitting)
-            {
-                wallSlideParticleSystem.Play();
-            }
-        }
-        else
-        {
-            wallSlideParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-        }
-    }
-
-    private void HandleSkillChargeVisuals()
-    {
-        if (skillChargeParticleSystem == null || player.CombatController == null) return;
-
-        bool isCharging = player.CombatController.IsChargingSkill;
-
-        if (isCharging)
-        {
-            if (!skillChargeParticleSystem.isEmitting)
-            {
-                skillChargeParticleSystem.Play();
-            }
-
-            float progress = Mathf.Clamp01(player.CombatController.ChargingSkillTimer / 1.5f);
-
-            var main = skillChargeParticleSystem.main;
-            main.startSize = Mathf.Lerp(0.1f, 0.25f, progress);
-            main.simulationSpeed = Mathf.Lerp(1f, 4f, progress);
-            main.startColor = Color.Lerp(Color.cyan, Color.yellow, progress);
-
-            var emission = skillChargeParticleSystem.emission;
-            emission.rateOverTime = Mathf.Lerp(1f, 25f, progress);
-        }
-        else
-        {
-            skillChargeParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         }
     }
 

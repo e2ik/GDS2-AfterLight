@@ -83,19 +83,11 @@ public class PlayerController : MonoBehaviour
 
     private bool IsSkillActive => isChargingSkillPhysics || (combatController != null && combatController.IsSkilling);
 
-    // for anim script
-    private Vector2 currentSurfaceNormal = Vector2.up;
-    public Vector2 CurrentSurfaceNormal => currentSurfaceNormal;
-    private PlayerAnimation pAnim;
-    private Vector2 lastHitPoint;
-    public Vector2 LastHitPoint => lastHitPoint;
-
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         playerColliders = GetComponents<Collider2D>();
         combatController = GetComponent<PlayerCombatController>();
-        pAnim = GetComponent<PlayerAnimation>();
     }
 
     private void Start() => rb.gravityScale = normGravity;
@@ -156,13 +148,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public bool CanMove() => InputEnabled
-                            && !isWallJumping
-                            && !isDashing
-                            && !isChargingSkillPhysics
-                            && !isStaggered
-                            && !isWallSliding
-                            && !combatController.IsChargingSkill;
+    public bool CanMove() => InputEnabled && !isWallJumping && !isDashing && !isChargingSkillPhysics && !isStaggered && !isWallSliding;
 
     #region Movement Handlers
 
@@ -206,9 +192,6 @@ public class PlayerController : MonoBehaviour
 
             if (!isGrounded) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-
-            pAnim?.TriggerJumpEffect(false);
-
             jumpPressed = jumpReleased = false;
             coyoteTimeCounter = 0f;
         }
@@ -266,10 +249,6 @@ public class PlayerController : MonoBehaviour
             isWallJumping = true;
             rb.linearVelocity = Vector2.zero;
             rb.AddForce(new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y), ForceMode2D.Impulse);
-            currentSurfaceNormal = new Vector2(-wallJumpDirection, 0f);
-
-            pAnim?.TriggerJumpEffect(true, wallJumpDirection);
-
             wallJumpTimer = 0f;
             jumpPressed = jumpReleased = false;
 
@@ -292,7 +271,6 @@ public class PlayerController : MonoBehaviour
         {
             if (combatController != null)
             {
-                if (combatController.IsChargingSkill) return;
                 if (combatController.IsParrying) combatController.CancelParry();
                 if (combatController.IsAttacking)
                 {
@@ -441,22 +419,7 @@ public class PlayerController : MonoBehaviour
         RaycastHit2D leftHit = Physics2D.Raycast(leftFoot, Vector2.down, dist, groundLayer);
         RaycastHit2D rightHit = Physics2D.Raycast(rightFoot, Vector2.down, dist, groundLayer);
 
-        if (leftHit.collider != null && leftHit.normal.y > 0.6f)
-        {
-            isGrounded = true;
-            currentSurfaceNormal = leftHit.normal;
-            lastHitPoint = leftHit.point;
-        }
-        else if (rightHit.collider != null && rightHit.normal.y > 0.6f)
-        {
-            isGrounded = true;
-            currentSurfaceNormal = rightHit.normal;
-            lastHitPoint = rightHit.point;
-        }
-        else
-        {
-            isGrounded = false;
-        }
+        isGrounded = (leftHit.collider != null && leftHit.normal.y > 0.6f) || (rightHit.collider != null && rightHit.normal.y > 0.6f);
     }
 
     private void WallCheckUpdate()
@@ -483,42 +446,7 @@ public class PlayerController : MonoBehaviour
     private bool CheckWallRay(Vector2 origin, float dir, float len)
     {
         RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.right * dir, len, groundLayer);
-        if (hit.collider != null && Mathf.Abs(hit.normal.x) > wallCheckNormalThreshold)
-        {
-            currentSurfaceNormal = hit.normal;
-            lastHitPoint = hit.point;
-            return true;
-        }
-        return false;
-    }
-
-    public bool IsAboutToLand(out RaycastHit2D hitInfo, float lookAheadDistance = 0.5f)
-    {
-        hitInfo = default;
-
-        if (isGrounded || rb.linearVelocityY >= -0.1f) return false;
-
-        Bounds bounds = GetPlayerBounds();
-        Vector2 leftFoot = new Vector2(bounds.min.x + edgeMargin, bounds.min.y);
-        Vector2 rightFoot = new Vector2(bounds.max.x - edgeMargin, bounds.min.y);
-
-        float dynamicDist = Mathf.Min(Mathf.Abs(rb.linearVelocityY) * Time.fixedDeltaTime + lookAheadDistance, 1.5f);
-
-        RaycastHit2D leftHit = Physics2D.Raycast(leftFoot, Vector2.down, dynamicDist, groundLayer);
-        RaycastHit2D rightHit = Physics2D.Raycast(rightFoot, Vector2.down, dynamicDist, groundLayer);
-
-        if (leftHit.collider != null && leftHit.normal.y > 0.6f)
-        {
-            hitInfo = leftHit;
-            return true;
-        }
-        if (rightHit.collider != null && rightHit.normal.y > 0.6f)
-        {
-            hitInfo = rightHit;
-            return true;
-        }
-
-        return false;
+        return hit.collider != null && Mathf.Abs(hit.normal.x) > wallCheckNormalThreshold;
     }
 
     private Bounds GetPlayerBounds()
