@@ -25,6 +25,9 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsHurtHash = Animator.StringToHash("Hurt");
     private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
 
+    [Header("Wall Slide Effects")]
+    [SerializeField] private ParticleSystem wallSlideParticleSystem;
+
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
     private bool wasInvulnerable;
@@ -39,6 +42,15 @@ public class PlayerAnimation : MonoBehaviour
             sr = GetComponentInParent<SpriteRenderer>();
             if (sr != null) ogColor = sr.color;
         }
+
+        if (wallSlideParticleSystem == null)
+        {
+            Transform wallSlideTransform = transform.Find("WallSlide");
+            if (wallSlideTransform != null)
+            {
+                wallSlideParticleSystem = wallSlideTransform.GetComponent<ParticleSystem>();
+            }
+        }
     }
 
     private void Update()
@@ -47,6 +59,7 @@ public class PlayerAnimation : MonoBehaviour
         UpdateAnimationParameters();
         HandleSkillAnimation();
         HandleInvulnerabilityVisuals();
+        HandleWallSlideVisuals();
     }
 
     private void UpdateAnimationParameters()
@@ -142,6 +155,26 @@ public class PlayerAnimation : MonoBehaviour
 
     #endregion
 
+    public void TriggerJumpEffect(bool isWallJump, float wallDir = 0f)
+    {
+        if (player == null || player.Controller == null) return;
+
+        Vector2 spawnPosition = player.Controller.LastHitPoint;
+        Vector2 normal = player.Controller.CurrentSurfaceNormal;
+
+        // Fallback in case it ever triggers without a valid hit cached
+        if (spawnPosition == Vector2.zero)
+        {
+            spawnPosition = transform.position;
+            normal = isWallJump ? new Vector2(-wallDir, 0f) : Vector2.up;
+        }
+
+        float angle = Mathf.Atan2(normal.y, normal.x) * Mathf.Rad2Deg - 90f;
+        Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
+
+        PSpawner.Spawn("JumpDust", spawnPosition, rotation);
+    }
+
     #region Helper Methods
 
     private void StartFlashColor(Color flashColor, float duration)
@@ -180,6 +213,25 @@ public class PlayerAnimation : MonoBehaviour
             wasInvulnerable = false;
         }
     }
+
+private void HandleWallSlideVisuals()
+{
+    if (wallSlideParticleSystem == null || player.Controller == null) return;
+
+    bool isWallSliding = player.Controller.IsWallSliding;
+
+    if (isWallSliding)
+    {
+        if (!wallSlideParticleSystem.isEmitting)
+        {
+            wallSlideParticleSystem.Play();
+        }
+    }
+    else
+    {
+        wallSlideParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+    }
+}
 
     #endregion
 }

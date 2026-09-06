@@ -69,15 +69,21 @@ public class PSpawner : MonoBehaviour
         {
             ps.transform.SetParent(parent, worldPositionStays: false);
             ps.transform.localPosition = parent.InverseTransformPoint(position);
-            ps.transform.localRotation = Quaternion.identity;
         }
         else
         {
-            ps.transform.SetParent(Instance.transform, worldPositionStays: true);
+            ps.transform.SetParent(Instance.transform, worldPositionStays: false);
             ps.transform.position = position;
         }
 
-        ps.transform.rotation = rotation ?? Quaternion.identity;
+        if (rotation.HasValue)
+        {
+            var main = ps.main;
+            main.startRotation3D = true;
+            float zAngleRad = rotation.Value.eulerAngles.z * Mathf.Deg2Rad;
+            main.startRotationZ = new ParticleSystem.MinMaxCurve(zAngleRad);
+        }
+
         ps.gameObject.SetActive(true);
         ps.Play(true);
         return ps;

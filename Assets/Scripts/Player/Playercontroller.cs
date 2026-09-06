@@ -83,11 +83,19 @@ public class PlayerController : MonoBehaviour
 
     private bool IsSkillActive => isChargingSkillPhysics || (combatController != null && combatController.IsSkilling);
 
+    // for anim script
+    private Vector2 currentSurfaceNormal = Vector2.up;
+    public Vector2 CurrentSurfaceNormal => currentSurfaceNormal;
+    private PlayerAnimation pAnim;
+    private Vector2 lastHitPoint;
+    public Vector2 LastHitPoint => lastHitPoint;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         playerColliders = GetComponents<Collider2D>();
         combatController = GetComponent<PlayerCombatController>();
+        pAnim = GetComponent<PlayerAnimation>();
     }
 
     private void Start() => rb.gravityScale = normGravity;
@@ -192,6 +200,9 @@ public class PlayerController : MonoBehaviour
 
             if (!isGrounded) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+
+            pAnim?.TriggerJumpEffect(false);
+
             jumpPressed = jumpReleased = false;
             coyoteTimeCounter = 0f;
         }
@@ -249,6 +260,10 @@ public class PlayerController : MonoBehaviour
             isWallJumping = true;
             rb.linearVelocity = Vector2.zero;
             rb.AddForce(new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y), ForceMode2D.Impulse);
+            currentSurfaceNormal = new Vector2(-wallJumpDirection, 0f);
+
+            pAnim?.TriggerJumpEffect(true, wallJumpDirection);
+
             wallJumpTimer = 0f;
             jumpPressed = jumpReleased = false;
 
@@ -419,7 +434,22 @@ public class PlayerController : MonoBehaviour
         RaycastHit2D leftHit = Physics2D.Raycast(leftFoot, Vector2.down, dist, groundLayer);
         RaycastHit2D rightHit = Physics2D.Raycast(rightFoot, Vector2.down, dist, groundLayer);
 
-        isGrounded = (leftHit.collider != null && leftHit.normal.y > 0.6f) || (rightHit.collider != null && rightHit.normal.y > 0.6f);
+        if (leftHit.collider != null && leftHit.normal.y > 0.6f)
+        {
+            isGrounded = true;
+            currentSurfaceNormal = leftHit.normal;
+            lastHitPoint = leftHit.point;
+        }
+        else if (rightHit.collider != null && rightHit.normal.y > 0.6f)
+        {
+            isGrounded = true;
+            currentSurfaceNormal = rightHit.normal;
+            lastHitPoint = rightHit.point;
+        }
+        else
+        {
+            isGrounded = false;
+        }
     }
 
     private void WallCheckUpdate()
@@ -446,7 +476,13 @@ public class PlayerController : MonoBehaviour
     private bool CheckWallRay(Vector2 origin, float dir, float len)
     {
         RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.right * dir, len, groundLayer);
-        return hit.collider != null && Mathf.Abs(hit.normal.x) > wallCheckNormalThreshold;
+        if (hit.collider != null && Mathf.Abs(hit.normal.x) > wallCheckNormalThreshold)
+        {
+            currentSurfaceNormal = hit.normal;
+            lastHitPoint = hit.point;
+            return true;
+        }
+        return false;
     }
 
     private Bounds GetPlayerBounds()
