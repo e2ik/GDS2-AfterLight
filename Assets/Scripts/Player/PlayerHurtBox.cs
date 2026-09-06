@@ -56,7 +56,7 @@ public class PlayerHurtBox : MonoBehaviour
         stats.TakeDamage(hitbox.Damage);
 
         Vector2 sourcePosition = hitbox.transform.root.transform.position;
-        if (!combatController.IsSkilling && !combatController.IsChargingSkill)
+        if (!combatController.IsSkilling && !combatController.IsChargeInputHeld)
         {
             playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce);
         }

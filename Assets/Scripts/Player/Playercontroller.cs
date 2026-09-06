@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -6,6 +5,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
 [RequireComponent(typeof(PlayerInput))]
+[RequireComponent(typeof(Player))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float deceleration = 8f;
     [SerializeField] private float velocityPower = 1.2f;
     [SerializeField] private float friction = 0.2f;
+    [SerializeField] private float passThroughPlatformDuration = 0.25f;
 
     [Header("Gravity Settings")]
     [SerializeField] private float normGravity = 3f;
@@ -23,13 +24,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float fallGravity = 4.5f;
     [SerializeField] private float coyoteTime = 0.15f;
 
-    [Header("Wall Settings")] 
+    [Header("Wall Settings")]
     [SerializeField] private float wallSlideSpeed = 2f;
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     [SerializeField] private float wallCheckNormalThreshold = 0.5f;
     [SerializeField] private Vector2 wallJumpForce = new(10f, 16f);
     [SerializeField] private float wallJumpDuration = 0.4f;
+    [SerializeField] private float wallJumpBufferTime = 0.2f;
 
     [Header("Dash Settings")]
     [SerializeField] private float dashVelocity = 20f;
@@ -37,7 +39,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashDuration = 0.2f;
     [SerializeField] private float dashCoolDown = 0.2f;
 
-    [Header("Knockback Settings")] 
+    [Header("Knockback Settings")]
     [SerializeField] private LayerMask hazardousLayers;
     [SerializeField] private float hazardousKnockbackForce = 12f;
     [SerializeField] private float hazardousStaggerDuration = 0.3f;
@@ -45,9 +47,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float mediumForce = 10f, mediumStaggerDuration = 0.2f;
     [SerializeField] private float heavyForce = 14f, heavyStaggerDuration = 0.4f;
 
-    [Header("Detection Settings")] 
+    [Header("Detection Settings")]
     public LayerMask groundLayer;
     [SerializeField] private float groundCheckDistance = 0.05f;
+    [SerializeField] private float groundCheckNormalThreshold = 0.6f;
     [SerializeField] private float wallCheckDistance = 0.05f;
     [SerializeField] private float edgeMargin = 0.05f;
 
@@ -55,17 +58,20 @@ public class PlayerController : MonoBehaviour
     private bool jumpPressed, jumpReleased, isGrounded, onWall, isWallSliding, isWallJumping;
     private bool dashPressed, dashReleased, isDashing, isStaggered;
     private bool isChargingSkillPhysics, isSkillGravityZeroed, isParryGravityActive, inventoryPressed;
-    
+    private const float InputDeadzone = 0.1f;
+
     private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer;
     private float dashTimer, dashDirection, wallJumpDirection;
     private bool wasWallSliding;
     private int movementFreezeCount;
 
+    private PlayerAnimation playerAnimation;
+    private PlayerCombatController combat;
     private Rigidbody2D rb;
     private Collider2D[] playerColliders;
-    private PlayerCombatController combatController;
     private InventoryDisplay inventoryDisplay;
     private Coroutine hitStaggerRoutine;
+    private Bounds cachedBounds;
 
     public bool InputEnabled { get; set; } = true;
     public int FacingDirection { get; private set; } = 1;
@@ -79,23 +85,29 @@ public class PlayerController : MonoBehaviour
     public bool IsDirectionalDash { get; private set; }
     public bool IsStaggered => isStaggered;
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
-    public bool IsInvulnerable => isDashing && !IsDirectionalDash;
+    public bool IsInvulnerable => IsNeutralDash; // add to this if more invuln states
+    private bool IsSkillBaseLocked =>
+        isChargingSkillPhysics
+        || isSkillGravityZeroed
+        || combat.IsChargeInputHeld;
 
-    private bool IsSkillActive => isChargingSkillPhysics || (combatController != null && combatController.IsSkilling);
+    public bool IsSkillActive => IsSkillBaseLocked || combat.IsSkilling;
+    public bool IsMovementLockedBySkill => IsSkillBaseLocked || combat.IsSkillingWithMovementLock;
+    private bool IsFrozenOrSkillLocked => IsMovementFrozen || IsMovementLockedBySkill;
 
     // for anim script
     private Vector2 currentSurfaceNormal = Vector2.up;
     public Vector2 CurrentSurfaceNormal => currentSurfaceNormal;
-    private PlayerAnimation pAnim;
     private Vector2 lastHitPoint;
     public Vector2 LastHitPoint => lastHitPoint;
 
     private void Awake()
     {
+        Player player = GetComponent<Player>();
+        playerAnimation = player.Animation;
+        combat = player.CombatController;
         rb = GetComponent<Rigidbody2D>();
         playerColliders = GetComponents<Collider2D>();
-        combatController = GetComponent<PlayerCombatController>();
-        pAnim = GetComponent<PlayerAnimation>();
     }
 
     private void Start() => rb.gravityScale = normGravity;
@@ -108,6 +120,8 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        cachedBounds = ComputePlayerBounds();
+
         GroundCheckUpdate();
         WallCheckUpdate();
 
@@ -126,10 +140,19 @@ public class PlayerController : MonoBehaviour
         if (freeze) rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
     }
 
+    private bool IsGravityZeroed => isParryGravityActive || isChargingSkillPhysics || isSkillGravityZeroed;
+
+    private void ApplyGravityZeroLock()
+    {
+        rb.linearVelocity = Vector2.zero;
+        rb.gravityScale = 0f;
+    }
+
     public void SetParryGravity(bool active)
     {
         isParryGravityActive = active;
-        if (active) rb.linearVelocity = Vector2.zero;
+        if (active) ApplyGravityZeroLock();
+        else UpdateGravity();
     }
 
     public void SetSkillCharging(bool active)
@@ -137,18 +160,8 @@ public class PlayerController : MonoBehaviour
         isChargingSkillPhysics = active;
         if (active)
         {
-            rb.linearVelocity = Vector2.zero;
+            ApplyGravityZeroLock();
             isWallSliding = false;
-        }
-    }
-
-    public void SetSkillGravityZero(bool active)
-    {
-        isSkillGravityZeroed = active;
-        if (active)
-        {
-            rb.linearVelocity = Vector2.zero;
-            rb.gravityScale = 0f;
         }
         else
         {
@@ -156,26 +169,32 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void SetSkillGravityZero(bool active)
+    {
+        isSkillGravityZeroed = active;
+        if (active) ApplyGravityZeroLock();
+        else UpdateGravity();
+    }
+
     public bool CanMove() => InputEnabled
                             && !isWallJumping
                             && !isDashing
-                            && !isChargingSkillPhysics
                             && !isStaggered
                             && !isWallSliding
-                            && !combatController.IsChargingSkill;
+                            && !IsMovementLockedBySkill;
 
     #region Movement Handlers
 
     private void HandleMovement()
     {
-        if (isChargingSkillPhysics || isSkillGravityZeroed) return;
-        
-        bool wallJumpNeutral = isWallJumping && Mathf.Abs(horizontalInput) < 0.01f;
-        if ((!CanMove() && !isWallJumping) || wallJumpNeutral) return;
+        if (IsMovementLockedBySkill || isStaggered) return;
+
+        bool duringWallJump = isWallJumping && Mathf.Abs(horizontalInput) > InputDeadzone;
+        if (!CanMove() && !duringWallJump) return;
 
         float targetSpeed = horizontalInput * moveSpeed;
         float speedDif = targetSpeed - rb.linearVelocityX;
-        float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? acceleration : deceleration;
+        float accelRate = (Mathf.Abs(horizontalInput) > InputDeadzone) ? acceleration : deceleration;
         float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, velocityPower) * Mathf.Sign(speedDif);
 
         if (isWallJumping && horizontalInput != 0f && Mathf.Sign(horizontalInput) != Mathf.Sign(wallJumpDirection))
@@ -183,7 +202,7 @@ public class PlayerController : MonoBehaviour
 
         rb.AddForce(movement * Vector2.right);
 
-        if (isGrounded && Mathf.Abs(horizontalInput) < 0.01f)
+        if (isGrounded && Mathf.Abs(horizontalInput) < InputDeadzone)
         {
             float f = Mathf.Min(Mathf.Abs(rb.linearVelocityX), friction) * Mathf.Sign(rb.linearVelocityX);
             rb.AddForce(Vector2.right * -f, ForceMode2D.Impulse);
@@ -192,27 +211,27 @@ public class PlayerController : MonoBehaviour
 
     private void HandleJump()
     {
-        if (!CanMove() || isSkillGravityZeroed) return;
+        if (!CanMove()) return;
 
         coyoteTimeCounter = isGrounded ? coyoteTime : coyoteTimeCounter - Time.fixedDeltaTime;
 
-        if (jumpPressed && coyoteTimeCounter > 0f && !isWallSliding)
+        if (jumpPressed && coyoteTimeCounter > 0f)
         {
             if (verticalInput < -0.5f && TryPassThroughPlatform())
             {
-                jumpPressed = jumpReleased = false;
+                ConsumeJumpInput();
                 return;
             }
 
-            combatController?.ForceCancelAttack();
-            combatController?.NotifyJumpInputReceived();
+            combat.ForceCancelAttack();
+            combat.NotifyJumpInputReceived();
 
             if (!isGrounded) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
 
-            pAnim?.TriggerJumpEffect(false);
+            playerAnimation.TriggerJumpEffect(false);
 
-            jumpPressed = jumpReleased = false;
+            ConsumeJumpInput();
             coyoteTimeCounter = 0f;
         }
 
@@ -226,13 +245,13 @@ public class PlayerController : MonoBehaviour
 
     private void HandleWallSlide()
     {
-        if (IsMovementFrozen || IsSkillActive)
+        if (IsFrozenOrSkillLocked)
         {
             isWallSliding = false;
             return;
         }
 
-        wallCoyoteTimer = (onWall && !isGrounded && Mathf.Abs(horizontalInput) > 0.1f) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
+        wallCoyoteTimer = (onWall && !isGrounded && Mathf.Abs(horizontalInput) > InputDeadzone) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
 
         if (onWall && !isGrounded && wallCoyoteTimer > 0f)
         {
@@ -248,13 +267,13 @@ public class PlayerController : MonoBehaviour
 
     private void HandleWallJump()
     {
-        if (IsMovementFrozen || isChargingSkillPhysics || isSkillGravityZeroed || combatController.IsChargingSkill) return;
+        if (IsFrozenOrSkillLocked) return;
 
         if (isWallSliding)
         {
             isWallJumping = false;
             if (!wasWallSliding) wallJumpDirection = -FacingDirection;
-            wallJumpTimer = 0.2f;
+            wallJumpTimer = wallJumpBufferTime;
             CancelInvoke(nameof(StopWallJumping));
         }
         else
@@ -267,16 +286,16 @@ public class PlayerController : MonoBehaviour
         if (jumpPressed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
-            combatController?.ForceCancelAttack();
-            combatController?.NotifyJumpInputReceived();
+            combat.ForceCancelAttack();
+            combat.NotifyJumpInputReceived();
             rb.linearVelocity = Vector2.zero;
             rb.AddForce(new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y), ForceMode2D.Impulse);
             currentSurfaceNormal = new Vector2(-wallJumpDirection, 0f);
 
-            pAnim?.TriggerJumpEffect(true, wallJumpDirection);
+            playerAnimation.TriggerJumpEffect(true, wallJumpDirection);
 
             wallJumpTimer = 0f;
-            jumpPressed = jumpReleased = false;
+            ConsumeJumpInput();
 
             if (FacingDirection != wallJumpDirection)
             {
@@ -291,30 +310,24 @@ public class PlayerController : MonoBehaviour
 
     private void HandleDash()
     {
-        dashTimer = isDashing ? dashCoolDown : dashTimer - Time.deltaTime;
+        dashTimer = isDashing ? dashCoolDown : dashTimer - Time.fixedDeltaTime;
 
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
-            if (combatController != null)
-            {
-                if (combatController.IsChargingSkill) return;
-                if (combatController.IsParrying) combatController.CancelParry();
-                if (combatController.IsAttacking)
-                {
-                    combatController.ForceCancelAttack();
-                }
-            }
-            
+            if (combat.IsChargeInputHeld) return;
+            if (combat.IsSkilling) return;
+            if (combat.IsParrying) combat.CancelParry();
             if (IsMovementFrozen) return;
+            if (combat.IsAttacking) combat.ForceCancelAttack();
 
             isDashing = true;
             isDashLocked = false;
-            
-            combatController?.NotifyDashInputReceived();
+
+            combat.NotifyDashInputReceived();
 
             float activeDuration = dashDuration;
 
-            if (Mathf.Abs(horizontalInput) > 0.1f)
+            if (Mathf.Abs(horizontalInput) > InputDeadzone)
             {
                 IsDirectionalDash = true;
                 dashDirection = Mathf.Sign(horizontalInput);
@@ -327,13 +340,13 @@ public class PlayerController : MonoBehaviour
             }
 
             rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
-            dashPressed = dashReleased = false;
+            ConsumeDashInput();
 
             CancelInvoke(nameof(StopDashing));
             Invoke(nameof(StopDashing), activeDuration);
         }
 
-        if (dashReleased) dashPressed = dashReleased = false;
+        if (dashReleased) ConsumeDashInput();
     }
 
     public void SetDashLockedDuringAttack(bool locked)
@@ -351,7 +364,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void StopDashing() 
+    private void StopDashing()
     {
         isDashing = false;
         isDashLocked = false;
@@ -359,7 +372,7 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateGravity()
     {
-        if (isParryGravityActive || isChargingSkillPhysics || isSkillGravityZeroed)
+        if (IsGravityZeroed)
         {
             rb.gravityScale = 0f;
         }
@@ -375,28 +388,42 @@ public class PlayerController : MonoBehaviour
 
     #region Damage & Stagger
 
+    private readonly struct KnockbackData
+    {
+        public readonly float Force;
+        public readonly float StaggerDuration;
+
+        public KnockbackData(float force, float staggerDuration)
+        {
+            Force = force;
+            StaggerDuration = staggerDuration;
+        }
+    }
+
     public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce)
     {
-        if (combatController != null) combatController.ForceCancelAttack();
+        combat.ForceCancelAttack();
+        playerAnimation.PlayHurtAnimation();
 
-        PlayerAnimation playerAnim = GetComponent<PlayerAnimation>();
-        if (playerAnim != null) playerAnim.PlayHurtAnimation();
-        else Debug.LogWarning("PlayerAnimation component not found on PlayerController. Cannot play hurt animation.");
-
-        Vector2 forceData = attackForce switch
+        KnockbackData data = attackForce switch
         {
-            AttackForce.Light => new Vector2(lightForce, lightStaggerDuration),
-            AttackForce.Medium => new Vector2(mediumForce, mediumStaggerDuration),
-            AttackForce.Heavy => new Vector2(heavyForce, heavyStaggerDuration),
-            _ => Vector2.zero
+            AttackForce.Light => new KnockbackData(lightForce, lightStaggerDuration),
+            AttackForce.Medium => new KnockbackData(mediumForce, mediumStaggerDuration),
+            AttackForce.Heavy => new KnockbackData(heavyForce, heavyStaggerDuration),
+            _ => new KnockbackData(0f, 0f)
         };
 
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
         rb.linearVelocity = Vector2.zero;
-        rb.AddForce(dir * forceData.x, ForceMode2D.Impulse);
+        rb.AddForce(dir * data.Force, ForceMode2D.Impulse);
 
+        StartHitStagger(data.StaggerDuration);
+    }
+
+    private void StartHitStagger(float duration)
+    {
         if (hitStaggerRoutine != null) StopCoroutine(hitStaggerRoutine);
-        hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(forceData.y));
+        hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(duration));
     }
 
     private IEnumerator HitStaggerCoroutine(float duration)
@@ -415,7 +442,7 @@ public class PlayerController : MonoBehaviour
     {
         Vector2 raw = value.Get<Vector2>();
         verticalInput = raw.y;
-        horizontalInput = Mathf.Abs(raw.x) > 0.1f ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude) : 0f;
+        horizontalInput = Mathf.Abs(raw.x) > InputDeadzone ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude) : 0f;
     }
 
     public void OnJump(InputValue value) { jumpPressed = value.isPressed; jumpReleased = !value.isPressed; }
@@ -423,36 +450,51 @@ public class PlayerController : MonoBehaviour
     public void OnInventory() => inventoryPressed = true;
     public void OnPause(InputValue value) { if (value.isPressed) GameManager.Instance?.TogglePause(); }
 
+    private void ConsumeJumpInput()
+    {
+        jumpPressed = false;
+        jumpReleased = false;
+    }
+
+    private void ConsumeDashInput()
+    {
+        dashPressed = false;
+        dashReleased = false;
+    }
+
     #endregion
 
     #region Physics Checks & Utilities
 
     private void Flip()
     {
-        if (Mathf.Abs(horizontalInput) > 0.01f)
+        if (Mathf.Abs(horizontalInput) > InputDeadzone)
         {
             FacingDirection = horizontalInput > 0f ? 1 : -1;
             transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
         }
     }
 
+    private bool RaycastGroundAt(Vector2 origin, float distance, out RaycastHit2D hit)
+    {
+        hit = Physics2D.Raycast(origin, Vector2.down, distance, groundLayer);
+        return hit.collider != null && hit.normal.y > groundCheckNormalThreshold;
+    }
+
     private void GroundCheckUpdate()
     {
-        Bounds bounds = GetPlayerBounds();
-        Vector2 leftFoot = new Vector2(bounds.min.x + edgeMargin, bounds.min.y + 0.02f);
-        Vector2 rightFoot = new Vector2(bounds.max.x - edgeMargin, bounds.min.y + 0.02f);
+        Bounds bounds = cachedBounds;
+        Vector2 leftFoot = new(bounds.min.x + edgeMargin, bounds.min.y + 0.02f);
+        Vector2 rightFoot = new(bounds.max.x - edgeMargin, bounds.min.y + 0.02f);
         float dist = groundCheckDistance + 0.04f;
 
-        RaycastHit2D leftHit = Physics2D.Raycast(leftFoot, Vector2.down, dist, groundLayer);
-        RaycastHit2D rightHit = Physics2D.Raycast(rightFoot, Vector2.down, dist, groundLayer);
-
-        if (leftHit.collider != null && leftHit.normal.y > 0.6f)
+        if (RaycastGroundAt(leftFoot, dist, out RaycastHit2D leftHit))
         {
             isGrounded = true;
             currentSurfaceNormal = leftHit.normal;
             lastHitPoint = leftHit.point;
         }
-        else if (rightHit.collider != null && rightHit.normal.y > 0.6f)
+        else if (RaycastGroundAt(rightFoot, dist, out RaycastHit2D rightHit))
         {
             isGrounded = true;
             currentSurfaceNormal = rightHit.normal;
@@ -467,9 +509,9 @@ public class PlayerController : MonoBehaviour
     private void WallCheckUpdate()
     {
         onWall = false;
-        if (isGrounded || IsSkillActive || Mathf.Abs(horizontalInput) < 0.1f) return;
+        if (isGrounded || IsMovementLockedBySkill || Mathf.Abs(horizontalInput) < InputDeadzone) return;
 
-        Bounds bounds = GetPlayerBounds();
+        Bounds bounds = cachedBounds;
         float dir = Mathf.Sign(horizontalInput);
         float rayLen = bounds.extents.x + wallCheckDistance;
 
@@ -503,30 +545,19 @@ public class PlayerController : MonoBehaviour
 
         if (isGrounded || rb.linearVelocityY >= -0.1f) return false;
 
-        Bounds bounds = GetPlayerBounds();
-        Vector2 leftFoot = new Vector2(bounds.min.x + edgeMargin, bounds.min.y);
-        Vector2 rightFoot = new Vector2(bounds.max.x - edgeMargin, bounds.min.y);
+        Bounds bounds = cachedBounds;
+        Vector2 leftFoot = new(bounds.min.x + edgeMargin, bounds.min.y);
+        Vector2 rightFoot = new(bounds.max.x - edgeMargin, bounds.min.y);
 
         float dynamicDist = Mathf.Min(Mathf.Abs(rb.linearVelocityY) * Time.fixedDeltaTime + lookAheadDistance, 1.5f);
 
-        RaycastHit2D leftHit = Physics2D.Raycast(leftFoot, Vector2.down, dynamicDist, groundLayer);
-        RaycastHit2D rightHit = Physics2D.Raycast(rightFoot, Vector2.down, dynamicDist, groundLayer);
-
-        if (leftHit.collider != null && leftHit.normal.y > 0.6f)
-        {
-            hitInfo = leftHit;
-            return true;
-        }
-        if (rightHit.collider != null && rightHit.normal.y > 0.6f)
-        {
-            hitInfo = rightHit;
-            return true;
-        }
+        if (RaycastGroundAt(leftFoot, dynamicDist, out hitInfo)) return true;
+        if (RaycastGroundAt(rightFoot, dynamicDist, out hitInfo)) return true;
 
         return false;
     }
 
-    private Bounds GetPlayerBounds()
+    private Bounds ComputePlayerBounds()
     {
         if (playerColliders == null || playerColliders.Length == 0) playerColliders = GetComponents<Collider2D>();
         if (playerColliders == null || playerColliders.Length == 0) return new Bounds(transform.position, Vector3.one);
@@ -538,7 +569,7 @@ public class PlayerController : MonoBehaviour
 
     private bool TryPassThroughPlatform()
     {
-        Bounds bounds = GetPlayerBounds();
+        Bounds bounds = cachedBounds;
         RaycastHit2D hit = Physics2D.Raycast(bounds.center, Vector2.down, bounds.extents.y + 0.2f, groundLayer);
 
         if (hit.collider != null && hit.collider.GetComponent<PlatformEffector2D>() != null)
@@ -552,7 +583,7 @@ public class PlayerController : MonoBehaviour
     private IEnumerator DisableCollisionRoutine(Collider2D platform)
     {
         foreach (var col in playerColliders) Physics2D.IgnoreCollision(col, platform, true);
-        yield return new WaitForSeconds(0.25f);
+        yield return new WaitForSeconds(passThroughPlatformDuration);
         foreach (var col in playerColliders) if (platform != null) Physics2D.IgnoreCollision(col, platform, false);
     }
 
@@ -572,15 +603,14 @@ public class PlayerController : MonoBehaviour
     {
         if (((1 << col.gameObject.layer) & hazardousLayers) == 0 || isStaggered || IsSkillActive) return;
 
-        if (combatController != null) combatController.ForceCancelAttack();
+        combat.ForceCancelAttack();
 
         ContactPoint2D contact = col.GetContact(0);
         rb.linearVelocity = Vector2.zero;
         Vector2 dir = new Vector2(transform.position.x >= contact.point.x ? 1f : -1f, 1f).normalized;
         rb.AddForce(dir * hazardousKnockbackForce, ForceMode2D.Impulse);
 
-        if (hitStaggerRoutine != null) StopCoroutine(hitStaggerRoutine);
-        hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(hazardousStaggerDuration));
+        StartHitStagger(hazardousStaggerDuration);
     }
 
     #endregion

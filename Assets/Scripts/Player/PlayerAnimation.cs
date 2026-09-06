@@ -81,7 +81,7 @@ public class PlayerAnimation : MonoBehaviour
         bool aboutToLand = player.Controller.IsAboutToLand(out RaycastHit2D hit);
         animator.SetBool(IsAboutToLandHash, aboutToLand);
 
-        animator.SetBool(IsChargingSkillHash, player.CombatController.IsChargingSkill);
+        animator.SetBool(IsChargingSkillHash, player.CombatController.IsChargeInputHeld);
         float maxDur = player.CombatController.ChargingSkillMaxDur;
         float chargeProgress = Mathf.Clamp01(player.CombatController.ChargingSkillTimer / maxDur);
         animator.SetFloat(ChargeProgressHash, chargeProgress);
@@ -106,7 +106,7 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetBool(IsWallSlidingHash, player.Controller.IsWallSliding);
         animator.SetBool(IsDashingHash, player.Controller.IsDashing);
         animator.SetBool(IsDirectionalDashHash, player.Controller.IsDirectionalDash);
-        animator.SetBool(IsChargingSkillHash, player.CombatController.IsChargingSkill);
+        animator.SetBool(IsChargingSkillHash, player.CombatController.IsChargeInputHeld);
     }
 
     private void HandleSkillAnimation()
@@ -257,7 +257,7 @@ public class PlayerAnimation : MonoBehaviour
     {
         if (skillChargeParticleSystem == null || player.CombatController == null) return;
 
-        bool isCharging = player.CombatController.IsChargingSkill;
+        bool isCharging = player.CombatController.IsChargeInputHeld;
 
         if (isCharging)
         {

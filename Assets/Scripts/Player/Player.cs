@@ -11,33 +11,36 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerAnimation))]
 public class Player : MonoBehaviour
 {
-    public PlayerInput Input { get; private set; }
-    public InteractionManager InteractionManager { get; private set; }
-    public PlayerController Controller { get; private set; }
-    public PlayerStats Stats { get; private set; }
-    public PlayerInventoryManager Inventory { get; private set; }
-    public PlayerEquipmentManager Equipment { get; private set; }
-    public PlayerCombatController CombatController { get; private set; }
-    public PlayerAnimation Animation { get; private set; }
+    private PlayerInput _input;
+    public PlayerInput Input => _input ??= GetComponent<PlayerInput>();
 
-    private void Awake()
-    {
-        Input = GetComponent<PlayerInput>();
-        InteractionManager = GetComponent<InteractionManager>();
-        Controller = GetComponent<PlayerController>();
-        Stats = GetComponent<PlayerStats>();
-        Inventory = GetComponent<PlayerInventoryManager>();
-        Equipment = GetComponent<PlayerEquipmentManager>();
-        CombatController = GetComponent<PlayerCombatController>();
-        Animation = GetComponent<PlayerAnimation>();
-    }
+    private InteractionManager _interactionManager;
+    public InteractionManager InteractionManager => _interactionManager ??= GetComponent<InteractionManager>();
+
+    private PlayerController _controller;
+    public PlayerController Controller => _controller ??= GetComponent<PlayerController>();
+
+    private PlayerStats _stats;
+    public PlayerStats Stats => _stats ??= GetComponent<PlayerStats>();
+
+    private PlayerInventoryManager _inventory;
+    public PlayerInventoryManager Inventory => _inventory ??= GetComponent<PlayerInventoryManager>();
+
+    private PlayerEquipmentManager _equipment;
+    public PlayerEquipmentManager Equipment => _equipment ??= GetComponent<PlayerEquipmentManager>();
+
+    private PlayerCombatController _combatController;
+    public PlayerCombatController CombatController => _combatController ??= GetComponent<PlayerCombatController>();
+
+    private PlayerAnimation _animation;
+    public PlayerAnimation Animation => _animation ??= GetComponent<PlayerAnimation>();
 
     private void Start()
     {
         UIManager uiManager = FindFirstObjectByType<UIManager>();
         if (uiManager != null)
         {
-            uiManager.InitializePlayerUI(this.gameObject);
+            uiManager.InitializePlayerUI(gameObject);
         }
         else
         {
