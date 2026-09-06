@@ -9,7 +9,12 @@ public class PlayerHurtBox : MonoBehaviour
     [SerializeField] private PlayerCombatController combatController;
     private PlayerController playerController;
     private Collider2D col;
-    public bool Invulnerable;
+    private bool manualInvulnerable;
+    public bool Invulnerable 
+    { 
+        get => manualInvulnerable || (playerController != null && playerController.IsInvulnerable);
+        set => manualInvulnerable = value;
+    }
 
     private void Awake()
     {
@@ -28,27 +33,29 @@ public class PlayerHurtBox : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (Invulnerable) return;        
-        //Debug.Log($"Player Hurt Box triggered by: {other.name}");
-
         var hitbox = other.GetComponent<HitBox>();
         if (hitbox == null || !hitbox.IsActive) return;
+        
+        TakeHit(hitbox);
+    }
+
+    public bool TakeHit(HitBox hitbox)
+    {
+        if (Invulnerable) return false;        
 
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
 
         if (parryWindowOpen && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
-            return;
+            return false; // Successfully parried! Did not take damage.
 
         bool isChargedSkillExecuting = combatController != null && combatController.IsSkilling &&
-            (combatController.GetComponentInParent<Player>()?.Equipment?.SpecialAttackDef?.SkillExecutionType == SkillExecutionType.Charged);
+                                    (combatController.GetComponentInParent<Player>()?.Equipment?.SpecialAttackDef?.SkillExecutionType == SkillExecutionType.Charged);
 
-        if (isChargedSkillExecuting) return;
+        if (isChargedSkillExecuting) return false;
         
         stats.TakeDamage(hitbox.Damage);
 
-        //Vector2 contactPoint = col.ClosestPoint(other.transform.position);
-        //Vector2 direction = contactPoint - (Vector2)other.transform.root.transform.position;
-        Vector2 sourcePosition = other.transform.root.transform.position;
+        Vector2 sourcePosition = hitbox.transform.root.transform.position;
         if (!combatController.IsSkilling && !combatController.IsChargingSkill)
         {
             playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce);
@@ -59,5 +66,7 @@ public class PlayerHurtBox : MonoBehaviour
             combatController.EndSkill();
             playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce);
         }
+
+        return true; // Successfully took the hit.
     }
 }

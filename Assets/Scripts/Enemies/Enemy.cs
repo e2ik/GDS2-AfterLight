@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework;
 using Unity.Behavior;
 using UnityEngine;
 using UnityEngine.AI;
@@ -17,6 +18,7 @@ namespace Enemies
         [SerializeField] private Animator animator;
         [SerializeField] private Rigidbody2D rb2D;
         [SerializeField] private float attackCooldown;
+        [SerializeField] private string placeholderClipName = "EmptyAttack";
 
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
@@ -41,6 +43,14 @@ namespace Enemies
             var overrideController = new AnimatorOverrideController(animator.runtimeAnimatorController);
             animator.runtimeAnimatorController = overrideController;
 
+            var overridesList = new List<KeyValuePair<AnimationClip, AnimationClip>>(overrideController.overridesCount);
+            overrideController.GetOverrides(overridesList);
+            AnimationClip placeholderClip =
+                overridesList.FirstOrDefault(pair => pair.Key.name == placeholderClipName).Key;
+            
+            if(placeholderClip == null)
+                Debug.LogError($"{name}: no clip named '{placeholderClipName}' found in the base Animator Controller");
+
             Context = new EnemyContext()
             {
                 Self = transform,
@@ -49,6 +59,7 @@ namespace Enemies
                 Behavior = behaviorAgent,
                 Animator = animator,
                 OverrideController = overrideController,
+                PlaceholderClip = placeholderClip,
                 FacingRight = true
             };
 
@@ -130,6 +141,17 @@ namespace Enemies
         private void OnDamaged(int amount, int currentHealth)
         {
             Debug.Log($"Enemy blud was damaged for {amount}. Current Health: {currentHealth}");
+
+            // if we're able to get the attack type e.g. zero, light medium
+            // on < light we trigger anim (this acts as an interrupt with no other code changes)
+            // since attack is decided by the animation
+
+            //Debug.Log("Current Attack Force " + Context.CurrentAttackForce + " Is Attacking: " + Context.IsAttacking);
+            
+            if (!Context.IsAttacking || (Context.CurrentAttackForce == AttackForce.Light) || Context.CurrentAttackForce == AttackForce.Zero) 
+                animator.SetTrigger("Hurt");
+                
+            
         }
 
         private void OnDeath()

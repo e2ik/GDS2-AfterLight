@@ -3,6 +3,7 @@ using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System.Collections.Generic;
 
 public enum ParryDirection { Up, Down, Left, Right }
 public enum AttackForce { Zero, Light, Medium, Heavy }
@@ -34,7 +35,23 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float attackCoolDown = 0.2f;
     [SerializeField] private float counterAttackWindow = 0.5f;
 
+    [Header("Combo Settings")]
+    [SerializeField] private int maxComboCount = 3;
+    [SerializeField] private float comboResetDelay = 1.0f;
+
+    private int currentComboIndex = 0;
+    private bool canBufferNextCombo = false;
+    private bool comboQueued = false;
+    private float comboResetTimer;
+    private float[] comboDamageMultipliers = new float[] { 1.0f, 1.25f, 1.5f };
+    public int CurrentComboIndex => currentComboIndex;
+
+    [Header("Dash Conflict Settings")]
+    [SerializeField] private float dashAttackConflictWindow = 0.2f;
+    private float dashAttackBlockTimer;
+
     private float attackBufferTimer;
+    private float attackDurationTimer;
     private Vector2 attackRange;
     private Vector2 attackCenter;
     private float attackDamage;
@@ -43,6 +60,9 @@ public class PlayerCombatController : MonoBehaviour
     private bool attackPressed;
     private bool isAttacking;
     private bool isCounterAttacking;
+
+    // hit enemies
+    private HashSet<EnemyHealth> enemiesHitThisAttack = new HashSet<EnemyHealth>();
 
     [Header("Skill Settings")]
     [SerializeField] private bool skillMeterAlwaysFull;
@@ -114,10 +134,16 @@ public class PlayerCombatController : MonoBehaviour
         HandleSkill();
         UpdateTimers();
 
+        // check for hits everyframe while attacking, in case enemies enter the hitbox mid-attack
+        if (isAttacking && Player.Equipment?.EquippedWeapon != null)
+        {
+            PerformAttackHitboxCheck();
+        }
+
         if (!skillButtonHeld) return;
         
         chargingSkillTimer += Time.deltaTime;
-        
+
         if (currentSkillDef != null && currentSkillDef.SkillExecutionType == SkillExecutionType.Charged)
         {
             if (chargingSkillTimer >= skillHoldThreshold)
@@ -164,9 +190,19 @@ public class PlayerCombatController : MonoBehaviour
         if (parryBufferTimer > 0f) parryBufferTimer -= Time.deltaTime;
         if (attackBufferTimer > 0f) attackBufferTimer -= Time.deltaTime;
         if (skillBufferTimer > 0f) skillBufferTimer -= Time.deltaTime;
+        if (dashAttackBlockTimer > 0f) dashAttackBlockTimer -= Time.deltaTime;
         
         attackTimer = isAttacking ? attackCoolDown : attackTimer - Time.deltaTime;
         skillTimer = isSkilling ? skillCoolDown : skillTimer - Time.deltaTime;
+
+        if (isAttacking)
+        {
+            attackDurationTimer -= Time.deltaTime;
+            if (attackDurationTimer <= 0f)
+            {
+                EndAttack(); // Failsafe triggered if animation event is skipped/missed
+            }
+        }
 
         if (isParrying)
         {
@@ -195,9 +231,18 @@ public class PlayerCombatController : MonoBehaviour
         return Player.Controller.InputEnabled 
             && !Player.Controller.IsWallSliding 
             && !Player.Controller.IsChargingSkill 
-            && !isParrying 
+            && !Player.Controller.IsNeutralDash
             && !isParryInRecovery 
-            && !isAttacking
+            && !isSkilling;
+    }
+
+    private bool CanBufferAttack()
+    {
+        return Player.Controller.InputEnabled 
+            && !Player.Controller.IsWallSliding 
+            && !Player.Controller.IsChargingSkill 
+            && !Player.Controller.IsNeutralDash
+            && !isParryInRecovery 
             && !isSkilling;
     }
 
@@ -221,6 +266,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void ExecuteParry()
     {
+        ForceCancelAttack();
         parryBufferTimer = 0f;
         isParrying = true;
         isParryInRecovery = false;
@@ -285,48 +331,90 @@ public class PlayerCombatController : MonoBehaviour
 
     #endregion
 
-    #region Attack Logic
+    #region Attack & Combo Logic
 
     private void HandleAttack()
     {
-        if (attackBufferTimer > 0f && CanAct()) ExecuteAttack();
+        if (dashAttackBlockTimer > 0f) return;
+
+        if (attackBufferTimer > 0f && isAttacking && canBufferNextCombo && CanBufferAttack())
+        {
+            comboQueued = true;
+            attackBufferTimer = 0f;
+        }
+
+        if (attackBufferTimer > 0f && CanAct())
+            ExecuteAttack();
+        if (comboQueued && !isAttacking && attackTimer <= 0f && CanBufferAttack())
+            ExecuteAttack();
+
+        if (currentComboIndex > 0 && !isAttacking)
+        {
+            comboResetTimer += Time.deltaTime;
+            if (comboResetTimer >= comboResetDelay)
+                ResetCombo();
+        }
     }
 
     private void ExecuteAttack()
     {
         attackBufferTimer = 0f;
 
-        if (attackPressed && attackTimer <= 0f && CanAct())
+        if ((canBufferNextCombo && comboQueued) || (!isAttacking && attackTimer <= 0f && CanAct()))
         {
             CancelParry();
             attackPressed = false;
+            comboQueued = false;
+            canBufferNextCombo = false;
 
             if (Player.Equipment.EquippedWeapon == null) return;
 
+            currentComboIndex = (currentComboIndex % maxComboCount) + 1;
+
             isAttacking = true;
-            Vector2 attackDir = GetInputDirection() switch
+            attackDurationTimer = attackDuration;
+            
+            enemiesHitThisAttack.Clear();
+
+            if (Player.Controller != null && Player.Controller.IsDashing)
             {
-                ParryDirection.Up => Vector2.up,
-                ParryDirection.Down => Vector2.down,
-                ParryDirection.Left => Vector2.left,
-                _ => Vector2.right
-            };
-
-            float weaponRange = Player.Equipment.EquippedWeapon.BaseWeaponRange;
-            bool isHorizontal = attackDir.x != 0f;
-
-            attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
-            attackCenter = (Vector2)attackOrigin.position + (attackDir * (weaponRange * 0.5f));
-
-            attackDamage = GetDamage();
-            attackCrit = Player.Equipment.EquippedWeapon.BaseWeaponCrit;
-
-            Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
-            if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange);
+                Player.Controller.SetDashLockedDuringAttack(true);
+            }
         }
     }
 
-    private float GetDamage() => Player.Stats != null ? Player.Stats.TotalAttack : 0f;
+    private void PerformAttackHitboxCheck()
+    {
+        Vector2 attackDir = GetInputDirection() switch
+        {
+            ParryDirection.Up => Vector2.up,
+            ParryDirection.Down => Vector2.down,
+            ParryDirection.Left => Vector2.left,
+            _ => Vector2.right
+        };
+
+        float weaponRange = Player.Equipment.EquippedWeapon.BaseWeaponRange;
+        bool isHorizontal = attackDir.x != 0f;
+
+        attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
+        attackCenter = (Vector2)attackOrigin.position + (attackDir * (weaponRange * 0.5f));
+
+        attackDamage = GetDamage();
+        attackCrit = Player.Equipment.EquippedWeapon.BaseWeaponCrit;
+
+        Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
+        if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange);
+    }
+
+    private float GetDamage()
+    {
+        float baseDmg = Player.Stats != null ? Player.Stats.TotalAttack : 0f;
+
+        int multiplierIndex = Mathf.Clamp(currentComboIndex - 1, 0, comboDamageMultipliers.Length - 1);
+        float comboMultiplier = comboDamageMultipliers[multiplierIndex];
+
+        return baseDmg * comboMultiplier;
+    }
 
     private void HitEnemy(Collider2D[] enemiesInRange)
     {
@@ -337,12 +425,39 @@ public class PlayerCombatController : MonoBehaviour
         {
             if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
             {
-                enemyHealth.ApplyDamage((int)dmg);
+                // Only damage each enemy once per attack swing
+                if (!enemiesHitThisAttack.Contains(enemyHealth))
+                {
+                    enemiesHitThisAttack.Add(enemyHealth);
+                    enemyHealth.ApplyDamage((int)dmg);
+                }
             }
         }
     }
 
-    public void EndAttack() => isAttacking = false;
+    public void EndAttack() 
+    {
+        isAttacking = false;
+        attackDurationTimer = 0f;
+        canBufferNextCombo = false;
+
+        if (!comboQueued)
+        {
+            ResetCombo();
+        }
+
+        if (Player.Controller != null)
+        {
+            Player.Controller.SetDashLockedDuringAttack(false);
+        }
+    }
+
+    private void ResetCombo()
+    {
+        currentComboIndex = 0;
+        comboQueued = false;
+        canBufferNextCombo = false;
+    }
 
     #endregion
 
@@ -398,20 +513,22 @@ public class PlayerCombatController : MonoBehaviour
         Player.Controller.SetSkillCharging(false);
         if (wasCharged) Player.Controller.SetSkillGravityZero(true);
 
-        if (specialDef.SkillExecutionType == SkillExecutionType.Held)
-        {
-            skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef));
-        }
-        else
-        {
-            if (specialDef.SkillType == SkillType.Single)
+            if (specialDef.SkillExecutionType == SkillExecutionType.Held)
             {
-                PerformSingleSkill(specialDef, chargeRatio, chargeDamageMultiplier);
-                EndSkill();
+                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef));
             }
-            else if (specialDef.SkillType == SkillType.Timed)
+            else
             {
-                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier));
+                if (specialDef.SkillType == SkillType.Single)
+                {
+                    SkillMeter = 0f;
+                    OnEnergyChanged?.Invoke(SkillMeter, 1f);
+                    PerformSingleSkill(specialDef, chargeDamageMultiplier);
+                }
+                else if (specialDef.SkillType == SkillType.Timed)
+                {
+                    skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier));
+                }
             }
         }
     }
@@ -492,11 +609,28 @@ public class PlayerCombatController : MonoBehaviour
 
     #endregion
 
-    #region Input Handlers
+    #region Input Handlers & Animator Hooks
 
     public void OnMove(InputValue value) => verticalInput = value.Get<Vector2>().y;
     public void OnParry() => parryBufferTimer = parryBufferTime;
-    public void OnAttack() { attackPressed = true; attackBufferTimer = parryBufferTime; }
+    
+    public void OnAttack() 
+    { 
+        if (IsParrying) return;
+
+        attackPressed = true; 
+        attackBufferTimer = parryBufferTime; 
+        
+        if (isAttacking && canBufferNextCombo)
+        {
+            comboQueued = true;
+        }
+    }
+    
+    public void NotifyDashInputReceived()
+    {
+        dashAttackBlockTimer = dashAttackConflictWindow;
+    }
 
     public void OnSAttack(InputValue value)
     {
@@ -519,6 +653,7 @@ public class PlayerCombatController : MonoBehaviour
                 TriggerSkillRelease();
                 return;
             }
+            
             isChargingSkill = true;
             singleSkillCostTick = specialDef.SkillCost / chargingSkillMaxDur;
             CancelInvoke(nameof(AutoFireAtMaxCharge));
@@ -574,6 +709,32 @@ public class PlayerCombatController : MonoBehaviour
     {
         Player.Controller.SetSkillCharging(false);
         CancelInvoke(nameof(AutoFireAtMaxCharge));
+    }
+
+    public void ForceCancelAttack()
+    {
+        isAttacking = false;
+        attackDurationTimer = 0f;
+        enemiesHitThisAttack.Clear();
+        ResetCombo();
+        
+        attackBufferTimer = 0f; 
+
+        if (Player.Controller != null)
+        {
+            Player.Controller.SetDashLockedDuringAttack(false);
+        }
+    }
+
+    public void OpenComboWindow()
+    {
+        canBufferNextCombo = true;
+        comboResetTimer = 0f;
+    }
+
+    public void CloseComboWindow()
+    {
+        canBufferNextCombo = false;
     }
 
     #endregion

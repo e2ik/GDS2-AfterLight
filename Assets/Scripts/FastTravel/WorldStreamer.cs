@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,8 +10,11 @@ public class WorldStreamer : MonoBehaviour
 
     public bool IsFastTraveling { get; set; } = false;
     public bool IsAligning { get; private set; } = false;
+    private string currentLoadedStreamedScene;
 
     private HashSet<string> loadingScenes = new HashSet<string>();
+
+    public event Action<Scene> OnSceneStreamed;
 
     private void Awake()
     {
@@ -37,16 +41,24 @@ public class WorldStreamer : MonoBehaviour
         loadingScenes.Add(sceneToLoad);
 
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneToLoad, LoadSceneMode.Additive);
-        while (!asyncLoad.isDone) yield return null;
-        yield return null;
+        
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
 
         Scene newlyLoadedScene = SceneManager.GetSceneByName(sceneToLoad);
+
+        GameObject[] rootObjects = newlyLoadedScene.GetRootGameObjects();
+        foreach (GameObject root in rootObjects)
+        {
+            root.SetActive(false);
+        }
 
         if (GameManager.Instance != null && newlyLoadedScene.IsValid())
         {
             AreaSide currentSide = GameManager.Instance.CurrentAreaSide;
-            
-            GameObject[] rootObjects = newlyLoadedScene.GetRootGameObjects();
+
             foreach (GameObject root in rootObjects)
             {
                 SceneAreaState[] areaStates = root.GetComponentsInChildren<SceneAreaState>(true);
@@ -70,14 +82,21 @@ public class WorldStreamer : MonoBehaviour
             Debug.LogWarning($"[WorldStreamer] Alignment failed. Source '{sourceAnchorID}' or Target '{targetAnchorID}' missing.");
         }
 
+        foreach (GameObject root in rootObjects)
+        {
+            root.SetActive(true);
+        }
+
         loadingScenes.Remove(sceneToLoad);
         IsAligning = false;
+
+        OnSceneStreamed?.Invoke(newlyLoadedScene);
     }
 
     private SceneAnchor FindAnchor(string anchorID)
     {
-        SceneAnchor[] anchors = Object.FindObjectsByType<SceneAnchor>(
-            FindObjectsInactive.Include, 
+        SceneAnchor[] anchors = UnityEngine.Object.FindObjectsByType<SceneAnchor>(
+            FindObjectsInactive.Include,
             FindObjectsSortMode.None
         );
 
