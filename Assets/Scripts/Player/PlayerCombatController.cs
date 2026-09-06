@@ -68,7 +68,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private bool skillMeterAlwaysFull;
     [SerializeField] private float skillCoolDown = 0.2f;
     [SerializeField] private float chargingSkillMinDur = 0.4f;
-    [SerializeField] private float chargingSkillMaxDur = 1.5f; // must be 1 or more
+    [SerializeField] private float chargingSkillMaxDur = 1.5f;
     [SerializeField] private float fullChargeDamageMultiplier = 1.5f;
     [SerializeField] private float skillHoldThreshold = 0.12f;
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
@@ -168,7 +168,7 @@ public class PlayerCombatController : MonoBehaviour
 
         if (availableCost <= 0f || singleSkillChargeCost >= maxCost)
         {
-            AutoFireAtMaxCharge(true, chargingSkillTimer);
+            FireChargedSkill(true, chargingSkillTimer);
             return;
         }
 
@@ -183,7 +183,7 @@ public class PlayerCombatController : MonoBehaviour
         {
             SkillMeter = currentSkillDef.SkillCost;
             OnEnergyChanged?.Invoke(SkillMeter, 1f);
-            AutoFireAtMaxCharge(true, chargingSkillTimer);
+            FireChargedSkill(true, chargingSkillTimer);
         }
     }
 
@@ -202,7 +202,7 @@ public class PlayerCombatController : MonoBehaviour
             attackDurationTimer -= Time.deltaTime;
             if (attackDurationTimer <= 0f)
             {
-                EndAttack(); // Failsafe triggered if animation event is skipped/missed
+                EndAttack();
             }
         }
 
@@ -424,7 +424,6 @@ public class PlayerCombatController : MonoBehaviour
         {
             if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
             {
-                // Only damage each enemy once per attack swing
                 if (!enemiesHitThisAttack.Contains(enemyHealth))
                 {
                     enemiesHitThisAttack.Add(enemyHealth);
@@ -486,7 +485,7 @@ public class PlayerCombatController : MonoBehaviour
 
         skillPressed = false;
         CancelParry();
-        ForceCancelAttack(); // a skill firing mid-swing interrupts the attack
+        ForceCancelAttack();
 
         var specialDef = Player.Equipment.SpecialAttackDef;
 
@@ -656,7 +655,7 @@ public class PlayerCombatController : MonoBehaviour
             isChargingSkill = true;
             singleSkillCostTick = specialDef.SkillCost / chargingSkillMaxDur;
             CancelInvoke(nameof(AutoFireAtMaxCharge));
-            Invoke(nameof(AutoFireAtMaxCharge), chargingSkillMaxDur);
+            Invoke(nameof(AutoFireAtMaxCharge), chargingSkillMaxDur); // Invoke requires a zero-arg method
         }
         else
         {
@@ -692,7 +691,9 @@ public class PlayerCombatController : MonoBehaviour
         if (!skillButtonHeld && isSkilling) EndSkill();
     }
 
-    private void AutoFireAtMaxCharge(bool triggeredEarly = false, float chargingDur = 0f)
+    private void AutoFireAtMaxCharge() => FireChargedSkill(false, chargingSkillMaxDur);
+
+    private void FireChargedSkill(bool triggeredEarly, float chargingDur)
     {
         if (!skillButtonHeld) return;
 
