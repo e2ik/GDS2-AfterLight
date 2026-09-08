@@ -6,7 +6,7 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
     public override void Modify(ref AttackContext context, SecondaryGemInstance instance)
     {
         Debug.Log($"Old Damage: {context.BaseAttackDamage}");
-        context.BaseAttackDamage *= instance.InstDamageMult;
+        context.BaseAttackDamage *= instance.InstRolledValue;
         Debug.Log($"New Damage: {context.BaseAttackDamage}");
     }
 }

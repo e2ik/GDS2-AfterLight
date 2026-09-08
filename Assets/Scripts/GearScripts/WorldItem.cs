@@ -129,7 +129,7 @@ public class WorldItem : MonoBehaviour
                 break;
 
             case GearDefinition gearDef:
-                ERarity gearRarity = GetRandomRarity();
+                ERarity gearRarity = GetWeightedRarity();
                 GearInstance gearLoot = gearDef.CreateInstance(gearRarity);
 
                 player.Inventory.AddItemToInventory(gearLoot);

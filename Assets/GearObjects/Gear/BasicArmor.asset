@@ -15,8 +15,12 @@ MonoBehaviour:
   ItemID: basic_armor
   UIName: Basic Armor
   UISprite: {fileID: 21300000, guid: 8fbdc95c5aa35d54f913c5bdbe4e8f51, type: 3}
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
   Slot: 0
   TemplateID: A1
-  BonusAttackRange: {x: 5, y: 15}
+  BonusAttackRange: {x: 0, y: 0}
   BonusDefenseRange: {x: 2, y: 8}
-  BonusHumanityRange: {x: 1, y: 5}
+  BonusCritRange: {x: 0, y: 0}

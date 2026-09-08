@@ -258,8 +258,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.AppendLine("Type: Secondary Gem");
 
-        int damageMult = (int)gem.InstDamageMult;
-        int critMult = (int)gem.InstCritMult;
+        int damageMult = (int)gem.InstRolledValue;
+        int critMult = (int)gem.InstRolledValue;
 
         if (damageMult > 0) sb.AppendLine($"Bonus Damage: +{damageMult}");
         if (critMult > 0) sb.AppendLine($"Bonus Crit: +{critMult}");
