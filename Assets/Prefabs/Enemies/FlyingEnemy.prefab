@@ -316,6 +316,14 @@ MonoBehaviour:
   animator: {fileID: 1017631902712577609}
   rb2D: {fileID: 1037170224883650968}
   attackCooldown: 1
+  placeholderClipName: EmptyAttack
+  EnemyHitEvent:
+    Guid:
+      Data1: 515442699
+      Data2: 1331403395
+      Data3: 1112032419
+      Data4: -774162852
+    Path: event:/CombatSFXEvents/EnemyHitEvent
 --- !u!114 &3741899294261406425
 MonoBehaviour:
   m_ObjectHideFlags: 0

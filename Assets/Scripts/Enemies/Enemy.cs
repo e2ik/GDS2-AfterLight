@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FMODUnity;
 using NUnit.Framework;
 using Unity.Behavior;
 using UnityEngine;
@@ -24,6 +25,10 @@ namespace Enemies
         public bool IsAttacking { get; private set; }
 
         private float attackCooldownTimer;
+
+
+        [Header("FMOD Events")] 
+        [SerializeField] private EventReference EnemyHitEvent;
 
         private void OnEnable()
         {
@@ -148,10 +153,10 @@ namespace Enemies
 
             //Debug.Log("Current Attack Force " + Context.CurrentAttackForce + " Is Attacking: " + Context.IsAttacking);
             
+            AudioManager.PlaySFX(EnemyHitEvent, transform.position);
+            
             if (!Context.IsAttacking || (Context.CurrentAttackForce == AttackForce.Light) || Context.CurrentAttackForce == AttackForce.Zero) 
                 animator.SetTrigger("Hurt");
-                
-            
         }
 
         private void OnDeath()
