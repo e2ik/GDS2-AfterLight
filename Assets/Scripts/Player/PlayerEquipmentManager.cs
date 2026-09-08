@@ -20,6 +20,7 @@ public class PlayerEquipmentManager : MonoBehaviour
     [SerializeField] private List<GearSlotDebugView> equippedGearDebug = new List<GearSlotDebugView>();
 
     private Dictionary<EGearSlot, GearInstance> equippedGear = new Dictionary<EGearSlot, GearInstance>();
+    private PlayerCombatController combatController;
 
     public WeaponDefinition EquippedWeapon => equippedWeapon;
     public PrimaryGemBehaviourDefinition SpecialAttackDef => specialAttackDef;
@@ -30,6 +31,7 @@ public class PlayerEquipmentManager : MonoBehaviour
 
     private void Awake()
     {
+        combatController = GetComponent<PlayerCombatController>();
         InitializeGearSlots();
     }
 
@@ -203,13 +205,15 @@ public class PlayerEquipmentManager : MonoBehaviour
 
     public AttackContext GetModifiedAttackContext()
     {
+        float scaledAttackDamage = combatController != null ? combatController.GetScaledAttackDamage() : 0f;
+
         PlayerStats playerStats = GetComponent<PlayerStats>();
-        float totalAttack = playerStats != null ? playerStats.TotalAttack : 0f;
+        float totalCrit = (equippedWeapon != null ? equippedWeapon.BaseWeaponCrit : 0f) + (playerStats != null ? playerStats.TotalCrit : 0f);
 
         AttackContext context = new AttackContext
         {
-            BaseAttackDamage = totalAttack,
-            BaseAttackCrit = equippedWeapon != null ? equippedWeapon.BaseWeaponCrit : 0f,
+            BaseAttackDamage = scaledAttackDamage,
+            BaseAttackCrit = totalCrit,
             BaseAttackRange = equippedWeapon != null ? equippedWeapon.BaseWeaponRange : 0f,
             Runner = this,
             OriginPoint = gameObject.transform.position

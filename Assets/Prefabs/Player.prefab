@@ -253,8 +253,9 @@ MonoBehaviour:
   hazardousLayers:
     serializedVersion: 2
     m_Bits: 4096
-  hazardousKnockbackForce: 12
+  hazardousKnockbackForce: 8
   hazardousStaggerDuration: 0.3
+  bounceDuration: 0.5
   lightForce: 8
   lightStaggerDuration: 0.1
   mediumForce: 10
@@ -285,13 +286,17 @@ MonoBehaviour:
   parryBufferTime: 0.15
   successfulParryVisualDuration: 0.15
   attackOrigin: {fileID: 6444912443510829891}
+  damageScalingExponent: 0.8
   enemyLayer:
     serializedVersion: 2
     m_Bits: 6656
-  critDamageMultiplier: 1.45
+  critDamageMultiplier: 1.33
   counterAttackMultiplier: 1.2
   plungeDmgMaxMultiplier: 3.4028235e+38
   plungeAdjustedDmg: 1
+  plungeRecoveryTime: 0.3
+  plungeGraceWindow: 0.15
+  minPlungeHoldDuration: 0
   attackWidth: 2
   attackDuration: 0.4
   attackCoolDown: 0.1
@@ -355,6 +360,8 @@ MonoBehaviour:
   gearDefenseBonus: 0
   gearHumanityBonus: 0
   gemAttackBonus: 0
+  gearCritBonus: 0
+  gemCritBonus: 0
   equipmentManager: {fileID: 0}
   hitEvent:
     Guid:
@@ -394,6 +401,7 @@ MonoBehaviour:
     InstTemplateID: 
     InstRolledDamageValue: 0
     InstRolledCritValue: 0
+    InstRolledDotPercent: 0
     InstanceGUID: 
   equippedGearDebug: []
 --- !u!114 &4056446563424932215
