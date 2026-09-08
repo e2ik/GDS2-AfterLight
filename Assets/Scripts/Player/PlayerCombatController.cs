@@ -463,15 +463,16 @@ public class PlayerCombatController : MonoBehaviour
         while (isPlunging)
         {
             plungeTimer += Time.deltaTime;
+            attackDurationTimer = attackDuration;
             attackCenter = (Vector2)attackOrigin.position + Vector2.down * (weaponRange * 0.5f);
             enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
             if (enemiesInRange.Length > 0 || player.Controller.IsGrounded) isPlunging = false;
         }
-        
+
+        if (enemiesInRange.Length <= 0) return;
         float adjusted = plungeTimer * plungeAdjustedDmg;
         plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
-
-        if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange, plungeDmgMultiplier);
+        HitEnemy(enemiesInRange, plungeDmgMultiplier);
     }
 
     private float GetDamage()
@@ -798,6 +799,7 @@ public class PlayerCombatController : MonoBehaviour
     public void ForceCancelAttack()
     {
         isAttacking = false;
+        isPlunging = false;
         attackDurationTimer = 0f;
         enemiesHitThisAttack.Clear();
         ResetCombo();
