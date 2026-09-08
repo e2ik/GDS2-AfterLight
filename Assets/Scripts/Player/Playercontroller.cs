@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float normGravity = 3f;
     [SerializeField] private float jumpGravity = 2.5f;
     [SerializeField] private float fallGravity = 4.5f;
+    [SerializeField] private float plungeGravity = 6f;
     [SerializeField] private float coyoteTime = 0.15f;
 
     [Header("Wall Settings")]
@@ -177,11 +178,12 @@ public class PlayerController : MonoBehaviour
     }
 
     public bool CanMove() => InputEnabled
-                            && !isWallJumping
-                            && !isDashing
-                            && !isStaggered
-                            && !isWallSliding
-                            && !IsMovementLockedBySkill;
+                             && !isWallJumping
+                             && !isDashing
+                             && !isStaggered
+                             && !isWallSliding
+                             && !IsMovementLockedBySkill 
+                             && !combat.IsPlunging;
 
     #region Movement Handlers
 
@@ -376,12 +378,15 @@ public class PlayerController : MonoBehaviour
         {
             rb.gravityScale = 0f;
         }
-        else if (rb.linearVelocityY > 0.1f)
-            rb.gravityScale = jumpGravity;
-        else if (rb.linearVelocityY < -0.1f)
-            rb.gravityScale = fallGravity;
+        else if (combat.IsPlunging)
+            rb.gravityScale = plungeGravity;
         else
-            rb.gravityScale = normGravity;
+            rb.gravityScale = rb.linearVelocityY switch
+            {
+                > 0.1f => jumpGravity,
+                < -0.1f => fallGravity,
+                _ => normGravity
+            };
     }
 
     #endregion

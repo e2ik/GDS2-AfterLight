@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using System.Collections;
 using System.Collections.Generic;
 using FMODUnity;
+using Unity.VisualScripting;
 
 public enum ParryDirection { Up, Down, Left, Right }
 public enum AttackForce { Zero, Light, Medium, Heavy }
@@ -101,6 +102,7 @@ public class PlayerCombatController : MonoBehaviour
     private Coroutine skillCoroutine;
     private float singleSkillCostTick;
     private float singleSkillChargeCost;
+    private Coroutine plungeCoroutine;
 
     private float verticalInput;
     private Player player;
@@ -448,31 +450,33 @@ public class PlayerCombatController : MonoBehaviour
         }
         else
         {
-            PlungeAttack(weaponRange);
+            plungeCoroutine = StartCoroutine(PlungeAttack(weaponRange));
         }
     }
 
-    private void PlungeAttack(float weaponRange)
+    private IEnumerator PlungeAttack(float weaponRange)
     {
         isPlunging = true;
-        float plungeDmgMultiplier;
         float plungeTimer = 0f;
         attackRange = new Vector2(attackWidth, weaponRange);
-        Collider2D[] enemiesInRange = { };
+        Collider2D[] enemiesInRange = Array.Empty<Collider2D>();
 
         while (isPlunging)
         {
+            Debug.Log("plunging");
             plungeTimer += Time.deltaTime;
             attackDurationTimer = attackDuration;
             attackCenter = (Vector2)attackOrigin.position + Vector2.down * (weaponRange * 0.5f);
             enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
             if (enemiesInRange.Length > 0 || player.Controller.IsGrounded) isPlunging = false;
+            yield return null;
         }
 
-        if (enemiesInRange.Length <= 0) return;
+        if (enemiesInRange.Length == 0) yield break;
         float adjusted = plungeTimer * plungeAdjustedDmg;
-        plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
+        float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
         HitEnemy(enemiesInRange, plungeDmgMultiplier);
+        
     }
 
     private float GetDamage()
