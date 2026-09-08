@@ -253,9 +253,8 @@ MonoBehaviour:
   hazardousLayers:
     serializedVersion: 2
     m_Bits: 4096
-  hazardousKnockbackForce: 8
+  hazardousKnockbackForce: 12
   hazardousStaggerDuration: 0.3
-  bounceDuration: 0.5
   lightForce: 8
   lightStaggerDuration: 0.1
   mediumForce: 10
@@ -294,12 +293,7 @@ MonoBehaviour:
   counterAttackMultiplier: 1.2
   plungeDmgMaxMultiplier: 3.4028235e+38
   plungeAdjustedDmg: 1
-<<<<<<< Updated upstream
   plungeRecoveryTime: 0.3
-=======
-  plungeGraceWindow: 0.15
-  minPlungeHoldDuration: 0
->>>>>>> Stashed changes
   attackWidth: 2
   attackDuration: 0.4
   attackCoolDown: 0.1

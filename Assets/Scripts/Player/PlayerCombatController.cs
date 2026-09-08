@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using System.Collections;
 using System.Collections.Generic;
 using FMODUnity;
+using Unity.VisualScripting;
 
 public enum ParryDirection { Up, Down, Left, Right }
 public enum AttackForce { Zero, Light, Medium, Heavy }
@@ -29,17 +30,13 @@ public class PlayerCombatController : MonoBehaviour
 
     [Header("Attack Settings")]
     [SerializeField] private Transform attackOrigin;
-    [SerializeField] private float damageScalingExponent = 0.8f;
+    [SerializeField] private float damageScalingExponent = 0.8f; // <1 = diminishing returns, >1 = accelerating
     public LayerMask enemyLayer;
     [SerializeField] private float critDamageMultiplier = 1.33f;
     [SerializeField] private float counterAttackMultiplier = 1.2f;
     [SerializeField] private float plungeDmgMaxMultiplier = float.MaxValue;
     [SerializeField] private float plungeAdjustedDmg = 1f;
-<<<<<<< Updated upstream
     [SerializeField] private float plungeRecoveryTime = 0.3f;
-=======
-    [SerializeField] private float plungeGraceWindow = 0.15f;
->>>>>>> Stashed changes
     [SerializeField] private float attackWidth = 2f;
     [SerializeField] private float attackDuration = 0.3f;
     [SerializeField] private float attackCoolDown = 0.2f;
@@ -57,6 +54,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float[] comboDamageMultipliers = { 1.0f, 1.25f, 1.5f };
     public int CurrentComboIndex => currentComboIndex;
 
+    // prevents simultaneous inputs, else it sort of bricks the animator, as long as it is short enough it's hard to notice
     [Header("Input Conflict Settings")]
     [SerializeField] private float dashAttackConflictWindow = 0.2f;
     private float dashAttackBlockTimer;
@@ -70,16 +68,11 @@ public class PlayerCombatController : MonoBehaviour
     private float attackDamage;
     private float attackCritChance;
     private float attackTimer;
-<<<<<<< Updated upstream
     private bool isAttacking, attackingUp, attackingDown, attackingForward;
-=======
-    private bool isAttacking;
-    private bool attackStartedGrounded;
->>>>>>> Stashed changes
     private bool isCounterAttacking;
     private bool isPlunging;
-    private float plungeGraceTimer;
 
+    // hit enemies
     private HashSet<EnemyHealth> enemiesHitThisAttack = new HashSet<EnemyHealth>();
 
     [Header("Skill Settings")]
@@ -118,15 +111,10 @@ public class PlayerCombatController : MonoBehaviour
     private PlayerController movement;
 
     public bool IsAttacking => isAttacking;
-<<<<<<< Updated upstream
     public bool AttackingUp => attackingUp;
     public bool AttackingDown => attackingDown;
     public bool AttackingForward => attackingForward;
-=======
-    public bool AttackStartedGrounded => attackStartedGrounded;
->>>>>>> Stashed changes
     public bool IsPlunging => isPlunging;
-    public bool WasRecentlyPlunging => plungeGraceTimer > 0f;
     public bool IsParrying => isParrying || isParryInRecovery;
     public bool IsParrySuccess => isParrySuccess;
     public bool IsSkilling => isSkilling;
@@ -186,6 +174,7 @@ public class PlayerCombatController : MonoBehaviour
         HandleSkill();
         UpdateTimers();
 
+        // check for hits every frame while attacking, in case enemies enter the hitbox mid-attack
         if (isAttacking && player.Equipment?.EquippedWeapon != null)
         {
             PerformAttackHitboxCheck();
@@ -259,7 +248,6 @@ public class PlayerCombatController : MonoBehaviour
         skillBufferTimer = Tick(skillBufferTimer, Time.deltaTime);
         dashAttackBlockTimer = Tick(dashAttackBlockTimer, Time.deltaTime);
         jumpAttackBlockTimer = Tick(jumpAttackBlockTimer, Time.deltaTime);
-        plungeGraceTimer = Tick(plungeGraceTimer, Time.deltaTime);
 
         attackTimer = HoldOrTick(isAttacking, attackCoolDown, attackTimer, Time.deltaTime);
         skillTimer = HoldOrTick(isSkilling, skillCoolDown, skillTimer, Time.deltaTime);
@@ -300,8 +288,7 @@ public class PlayerCombatController : MonoBehaviour
         return movement.InputEnabled
             && !movement.IsWallSliding
             && !isParryInRecovery
-            && !isSkilling
-            && !isPlunging;
+            && !isSkilling;
     }
 
     private bool CanAct()
@@ -409,7 +396,7 @@ public class PlayerCombatController : MonoBehaviour
 
         if (attackBufferTimer > 0f && CanAct()) ExecuteAttack();
         if (comboQueued && !isAttacking && attackTimer <= 0f && CanAct()) ExecuteAttack();
-
+        
         if (currentComboIndex <= 0 || isAttacking) return;
         comboResetTimer += Time.deltaTime;
         if (comboResetTimer >= comboResetDelay) ResetCombo();
@@ -430,7 +417,6 @@ public class PlayerCombatController : MonoBehaviour
             currentComboIndex = (currentComboIndex % maxComboCount) + 1;
 
             isAttacking = true;
-            attackStartedGrounded = movement.IsGrounded;
             attackDurationTimer = attackDuration;
 
             enemiesHitThisAttack.Clear();
@@ -444,8 +430,6 @@ public class PlayerCombatController : MonoBehaviour
 
     private void PerformAttackHitboxCheck()
     {
-        if (isPlunging) return;
-
         Vector2 attackDir = GetInputDirection() switch
         {
             ParryDirection.Up => Vector2.up,
@@ -477,34 +461,14 @@ public class PlayerCombatController : MonoBehaviour
         }
         else
         {
-<<<<<<< Updated upstream
             attackingDown = true;
             plungeCoroutine = StartCoroutine(PlungeAttack(weaponRange));
-=======
-            StartPlunge(weaponRange);
->>>>>>> Stashed changes
         }
-    }
-
-    private void StartPlunge(float weaponRange)
-    {
-        CancelParry();
-        CancelSkillStates();
-        movement.CancelDash();
-
-        parryBufferTimer = 0f;
-        attackBufferTimer = 0f;
-        skillBufferTimer = 0f;
-        comboQueued = false;
-        canBufferNextCombo = false;
-
-        plungeCoroutine = StartCoroutine(PlungeAttack(weaponRange));
     }
 
     private IEnumerator PlungeAttack(float weaponRange)
     {
         isPlunging = true;
-
         float plungeTimer = 0f;
         attackRange = new Vector2(attackWidth, weaponRange);
         Collider2D[] enemiesInRange = Array.Empty<Collider2D>();
@@ -515,11 +479,7 @@ public class PlayerCombatController : MonoBehaviour
             attackDurationTimer = attackDuration;
             attackCenter = (Vector2)attackOrigin.position + Vector2.down * (weaponRange * 0.5f);
             enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
-            if (enemiesInRange.Length > 0 || player.Controller.IsGrounded)
-            {
-                isPlunging = false;
-                plungeGraceTimer = plungeGraceWindow;
-            }
+            if (enemiesInRange.Length > 0 || player.Controller.IsGrounded) isPlunging = false;
             yield return null;
         }
 
@@ -529,15 +489,10 @@ public class PlayerCombatController : MonoBehaviour
             float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
             AttackContext context = player.Equipment.GetModifiedAttackContext();
             HitEnemy(enemiesInRange, context, plungeDmgMultiplier);
-            // player.Controller.ApplyKnockback(enemiesInRange[0].transform.position, AttackForce.Medium, false);
+            player.Controller.ApplyKnockback(enemiesInRange[0].transform.position, AttackForce.Medium, false);
         }
-
         plungeCoroutine = null;
-<<<<<<< Updated upstream
         player.Controller.PlungeStagger(plungeRecoveryTime);
-=======
-        EndAttack();
->>>>>>> Stashed changes
     }
 
     public void CancelPlunge()
@@ -547,7 +502,6 @@ public class PlayerCombatController : MonoBehaviour
             StopCoroutine(plungeCoroutine);
             plungeCoroutine = null;
         }
-
         isPlunging = false;
     }
 
@@ -584,7 +538,7 @@ public class PlayerCombatController : MonoBehaviour
             }
         }
     }
-
+    
     public float GetScaledAttackDamage()
     {
         float weaponDamage = player.Equipment.EquippedWeapon != null
@@ -779,16 +733,11 @@ public class PlayerCombatController : MonoBehaviour
     #region Input Handlers & Animator Hooks
 
     public void OnMove(InputValue value) => verticalInput = value.Get<Vector2>().y;
-
-    public void OnParry()
-    {
-        if (isPlunging) return;
-        parryBufferTimer = parryBufferTime;
-    }
+    public void OnParry() => parryBufferTimer = parryBufferTime;
 
     public void OnAttack()
     {
-        if (IsParrying || isChargingSkill || isPlunging) return;
+        if (IsParrying || isChargingSkill) return;
 
         attackBufferTimer = attackBufferTime;
 
@@ -814,7 +763,6 @@ public class PlayerCombatController : MonoBehaviour
 
         if (value.isPressed)
         {
-            if (isPlunging) return;
             if (movement.IsWallSliding) return;
             if (specialDef == null) return;
             if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;

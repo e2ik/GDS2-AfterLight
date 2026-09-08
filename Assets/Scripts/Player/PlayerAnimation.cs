@@ -10,19 +10,18 @@ public class PlayerAnimation : MonoBehaviour
     private SpriteRenderer sr;
     private Color ogColor;
 
+    // Animator Hashes
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
     private static readonly int YVelocityHash = Animator.StringToHash("yVelocity");
     private static readonly int IsGroundedHash = Animator.StringToHash("isGrounded");
     private static readonly int IsWallSlidingHash = Animator.StringToHash("isWallSliding");
     private static readonly int IsDashingHash = Animator.StringToHash("isDashing");
-    private static readonly int IsBouncingHash = Animator.StringToHash("isBouncing");
     private static readonly int IsDirectionalDashHash = Animator.StringToHash("isDirectionalDash");
     private static readonly int IsChargingSkillHash = Animator.StringToHash("isChargingSkill");
     private static readonly int IsParryingHash = Animator.StringToHash("isParrying");
     private static readonly int IsParrySuccessHash = Animator.StringToHash("isParrySuccess");
     private static readonly int IsAttackingHash = Animator.StringToHash("isAttacking");
     private static readonly int IsSkillingHash = Animator.StringToHash("isSkilling");
-    private static readonly int IsPlungingHash = Animator.StringToHash("isPlunging");
     private static readonly int IsHurtHash = Animator.StringToHash("Hurt");
     private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
     private static readonly int IsAboutToLandHash = Animator.StringToHash("isAboutToLand");
@@ -35,13 +34,6 @@ public class PlayerAnimation : MonoBehaviour
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
     private bool wasInvulnerable;
-
-    // Fixed timing fallback tracking fields
-    private float plungeDurationTimer;
-    private bool trackingPlungeDuration;
-    private bool wasPlungingLastFrame;
-    private float fallbackAttackTimer;
-    private bool isFallbackAttackActive;
 
     private void Awake()
     {
@@ -98,67 +90,21 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetBool(IsParrySuccessHash, player.CombatController.IsParrySuccess);
 
         bool isSkilling = player.CombatController.IsSkilling;
-        bool isPlunging = player.CombatController.IsPlunging;
-        bool isBouncing = player.Controller.IsBouncing;
-
-        // Detect fresh plunge activation
-        if (isPlunging && !wasPlungingLastFrame)
-        {
-            plungeDurationTimer = 0.3f;
-            trackingPlungeDuration = true;
-            isFallbackAttackActive = false;
-        }
-
-        // Track the 0.3 second window where isPlunging is true
-        if (trackingPlungeDuration)
-        {
-            plungeDurationTimer -= Time.deltaTime;
-            if (plungeDurationTimer <= 0f || !isPlunging)
-            {
-                trackingPlungeDuration = false;
-
-                // If we stopped plunging and never bounced, trigger the 0.7s fallback attack animation
-                if (!isBouncing)
-                {
-                    isFallbackAttackActive = true;
-                    fallbackAttackTimer = 0.7f;
-                }
-            }
-        }
-
-        // Manage the fallback attack timer
-        if (isFallbackAttackActive)
-        {
-            fallbackAttackTimer -= Time.deltaTime;
-            if (fallbackAttackTimer <= 0f || isPlunging || isBouncing)
-            {
-                isFallbackAttackActive = false;
-            }
-        }
-
-        wasPlungingLastFrame = isPlunging;
-
-        bool isAttacking = isFallbackAttackActive || ((isParrying || isSkilling || isPlunging) ? false : player.CombatController.IsAttacking);
-        int attackIndex = isFallbackAttackActive ? 1 : ((isParrying || isSkilling || isPlunging) ? 0 : player.CombatController.CurrentComboIndex);
+        bool isAttacking = (isParrying || isSkilling) ? false : player.CombatController.IsAttacking;
+        int attackIndex = (isParrying || isSkilling) ? 0 : player.CombatController.CurrentComboIndex;
 
         animator.SetBool(IsAttackingHash, isAttacking);
         animator.SetInteger(AttackIndexHash, attackIndex);
 
         animator.SetBool(IsSkillingHash, isSkilling);
-        animator.SetBool(IsPlungingHash, isPlunging);
 
         if (isSkilling) return;
 
-        bool groundedForAnim = isAttacking
-            ? player.CombatController.AttackStartedGrounded
-            : player.Controller.IsGrounded;
-
         animator.SetFloat(SpeedHash, Mathf.Abs(rb.linearVelocityX));
         animator.SetFloat(YVelocityHash, rb.linearVelocityY);
-        animator.SetBool(IsGroundedHash, groundedForAnim);
+        animator.SetBool(IsGroundedHash, player.Controller.IsGrounded);
         animator.SetBool(IsWallSlidingHash, player.Controller.IsWallSliding);
         animator.SetBool(IsDashingHash, player.Controller.IsDashing);
-        animator.SetBool(IsBouncingHash, isBouncing);
         animator.SetBool(IsDirectionalDashHash, player.Controller.IsDirectionalDash);
         animator.SetBool(IsChargingSkillHash, player.CombatController.IsChargeInputHeld);
     }
@@ -236,6 +182,7 @@ public class PlayerAnimation : MonoBehaviour
         Vector2 spawnPosition = player.Controller.LastHitPoint;
         Vector2 normal = player.Controller.CurrentSurfaceNormal;
 
+        // Fallback in case it ever triggers without a valid hit cached
         if (spawnPosition == Vector2.zero)
         {
             spawnPosition = transform.position;
@@ -276,7 +223,7 @@ public class PlayerAnimation : MonoBehaviour
         if (isInvuln)
         {
             Color invulnColor = ogColor;
-            invulnColor.a = 0.5f;
+            invulnColor.a = 0.5f; 
             sr.color = invulnColor;
             wasInvulnerable = true;
         }

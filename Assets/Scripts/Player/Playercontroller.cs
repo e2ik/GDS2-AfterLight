@@ -44,8 +44,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask hazardousLayers;
     [SerializeField] private float hazardousKnockbackForce = 12f;
     [SerializeField] private float hazardousStaggerDuration = 0.3f;
-    [SerializeField] private float bounceDuration = 0.2f;
-    public float BounceDuration => bounceDuration;
     [SerializeField] private float lightForce = 8f, lightStaggerDuration = 0.1f;
     [SerializeField] private float mediumForce = 10f, mediumStaggerDuration = 0.2f;
     [SerializeField] private float heavyForce = 14f, heavyStaggerDuration = 0.4f;
@@ -57,8 +55,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float wallCheckDistance = 0.05f;
     [SerializeField] private float edgeMargin = 0.05f;
 
+    // Internal State Flags
     private bool jumpPressed, jumpReleased, isGrounded, onWall, isWallSliding, isWallJumping;
-    private bool dashPressed, dashReleased, isDashing, isStaggered, isBouncing;
+    private bool dashPressed, dashReleased, isDashing, isStaggered;
     private bool isChargingSkillPhysics, isSkillGravityZeroed, isParryGravityActive, inventoryPressed;
     private const float InputDeadzone = 0.1f;
 
@@ -73,7 +72,6 @@ public class PlayerController : MonoBehaviour
     private Collider2D[] playerColliders;
     private InventoryDisplay inventoryDisplay;
     private Coroutine hitStaggerRoutine;
-    private Coroutine bounceRoutine;
     private Bounds cachedBounds;
 
     public bool InputEnabled { get; set; } = true;
@@ -87,9 +85,8 @@ public class PlayerController : MonoBehaviour
     public bool IsChargingSkill => isChargingSkillPhysics;
     public bool IsDirectionalDash { get; private set; }
     public bool IsStaggered => isStaggered;
-    public bool IsBouncing => isBouncing;
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
-    public bool IsInvulnerable => IsNeutralDash;
+    public bool IsInvulnerable => IsNeutralDash; // add to this if more invuln states
     private bool IsSkillBaseLocked =>
         isChargingSkillPhysics
         || isSkillGravityZeroed
@@ -97,8 +94,9 @@ public class PlayerController : MonoBehaviour
 
     public bool IsSkillActive => IsSkillBaseLocked || combat.IsSkilling;
     public bool IsMovementLockedBySkill => IsSkillBaseLocked || combat.IsSkillingWithMovementLock;
-    private bool IsFrozenOrSkillLocked => IsMovementFrozen || IsMovementLockedBySkill || combat.IsPlunging || isBouncing;
+    private bool IsFrozenOrSkillLocked => IsMovementFrozen || IsMovementLockedBySkill;
 
+    // for anim script
     private Vector2 currentSurfaceNormal = Vector2.up;
     public Vector2 CurrentSurfaceNormal => currentSurfaceNormal;
     private Vector2 lastHitPoint;
@@ -184,9 +182,8 @@ public class PlayerController : MonoBehaviour
                              && !isWallJumping
                              && !isDashing
                              && !isStaggered
-                             && !isBouncing
                              && !isWallSliding
-                             && !IsMovementLockedBySkill
+                             && !IsMovementLockedBySkill 
                              && !combat.IsPlunging;
 
     #region Movement Handlers
@@ -320,8 +317,6 @@ public class PlayerController : MonoBehaviour
 
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
-            if (combat.IsPlunging) return;
-            if (isBouncing) return;
             if (combat.IsChargeInputHeld) return;
             if (combat.IsSkilling) return;
             if (combat.IsParrying) combat.CancelParry();
@@ -340,12 +335,6 @@ public class PlayerController : MonoBehaviour
             {
                 IsDirectionalDash = true;
                 dashDirection = Mathf.Sign(horizontalInput);
-
-                if (FacingDirection != dashDirection)
-                {
-                    FacingDirection = (int)dashDirection;
-                    transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
-                }
             }
             else
             {
@@ -377,12 +366,6 @@ public class PlayerController : MonoBehaviour
             isDashLocked = false;
             StopDashing();
         }
-    }
-
-    public void CancelDash()
-    {
-        CancelInvoke(nameof(StopDashing));
-        StopDashing();
     }
 
     private void StopDashing()
@@ -469,31 +452,6 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(duration);
         isStaggered = false;
         hitStaggerRoutine = null;
-    }
-
-    public void TriggerBounce(Vector2 sourcePosition, float force, float duration)
-    {
-        combat.ForceCancelAttack();
-
-        Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
-        rb.linearVelocity = Vector2.zero;
-        rb.AddForce(dir * force, ForceMode2D.Impulse);
-
-        PlayBounceState(duration);
-    }
-
-    public void PlayBounceState(float duration)
-    {
-        if (bounceRoutine != null) StopCoroutine(bounceRoutine);
-        bounceRoutine = StartCoroutine(BounceCoroutine(duration));
-    }
-
-    private IEnumerator BounceCoroutine(float duration)
-    {
-        isBouncing = true;
-        yield return new WaitForSeconds(duration);
-        isBouncing = false;
-        bounceRoutine = null;
     }
 
     #endregion
@@ -663,9 +621,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleHazardousCollision(Collision2D col)
     {
-        if (((1 << col.gameObject.layer) & hazardousLayers) == 0 || isStaggered || isBouncing || IsSkillActive) return;
-
-        bool wasPlunging = combat.IsPlunging || combat.WasRecentlyPlunging;
+        if (((1 << col.gameObject.layer) & hazardousLayers) == 0 || isStaggered || IsSkillActive) return;
 
         combat.ForceCancelAttack();
 
@@ -674,14 +630,7 @@ public class PlayerController : MonoBehaviour
         Vector2 dir = new Vector2(transform.position.x >= contact.point.x ? 1f : -1f, 1f).normalized;
         rb.AddForce(dir * hazardousKnockbackForce, ForceMode2D.Impulse);
 
-        if (wasPlunging)
-        {
-            PlayBounceState(bounceDuration);
-        }
-        else
-        {
-            StartHitStagger(hazardousStaggerDuration);
-        }
+        StartHitStagger(hazardousStaggerDuration);
     }
 
     #endregion
