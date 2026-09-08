@@ -252,11 +252,19 @@ MonoBehaviour:
     Weight: 70
   - Attack: {fileID: 11400000, guid: 2fef09050b9a22a499951d23bdfd15f5, type: 2}
     Weight: 30
+  lootTable: {fileID: 0}
   behaviorAgent: {fileID: 7603609893098896341}
   animator: {fileID: 1943101255374262222}
   rb2D: {fileID: 2968184197812120870}
   attackCooldown: 0.25
   placeholderClipName: EmptyAttack
+  EnemyHitEvent:
+    Guid:
+      Data1: 515442699
+      Data2: 1331403395
+      Data3: 1112032419
+      Data4: -774162852
+    Path: event:/CombatSFXEvents/EnemyHitEvent
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
