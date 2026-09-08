@@ -23,7 +23,7 @@ namespace Enemies.ModuleScripts
             int dir = ctx.FacingRight ? 1 : -1;
 
             float distance = Vector2.Distance(ctx.Self.position, ctx.TargetPosition);
-            bool closeEnoughToStop = distance <= ctx.AttackStopDistance + stopBuffer;
+            bool closeEnoughToStop = distance <= ctx.AttackStopDistance - stopBuffer;
 
             float moveX = closeEnoughToStop ? 0f : dir * moveSpeed;
             ctx.Body.linearVelocity = new Vector2(moveX, ctx.Body.linearVelocity.y);

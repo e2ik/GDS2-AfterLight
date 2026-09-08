@@ -204,11 +204,11 @@ public class PlayerEquipmentManager : MonoBehaviour
     public AttackContext GetModifiedAttackContext()
     {
         PlayerStats playerStats = GetComponent<PlayerStats>();
-        float totalBaseAndGearAttack = playerStats != null ? playerStats.TotalAttack : 0f;
+        float totalAttack = playerStats != null ? playerStats.TotalAttack : 0f;
 
         AttackContext context = new AttackContext
         {
-            BaseAttackDamage = totalBaseAndGearAttack + (equippedWeapon != null ? equippedWeapon.BaseWeaponDamage : 0f),
+            BaseAttackDamage = totalAttack,
             BaseAttackCrit = equippedWeapon != null ? equippedWeapon.BaseWeaponCrit : 0f,
             BaseAttackRange = equippedWeapon != null ? equippedWeapon.BaseWeaponRange : 0f,
             Runner = this,
