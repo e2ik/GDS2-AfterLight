@@ -68,7 +68,7 @@ public class PlayerCombatController : MonoBehaviour
     private float attackDamage;
     private float attackCritChance;
     private float attackTimer;
-    private bool isAttacking;
+    private bool isAttacking, attackingUp, attackingDown, attackingForward;
     private bool isCounterAttacking;
     private bool isPlunging;
 
@@ -111,6 +111,9 @@ public class PlayerCombatController : MonoBehaviour
     private PlayerController movement;
 
     public bool IsAttacking => isAttacking;
+    public bool AttackingUp => attackingUp;
+    public bool AttackingDown => attackingDown;
+    public bool AttackingForward => attackingForward;
     public bool IsPlunging => isPlunging;
     public bool IsParrying => isParrying || isParryInRecovery;
     public bool IsParrySuccess => isParrySuccess;
@@ -442,7 +445,10 @@ public class PlayerCombatController : MonoBehaviour
         if (attackDir != Vector2.down)
         {
             bool isHorizontal = attackDir.x != 0f;
-
+            
+            if (isHorizontal) attackingForward = true;
+            else attackingUp = true;
+            
             attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
             attackCenter = (Vector2)attackOrigin.position + attackDir * (weaponRange * 0.5f);
 
@@ -455,6 +461,7 @@ public class PlayerCombatController : MonoBehaviour
         }
         else
         {
+            attackingDown = true;
             plungeCoroutine = StartCoroutine(PlungeAttack(weaponRange));
         }
     }
@@ -546,7 +553,7 @@ public class PlayerCombatController : MonoBehaviour
 
     public void EndAttack()
     {
-        isAttacking = false;
+        isAttacking = attackingUp = attackingDown = attackingForward = false;
         attackDurationTimer = 0f;
         canBufferNextCombo = false;
 
@@ -835,7 +842,7 @@ public class PlayerCombatController : MonoBehaviour
 
     public void ForceCancelAttack()
     {
-        isAttacking = false;
+        isAttacking = attackingUp = attackingDown = attackingForward = false;
         CancelPlunge();
         attackDurationTimer = 0f;
         enemiesHitThisAttack.Clear();

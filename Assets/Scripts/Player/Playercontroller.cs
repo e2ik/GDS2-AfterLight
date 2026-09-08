@@ -322,6 +322,7 @@ public class PlayerController : MonoBehaviour
             if (combat.IsParrying) combat.CancelParry();
             if (IsMovementFrozen) return;
             if (combat.IsAttacking) combat.ForceCancelAttack();
+            if (combat.IsPlunging) return;
 
             isDashing = true;
             isDashLocked = false;
