@@ -17,7 +17,7 @@ public class GearDefinition : InventoryItemBase
     [Header("Base Stat Ranges (Min / Max)")]
     public Vector2 BonusAttackRange = new Vector2(5f, 15f);
     public Vector2 BonusDefenseRange = new Vector2(2f, 8f);
-    public Vector2 BonusCritRange = new Vector2(0f, 1f);
+    public Vector2 BonusCritRange = new Vector2(1f, 5f);
 
     public GearInstance CreateInstance(ERarity rarity)
     {
@@ -31,7 +31,7 @@ public class GearDefinition : InventoryItemBase
             Rarity = rarity,
             InstBonusAttack = Random.Range(BonusAttackRange.x, BonusAttackRange.y) * rarityMultiplier,
             InstBonusDefense = Random.Range(BonusDefenseRange.x, BonusDefenseRange.y) * rarityMultiplier,
-            InstBonusCrit = Random.Range(BonusCritRange.x, BonusCritRange.y) * rarityMultiplier,
+            InstBonusHumanity = Random.Range(BonusCritRange.x, BonusCritRange.y) * rarityMultiplier,
         };
 
         Debug.Log($"Created Gear Instance: {UIName} [{rarity}]");

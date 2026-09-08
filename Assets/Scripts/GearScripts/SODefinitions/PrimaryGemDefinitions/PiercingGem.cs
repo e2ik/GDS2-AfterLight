@@ -40,8 +40,8 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
     {
         float distanceTravelled = 0f;
         var enemiesHit = new HashSet<Collider2D>();
-        var testVis = Instantiate(testVisPrefab, context.OriginPoint, Quaternion.identity);
-
+        var testVis = Instantiate(testVisPrefab,context.OriginPoint, Quaternion.identity);
+        
         float skillDamage = baseDamage * SkillDamageModifier;
         float skillRange = SkillRange + chargeRangeBonus * chargeAmount;
         while (distanceTravelled < skillRange)
@@ -55,16 +55,15 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
             {
                 foreach (var col in hitsAtPos)
                 {
-                    if (enemiesHit.Contains(col)) continue;
+                    if(enemiesHit.Contains(col)) continue;
                     enemiesHit.Add(col);
-                    if (!col.CompareTag("EnemyHurtBox")) continue;
-                    if (col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
-                    {
-                        enemyHealth.ApplyHit((int)skillDamage, context);
+                    if(!col.CompareTag("EnemyHurtBox"))continue;
+                    if(col.transform.root.TryGetComponent(out EnemyHealth enemyHealth)){
+                        enemyHealth.ApplyDamage((int)skillDamage);
                     }
                 }
             }
-            UpdateVisual(testVis, hitPosition);
+            UpdateVisual(testVis,hitPosition);
             yield return null;
         }
         Destroy(testVis);

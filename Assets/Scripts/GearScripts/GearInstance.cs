@@ -10,5 +10,4 @@ public class GearInstance
     public float InstBonusAttack;
     public float InstBonusDefense;
     public float InstBonusHumanity;
-    public float InstBonusCrit;
 }

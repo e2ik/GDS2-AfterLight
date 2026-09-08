@@ -284,9 +284,6 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
         uiManager = FindFirstObjectByType<UIManager>();
-
-        MusicManager musicManager = FindFirstObjectByType<MusicManager>();
-        musicManager.SetState(MusicState.Explore);
     }
 
     private IEnumerator LoadSceneAdditive(string sceneName)

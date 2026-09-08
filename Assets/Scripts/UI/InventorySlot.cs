@@ -245,12 +245,10 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         int attack = (int)gear.InstBonusAttack;
         int defense = (int)gear.InstBonusDefense;
         int humanity = (int)gear.InstBonusHumanity;
-        float crit = gear.InstBonusCrit;
 
         if (attack > 0) sb.AppendLine($"Attack: +{attack}");
         if (defense > 0) sb.AppendLine($"Defense: +{defense}");
         if (humanity > 0) sb.AppendLine($"Humanity: +{humanity}");
-        if (crit > 0) sb.AppendLine($"Crit: +{crit * 100f:F1}%");
 
         return sb.ToString().TrimEnd();
     }
@@ -260,13 +258,11 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.AppendLine("Type: Secondary Gem");
 
-        int damageBonus = gem.InstRolledDamageValue;
-        int critBonus = gem.InstRolledCritValue;
-        int dotPercent = gem.InstRolledDotPercent;
+        int damageMult = (int)gem.InstRolledDamageValue;
+        int critMult = (int)gem.InstRolledCritValue;
 
-        if (damageBonus > 0) sb.AppendLine($"Bonus Damage: +{damageBonus}");
-        if (critBonus > 0) sb.AppendLine($"Bonus Crit: +{critBonus}%");
-        if (dotPercent > 0) sb.AppendLine($"Bleed: {dotPercent}% of hit damage over time");
+        if (damageMult > 0) sb.AppendLine($"Bonus Damage: +{damageMult}");
+        if (critMult > 0) sb.AppendLine($"Bonus Crit: +{critMult}");
 
         return sb.ToString().TrimEnd();
     }

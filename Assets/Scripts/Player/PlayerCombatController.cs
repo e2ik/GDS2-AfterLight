@@ -30,7 +30,6 @@ public class PlayerCombatController : MonoBehaviour
 
     [Header("Attack Settings")]
     [SerializeField] private Transform attackOrigin;
-    [SerializeField] private float damageScalingExponent = 0.8f; // <1 = diminishing returns, >1 = accelerating
     public LayerMask enemyLayer;
     [SerializeField] private float critDamageMultiplier = 1.33f;
     [SerializeField] private float counterAttackMultiplier = 1.2f;
@@ -84,9 +83,9 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
     [SerializeField] private float chargeSkillAmount = 0.2f;
 
-    [Header("FMOD Events")]
+    [Header("FMOD Events")] 
     [SerializeField] private EventReference parryEvent;
-
+    
     public float SkillActivationCost { get; private set; }
     private const float DefaultEnergyDrainTick = 0.16f;
 
@@ -341,6 +340,7 @@ public class PlayerCombatController : MonoBehaviour
     {
         player.Animation.FlashGreenOnParrySuccess();
         CancelParry();
+        
         AudioManager.PlaySFX(parryEvent, transform.position);
 
         ChargeSkillMeter(chargeSkillAmount);
@@ -446,11 +446,7 @@ public class PlayerCombatController : MonoBehaviour
             attackCenter = (Vector2)attackOrigin.position + attackDir * (weaponRange * 0.5f);
 
             Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
-            if (enemiesInRange.Length > 0)
-            {
-                AttackContext context = player.Equipment.GetModifiedAttackContext();
-                HitEnemy(enemiesInRange, context);
-            }
+            if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange);
         }
         else
         {
@@ -479,8 +475,7 @@ public class PlayerCombatController : MonoBehaviour
         {
             float adjusted = plungeTimer * plungeAdjustedDmg;
             float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
-            AttackContext context = player.Equipment.GetModifiedAttackContext();
-            HitEnemy(enemiesInRange, context, plungeDmgMultiplier);
+            HitEnemy(enemiesInRange, plungeDmgMultiplier);
             player.Controller.ApplyKnockback(enemiesInRange[0].transform.position, AttackForce.Medium, false);
         }
         plungeCoroutine = null;
@@ -498,7 +493,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private float GetDamage()
     {
-        float baseDmg = GetScaledAttackDamage();
+        float baseDmg = player.Stats.TotalAttack;
 
         int multiplierIndex = Mathf.Clamp(currentComboIndex - 1, 0, comboDamageMultipliers.Length - 1);
         float comboMultiplier = comboDamageMultipliers[multiplierIndex];
@@ -506,40 +501,26 @@ public class PlayerCombatController : MonoBehaviour
         return baseDmg * comboMultiplier;
     }
 
-    private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
+    private void HitEnemy(Collider2D[] enemiesInRange, float plungeDmgMult = 0f)
     {
+        float dmg = plungeDmgMult > 0f
+            ? attackDamage * (1 + plungeDmgMult)
+            : attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
+        
+        dmg *= UnityEngine.Random.value <= attackCritChance ? critDamageMultiplier : 1f; //! flagging this needs proper logic later
+
         foreach (var col in enemiesInRange)
         {
             if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
             {
+                // Only damage each enemy once per attack swing
                 if (!enemiesHitThisAttack.Contains(enemyHealth))
                 {
                     enemiesHitThisAttack.Add(enemyHealth);
-
-                    float dmg = plungeDmgMult > 0f
-                        ? attackDamage * (1 + plungeDmgMult)
-                        : attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
-
-                    float roll = UnityEngine.Random.value;
-                    bool isCrit = roll <= attackCritChance;
-                    dmg *= (isCrit ? critDamageMultiplier : 1f);
-
-                    enemyHealth.ApplyHit((int)dmg, context);
+                    enemyHealth.ApplyDamage((int)dmg);
                 }
             }
         }
-    }
-    
-    public float GetScaledAttackDamage()
-    {
-        float weaponDamage = player.Equipment.EquippedWeapon != null
-            ? player.Equipment.EquippedWeapon.BaseWeaponDamage
-            : 0f;
-
-        float attackStat = player.Stats.TotalAttack;
-        float scaledAttack = Mathf.Pow(attackStat, damageScalingExponent);
-
-        return weaponDamage + scaledAttack;
     }
 
     public void EndAttack()
