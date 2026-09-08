@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FMODUnity;
-using NUnit.Framework;
 using Unity.Behavior;
 using UnityEngine;
 using UnityEngine.AI;
@@ -22,14 +21,14 @@ namespace Enemies
         [SerializeField] private float attackCooldown;
         [SerializeField] private string placeholderClipName = "EmptyAttack";
 
+        [Header("FMOD Events")] 
+        [SerializeField] private EventReference hitEvent;
+
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
 
         private float attackCooldownTimer;
-
-
-        [Header("FMOD Events")] 
-        [SerializeField] private EventReference EnemyHitEvent;
+        private bool wasTargetingPlayer;
 
         private void OnEnable()
         {
@@ -41,6 +40,7 @@ namespace Enemies
         {
             Context.Health.OnDamaged -= OnDamaged;
             Context.Health.OnDeath -= OnDeath;
+            EnemyCombatTracker.EnemyStoppedTargeting(this);
         }
 
 
@@ -53,8 +53,8 @@ namespace Enemies
             overrideController.GetOverrides(overridesList);
             AnimationClip placeholderClip =
                 overridesList.FirstOrDefault(pair => pair.Key.name == placeholderClipName).Key;
-            
-            if(placeholderClip == null)
+
+            if (placeholderClip == null)
                 Debug.LogError($"{name}: no clip named '{placeholderClipName}' found in the base Animator Controller");
 
             Context = new EnemyContext()
@@ -80,23 +80,34 @@ namespace Enemies
         {
             observationSO.Tick(Context, Time.deltaTime);
 
+            bool isTargetingPlayer = Context.TargetVisible;
+            if (isTargetingPlayer != wasTargetingPlayer)
+            {
+                if(isTargetingPlayer) 
+                    EnemyCombatTracker.EnemyStartedTargeting(this);
+                else
+                    EnemyCombatTracker.EnemyStoppedTargeting(this);
+
+                wasTargetingPlayer = isTargetingPlayer;
+            }
+
             if (!IsAttacking)
                 transform.localScale = new Vector3(Context.FacingRight ? 1f : -1f, 1f, 1f);
 
             animator.SetFloat("Speed", Mathf.Abs(Context.Body.linearVelocityX));
 
             attackCooldownTimer = Mathf.Max(0, attackCooldownTimer - Time.deltaTime);
-            
+
             bool attackReady = false;
 
-           
+
             foreach (AttackInstance attack in attacks)
             {
                 attack.Tick(Context, Time.deltaTime);
                 if (attackCooldownTimer <= 0 && !IsAttacking && Context.CanReachTarget && attack.IsValid)
                     attackReady = true;
             }
-            
+
             behaviorAgent.BlackboardReference.SetVariableValue("TargetVisible", Context.TargetVisible);
             behaviorAgent.BlackboardReference.SetVariableValue("TargetPosition", Context.TargetPosition);
             behaviorAgent.BlackboardReference.SetVariableValue("AttackReady", attackReady);
@@ -144,36 +155,33 @@ namespace Enemies
             attackCooldownTimer = attackCooldown;
         }
 
-        private void OnDamaged(int amount, int currentHealth)
+        private void OnDamaged(int amount, int currentHealth, bool isDot)
         {
             Debug.Log($"Enemy blud was damaged for {amount}. Current Health: {currentHealth}");
-
-            // if we're able to get the attack type e.g. zero, light medium
-            // on < light we trigger anim (this acts as an interrupt with no other code changes)
-            // since attack is decided by the animation
-
-            //Debug.Log("Current Attack Force " + Context.CurrentAttackForce + " Is Attacking: " + Context.IsAttacking);
             
-            AudioManager.PlaySFX(EnemyHitEvent, transform.position);
-            
-            if (!Context.IsAttacking || (Context.CurrentAttackForce == AttackForce.Light) || Context.CurrentAttackForce == AttackForce.Zero) 
+            AudioManager.PlaySFXAttached(hitEvent, gameObject);
+
+            if (isDot) return; // DOT ticks shouldn't trigger the hurt-interrupt animation
+
+            if (!Context.IsAttacking || (Context.CurrentAttackForce != AttackForce.Heavy) || Context.CurrentAttackForce == AttackForce.Zero)
                 animator.SetTrigger("Hurt");
         }
 
         private void OnDeath()
         {
             Debug.Log($"Enemy hath died. Rip {name}");
+
             lootTable.SpawnInstance(transform.position);
             gameObject.SetActive(false);
         }
-        
+
 #if UNITY_EDITOR
         private void OnValidate()
         {
             if (attacks == null || attacks.Count == 0) return;
 
             float sum = attacks.Sum(a => a.Weight);
-            if(Mathf.Abs(sum - 100f) > 0.01f)
+            if (Mathf.Abs(sum - 100f) > 0.01f)
                 Debug.LogWarning($"{name}: attack weights sum to {sum}, expected 100");
         }
 #endif
