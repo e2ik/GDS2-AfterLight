@@ -109,7 +109,7 @@ public class WorldItem : MonoBehaviour
         switch (itemDefinition)
         {
             case SecondaryGemBehaviourDefinition secondaryDef:
-                ERarity randomRarity = GetRandomRarity();
+                ERarity randomRarity = GetWeightedRarity();
                 SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(randomRarity);
                 player.Inventory.AddItemToInventory(gemLoot);
                 player.Equipment.EquipSecondaryGem(gemLoot); // for now
@@ -149,5 +149,26 @@ public class WorldItem : MonoBehaviour
     {
         System.Array rarities = System.Enum.GetValues(typeof(ERarity));
         return (ERarity)rarities.GetValue(Random.Range(0, rarities.Length));
+    }
+    private ERarity GetWeightedRarity()
+    {
+        float randF = Random.Range(0f,1f);
+
+        if(randF <= 0.5f)
+        {
+            return ERarity.Common;
+        }
+        else if(randF <= 0.85)
+        {
+            return ERarity.Rare;
+        }
+        else if(randF <= 0.95)
+        {
+            return ERarity.Epic;
+        }
+        else
+        {
+            return ERarity.Legendary;
+        }
     }
 }

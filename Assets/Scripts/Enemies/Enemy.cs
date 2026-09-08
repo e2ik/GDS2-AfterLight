@@ -13,6 +13,7 @@ namespace Enemies
     {
         [SerializeField] private EnemyObservationSO observationSO;
         [SerializeField] private List<AttackInstance> attacks = new();
+        [SerializeField] private LootTableDefinitionSO lootTable;
 
         [SerializeField] private BehaviorGraphAgent behaviorAgent;
         [SerializeField] private Animator animator;
@@ -157,6 +158,7 @@ namespace Enemies
         private void OnDeath()
         {
             Debug.Log($"Enemy hath died. Rip {name}");
+            lootTable.SpawnInstance(transform.position);
             gameObject.SetActive(false);
         }
         
