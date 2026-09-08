@@ -44,8 +44,9 @@ public class PlayerHurtBox : MonoBehaviour
         if (Invulnerable) return false;        
 
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
+        bool isUnparryable = hitbox.AttackForce == AttackForce.Heavy;
 
-        if (parryWindowOpen && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
+        if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
             return false; // Successfully parried! Did not take damage.
 
         bool isChargedSkillExecuting = combatController != null && combatController.IsSkilling &&
