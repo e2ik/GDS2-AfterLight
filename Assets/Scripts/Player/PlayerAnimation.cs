@@ -36,13 +36,6 @@ public class PlayerAnimation : MonoBehaviour
     private Coroutine flashColorCoroutine;
     private bool wasInvulnerable;
 
-    // Fixed timing fallback tracking fields
-    private float plungeDurationTimer;
-    private bool trackingPlungeDuration;
-    private bool wasPlungingLastFrame;
-    private float fallbackAttackTimer;
-    private bool isFallbackAttackActive;
-
     private void Awake()
     {
         player = GetComponentInParent<Player>();
@@ -101,45 +94,8 @@ public class PlayerAnimation : MonoBehaviour
         bool isPlunging = player.CombatController.IsPlunging;
         bool isBouncing = player.Controller.IsBouncing;
 
-        // Detect fresh plunge activation
-        if (isPlunging && !wasPlungingLastFrame)
-        {
-            plungeDurationTimer = 0.3f;
-            trackingPlungeDuration = true;
-            isFallbackAttackActive = false;
-        }
-
-        // Track the 0.3 second window where isPlunging is true
-        if (trackingPlungeDuration)
-        {
-            plungeDurationTimer -= Time.deltaTime;
-            if (plungeDurationTimer <= 0f || !isPlunging)
-            {
-                trackingPlungeDuration = false;
-
-                // If we stopped plunging and never bounced, trigger the 0.7s fallback attack animation
-                if (!isBouncing)
-                {
-                    isFallbackAttackActive = true;
-                    fallbackAttackTimer = 0.7f;
-                }
-            }
-        }
-
-        // Manage the fallback attack timer
-        if (isFallbackAttackActive)
-        {
-            fallbackAttackTimer -= Time.deltaTime;
-            if (fallbackAttackTimer <= 0f || isPlunging || isBouncing)
-            {
-                isFallbackAttackActive = false;
-            }
-        }
-
-        wasPlungingLastFrame = isPlunging;
-
-        bool isAttacking = isFallbackAttackActive || ((isParrying || isSkilling || isPlunging) ? false : player.CombatController.IsAttacking);
-        int attackIndex = isFallbackAttackActive ? 1 : ((isParrying || isSkilling || isPlunging) ? 0 : player.CombatController.CurrentComboIndex);
+        bool isAttacking = (isParrying || isSkilling || isPlunging) ? false : player.CombatController.IsAttacking;
+        int attackIndex = (isParrying || isSkilling || isPlunging) ? 0 : player.CombatController.CurrentComboIndex;
 
         animator.SetBool(IsAttackingHash, isAttacking);
         animator.SetInteger(AttackIndexHash, attackIndex);

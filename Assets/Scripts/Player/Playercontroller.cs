@@ -392,7 +392,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandlePlunge()
     {
-        if (!combat.IsPlunging) return;
+        if (!combat.IsPlunging || isBouncing || isStaggered) return;
         if (rb.linearVelocityY > 0.1f) rb.linearVelocityY = 0f;
         rb.linearVelocityX = 0;
     }
@@ -403,7 +403,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.gravityScale = 0f;
         }
-        else if (combat.IsPlunging)
+        else if (combat.IsPlunging && !isBouncing)
             rb.gravityScale = plungeGravity;
         else
             rb.gravityScale = rb.linearVelocityY switch

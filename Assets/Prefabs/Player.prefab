@@ -255,12 +255,12 @@ MonoBehaviour:
     m_Bits: 4096
   hazardousKnockbackForce: 8
   hazardousStaggerDuration: 0.3
-  bounceDuration: 0.5
-  lightForce: 8
+  bounceDuration: 0.25
+  lightForce: 6
   lightStaggerDuration: 0.1
-  mediumForce: 10
+  mediumForce: 8
   mediumStaggerDuration: 0.2
-  heavyForce: 14
+  heavyForce: 10
   heavyStaggerDuration: 0.4
   groundLayer:
     serializedVersion: 2
@@ -294,9 +294,7 @@ MonoBehaviour:
   counterAttackMultiplier: 1.2
   plungeDmgMaxMultiplier: 3.4028235e+38
   plungeAdjustedDmg: 1
-  plungeRecoveryTime: 0.3
   plungeGraceWindow: 0.15
-  minPlungeHoldDuration: 0
   attackWidth: 2
   attackDuration: 0.4
   attackCoolDown: 0.1
@@ -382,7 +380,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc3f79ceefdb1c7b84602f1402a42b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventoryManager
-  currentInventory: {fileID: 11400000, guid: ffa10fe2259f350d8be325c6bc193e99, type: 2}
+  currentInventory: {fileID: 0}
 --- !u!114 &3959588101215870426
 MonoBehaviour:
   m_ObjectHideFlags: 0
