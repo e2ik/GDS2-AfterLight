@@ -32,6 +32,8 @@ public class PlayerCombatController : MonoBehaviour
     public LayerMask enemyLayer;
     [SerializeField] private float critDamageMultiplier = 1.33f;
     [SerializeField] private float counterAttackMultiplier = 1.2f;
+    [SerializeField] private float plungeDmgMaxMultiplier = float.MaxValue;
+    [SerializeField] private float plungeAdjustedDmg = 1f;
     [SerializeField] private float attackWidth = 2f;
     [SerializeField] private float attackDuration = 0.3f;
     [SerializeField] private float attackCoolDown = 0.2f;
@@ -61,10 +63,11 @@ public class PlayerCombatController : MonoBehaviour
     private Vector2 attackRange;
     private Vector2 attackCenter;
     private float attackDamage;
-    private float attackCrit;
+    private float attackCritChance;
     private float attackTimer;
     private bool isAttacking;
     private bool isCounterAttacking;
+    private bool isPlunging;
 
     // hit enemies
     private HashSet<EnemyHealth> enemiesHitThisAttack = new HashSet<EnemyHealth>();
@@ -104,6 +107,7 @@ public class PlayerCombatController : MonoBehaviour
     private PlayerController movement;
 
     public bool IsAttacking => isAttacking;
+    public bool IsPlunging => isPlunging;
     public bool IsParrying => isParrying || isParryInRecovery;
     public bool IsParrySuccess => isParrySuccess;
     public bool IsSkilling => isSkilling;
@@ -386,12 +390,10 @@ public class PlayerCombatController : MonoBehaviour
 
         if (attackBufferTimer > 0f && CanAct()) ExecuteAttack();
         if (comboQueued && !isAttacking && attackTimer <= 0f && CanAct()) ExecuteAttack();
-
-        if (currentComboIndex > 0 && !isAttacking)
-        {
-            comboResetTimer += Time.deltaTime;
-            if (comboResetTimer >= comboResetDelay) ResetCombo();
-        }
+        
+        if (currentComboIndex <= 0 || isAttacking) return;
+        comboResetTimer += Time.deltaTime;
+        if (comboResetTimer >= comboResetDelay) ResetCombo();
     }
 
     private void ExecuteAttack()
@@ -431,16 +433,45 @@ public class PlayerCombatController : MonoBehaviour
         };
 
         float weaponRange = player.Equipment.EquippedWeapon.BaseWeaponRange;
-        bool isHorizontal = attackDir.x != 0f;
-
-        attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
-        attackCenter = (Vector2)attackOrigin.position + (attackDir * (weaponRange * 0.5f));
-
         attackDamage = GetDamage();
-        attackCrit = player.Equipment.EquippedWeapon.BaseWeaponCrit;
+        attackCritChance = player.Equipment.EquippedWeapon.BaseWeaponCrit;
 
-        Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
-        if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange);
+        if (attackDir != Vector2.down)
+        {
+            bool isHorizontal = attackDir.x != 0f;
+
+            attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
+            attackCenter = (Vector2)attackOrigin.position + attackDir * (weaponRange * 0.5f);
+
+            Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
+            if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange);
+        }
+        else
+        {
+            PlungeAttack(weaponRange);
+        }
+    }
+
+    private void PlungeAttack(float weaponRange)
+    {
+        isPlunging = true;
+        float plungeDmgMultiplier;
+        float plungeTimer = 0f;
+        attackRange = new Vector2(attackWidth, weaponRange);
+        Collider2D[] enemiesInRange = { };
+
+        while (isPlunging)
+        {
+            plungeTimer += Time.deltaTime;
+            attackCenter = (Vector2)attackOrigin.position + Vector2.down * (weaponRange * 0.5f);
+            enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
+            if (enemiesInRange.Length > 0 || player.Controller.IsGrounded) isPlunging = false;
+        }
+        
+        float adjusted = plungeTimer * plungeAdjustedDmg;
+        plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
+
+        if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange, plungeDmgMultiplier);
     }
 
     private float GetDamage()
@@ -453,10 +484,13 @@ public class PlayerCombatController : MonoBehaviour
         return baseDmg * comboMultiplier;
     }
 
-    private void HitEnemy(Collider2D[] enemiesInRange)
+    private void HitEnemy(Collider2D[] enemiesInRange, float plungeDmgMult = 0f)
     {
-        float dmg = attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
-        dmg *= (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f); //! flagging this needs proper logic later
+        float dmg = plungeDmgMult > 0f
+            ? attackDamage * (1 + plungeDmgMult)
+            : attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
+        
+        dmg *= UnityEngine.Random.value <= attackCritChance ? critDamageMultiplier : 1f; //! flagging this needs proper logic later
 
         foreach (var col in enemiesInRange)
         {
