@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FMODUnity;
 using Unity.Behavior;
 using UnityEngine;
 using UnityEngine.AI;
@@ -19,6 +20,9 @@ namespace Enemies
         [SerializeField] private Rigidbody2D rb2D;
         [SerializeField] private float attackCooldown;
         [SerializeField] private string placeholderClipName = "EmptyAttack";
+
+        [Header("FMOD Events")] 
+        [SerializeField] private EventReference hitEvent;
 
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
@@ -154,6 +158,8 @@ namespace Enemies
         private void OnDamaged(int amount, int currentHealth, bool isDot)
         {
             Debug.Log($"Enemy blud was damaged for {amount}. Current Health: {currentHealth}");
+            
+            AudioManager.PlaySFXAttached(hitEvent, gameObject);
 
             if (isDot) return; // DOT ticks shouldn't trigger the hurt-interrupt animation
 
