@@ -433,6 +433,12 @@ public class PlayerController : MonoBehaviour
         if(applyStagger) StartHitStagger(data.StaggerDuration);
     }
 
+    public void PlungeStagger(float duration)
+    {
+        if (hitStaggerRoutine != null) StopCoroutine(hitStaggerRoutine);
+        hitStaggerRoutine = StartCoroutine(HitStaggerCoroutine(duration));
+    }
+
     private void StartHitStagger(float duration)
     {
         if (hitStaggerRoutine != null) StopCoroutine(hitStaggerRoutine);

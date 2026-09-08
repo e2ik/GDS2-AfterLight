@@ -36,6 +36,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float counterAttackMultiplier = 1.2f;
     [SerializeField] private float plungeDmgMaxMultiplier = float.MaxValue;
     [SerializeField] private float plungeAdjustedDmg = 1f;
+    [SerializeField] private float plungeRecoveryTime = 0.3f;
     [SerializeField] private float attackWidth = 2f;
     [SerializeField] private float attackDuration = 0.3f;
     [SerializeField] private float attackCoolDown = 0.2f;
@@ -484,6 +485,7 @@ public class PlayerCombatController : MonoBehaviour
             player.Controller.ApplyKnockback(enemiesInRange[0].transform.position, AttackForce.Medium, false);
         }
         plungeCoroutine = null;
+        player.Controller.PlungeStagger(plungeRecoveryTime);
     }
 
     public void CancelPlunge()
