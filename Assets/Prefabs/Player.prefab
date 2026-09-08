@@ -86,6 +86,7 @@ GameObject:
   - component: {fileID: 8973568721246507005}
   - component: {fileID: 1978134003100231202}
   - component: {fileID: 7665356309269939156}
+  - component: {fileID: 3239858076674932586}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -232,6 +233,7 @@ MonoBehaviour:
   deceleration: 8
   velocityPower: 1.2
   friction: 0.2
+  passThroughPlatformDuration: 0.25
   normGravity: 5
   jumpGravity: 4
   fallGravity: 11
@@ -242,6 +244,7 @@ MonoBehaviour:
   wallCheckNormalThreshold: 0.5
   wallJumpForce: {x: 10, y: 16}
   wallJumpDuration: 0.4
+  wallJumpBufferTime: 0.2
   dashVelocity: 15
   backDashMultiplier: 0.5
   dashDuration: 0.2
@@ -261,6 +264,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   groundCheckDistance: 0.2
+  groundCheckNormalThreshold: 0.6
   wallCheckDistance: 0.2
   edgeMargin: 0.05
 --- !u!114 &3547647608137716798
@@ -292,6 +296,10 @@ MonoBehaviour:
   counterAttackWindow: 0.5
   maxComboCount: 3
   comboResetDelay: 1
+  comboDamageMultipliers:
+  - 1
+  - 1.25
+  - 1.5
   dashAttackConflictWindow: 0.03
   jumpAttackConflictWindow: 0.03
   skillMeterAlwaysFull: 1
@@ -302,6 +310,13 @@ MonoBehaviour:
   skillHoldThreshold: 0.12
   skillReleaseBufferTime: 0.08
   chargeSkillAmount: 0.2
+  parryEvent:
+    Guid:
+      Data1: 1039513163
+      Data2: 1224646813
+      Data3: 240712608
+      Data4: -734359681
+    Path: event:/CombatSFXEvents/PlayerParryEvent
 --- !u!114 &4877809276059888347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -337,6 +352,13 @@ MonoBehaviour:
   gearDefenseBonus: 0
   gearHumanityBonus: 0
   equipmentManager: {fileID: 0}
+  hitEvent:
+    Guid:
+      Data1: -1941217388
+      Data2: 1298960354
+      Data3: -68974450
+      Data4: 1774878665
+    Path: event:/CombatSFXEvents/PlayerHitEvent
 --- !u!114 &7383012226346758473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -522,6 +544,27 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.4619478, y: 0.29522634}
   m_EdgeRadius: 0
+--- !u!114 &3239858076674932586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6310612592100663882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7fe7e7487b01904b91af8fbf4024183, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationSFXPlayer
+  sfxEntries:
+  - id: AttackEvent
+    sfxEvent:
+      Guid:
+        Data1: 79810483
+        Data2: 1184208393
+        Data3: -1042859878
+        Data4: 1282016863
+      Path: event:/CombatSFXEvents/PlayerAttackEvent
 --- !u!1 &8844592283841214288
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
 using System.Collections.Generic;
+using FMODUnity;
 
 public enum ParryDirection { Up, Down, Left, Right }
 public enum AttackForce { Zero, Light, Medium, Heavy }
@@ -77,6 +78,10 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float skillHoldThreshold = 0.12f;
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
     [SerializeField] private float chargeSkillAmount = 0.2f;
+
+    [Header("FMOD Events")] 
+    [SerializeField] private EventReference parryEvent;
+    
     public float SkillActivationCost { get; private set; }
     private const float DefaultEnergyDrainTick = 0.16f;
 
@@ -329,6 +334,8 @@ public class PlayerCombatController : MonoBehaviour
     {
         player.Animation.FlashGreenOnParrySuccess();
         CancelParry();
+        
+        AudioManager.PlaySFX(parryEvent, transform.position);
 
         ChargeSkillMeter(chargeSkillAmount);
         isCounterAttacking = true;

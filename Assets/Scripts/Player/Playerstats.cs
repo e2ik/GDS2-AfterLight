@@ -1,3 +1,4 @@
+using FMODUnity;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -20,6 +21,9 @@ public class PlayerStats : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerEquipmentManager equipmentManager;
 
+    [Header("FMOD Events")] 
+    [SerializeField] private EventReference hitEvent;
+    
     public float MaxHealth => maxHealth;
     public float CurrentHealth => currentHealth;
     public float TotalAttack => UpdateAttackDisplay();
@@ -96,6 +100,8 @@ public class PlayerStats : MonoBehaviour
         currentHealth = Mathf.Max(0f, currentHealth - effectiveDamage);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
+        AudioManager.PlaySFX(hitEvent, transform.position);
+        
         Debug.Log($"Player took dmg:{rawDamage} - def:{TotalDefense} for {effectiveDamage} damage. Current Health: {currentHealth}");
         
         if (currentHealth <= 0f)

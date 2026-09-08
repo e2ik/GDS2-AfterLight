@@ -1448,6 +1448,7 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 64
+  navMeshCheckRadius: 0.5
 --- !u!1 &366898910
 GameObject:
   m_ObjectHideFlags: 0
@@ -5513,10 +5514,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1374221808}
   - component: {fileID: 1374221807}
-  - component: {fileID: 1374221806}
   - component: {fileID: 1374221809}
   - component: {fileID: 1374221810}
   - component: {fileID: 1374221811}
+  - component: {fileID: 1374221812}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -5524,14 +5525,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1374221806
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1374221805}
-  m_Enabled: 1
 --- !u!20 &1374221807
 Camera:
   m_ObjectHideFlags: 0
@@ -5559,10 +5552,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0
+    x: 0.44056705
     y: 0
-    width: 1
-    height: 1
+    width: 0.7173149
+    height: 0.71705425
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -5685,6 +5678,20 @@ MonoBehaviour:
   m_CropFrameX: 0
   m_CropFrameY: 0
   m_StretchFill: 0
+--- !u!114 &1374221812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1374221805}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c6556701af9e04380698b89f691b6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FMODUnity::FMODUnity.StudioListener
+  nonRigidbodyVelocity: 0
+  attenuationObject: {fileID: 0}
 --- !u!1 &1462653341
 GameObject:
   m_ObjectHideFlags: 0
@@ -7141,7 +7148,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 216226863}
   m_HandleRect: {fileID: 216226862}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
