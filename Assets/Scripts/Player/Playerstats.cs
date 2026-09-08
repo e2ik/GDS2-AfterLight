@@ -16,6 +16,7 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float gearAttackBonus = 0f;
     [SerializeField] private float gearDefenseBonus = 0f;
     [SerializeField] private float gearHumanityBonus = 0f;
+    [SerializeField] private float gemAttackBonus = 0f;
 
     [Header("References")]
     [SerializeField] private PlayerEquipmentManager equipmentManager;
@@ -57,10 +58,11 @@ public class PlayerStats : MonoBehaviour
 
     private float UpdateAttackDisplay()
     {
-        if(equipmentManager == null || equipmentManager.EquippedWeapon == null)
-            return  gearAttackBonus;
-        // Debug.Log("WeaponBaseDamage: " + equipmentManager.EquippedWeapon.BaseWeaponDamage + ", GearBonus: " + gearAttackBonus);
-        return equipmentManager.EquippedWeapon.BaseWeaponDamage + gearAttackBonus;
+        float weaponDamage = equipmentManager != null && equipmentManager.EquippedWeapon != null
+            ? equipmentManager.EquippedWeapon.BaseWeaponDamage
+            : 0f;
+
+        return baseAttack + weaponDamage + gearAttackBonus + gemAttackBonus;
     }
 
     public void RecalculateStats()
@@ -68,6 +70,7 @@ public class PlayerStats : MonoBehaviour
         gearAttackBonus = 0f;
         gearDefenseBonus = 0f;
         gearHumanityBonus = 0f;
+        gemAttackBonus = 0f;
 
         if (equipmentManager != null)
         {
@@ -81,10 +84,16 @@ public class PlayerStats : MonoBehaviour
                     gearHumanityBonus += gear.InstBonusHumanity;
                 }
             }
+
+            var gem = equipmentManager.SecondaryGem;
+            if (gem != null && !string.IsNullOrEmpty(gem.InstTemplateID))
+            {
+                gemAttackBonus = gem.InstRolledDamageValue;
+            }
         }
 
         OnStatsRecalculated?.Invoke();
-        Debug.Log($"[PlayerStats] Stats Recalculated -> Atk: {TotalAttack} ({gearAttackBonus:+#;-#;0}), Def: {TotalDefense} ({gearDefenseBonus:+#;-#;0}), Humanity: {TotalHumanity} ({gearHumanityBonus:+#;-#;0})");
+        Debug.Log($"[PlayerStats] Stats Recalculated -> Atk: {TotalAttack} (gear:{gearAttackBonus:+#;-#;0}, gem:{gemAttackBonus:+#;-#;0}), Def: {TotalDefense}, Humanity: {TotalHumanity}");
     }
 
     public void TakeDamage(float rawDamage)

@@ -6,7 +6,8 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
     public override void Modify(ref AttackContext context, SecondaryGemInstance instance)
     {
         Debug.Log($"Old Damage: {context.BaseAttackDamage}");
-        context.BaseAttackDamage *= instance.InstRolledValue;
+        context.BaseAttackDamage += instance.InstRolledDamageValue;
+        // need to add crit
         Debug.Log($"New Damage: {context.BaseAttackDamage}");
     }
 }

@@ -84,23 +84,22 @@ public class PlayerStatsDisplay : MonoBehaviour
         if (equipmentManager != null)
         {
             AttackContext attackContext = equipmentManager.GetModifiedAttackContext();
-            totalAttack = attackContext.BaseAttackDamage; 
             totalCrit = attackContext.BaseAttackCrit;
         }
 
         float totalDefense = playerStats.TotalDefense;
         float totalHumanity = playerStats.TotalHumanity;
 
-        if (attackText != null) 
+        if (attackText != null)
             attackText.text = $"{totalAttack:F0}";
 
-        if (defenseText != null) 
+        if (defenseText != null)
             defenseText.text = $"{totalDefense:F0}";
 
-        if (humanityText != null) 
+        if (humanityText != null)
             humanityText.text = $"{totalHumanity:F0}";
 
-        if (critText != null) 
+        if (critText != null)
             critText.text = $"{totalCrit:F1}%";
     }
 }

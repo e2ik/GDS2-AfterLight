@@ -5,6 +5,7 @@ using UnityEngine;
 public class SecondaryGemInstance
 {
     public string InstTemplateID;
-    public int InstRolledValue;
+    public int InstRolledDamageValue;
+    public int InstRolledCritValue;
     public string InstanceGUID;
 }

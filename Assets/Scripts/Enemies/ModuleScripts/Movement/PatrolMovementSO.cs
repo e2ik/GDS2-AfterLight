@@ -41,17 +41,17 @@ namespace Enemies.ModuleScripts
 
     private bool CheckWallAhead(EnemyContext ctx, Vector2 origin, int dir, LayerMask mask)
     {
-        Collider2D hitBox = GetHitBox(ctx.Self);
+        Collider2D hurtBox = GetHurtBox(ctx.Self);
         Vector2 castDir = Vector2.right * dir;
 
-        if (hitBox == null)
+        if (hurtBox == null)
         {
             bool hit = Physics2D.Raycast(origin, castDir, wallCheckDistance, mask);
             Debug.DrawRay(origin, castDir * wallCheckDistance, hit ? Color.green : Color.red);
             return hit;
         }
 
-        Bounds bounds = hitBox.bounds;
+        Bounds bounds = hurtBox.bounds;
 
         // edge of the collider in the facing direction
         float edgeX = dir > 0 ? bounds.max.x : bounds.min.x;
@@ -63,13 +63,13 @@ namespace Enemies.ModuleScripts
         return wallHit;
     }
 
-        private Collider2D GetHitBox(Transform self)
+        private Collider2D GetHurtBox(Transform self)
         {
             if (hitBoxCache.TryGetValue(self, out Collider2D cached) && cached != null)
                 return cached;
 
             Collider2D found = self.GetComponentsInChildren<Collider2D>(true)
-                .FirstOrDefault(c => c.gameObject.name == "HitBox");
+                .FirstOrDefault(c => c.gameObject.name == "HurtBox");
 
             hitBoxCache[self] = found;
             return found;

@@ -22,11 +22,13 @@ public abstract class SecondaryGemBehaviourDefinition : InventoryItemBase, ISeco
 
     public SecondaryGemInstance CreateInstance(ERarity rarity)
     {
-        rolledValue = GetRolledValue(rarity);
-        Debug.Log($"Created Instance of {UIName}. Rarity: {rarity}. Value: {rolledValue}");
+        int rolledDamage = GetRolledValue(rarity);
+        int rolledCrit = GetRolledValue(rarity); // or a separate roll table if crit should scale differently
+
         SecondaryGemInstance newInstance = new SecondaryGemInstance
         {
-            InstRolledValue = rolledValue,
+            InstRolledDamageValue = rolledDamage,
+            InstRolledCritValue = rolledCrit,
             InstTemplateID = TemplateID,
             InstanceGUID = System.Guid.NewGuid().ToString()
         };

@@ -584,10 +584,13 @@ public class PlayerCombatController : MonoBehaviour
             float dynamicRampMultiplier = fixedChargeMultiplier;
             float currentChargePercentage = chargePercentage;
 
-            if (isHeld && !skillMeterAlwaysFull)
+            if (isHeld)
             {
-                SkillMeter = Mathf.Clamp01(SkillMeter - energyCostPerTick);
-                RaiseEnergyChanged();
+                if (!skillMeterAlwaysFull)
+                {
+                    SkillMeter = Mathf.Clamp01(SkillMeter - energyCostPerTick);
+                    RaiseEnergyChanged();
+                }
 
                 float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
                 dynamicRampMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
