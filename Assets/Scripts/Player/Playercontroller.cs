@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float normGravity = 3f;
     [SerializeField] private float jumpGravity = 2.5f;
     [SerializeField] private float fallGravity = 4.5f;
-    [SerializeField] private float plungeGravity = 6f;
+    [SerializeField] private float plungeGravity = 10f;
     [SerializeField] private float coyoteTime = 0.15f;
 
     [Header("Wall Settings")]
@@ -131,6 +131,7 @@ public class PlayerController : MonoBehaviour
         HandleJump();
         HandleWallJump();
         HandleDash();
+        HandlePlunge();
 
         UpdateGravity();
     }
@@ -372,6 +373,13 @@ public class PlayerController : MonoBehaviour
         isDashLocked = false;
     }
 
+    private void HandlePlunge()
+    {
+        if (!combat.IsPlunging) return;
+        if (rb.linearVelocityY > 0.1f) rb.linearVelocityY = 0f;
+        rb.linearVelocityX = 0;
+    }
+
     private void UpdateGravity()
     {
         if (IsGravityZeroed)
@@ -405,10 +413,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce)
+    public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce, bool applyStagger = true)
     {
         combat.ForceCancelAttack();
-        playerAnimation.PlayHurtAnimation();
+        if(applyStagger) playerAnimation.PlayHurtAnimation();
 
         KnockbackData data = attackForce switch
         {
@@ -422,7 +430,7 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         rb.AddForce(dir * data.Force, ForceMode2D.Impulse);
 
-        StartHitStagger(data.StaggerDuration);
+        if(applyStagger) StartHitStagger(data.StaggerDuration);
     }
 
     private void StartHitStagger(float duration)

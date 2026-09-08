@@ -463,7 +463,6 @@ public class PlayerCombatController : MonoBehaviour
 
         while (isPlunging)
         {
-            Debug.Log("plunging");
             plungeTimer += Time.deltaTime;
             attackDurationTimer = attackDuration;
             attackCenter = (Vector2)attackOrigin.position + Vector2.down * (weaponRange * 0.5f);
@@ -472,11 +471,24 @@ public class PlayerCombatController : MonoBehaviour
             yield return null;
         }
 
-        if (enemiesInRange.Length == 0) yield break;
-        float adjusted = plungeTimer * plungeAdjustedDmg;
-        float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
-        HitEnemy(enemiesInRange, plungeDmgMultiplier);
-        
+        if (enemiesInRange.Length > 0)
+        {
+            float adjusted = plungeTimer * plungeAdjustedDmg;
+            float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
+            HitEnemy(enemiesInRange, plungeDmgMultiplier);
+            player.Controller.ApplyKnockback(enemiesInRange[0].transform.position, AttackForce.Medium, false);
+        }
+        plungeCoroutine = null;
+    }
+
+    public void CancelPlunge()
+    {
+        if (plungeCoroutine != null)
+        {
+            StopCoroutine(plungeCoroutine);
+            plungeCoroutine = null;
+        }
+        isPlunging = false;
     }
 
     private float GetDamage()
@@ -803,7 +815,7 @@ public class PlayerCombatController : MonoBehaviour
     public void ForceCancelAttack()
     {
         isAttacking = false;
-        isPlunging = false;
+        CancelPlunge();
         attackDurationTimer = 0f;
         enemiesHitThisAttack.Clear();
         ResetCombo();
