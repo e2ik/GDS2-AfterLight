@@ -26,6 +26,7 @@ namespace Enemies
         public bool IsAttacking { get; private set; }
 
         private float attackCooldownTimer;
+        private bool wasTargetingPlayer;
 
 
         [Header("FMOD Events")] 
@@ -41,6 +42,7 @@ namespace Enemies
         {
             Context.Health.OnDamaged -= OnDamaged;
             Context.Health.OnDeath -= OnDeath;
+            EnemyCombatTracker.EnemyStoppedTargeting(this);
         }
 
 
@@ -79,6 +81,17 @@ namespace Enemies
         private void Update()
         {
             observationSO.Tick(Context, Time.deltaTime);
+
+            bool isTargetingPlayer = Context.TargetVisible;
+            if (isTargetingPlayer != wasTargetingPlayer)
+            {
+                if(isTargetingPlayer) 
+                    EnemyCombatTracker.EnemyStartedTargeting(this);
+                else
+                    EnemyCombatTracker.EnemyStoppedTargeting(this);
+
+                wasTargetingPlayer = isTargetingPlayer;
+            }
 
             if (!IsAttacking)
                 transform.localScale = new Vector3(Context.FacingRight ? 1f : -1f, 1f, 1f);

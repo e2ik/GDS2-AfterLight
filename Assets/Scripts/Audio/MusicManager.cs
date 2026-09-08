@@ -23,6 +23,7 @@ public class MusicManager : MonoBehaviour
 
     [SerializeField] private EventReference musicEvent;
     [SerializeField] private float smoothSpeed = 2f;
+    [SerializeField] private float decayPerSecond = 0.125f;
 
     private EventInstance _instance;
     private PARAMETER_ID _intensityParamId;
@@ -64,7 +65,16 @@ public class MusicManager : MonoBehaviour
         _instance.release();
     }
 
-    public void SetState(MusicState newState) => _currentState = newState;
+    public void SetState(MusicState newState)
+    {
+        if (newState == _currentState) return;
+
+        bool ascending = (int)newState > (int)_currentState;
+        _currentState = newState;
+
+        var (min, max) = MusicRanges.GetRange(newState);
+        _targetIntensity = ascending ? min : max;
+    }
 
     public void SetIntensityNormalized(float normalized)
     {
@@ -72,9 +82,25 @@ public class MusicManager : MonoBehaviour
         _targetIntensity = Mathf.Lerp(min, max, Mathf.Clamp01(normalized));
     }
 
+    public static void AddIntensity(float amount)
+    {
+        if (Instance == null) return;
+    }
+
+    private void InternalAddIntensity(float amount)
+    {
+        var (min, max) = MusicRanges.GetRange(_currentState);
+        _targetIntensity = Mathf.Clamp(_targetIntensity + amount, min, max);
+    }
+
     private void Update()
     {
         if (!_instance.isValid()) return;
+
+        var (min, _) = MusicRanges.GetRange(_currentState);
+
+        _targetIntensity = Mathf.MoveTowards(_targetIntensity, min, decayPerSecond * Time.deltaTime);
+        
         _currentIntensity = Mathf.MoveTowards(_currentIntensity, _targetIntensity, smoothSpeed * Time.deltaTime);
 
         RuntimeManager.StudioSystem.setParameterByID(_intensityParamId, _currentIntensity);
