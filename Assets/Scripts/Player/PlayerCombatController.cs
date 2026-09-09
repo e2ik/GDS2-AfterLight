@@ -37,6 +37,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float plungeDmgMaxMultiplier = float.MaxValue;
     [SerializeField] private float plungeAdjustedDmg = 1f;
     [SerializeField] private float plungeGraceWindow = 0.15f;
+    [SerializeField] private float plungeBounceForce = 10f;
     [SerializeField] private float attackWidth = 2f;
     [SerializeField] private float attackDuration = 0.3f;
     [SerializeField] private float attackCoolDown = 0.2f;
@@ -486,30 +487,33 @@ public class PlayerCombatController : MonoBehaviour
 
         float plungeTimer = 0f;
         attackRange = new Vector2(attackWidth, weaponRange);
-        Collider2D[] enemiesInRange = Array.Empty<Collider2D>();
 
         while (isPlunging)
         {
             plungeTimer += Time.deltaTime;
             attackDurationTimer = attackDuration;
             attackCenter = (Vector2)attackOrigin.position + Vector2.down * (weaponRange * 0.5f);
-            enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
-            if (enemiesInRange.Length > 0 || player.Controller.IsGrounded)
+            Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
+
+            if (enemiesInRange.Length > 0)
+            {
+                isPlunging = false;
+                plungeGraceTimer = plungeGraceWindow;
+
+                float adjusted = plungeTimer * plungeAdjustedDmg;
+                float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
+                AttackContext context = player.Equipment.GetModifiedAttackContext();
+                HitEnemy(enemiesInRange, context, plungeDmgMultiplier);
+                movement.ApplyBounceImpulse(enemiesInRange[0].transform.position, plungeBounceForce);
+                movement.PlayBounceState(movement.BounceDuration);
+            }
+            else if (player.Controller.IsGrounded)
             {
                 isPlunging = false;
                 plungeGraceTimer = plungeGraceWindow;
             }
-            yield return null;
-        }
 
-        if (enemiesInRange.Length > 0)
-        {
-            float adjusted = plungeTimer * plungeAdjustedDmg;
-            float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
-            AttackContext context = player.Equipment.GetModifiedAttackContext();
-            HitEnemy(enemiesInRange, context, plungeDmgMultiplier);
-            movement.PlayBounceState(movement.BounceDuration);
-            // player.Controller.ApplyKnockback(enemiesInRange[0].transform.position, AttackForce.Medium, false);
+            yield return null;
         }
 
         plungeCoroutine = null;

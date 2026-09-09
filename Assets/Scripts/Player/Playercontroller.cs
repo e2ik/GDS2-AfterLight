@@ -1,4 +1,5 @@
 using System.Collections;
+using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -97,7 +98,7 @@ public class PlayerController : MonoBehaviour
 
     public bool IsSkillActive => IsSkillBaseLocked || combat.IsSkilling;
     public bool IsMovementLockedBySkill => IsSkillBaseLocked || combat.IsSkillingWithMovementLock;
-    private bool IsFrozenOrSkillLocked => IsMovementFrozen || IsMovementLockedBySkill || combat.IsPlunging || isBouncing;
+    private bool IsFrozenOrSkillLocked => IsMovementFrozen || IsMovementLockedBySkill || combat.IsPlunging;
 
     private Vector2 currentSurfaceNormal = Vector2.up;
     public Vector2 CurrentSurfaceNormal => currentSurfaceNormal;
@@ -184,7 +185,6 @@ public class PlayerController : MonoBehaviour
                              && !isWallJumping
                              && !isDashing
                              && !isStaggered
-                             && !isBouncing
                              && !isWallSliding
                              && !IsMovementLockedBySkill
                              && !combat.IsPlunging;
@@ -464,6 +464,13 @@ public class PlayerController : MonoBehaviour
         hitStaggerRoutine = null;
     }
 
+    public void ApplyBounceImpulse(Vector2 sourcePosition, float force)
+    {
+        Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce(dir * force, ForceMode2D.Impulse);
+    }
+
     public void TriggerBounce(Vector2 sourcePosition, float force, float duration)
     {
         combat.ForceCancelAttack();
@@ -657,6 +664,9 @@ public class PlayerController : MonoBehaviour
     private void HandleHazardousCollision(Collision2D col)
     {
         if (((1 << col.gameObject.layer) & hazardousLayers) == 0 || isStaggered || isBouncing || IsSkillActive) return;
+
+        bool isEnemyLayer = ((1 << col.gameObject.layer) & combat.enemyLayer) != 0;
+        if (isEnemyLayer && !col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
 
         bool wasPlunging = combat.IsPlunging || combat.WasRecentlyPlunging;
 

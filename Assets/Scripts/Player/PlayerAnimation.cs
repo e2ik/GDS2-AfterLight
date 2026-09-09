@@ -66,7 +66,7 @@ public class PlayerAnimation : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         if (player == null || rb == null) return;
         UpdateAnimationParameters();
