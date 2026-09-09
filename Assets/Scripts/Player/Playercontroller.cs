@@ -385,7 +385,6 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            isDashLocked = false;
             StopDashing();
         }
     }

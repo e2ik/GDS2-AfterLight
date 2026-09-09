@@ -312,6 +312,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HandleParry()
     {
+        if (isParrying || isParryInRecovery) return;
         if (parryBufferTimer > 0f && CanAct()) ExecuteParry();
     }
 
