@@ -217,7 +217,13 @@ public class PlayerController : MonoBehaviour
 
     private void HandleJump()
     {
-        if (!CanMove()) return;
+        bool canJump = InputEnabled
+            && !isWallJumping
+            && !isStaggered
+            && !isWallSliding
+            && !IsMovementLockedBySkill
+            && !combat.IsPlunging;
+        if (!canJump) return;
 
         coyoteTimeCounter = isGrounded ? coyoteTime : coyoteTimeCounter - Time.fixedDeltaTime;
 
@@ -227,6 +233,12 @@ public class PlayerController : MonoBehaviour
             {
                 ConsumeJumpInput();
                 return;
+            }
+
+            if (isDashing)
+            {
+                CancelInvoke(nameof(StopDashing));
+                StopDashing();
             }
 
             combat.ForceCancelAttack();
@@ -664,6 +676,7 @@ public class PlayerController : MonoBehaviour
     private void HandleHazardousCollision(Collision2D col)
     {
         if (((1 << col.gameObject.layer) & hazardousLayers) == 0 || isStaggered || isBouncing || IsSkillActive) return;
+        if (combat.IsPlunging) return;
 
         bool isEnemyLayer = ((1 << col.gameObject.layer) & combat.enemyLayer) != 0;
         if (isEnemyLayer && !col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;

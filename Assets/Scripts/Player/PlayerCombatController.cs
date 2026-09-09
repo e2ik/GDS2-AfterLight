@@ -38,6 +38,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float plungeAdjustedDmg = 1f;
     [SerializeField] private float plungeGraceWindow = 0.15f;
     [SerializeField] private float plungeBounceForce = 10f;
+    [SerializeField] private float plungeRecoveryDuration = 0.3f;
     [SerializeField] private float attackWidth = 2f;
     [SerializeField] private float attackDuration = 0.3f;
     [SerializeField] private float attackCoolDown = 0.2f;
@@ -73,6 +74,7 @@ public class PlayerCombatController : MonoBehaviour
     private bool isCounterAttacking;
     private bool isPlunging;
     private float plungeGraceTimer;
+    private float plungeRecoveryTimer;
 
     private HashSet<EnemyHealth> enemiesHitThisAttack = new HashSet<EnemyHealth>();
 
@@ -248,6 +250,7 @@ public class PlayerCombatController : MonoBehaviour
         dashAttackBlockTimer = Tick(dashAttackBlockTimer, Time.deltaTime);
         jumpAttackBlockTimer = Tick(jumpAttackBlockTimer, Time.deltaTime);
         plungeGraceTimer = Tick(plungeGraceTimer, Time.deltaTime);
+        plungeRecoveryTimer = Tick(plungeRecoveryTimer, Time.deltaTime);
 
         attackTimer = HoldOrTick(isAttacking, attackCoolDown, attackTimer, Time.deltaTime);
         skillTimer = HoldOrTick(isSkilling, skillCoolDown, skillTimer, Time.deltaTime);
@@ -462,7 +465,10 @@ public class PlayerCombatController : MonoBehaviour
         }
         else
         {
-            StartPlunge(weaponRange);
+            if (plungeRecoveryTimer <= 0f)
+            {
+                StartPlunge(weaponRange);
+            }
         }
     }
 
@@ -499,18 +505,20 @@ public class PlayerCombatController : MonoBehaviour
             {
                 isPlunging = false;
                 plungeGraceTimer = plungeGraceWindow;
+                plungeRecoveryTimer = plungeRecoveryDuration;
 
                 float adjusted = plungeTimer * plungeAdjustedDmg;
                 float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
                 AttackContext context = player.Equipment.GetModifiedAttackContext();
                 HitEnemy(enemiesInRange, context, plungeDmgMultiplier);
-                movement.ApplyBounceImpulse(enemiesInRange[0].transform.position, plungeBounceForce);
+                movement.ApplyBounceImpulse(GetClosestBouncePoint(enemiesInRange), plungeBounceForce);
                 movement.PlayBounceState(movement.BounceDuration);
             }
             else if (player.Controller.IsGrounded)
             {
                 isPlunging = false;
                 plungeGraceTimer = plungeGraceWindow;
+                plungeRecoveryTimer = plungeRecoveryDuration;
             }
 
             yield return null;
@@ -520,12 +528,36 @@ public class PlayerCombatController : MonoBehaviour
         EndAttack();
     }
 
+    private Vector2 GetClosestBouncePoint(Collider2D[] enemiesInRange)
+    {
+        Vector2 origin = attackCenter;
+        Vector2 closest = enemiesInRange[0].transform.position;
+        float closestDist = ((Vector2)enemiesInRange[0].transform.position - origin).sqrMagnitude;
+
+        for (int i = 1; i < enemiesInRange.Length; i++)
+        {
+            float dist = ((Vector2)enemiesInRange[i].transform.position - origin).sqrMagnitude;
+            if (dist < closestDist)
+            {
+                closest = enemiesInRange[i].transform.position;
+                closestDist = dist;
+            }
+        }
+
+        return closest;
+    }
+
     public void CancelPlunge()
     {
         if (plungeCoroutine != null)
         {
             StopCoroutine(plungeCoroutine);
             plungeCoroutine = null;
+        }
+
+        if (isPlunging)
+        {
+            plungeRecoveryTimer = plungeRecoveryDuration;
         }
 
         isPlunging = false;
