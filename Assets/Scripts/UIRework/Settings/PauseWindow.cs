@@ -43,12 +43,19 @@ namespace GameUI
 
         private void HandleQuitClicked()
         {
+            confirmWindow.Show(
+                "Quit the game? Unsaved progress will be lost.",
+                onConfirmCallback: () =>
+                {
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
+                    UnityEditor.EditorApplication.isPlaying = false;
 #else
             Application.Quit();
 #endif
+                }
+            );
         }
+
         private void HandleSettingsClicked()
         {
             UIManager.Instance.Open(settingsWindow);

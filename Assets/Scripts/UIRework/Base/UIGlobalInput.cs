@@ -21,7 +21,6 @@ namespace GameUI
 
         private void HandleCancel(InputAction.CallbackContext context)
         {
-            Debug.Log($"[UIGlobalInput] Cancel fired. SuppressCancel={UIManager.Instance.SuppressCancel}, HasOpenWindows={UIManager.Instance.HasOpenWindows}");
 
             if (UIManager.Instance.SuppressCancel) { return; }
 
