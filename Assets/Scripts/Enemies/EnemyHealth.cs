@@ -13,6 +13,7 @@ namespace Enemies
         public event Action OnDeath;
 
         private void Awake() => CurrentHealth = maxHealth;
+        private Coroutine dotRoutine;
 
         public void ApplyDamage(int amount, bool isDot = false)
         {
@@ -34,7 +35,11 @@ namespace Enemies
             if (context.AppliesDot)
             {
                 float dotDamagePerTick = damage * context.DotDamagePercent;
-                StartCoroutine(DotRoutine(dotDamagePerTick, context.DotTickInterval, context.DotDuration));
+
+                if (dotRoutine != null)
+                    StopCoroutine(dotRoutine);
+
+                dotRoutine = StartCoroutine(DotRoutine(dotDamagePerTick, context.DotTickInterval, context.DotDuration));
             }
         }
 
@@ -49,6 +54,8 @@ namespace Enemies
 
                 ApplyDamage((int)damagePerTick, isDot: true);
             }
+
+            dotRoutine = null;
         }
     }
 }
