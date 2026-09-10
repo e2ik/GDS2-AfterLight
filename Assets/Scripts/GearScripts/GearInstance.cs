@@ -11,4 +11,6 @@ public class GearInstance
     public float InstBonusDefense;
     public float InstBonusHumanity;
     public float InstBonusCrit;
+
+    public int PickupOrder;
 }

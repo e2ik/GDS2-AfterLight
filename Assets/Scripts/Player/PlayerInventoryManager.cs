@@ -1,9 +1,12 @@
+using System.Linq;
 using UnityEngine;
 
 public class PlayerInventoryManager : MonoBehaviour
 {
     public PlayerInventorySO currentInventory;
     public System.Action OnInventoryChanged;
+
+    private int nextPickupOrder = 0;
 
     private void Start()
     {
@@ -36,6 +39,7 @@ public class PlayerInventoryManager : MonoBehaviour
         if (currentInventory.SecondaryGems == null)
             currentInventory.SecondaryGems = new System.Collections.Generic.List<SecondaryGemInstance>();
 
+        item.PickupOrder = nextPickupOrder++; // NEW
         currentInventory.SecondaryGems.Add(item);
         SaveManager.Instance?.SaveInventory(ToSaveData());
 
@@ -49,6 +53,7 @@ public class PlayerInventoryManager : MonoBehaviour
         if (currentInventory.GearInstances == null)
             currentInventory.GearInstances = new System.Collections.Generic.List<GearInstance>();
 
+        item.PickupOrder = nextPickupOrder++; // NEW
         currentInventory.GearInstances.Add(item);
         SaveManager.Instance?.SaveInventory(ToSaveData());
 
@@ -76,13 +81,25 @@ public class PlayerInventoryManager : MonoBehaviour
         currentInventory.SecondaryGems?.Clear();
         currentInventory.GearInstances?.Clear();
 
-        if (data == null) return;
+        if (data == null)
+        {
+            nextPickupOrder = 0;
+            return;
+        }
 
         if (data.secondaryGems != null && currentInventory.SecondaryGems != null)
             currentInventory.SecondaryGems.AddRange(data.secondaryGems);
 
         if (data.gearInstances != null && currentInventory.GearInstances != null)
             currentInventory.GearInstances.AddRange(data.gearInstances);
+
+        int highestLoadedOrder = -1;
+        if (currentInventory.SecondaryGems != null)
+            highestLoadedOrder = Mathf.Max(highestLoadedOrder, currentInventory.SecondaryGems.Count > 0 ? currentInventory.SecondaryGems.Max(g => g.PickupOrder) : -1);
+        if (currentInventory.GearInstances != null)
+            highestLoadedOrder = Mathf.Max(highestLoadedOrder, currentInventory.GearInstances.Count > 0 ? currentInventory.GearInstances.Max(g => g.PickupOrder) : -1);
+
+        nextPickupOrder = highestLoadedOrder + 1;
 
         OnInventoryChanged?.Invoke();
     }
