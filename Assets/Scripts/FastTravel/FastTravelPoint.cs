@@ -17,6 +17,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
     private Animator anim;
     private bool isInteracting = false;
+    private Player interactingPlayer;
 
     private void Awake()
     {
@@ -78,12 +79,19 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     {
         if (!CanInteract) return;
 
+        interactingPlayer = player;
         StartCoroutine(InteractionRoutine());
     }
 
     private IEnumerator InteractionRoutine()
     {
         isInteracting = true;
+
+        if (interactingPlayer != null && interactingPlayer.Controller != null)
+        {
+            interactingPlayer.Controller.SetPhysicsSuspended(true);
+        }
+
         FastTravelManager.Instance?.SetLastInteractedNode(nodeData);
 
         if (anim != null)
@@ -115,7 +123,15 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
         {
             MapUIManager.Instance.OpenMap(nodeData);
         }
+        else
+        {
+            if (interactingPlayer != null && interactingPlayer.Controller != null)
+            {
+                interactingPlayer.Controller.SetPhysicsSuspended(false);
+            }
+        }
 
+        interactingPlayer = null;
         isInteracting = false;
     }
 

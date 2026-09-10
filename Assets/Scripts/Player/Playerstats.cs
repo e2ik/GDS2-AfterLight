@@ -11,7 +11,7 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float baseAttack = 10f; //using weapon base attack, not sure if this is needed since you will always have a weapon
     [SerializeField] private float baseDefense = 5f;
     [SerializeField] private float baseHumanity = 10f;
-    [SerializeField, Range(0f, 1f)] private float defenseMitigationPerPoint = 0.05f;
+    [SerializeField, Range(0f, 1f)] private float defenseMitigationPerPoint = 0.05f; // multiplicative damage reduction per point of Defense
 
     [Header("Gear Stats")]
     [SerializeField] private float gearAttackBonus = 0f;
@@ -121,7 +121,7 @@ public class PlayerStats : MonoBehaviour
 
         AudioManager.PlaySFX(hitEvent, transform.position);
 
-        Debug.Log($"Player took dmg:{rawDamage} - mitigation:{(1f - mitigationMultiplier):P1} (def:{TotalDefense}) for {effectiveDamage} damage. Current Health: {currentHealth}");
+        Debug.Log($"Actual Dmg: {rawDamage} - received dmg: {effectiveDamage} (mitigation:{(1f - mitigationMultiplier):P1}, def:{TotalDefense}). Current Health: {currentHealth}");
 
         if (currentHealth <= 0f)
             Die();
@@ -147,6 +147,7 @@ public class PlayerStats : MonoBehaviour
         Debug.Log("Player died.");
 
         SetInputLocked(true);
+        if (player != null) player.Controller.SetPhysicsSuspended(true);
         GetUIManager()?.SetDeathScreenActive(true);
     }
 
@@ -163,6 +164,7 @@ public class PlayerStats : MonoBehaviour
             Debug.LogWarning("[PlayerStats] No fast travel point visited this session; can't respawn.");
             ReviveFull();
             SetInputLocked(false);
+            if (player != null) player.Controller.SetPhysicsSuspended(false);
         }
     }
 
@@ -170,6 +172,7 @@ public class PlayerStats : MonoBehaviour
     {
         ReviveFull();
         SetInputLocked(false);
+        if (player != null) player.Controller.SetPhysicsSuspended(false);
     }
 
     private void SetInputLocked(bool locked)

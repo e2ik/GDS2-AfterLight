@@ -104,6 +104,9 @@ public class PlayerController : MonoBehaviour
     public Vector2 CurrentSurfaceNormal => currentSurfaceNormal;
     private Vector2 lastHitPoint;
     public Vector2 LastHitPoint => lastHitPoint;
+    private bool physicsSuspended;
+    private float preSuspendGravityScale;
+    public bool IsPhysicsSuspended => physicsSuspended;
 
     private void Awake()
     {
@@ -111,7 +114,7 @@ public class PlayerController : MonoBehaviour
         playerAnimation = player.Animation;
         combat = player.CombatController;
         rb = GetComponent<Rigidbody2D>();
-        playerColliders = GetComponents<Collider2D>();
+        playerColliders = GetComponentsInChildren<Collider2D>(true);
     }
 
     private void Start() => rb.gravityScale = normGravity;
@@ -124,6 +127,8 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (physicsSuspended) return;
+
         cachedBounds = ComputePlayerBounds();
 
         GroundCheckUpdate();
@@ -143,6 +148,37 @@ public class PlayerController : MonoBehaviour
     {
         movementFreezeCount = freeze ? movementFreezeCount + 1 : Mathf.Max(0, movementFreezeCount - 1);
         if (freeze) rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+    }
+
+    public void SetPhysicsSuspended(bool suspend)
+    {
+        if (suspend == physicsSuspended) return;
+        physicsSuspended = suspend;
+
+        SetCollidersEnabled(!suspend);
+
+        if (suspend)
+        {
+            preSuspendGravityScale = rb.gravityScale;
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            rb.gravityScale = 0f;
+        }
+        else
+        {
+            rb.gravityScale = preSuspendGravityScale;
+        }
+    }
+
+    public void SetCollidersEnabled(bool enabledState)
+    {
+        if (playerColliders == null || playerColliders.Length == 0)
+            playerColliders = GetComponentsInChildren<Collider2D>(true);
+
+        foreach (var col in playerColliders)
+        {
+            if (col != null) col.enabled = enabledState;
+        }
     }
 
     private bool IsGravityZeroed => isParryGravityActive || isChargingSkillPhysics || isSkillGravityZeroed;
@@ -443,6 +479,8 @@ public class PlayerController : MonoBehaviour
 
     public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce, bool applyStagger = true)
     {
+        if (physicsSuspended) return;
+
         combat.ForceCancelAttack();
         if(applyStagger) playerAnimation.PlayHurtAnimation();
 
@@ -477,6 +515,8 @@ public class PlayerController : MonoBehaviour
 
     public void ApplyBounceImpulse(Vector2 sourcePosition, float force)
     {
+        if (physicsSuspended) return; // NEW
+
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
         rb.linearVelocity = Vector2.zero;
         rb.AddForce(dir * force, ForceMode2D.Impulse);
@@ -484,6 +524,8 @@ public class PlayerController : MonoBehaviour
 
     public void TriggerBounce(Vector2 sourcePosition, float force, float duration)
     {
+        if (physicsSuspended) return; // NEW
+
         combat.ForceCancelAttack();
 
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
@@ -495,6 +537,8 @@ public class PlayerController : MonoBehaviour
 
     public void PlayBounceState(float duration)
     {
+        if (physicsSuspended) return; // NEW
+
         if (bounceRoutine != null) StopCoroutine(bounceRoutine);
         bounceRoutine = StartCoroutine(BounceCoroutine(duration));
     }
@@ -632,7 +676,7 @@ public class PlayerController : MonoBehaviour
 
     private Bounds ComputePlayerBounds()
     {
-        if (playerColliders == null || playerColliders.Length == 0) playerColliders = GetComponents<Collider2D>();
+        if (playerColliders == null || playerColliders.Length == 0) playerColliders = GetComponentsInChildren<Collider2D>(true);
         if (playerColliders == null || playerColliders.Length == 0) return new Bounds(transform.position, Vector3.one);
 
         Bounds b = playerColliders[0].bounds;

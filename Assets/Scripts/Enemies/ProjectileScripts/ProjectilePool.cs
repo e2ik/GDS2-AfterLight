@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -11,13 +10,24 @@ namespace Enemies.ProjectileScripts
 
         public static Projectile Get(Projectile prefab, Vector3 position, Quaternion rotation)
         {
-            var instance = GetOrCreatePool(prefab).Get();
+            var pool = GetOrCreatePool(prefab);
+            var instance = pool.Get();
+
+            if (instance == null)
+            {
+                instance = Object.Instantiate(prefab);
+                instance.SourcePrefab = prefab;
+                instance.gameObject.SetActive(true);
+            }
+
             instance.transform.SetPositionAndRotation(position, rotation);
             return instance;
         }
 
         public static void Release(Projectile prefab, Projectile instance)
         {
+            if (instance == null) return;
+
             if (prefab == null)
             {
                 Object.Destroy(instance.gameObject);
@@ -39,13 +49,20 @@ namespace Enemies.ProjectileScripts
                     instance.SourcePrefab = prefab;
                     return instance;
                 },
-                actionOnGet: p => p.gameObject.SetActive(true),
+                actionOnGet: p =>
+                {
+                    if (p != null) p.gameObject.SetActive(true);
+                },
                 actionOnRelease: p =>
                 {
+                    if (p == null) return;
                     p.OnPoolRelease();
-                    p.GameObject().SetActive(false);
+                    p.gameObject.SetActive(false);
                 },
-                actionOnDestroy: p => Object.Destroy(p.gameObject),
+                actionOnDestroy: p =>
+                {
+                    if (p != null) Object.Destroy(p.gameObject);
+                },
                 collectionCheck: false,
                 defaultCapacity: 16,
                 maxSize: 100);
