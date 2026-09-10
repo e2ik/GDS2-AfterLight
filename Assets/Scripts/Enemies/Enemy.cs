@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using FMODUnity;
 using Unity.Behavior;
@@ -23,6 +23,13 @@ namespace Enemies
 
         [Header("FMOD Events")] 
         [SerializeField] private EventReference hitEvent;
+    
+        [Header("Damage Flash")]
+        [SerializeField] private SpriteRenderer spriteRenderer;
+        [SerializeField] private Color flashColor = Color.red;
+        [SerializeField] private float flashDuration = 0.15f;
+        private Coroutine flashRoutine;
+        private Color baseColor;
 
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
@@ -73,6 +80,11 @@ namespace Enemies
             Context.HomePosition = transform.position;
             Context.NavPath = new NavMeshPath();
             Context.NoiseSeed = UnityEngine.Random.value * 1000f;
+
+            if (spriteRenderer == null)
+                Debug.LogError($"{name}: no sprite renderer found");
+            else
+                baseColor = spriteRenderer.color;
 
         }
 
@@ -158,10 +170,14 @@ namespace Enemies
         private void OnDamaged(int amount, int currentHealth, bool isDot)
         {
             Debug.Log($"Enemy blud was damaged for {amount}. Current Health: {currentHealth}");
-            
+
             AudioManager.PlaySFXAttached(hitEvent, gameObject);
 
-            if (isDot) return; // DOT ticks shouldn't trigger the hurt-interrupt animation
+            if (flashRoutine != null)
+                StopCoroutine(flashRoutine);
+            flashRoutine = StartCoroutine(FlashRed());
+
+            if (isDot) return;
 
             if (!Context.IsAttacking || (Context.CurrentAttackForce != AttackForce.Heavy) || Context.CurrentAttackForce == AttackForce.Zero)
                 animator.SetTrigger("Hurt");
@@ -171,8 +187,24 @@ namespace Enemies
         {
             Debug.Log($"Enemy hath died. Rip {name}");
 
-            lootTable.SpawnInstance(transform.position);
+            lootTable?.SpawnInstance(transform.position);
             gameObject.SetActive(false);
+        }
+    
+        private IEnumerator FlashRed()
+        {
+            spriteRenderer.color = flashColor;
+
+            float t = 0f;
+            while (t < flashDuration)
+            {
+                t += Time.deltaTime;
+                spriteRenderer.color = Color.Lerp(flashColor, baseColor, t / flashDuration);
+                yield return null;
+            }
+
+            spriteRenderer.color = baseColor;
+            flashRoutine = null;
         }
 
 #if UNITY_EDITOR

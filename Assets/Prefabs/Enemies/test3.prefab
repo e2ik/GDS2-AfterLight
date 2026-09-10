@@ -198,7 +198,7 @@ GameObject:
   - component: {fileID: 7603609893098896341}
   - component: {fileID: 2968184197812120870}
   - component: {fileID: 59898807662759673}
-  m_Layer: 12
+  m_Layer: 9
   m_Name: test3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -249,10 +249,8 @@ MonoBehaviour:
   observationSO: {fileID: 11400000, guid: 507f599106ab90f40a26514267cdd09a, type: 2}
   attacks:
   - Attack: {fileID: 11400000, guid: 8a932aa37459b944da1c7005641ba9af, type: 2}
-    Weight: 70
-  - Attack: {fileID: 11400000, guid: 2fef09050b9a22a499951d23bdfd15f5, type: 2}
-    Weight: 30
-  lootTable: {fileID: 0}
+    Weight: 100
+  lootTable: {fileID: 11400000, guid: 567a4ae1129c3c74b9bcb59707e14432, type: 2}
   behaviorAgent: {fileID: 7603609893098896341}
   animator: {fileID: 1943101255374262222}
   rb2D: {fileID: 2968184197812120870}
@@ -265,6 +263,9 @@ MonoBehaviour:
       Data3: 1112032419
       Data4: -774162852
     Path: event:/CombatSFXEvents/EnemyHitEvent
+  spriteRenderer: {fileID: 5107996575365250629}
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.15
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -370,7 +371,7 @@ GameObject:
   - component: {fileID: 5107996575365250629}
   - component: {fileID: 1943101255374262222}
   - component: {fileID: 2769822166128368776}
-  m_Layer: 12
+  m_Layer: 9
   m_Name: Graphics
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -444,7 +445,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 15
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 4915813873902804441, guid: 023e804845e514c43ad3c3714c7a360d, type: 3}
+  m_Sprite: {fileID: 4301079142537974084, guid: 8bb048460e48a744ea912e71d145c89d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
