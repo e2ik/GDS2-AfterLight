@@ -58,9 +58,13 @@ Material:
     m_Ints: []
     m_Floats:
     - _EnableExternalAlpha: 0
-    - _Intensity: 1
+    - _Intensity: 0.5
+    - _ShineDelay: 5
+    - _ShineOpacity: 0.35
+    - _ShinePixelResolution: 16
+    - _Softness: 0.08
     - _Speed: 0.5
-    - _Width: 0.15
+    - _Width: 0.14
     - _ZWrite: 0
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
