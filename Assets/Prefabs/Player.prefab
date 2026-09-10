@@ -296,6 +296,7 @@ MonoBehaviour:
   plungeAdjustedDmg: 1
   plungeGraceWindow: 0.15
   plungeBounceForce: 15
+  plungeRecoveryDuration: 1
   attackWidth: 2
   attackDuration: 0.4
   attackCoolDown: 0.1
@@ -381,7 +382,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc3f79ceefdb1c7b84602f1402a42b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventoryManager
-  currentInventory: {fileID: 0}
+  currentInventory: {fileID: 11400000, guid: 04687c2558aa2e8439734379edd53b28, type: 2}
 --- !u!114 &3959588101215870426
 MonoBehaviour:
   m_ObjectHideFlags: 0
