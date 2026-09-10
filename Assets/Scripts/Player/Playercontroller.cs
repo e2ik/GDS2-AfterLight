@@ -108,6 +108,8 @@ public class PlayerController : MonoBehaviour
     private float preSuspendGravityScale;
     public bool IsPhysicsSuspended => physicsSuspended;
 
+    private int lastFacingDirection;
+
     private void Awake()
     {
         Player player = GetComponent<Player>();
@@ -117,7 +119,12 @@ public class PlayerController : MonoBehaviour
         playerColliders = GetComponentsInChildren<Collider2D>(true);
     }
 
-    private void Start() => rb.gravityScale = normGravity;
+    //private void Start() => rb.gravityScale = normGravity;
+    private void Start()
+    {
+        rb.gravityScale = normGravity;
+        lastFacingDirection = FacingDirection;
+    }
 
     private void Update()
     {
@@ -587,8 +594,22 @@ public class PlayerController : MonoBehaviour
     {
         if (Mathf.Abs(horizontalInput) > InputDeadzone)
         {
-            FacingDirection = horizontalInput > 0f ? 1 : -1;
-            transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
+            // FacingDirection = horizontalInput > 0f ? 1 : -1;
+            // transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
+            int newFacingDirection = horizontalInput > 0f ? 1 : -1;
+
+            if (newFacingDirection != FacingDirection)
+            {
+                FacingDirection = newFacingDirection;
+
+                if (isGrounded)
+                {
+                    Vector2 spawnPosition = new Vector2(cachedBounds.center.x,cachedBounds.min.y);
+                    PSpawner.Spawn("TurnDust", spawnPosition);
+                }
+                lastFacingDirection = FacingDirection;
+                transform.localScale = new Vector3(FacingDirection,transform.localScale.y,transform.localScale.z);
+            }
         }
     }
 
