@@ -107,6 +107,9 @@
         },
         {
             "m_Id": "d7ad6b3b581a4b9b965d9815750e535a"
+        },
+        {
+            "m_Id": "db31f05eb688433e8404a15e86152e19"
         }
     ],
     "m_GroupDatas": [],
@@ -166,6 +169,20 @@
                     "m_Id": "6e25b7edd0924415bda5f05b432d724e"
                 },
                 "m_SlotId": 0
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "2048d95e98074b178416f719ea793b61"
+                },
+                "m_SlotId": 0
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "5393066790474f858f21de45a54af315"
+                },
+                "m_SlotId": 1
             }
         },
         {
@@ -262,6 +279,20 @@
             "m_InputSlot": {
                 "m_Node": {
                     "m_Id": "791ddd7bbbb54e0b8e2a4f96c9d79641"
+                },
+                "m_SlotId": 0
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "6d491140310a46f5805ce624d22cbdf1"
+                },
+                "m_SlotId": 2
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "5393066790474f858f21de45a54af315"
                 },
                 "m_SlotId": 0
             }
@@ -376,6 +407,20 @@
                     "m_Id": "791ddd7bbbb54e0b8e2a4f96c9d79641"
                 },
                 "m_SlotId": 1
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "db31f05eb688433e8404a15e86152e19"
+                },
+                "m_SlotId": 0
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "e74ae5e145824681a8606d3d7a954d6d"
+                },
+                "m_SlotId": 0
             }
         },
         {
@@ -1678,10 +1723,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": 1789.5001220703125,
-            "y": 173.5,
+            "x": 1786.9998779296875,
+            "y": 173.49998474121095,
             "width": 208.0,
-            "height": 302.0000305175781
+            "height": 301.99993896484377
         }
     },
     "m_Slots": [
@@ -1731,6 +1776,22 @@
         "z": 0.0,
         "w": 0.0
     },
+    "m_LiteralMode": false
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "58472561c6764f40874e52d5187256c9",
+    "m_Id": 0,
+    "m_DisplayName": "Width",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Out",
+    "m_StageCapability": 3,
+    "m_Value": 0.0,
+    "m_DefaultValue": 0.0,
+    "m_Labels": [],
     "m_LiteralMode": false
 }
 
@@ -2480,7 +2541,7 @@
     "m_DefaultRefNameVersion": 1,
     "m_RefNameGeneratedByDisplayName": "MainTexture",
     "m_DefaultReferenceName": "_MainTexture",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "_MainTex",
     "m_GeneratePropertyBlock": true,
     "m_UseCustomSlotLabel": false,
     "m_CustomSlotLabel": "",
@@ -3052,6 +3113,42 @@
         "w": 0.0
     },
     "m_LiteralMode": false
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
+    "m_ObjectId": "db31f05eb688433e8404a15e86152e19",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "Property",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": 1192.5001220703125,
+            "y": 139.50001525878907,
+            "width": 106.0,
+            "height": 34.00001525878906
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "58472561c6764f40874e52d5187256c9"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_DismissedVersion": 0,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_Property": {
+        "m_Id": "4c6d02ab6d82442e99acbeb139403d3f"
+    }
 }
 
 {
