@@ -189,8 +189,25 @@ public class PlayerAnimation : MonoBehaviour
     {
         if (player == null || player.Controller == null) return;
 
-        Vector2 spawnPosition = player.Controller.LastHitPoint;
+        // Vector2 spawnPosition = player.Controller.LastHitPoint;
+        Vector2 spawnPosition;
         Vector2 normal = player.Controller.CurrentSurfaceNormal;
+
+        if (isWallJump) spawnPosition = player.Controller.LastHitPoint;
+        else
+        {
+            Collider2D playerCollider = player.GetComponent<Collider2D>();
+
+            if (playerCollider != null)
+            {
+                Bounds bounds = playerCollider.bounds;
+                spawnPosition = new Vector2(bounds.center.x, bounds.min.y);
+            }
+            else
+            {
+                spawnPosition = Vector2.zero;
+            }
+        }
 
         if (spawnPosition == Vector2.zero)
         {

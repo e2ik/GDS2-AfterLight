@@ -229,13 +229,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PSpawner
   database:
   - key: spark
-    prefab: {fileID: 5497425098577746589, guid: 47eca0ebfe5eb204b82596aacf764024, type: 3}
+    prefab: {fileID: 525218031157934298, guid: cfe360f1890206848aabc05b477a7387, type: 3}
     initialPoolSize: 1
   - key: anticipation
     prefab: {fileID: 5497425098577746589, guid: 3ad1cec5f40777c4d9ea4e8d04c257ba, type: 3}
     initialPoolSize: 1
   - key: JumpDust
-    prefab: {fileID: 5497425098577746589, guid: f0bfe79dbae5a5c47bc3b481467e617b, type: 3}
+    prefab: {fileID: 3808574646349885763, guid: d654844c7ca7a4028a99627c117d2f50, type: 3}
+    initialPoolSize: 1
+  - key: PlayerHit
+    prefab: {fileID: 4761495741035824944, guid: a2d56de8ab6424f38a73fcc0b18c599a, type: 3}
+    initialPoolSize: 1
+  - key: EnemyHit
+    prefab: {fileID: 4761495741035824944, guid: 2bffe2055451b4272ad83de75b03a780, type: 3}
     initialPoolSize: 1
 --- !u!114 &78526262
 MonoBehaviour:

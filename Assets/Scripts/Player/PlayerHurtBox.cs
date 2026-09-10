@@ -55,6 +55,7 @@ public class PlayerHurtBox : MonoBehaviour
         if (isChargedSkillExecuting) return false;
         
         stats.TakeDamage(hitbox.Damage);
+        PSpawner.Spawn("PlayerHit", transform.position);
 
         Vector2 sourcePosition = hitbox.transform.root.transform.position;
         if (!combatController.IsSkilling && !combatController.IsChargeInputHeld)

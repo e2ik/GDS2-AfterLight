@@ -181,6 +181,8 @@ namespace Enemies
 
             if (!Context.IsAttacking || (Context.CurrentAttackForce != AttackForce.Heavy) || Context.CurrentAttackForce == AttackForce.Zero)
                 animator.SetTrigger("Hurt");
+            
+            PSpawner.Spawn("EnemyHit", transform.position);
         }
 
         private void OnDeath()
