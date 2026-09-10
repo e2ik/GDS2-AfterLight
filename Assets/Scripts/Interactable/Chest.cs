@@ -16,6 +16,11 @@ public class Chest : MonoBehaviour, IInteractable
     [SerializeField] private float minHorizontalAngle = -0.4f;
     [SerializeField] private float maxHorizontalAngle = 0.4f;
 
+    private static readonly int IsOpenedHash = Animator.StringToHash("isOpened");
+    private static readonly int IsInteractedHash = Animator.StringToHash("isInteracted");
+
+    private Animator anim;
+
     public string InteractionPrompt => "Open Chest";
     public bool CanInteract => !isOpened;
     public bool ShouldStopPlayerMovement => false;
@@ -23,6 +28,7 @@ public class Chest : MonoBehaviour, IInteractable
     private void Awake()
     {
         chestID = GetHierarchyPath(transform);
+        anim = GetComponent<Animator>();
     }
 
     private string GetHierarchyPath(Transform current)
@@ -36,7 +42,7 @@ public class Chest : MonoBehaviour, IInteractable
         return $"{gameObject.scene.name}:{path}[{transform.GetSiblingIndex()}]";
     }
 
-    private void Start()
+    private void OnEnable()
     {
         if (SaveManager.Instance == null) return;
 
@@ -44,6 +50,14 @@ public class Chest : MonoBehaviour, IInteractable
         if (isOpened)
         {
             ApplyOpenedVisualState();
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (anim != null)
+        {
+            anim.SetBool(IsInteractedHash, false);
         }
     }
 
@@ -82,15 +96,23 @@ public class Chest : MonoBehaviour, IInteractable
     private void CompleteOpening()
     {
         isOpened = true;
+
         if (SaveManager.Instance != null)
         {
             SaveManager.Instance.MarkChestOpened(chestID);
         }
-        ApplyOpenedVisualState();
+
+        if (anim != null)
+        {
+            anim.SetBool(IsInteractedHash, true);
+        }
     }
 
     private void ApplyOpenedVisualState()
     {
-        // Swap sprite or trigger open chest animation here
+        if (anim != null)
+        {
+            anim.SetBool(IsOpenedHash, true);
+        }
     }
 }

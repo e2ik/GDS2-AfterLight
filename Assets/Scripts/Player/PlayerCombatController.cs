@@ -3,10 +3,14 @@ using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System.Collections.Generic;
+using FMODUnity;
+using Unity.VisualScripting;
 
 public enum ParryDirection { Up, Down, Left, Right }
 public enum AttackForce { Zero, Light, Medium, Heavy }
 
+[RequireComponent(typeof(Player))]
 public class PlayerCombatController : MonoBehaviour
 {
     [Header("Parry Settings")]
@@ -14,7 +18,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float parryRecoveryDuration = 0.3f;
     [SerializeField] private float parryBufferTime = 0.15f;
     [SerializeField] private float successfulParryVisualDuration = 0.15f;
-    
+
     private float parryActiveTimer;
     private float parryRecoveryTimer;
     private float parryBufferTimer;
@@ -26,23 +30,53 @@ public class PlayerCombatController : MonoBehaviour
 
     [Header("Attack Settings")]
     [SerializeField] private Transform attackOrigin;
+    [SerializeField] private float damageScalingExponent = 0.8f;
     public LayerMask enemyLayer;
     [SerializeField] private float critDamageMultiplier = 1.33f;
     [SerializeField] private float counterAttackMultiplier = 1.2f;
+    [SerializeField] private float plungeDmgMaxMultiplier = float.MaxValue;
+    [SerializeField] private float plungeAdjustedDmg = 1f;
+    [SerializeField] private float plungeGraceWindow = 0.15f;
+    [SerializeField] private float plungeBounceForce = 10f;
+    [SerializeField] private float plungeRecoveryDuration = 0.3f;
     [SerializeField] private float attackWidth = 2f;
     [SerializeField] private float attackDuration = 0.3f;
     [SerializeField] private float attackCoolDown = 0.2f;
+    [SerializeField] private float attackBufferTime = 0.15f;
     [SerializeField] private float counterAttackWindow = 0.5f;
 
+    [Header("Combo Settings")]
+    [SerializeField] private int maxComboCount = 3;
+    [SerializeField] private float comboResetDelay = 1.0f;
+
+    private int currentComboIndex = 0;
+    private bool canBufferNextCombo = false;
+    private bool comboQueued = false;
+    private float comboResetTimer;
+    [SerializeField] private float[] comboDamageMultipliers = { 1.0f, 1.25f, 1.5f };
+    public int CurrentComboIndex => currentComboIndex;
+
+    [Header("Input Conflict Settings")]
+    [SerializeField] private float dashAttackConflictWindow = 0.2f;
+    private float dashAttackBlockTimer;
+    [SerializeField] private float jumpAttackConflictWindow = 0.2f;
+    private float jumpAttackBlockTimer;
+
     private float attackBufferTimer;
+    private float attackDurationTimer;
     private Vector2 attackRange;
     private Vector2 attackCenter;
     private float attackDamage;
-    private float attackCrit;
+    private float attackCritChance;
     private float attackTimer;
-    private bool attackPressed;
     private bool isAttacking;
+    private bool attackStartedGrounded;
     private bool isCounterAttacking;
+    private bool isPlunging;
+    private float plungeGraceTimer;
+    private float plungeRecoveryTimer;
+
+    private HashSet<EnemyHealth> enemiesHitThisAttack = new HashSet<EnemyHealth>();
 
     [Header("Skill Settings")]
     [SerializeField] private bool skillMeterAlwaysFull;
@@ -54,6 +88,13 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
     [SerializeField] private float chargeSkillAmount = 0.2f;
 
+    [Header("FMOD Events")]
+    [SerializeField] private EventReference parryEvent;
+
+    public float SkillActivationCost { get; private set; }
+    private const float DefaultEnergyDrainTick = 0.16f;
+
+    private PrimaryGemBehaviourDefinition currentSkillDef;
     private float skillBufferTimer;
     private float skillTimer;
     private bool skillPressed;
@@ -62,74 +103,166 @@ public class PlayerCombatController : MonoBehaviour
     private bool isChargingSkill;
     private float chargingSkillTimer;
     private bool skillFiredThisHold;
-    private bool skillReady;
+    private SkillExecutionType activeSkillExecutionType;
     private Coroutine skillCoroutine;
+    private float singleSkillCostTick;
+    private float singleSkillChargeCost;
+    private Coroutine plungeCoroutine;
 
     private float verticalInput;
-    private Player Player;
+    private Player player;
+    private PlayerController movement;
 
     public bool IsAttacking => isAttacking;
+    public bool AttackStartedGrounded => attackStartedGrounded;
+    public bool IsPlunging => isPlunging;
+    public bool WasRecentlyPlunging => plungeGraceTimer > 0f;
     public bool IsParrying => isParrying || isParryInRecovery;
     public bool IsParrySuccess => isParrySuccess;
     public bool IsSkilling => isSkilling;
-    public bool IsChargingSkill => isChargingSkill;
+    public bool IsSkillingWithMovementLock => isSkilling && activeSkillExecutionType != SkillExecutionType.Held;
+    public bool IsChargeInputHeld => isChargingSkill;
     public string CurrentSkillGemName { get; private set; }
+    public float ChargingSkillTimer => chargingSkillTimer;
+    public float ChargingSkillMaxDur => chargingSkillMaxDur;
 
     private float _skillMeter;
-    public float SkillMeter 
-    { 
-        get => skillMeterAlwaysFull ? 1f : _skillMeter; 
-        private set => _skillMeter = value; 
+    public float SkillMeter
+    {
+        get => skillMeterAlwaysFull ? 1f : _skillMeter;
+        private set => _skillMeter = value;
     }
 
     public event Action<float, float> OnEnergyChanged;
 
-    private void Awake() => Player = GetComponentInParent<Player>();
+    private void RaiseEnergyChanged() => OnEnergyChanged?.Invoke(SkillMeter, 1f);
 
-    private void Start() 
+    private void Awake()
+    {
+        player = GetComponent<Player>();
+        movement = player.Controller;
+    }
+
+    private void Start()
     {
         if (skillMeterAlwaysFull) SkillMeter = 1f;
-        OnEnergyChanged?.Invoke(SkillMeter, 1f);
+        RaiseEnergyChanged();
     }
 
     private void OnValidate()
     {
         if (Application.isPlaying)
         {
-            OnEnergyChanged?.Invoke(SkillMeter, 1f);
+            RaiseEnergyChanged();
+        }
+
+        if (comboDamageMultipliers.Length < maxComboCount)
+        {
+            Debug.LogWarning(
+                $"{name}: comboDamageMultipliers has {comboDamageMultipliers.Length} entries but " +
+                $"maxComboCount is {maxComboCount} - combo hits beyond entry {comboDamageMultipliers.Length} " +
+                "will silently reuse the last multiplier.", this);
         }
     }
 
     private void Update()
     {
-        if (!Player.Controller.InputEnabled) return;
+        if (!movement.InputEnabled) return;
+
+        currentSkillDef = player.Equipment?.SpecialAttackDef;
 
         HandleParry();
         HandleAttack();
         HandleSkill();
         UpdateTimers();
 
-        if (skillButtonHeld)
+        if (isAttacking && player.Equipment?.EquippedWeapon != null)
         {
-            chargingSkillTimer += Time.deltaTime;
-            var specialDef = Player.Equipment?.SpecialAttackDef;
+            PerformAttackHitboxCheck();
+        }
 
-            if (specialDef != null && specialDef.SkillExecutionType == SkillExecutionType.Charged)
+        if (!skillButtonHeld) return;
+
+        if (movement.IsWallSliding)
+        {
+            skillButtonHeld = false;
+            isChargingSkill = false;
+            skillFiredThisHold = true;
+            StopChargingPhysics();
+            return;
+        }
+
+        if (jumpAttackBlockTimer > 0f) return;
+
+        chargingSkillTimer += Time.deltaTime;
+
+        if (currentSkillDef != null && currentSkillDef.SkillExecutionType == SkillExecutionType.Charged)
+        {
+            if (chargingSkillTimer >= skillHoldThreshold)
             {
-                if (chargingSkillTimer >= skillHoldThreshold && !Player.Controller.IsChargingSkill)
-                    Player.Controller.SetSkillCharging(true);
+                if (!movement.IsChargingSkill)
+                {
+                    movement.SetSkillCharging(true);
+                }
+
+                SingleSkillChargeCost();
             }
         }
     }
 
+    private void SingleSkillChargeCost()
+    {
+        if (skillMeterAlwaysFull || !isChargingSkill) return;
+
+        float maxCost = currentSkillDef.SkillCost;
+        float availableCost = SkillMeter - maxCost;
+
+        if (availableCost <= 0f || singleSkillChargeCost >= maxCost)
+        {
+            FireChargedSkill(true, chargingSkillTimer);
+            return;
+        }
+
+        float amount = singleSkillCostTick * Time.deltaTime;
+        amount = Mathf.Min(amount, maxCost - singleSkillChargeCost);
+
+        SkillMeter -= amount;
+        singleSkillChargeCost += amount;
+        RaiseEnergyChanged();
+
+        if (SkillMeter <= maxCost)
+        {
+            SkillMeter = currentSkillDef.SkillCost;
+            RaiseEnergyChanged();
+            FireChargedSkill(true, chargingSkillTimer);
+        }
+    }
+
+    private static float Tick(float timer, float dt) => timer > 0f ? timer - dt : timer;
+    private static float HoldOrTick(bool active, float resetValue, float current, float dt) =>
+        active ? resetValue : current - dt;
+
     private void UpdateTimers()
     {
-        if (parryBufferTimer > 0f) parryBufferTimer -= Time.deltaTime;
-        if (attackBufferTimer > 0f) attackBufferTimer -= Time.deltaTime;
-        if (skillBufferTimer > 0f) skillBufferTimer -= Time.deltaTime;
-        
-        attackTimer = isAttacking ? attackCoolDown : attackTimer - Time.deltaTime;
-        skillTimer = isSkilling ? skillCoolDown : skillTimer - Time.deltaTime;
+        parryBufferTimer = Tick(parryBufferTimer, Time.deltaTime);
+        attackBufferTimer = Tick(attackBufferTimer, Time.deltaTime);
+        skillBufferTimer = Tick(skillBufferTimer, Time.deltaTime);
+        dashAttackBlockTimer = Tick(dashAttackBlockTimer, Time.deltaTime);
+        jumpAttackBlockTimer = Tick(jumpAttackBlockTimer, Time.deltaTime);
+        plungeGraceTimer = Tick(plungeGraceTimer, Time.deltaTime);
+        plungeRecoveryTimer = Tick(plungeRecoveryTimer, Time.deltaTime);
+
+        attackTimer = HoldOrTick(isAttacking, attackCoolDown, attackTimer, Time.deltaTime);
+        skillTimer = HoldOrTick(isSkilling, skillCoolDown, skillTimer, Time.deltaTime);
+
+        if (isAttacking)
+        {
+            attackDurationTimer -= Time.deltaTime;
+            if (attackDurationTimer <= 0f)
+            {
+                EndAttack();
+            }
+        }
 
         if (isParrying)
         {
@@ -148,74 +281,80 @@ public class PlayerCombatController : MonoBehaviour
             if (parryRecoveryTimer <= 0f)
             {
                 isParryInRecovery = false;
-                Player.Controller?.FreezeMovement(false);
+                movement.FreezeMovement(false);
             }
         }
     }
 
+    private bool CanActBase()
+    {
+        return movement.InputEnabled
+            && !movement.IsWallSliding
+            && !isParryInRecovery
+            && !isSkilling
+            && !isPlunging;
+    }
+
     private bool CanAct()
     {
-        return Player.Controller.InputEnabled 
-            && !Player.Controller.IsWallSliding 
-            && !Player.Controller.IsChargingSkill 
-            && !isParrying 
-            && !isParryInRecovery 
-            && !isAttacking
-            && !isSkilling;
+        return CanActBase()
+            && !movement.IsChargingSkill
+            && !isChargingSkill
+            && !movement.IsNeutralDash;
     }
 
     private bool CanReleaseSkill()
     {
-        return Player.Controller.InputEnabled 
-            && !Player.Controller.IsWallSliding 
-            && !isParrying 
-            && !isParryInRecovery 
-            && !isAttacking
-            && !isSkilling;
+        return CanActBase() && !isParrying;
     }
 
     #region Parry Logic
 
     private void HandleParry()
     {
+        if (isParrying || isParryInRecovery) return;
         if (parryBufferTimer > 0f && CanAct()) ExecuteParry();
     }
 
     private void ExecuteParry()
     {
+        ForceCancelAttack();
         parryBufferTimer = 0f;
         isParrying = true;
         isParryInRecovery = false;
         parryActiveTimer = parryActiveDuration;
-        Player.Controller?.FreezeMovement(true);
+        movement.FreezeMovement(true);
         parryDir = GetInputDirection();
     }
 
     private ParryDirection GetInputDirection()
     {
         if (verticalInput > 0.01f) return ParryDirection.Up;
-        if (verticalInput < -0.01f && !Player.Controller.IsGrounded) return ParryDirection.Down;
-        return Player.Controller.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
+        if (verticalInput < -0.01f && !movement.IsGrounded) return ParryDirection.Down;
+        return movement.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
     }
 
-public bool CheckParry(ParryDirection incomingDirection)
-{
-    if (isParrying && parryDir == incomingDirection)
+    public bool CheckParry(ParryDirection incomingDirection)
     {
-        OnSuccessfulParry();
-        return true;
+        bool directionMatches = parryDir == incomingDirection || !movement.IsGrounded;
+
+        if (isParrying && directionMatches)
+        {
+            OnSuccessfulParry();
+            return true;
+        }
+        return false;
     }
-    return false;
-}
 
     private void OnSuccessfulParry()
     {
-        Player.Animation.FlashGreenOnParrySuccess();
+        player.Animation.FlashGreenOnParrySuccess();
         CancelParry();
+        AudioManager.PlaySFX(parryEvent, transform.position);
 
         ChargeSkillMeter(chargeSkillAmount);
         isCounterAttacking = true;
-        
+
         CancelInvoke(nameof(EndCounterAttackWindow));
         Invoke(nameof(EndCounterAttackWindow), counterAttackWindow);
 
@@ -242,69 +381,255 @@ public bool CheckParry(ParryDirection incomingDirection)
 
         isParrying = isParryInRecovery = isParrySuccess = false;
         parryActiveTimer = parryRecoveryTimer = 0f;
-        Player.Controller?.FreezeMovement(false);
+        movement.FreezeMovement(false);
     }
 
     #endregion
 
-    #region Attack Logic
+    #region Attack & Combo Logic
 
     private void HandleAttack()
     {
+        if (dashAttackBlockTimer > 0f) return;
+        if (jumpAttackBlockTimer > 0f) return;
+
+        if (attackBufferTimer > 0f && isAttacking && canBufferNextCombo && CanAct())
+        {
+            comboQueued = true;
+            attackBufferTimer = 0f;
+        }
+
         if (attackBufferTimer > 0f && CanAct()) ExecuteAttack();
+        if (comboQueued && !isAttacking && attackTimer <= 0f && CanAct()) ExecuteAttack();
+
+        if (currentComboIndex <= 0 || isAttacking) return;
+        comboResetTimer += Time.deltaTime;
+        if (comboResetTimer >= comboResetDelay) ResetCombo();
     }
 
     private void ExecuteAttack()
     {
         attackBufferTimer = 0f;
 
-        if (attackPressed && attackTimer <= 0f && CanAct())
+        if ((canBufferNextCombo && comboQueued) || (!isAttacking && attackTimer <= 0f && CanAct()))
         {
             CancelParry();
-            attackPressed = false;
+            comboQueued = false;
+            canBufferNextCombo = false;
 
-            if (Player.Equipment.EquippedWeapon == null) return;
+            if (player.Equipment.EquippedWeapon == null) return;
+
+            currentComboIndex = (currentComboIndex % maxComboCount) + 1;
 
             isAttacking = true;
-            Vector2 attackDir = GetInputDirection() switch
+            attackStartedGrounded = movement.IsGrounded;
+            attackDurationTimer = attackDuration;
+
+            enemiesHitThisAttack.Clear();
+
+            if (movement.IsDashing)
             {
-                ParryDirection.Up => Vector2.up,
-                ParryDirection.Down => Vector2.down,
-                ParryDirection.Left => Vector2.left,
-                _ => Vector2.right
-            };
-
-            float weaponRange = Player.Equipment.EquippedWeapon.BaseWeaponRange;
-            bool isHorizontal = attackDir.x != 0f;
-
-            attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
-            attackCenter = (Vector2)attackOrigin.position + (attackDir * (weaponRange * 0.5f));
-
-            attackDamage = GetDamage();
-            attackCrit = Player.Equipment.EquippedWeapon.BaseWeaponCrit;
-
-            Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
-            if (enemiesInRange.Length > 0) HitEnemy(enemiesInRange);
-        }
-    }
-
-    private float GetDamage() => Player.Stats != null ? Player.Stats.TotalAttack : 0f;
-
-    private void HitEnemy(Collider2D[] enemiesInRange)
-    {
-        float dmg = attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
-        dmg *= (UnityEngine.Random.value <= attackCrit ? critDamageMultiplier : 1f);
-
-        foreach (var col in enemiesInRange)
-        {
-            if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
-            {
-                enemyHealth.ApplyDamage((int)dmg);
+                movement.SetDashLockedDuringAttack(true);
             }
         }
     }
 
-    public void EndAttack() => isAttacking = false;
+    private void PerformAttackHitboxCheck()
+    {
+        if (isPlunging) return;
+
+        Vector2 attackDir = GetInputDirection() switch
+        {
+            ParryDirection.Up => Vector2.up,
+            ParryDirection.Down => Vector2.down,
+            ParryDirection.Left => Vector2.left,
+            _ => Vector2.right
+        };
+
+        float weaponRange = player.Equipment.EquippedWeapon.BaseWeaponRange;
+        attackDamage = GetDamage();
+        attackCritChance = player.Equipment.EquippedWeapon.BaseWeaponCrit;
+
+        if (attackDir != Vector2.down)
+        {
+            bool isHorizontal = attackDir.x != 0f;
+
+            attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
+            attackCenter = (Vector2)attackOrigin.position + attackDir * (weaponRange * 0.5f);
+
+            Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
+            if (enemiesInRange.Length > 0)
+            {
+                AttackContext context = player.Equipment.GetModifiedAttackContext();
+                HitEnemy(enemiesInRange, context);
+            }
+        }
+        else
+        {
+            if (plungeRecoveryTimer <= 0f)
+            {
+                StartPlunge(weaponRange);
+            }
+        }
+    }
+
+    private void StartPlunge(float weaponRange)
+    {
+        CancelParry();
+        CancelSkillStates();
+        movement.CancelDash();
+
+        parryBufferTimer = 0f;
+        attackBufferTimer = 0f;
+        skillBufferTimer = 0f;
+        comboQueued = false;
+        canBufferNextCombo = false;
+
+        plungeCoroutine = StartCoroutine(PlungeAttack(weaponRange));
+    }
+
+    private IEnumerator PlungeAttack(float weaponRange)
+    {
+        isPlunging = true;
+
+        float plungeTimer = 0f;
+        attackRange = new Vector2(attackWidth, weaponRange);
+
+        while (isPlunging)
+        {
+            plungeTimer += Time.deltaTime;
+            attackDurationTimer = attackDuration;
+            attackCenter = (Vector2)attackOrigin.position + Vector2.down * (weaponRange * 0.5f);
+            Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
+
+            if (enemiesInRange.Length > 0)
+            {
+                isPlunging = false;
+                plungeGraceTimer = plungeGraceWindow;
+                plungeRecoveryTimer = plungeRecoveryDuration;
+
+                float adjusted = plungeTimer * plungeAdjustedDmg;
+                float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
+                AttackContext context = player.Equipment.GetModifiedAttackContext();
+                HitEnemy(enemiesInRange, context, plungeDmgMultiplier);
+                movement.ApplyBounceImpulse(GetClosestBouncePoint(enemiesInRange), plungeBounceForce);
+                movement.PlayBounceState(movement.BounceDuration);
+            }
+            else if (player.Controller.IsGrounded)
+            {
+                isPlunging = false;
+                plungeGraceTimer = plungeGraceWindow;
+                plungeRecoveryTimer = plungeRecoveryDuration;
+            }
+
+            yield return null;
+        }
+
+        plungeCoroutine = null;
+        EndAttack();
+    }
+
+    private Vector2 GetClosestBouncePoint(Collider2D[] enemiesInRange)
+    {
+        Vector2 origin = attackCenter;
+        Vector2 closest = enemiesInRange[0].transform.position;
+        float closestDist = ((Vector2)enemiesInRange[0].transform.position - origin).sqrMagnitude;
+
+        for (int i = 1; i < enemiesInRange.Length; i++)
+        {
+            float dist = ((Vector2)enemiesInRange[i].transform.position - origin).sqrMagnitude;
+            if (dist < closestDist)
+            {
+                closest = enemiesInRange[i].transform.position;
+                closestDist = dist;
+            }
+        }
+
+        return closest;
+    }
+
+    public void CancelPlunge()
+    {
+        if (plungeCoroutine != null)
+        {
+            StopCoroutine(plungeCoroutine);
+            plungeCoroutine = null;
+        }
+
+        if (isPlunging)
+        {
+            plungeRecoveryTimer = plungeRecoveryDuration;
+        }
+
+        isPlunging = false;
+    }
+
+    private float GetDamage()
+    {
+        float baseDmg = GetScaledAttackDamage();
+
+        int multiplierIndex = Mathf.Clamp(currentComboIndex - 1, 0, comboDamageMultipliers.Length - 1);
+        float comboMultiplier = comboDamageMultipliers[multiplierIndex];
+
+        return baseDmg * comboMultiplier;
+    }
+
+    private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
+    {
+        foreach (var col in enemiesInRange)
+        {
+            if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
+            {
+                if (!enemiesHitThisAttack.Contains(enemyHealth))
+                {
+                    enemiesHitThisAttack.Add(enemyHealth);
+
+                    float dmg = plungeDmgMult > 0f
+                        ? attackDamage * (1 + plungeDmgMult)
+                        : attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
+
+                    float roll = UnityEngine.Random.value;
+                    bool isCrit = roll <= attackCritChance;
+                    dmg *= (isCrit ? critDamageMultiplier : 1f);
+
+                    enemyHealth.ApplyHit((int)dmg, context);
+                }
+            }
+        }
+    }
+
+    public float GetScaledAttackDamage()
+    {
+        float weaponDamage = player.Equipment.EquippedWeapon != null
+            ? player.Equipment.EquippedWeapon.BaseWeaponDamage
+            : 0f;
+
+        float attackStat = player.Stats.TotalAttack;
+        float scaledAttack = Mathf.Pow(attackStat, damageScalingExponent);
+
+        return weaponDamage + scaledAttack;
+    }
+
+    public void EndAttack()
+    {
+        isAttacking = false;
+        attackDurationTimer = 0f;
+        canBufferNextCombo = false;
+
+        if (!comboQueued)
+        {
+            ResetCombo();
+        }
+
+        movement.SetDashLockedDuringAttack(false);
+    }
+
+    private void ResetCombo()
+    {
+        currentComboIndex = 0;
+        comboQueued = false;
+        canBufferNextCombo = false;
+    }
 
     #endregion
 
@@ -312,7 +637,8 @@ public bool CheckParry(ParryDirection incomingDirection)
 
     private void HandleSkill()
     {
-        bool isReadyToFire = skillMeterAlwaysFull || SkillMeter > 0f;
+        SkillActivationCost = currentSkillDef != null ? currentSkillDef.SkillCost : 0f;
+        bool isReadyToFire = skillMeterAlwaysFull || SkillMeter >= SkillActivationCost;
         if (skillBufferTimer > 0f && CanReleaseSkill() && isReadyToFire)
         {
             ExecuteSkill();
@@ -322,99 +648,102 @@ public bool CheckParry(ParryDirection incomingDirection)
     public void ChargeSkillMeter(float amount)
     {
         SkillMeter = Mathf.Clamp01(SkillMeter + amount);
-        OnEnergyChanged?.Invoke(SkillMeter, 1f);
-        if (Mathf.Approximately(SkillMeter, 1f)) skillReady = true;
+        RaiseEnergyChanged();
     }
 
     private void ExecuteSkill()
     {
         skillBufferTimer = 0f;
 
-        if (skillPressed && skillTimer <= 0f && CanReleaseSkill())
+        if (!skillPressed || !(skillTimer <= 0f) || !CanReleaseSkill()) return;
+
+        skillPressed = false;
+        CancelParry();
+        ForceCancelAttack();
+
+        var specialDef = player.Equipment.SpecialAttackDef;
+
+        if (specialDef == null)
         {
-            skillReady = false;
-            CancelParry();
-            var specialDef = Player.Equipment.SpecialAttackDef;
+            movement.SetSkillCharging(false);
+            return;
+        }
 
-            if (specialDef == null)
+        isSkilling = true;
+        CurrentSkillGemName = specialDef.GemName;
+        activeSkillExecutionType = specialDef.SkillExecutionType;
+
+        bool wasCharged = chargingSkillTimer >= chargingSkillMinDur;
+        float chargeDamageMultiplier = 1f;
+        float chargeRatio = 0f;
+
+        if (wasCharged)
+        {
+            chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
+            chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
+        }
+
+        movement.SetSkillCharging(false);
+        if (wasCharged) movement.SetSkillGravityZero(true);
+
+        if (specialDef.SkillExecutionType == SkillExecutionType.Held)
+        {
+            skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef));
+        }
+        else
+        {
+            if (specialDef.SkillType == SkillType.Single)
             {
-                skillPressed = false;
-                Player.Controller.SetSkillCharging(false);
-                return;
+                PerformSingleSkill(specialDef, chargeRatio, chargeDamageMultiplier);
             }
-
-            isSkilling = true;
-            CurrentSkillGemName = specialDef.GemName;
-
-            bool wasCharged = chargingSkillTimer >= chargingSkillMinDur;
-            float chargeDamageMultiplier = 1f;
-
-            if (wasCharged)
+            else if (specialDef.SkillType == SkillType.Timed)
             {
-                float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
-                chargeDamageMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
-            }
-
-            Debug.Log($"Timer: {chargingSkillTimer:F2} | WasCharged: {wasCharged} | Multiplier: {chargeDamageMultiplier:F2} | Final Dmg: {GetDamage() * chargeDamageMultiplier}");
-
-            Player.Controller.SetSkillCharging(false);
-            if (wasCharged) Player.Controller.SetSkillGravityZero(true);
-
-            if (specialDef.SkillExecutionType == SkillExecutionType.Held)
-            {
-                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef));
-            }
-            else
-            {
-                if (specialDef.SkillType == SkillType.Single)
-                {
-                    SkillMeter = 0f;
-                    OnEnergyChanged?.Invoke(SkillMeter, 1f);
-                    PerformSingleSkill(specialDef, chargeDamageMultiplier);
-                }
-                else if (specialDef.SkillType == SkillType.Timed)
-                {
-                    skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier));
-                }
+                skillCoroutine = StartCoroutine(PerformTimedSkill(specialDef, chargeDamageMultiplier, chargeRatio));
             }
         }
     }
 
-    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float multiplier)
+    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float chargePercentage, float multiplier)
     {
-        def.Execute(Player.Equipment.GetModifiedAttackContext(), GetDamage() * multiplier);
+        SkillMeter -= SkillActivationCost;
+        RaiseEnergyChanged();
+        def.Execute(player.Equipment.GetModifiedAttackContext(), GetDamage() * multiplier, chargePercentage);
     }
 
-    private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f)
+    private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
     {
-        var context = Player.Equipment.GetModifiedAttackContext();
-        float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : 0.16f;
+        var context = player.Equipment.GetModifiedAttackContext();
+        float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : DefaultEnergyDrainTick;
 
         bool isHeld = def.SkillExecutionType == SkillExecutionType.Held;
-        float totalTicks = chargingSkillMaxDur / tick;
-        float energyCostPerTick = 1f / totalTicks;
+        float energyCostPerTick = tick / chargingSkillMaxDur;
 
         if (!isHeld && !skillMeterAlwaysFull)
         {
-            SkillMeter = 0f;
-            OnEnergyChanged?.Invoke(SkillMeter, 1f);
+            SkillMeter -= SkillActivationCost;
+            RaiseEnergyChanged();
         }
 
         while (isSkilling && (skillMeterAlwaysFull || (isHeld ? SkillMeter > 0f : true)))
         {
             float dynamicRampMultiplier = fixedChargeMultiplier;
+            float currentChargePercentage = chargePercentage;
 
-            if (isHeld && !skillMeterAlwaysFull)
+            if (isHeld)
             {
-                SkillMeter = Mathf.Clamp01(SkillMeter - energyCostPerTick);
-                OnEnergyChanged?.Invoke(SkillMeter, 1f);
+                if (!skillMeterAlwaysFull)
+                {
+                    SkillMeter = Mathf.Clamp01(SkillMeter - energyCostPerTick);
+                    RaiseEnergyChanged();
+                }
 
                 float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
                 dynamicRampMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
+                currentChargePercentage = chargeRatio;
             }
 
             float currentTickDamage = GetDamage() * dynamicRampMultiplier;
-            def.Execute(context, currentTickDamage);
+            def.Execute(context, currentTickDamage, currentChargePercentage);
 
             yield return new WaitForSeconds(tick);
 
@@ -424,63 +753,101 @@ public bool CheckParry(ParryDirection incomingDirection)
         EndSkill();
     }
 
-    public void EndSkill()
+    private void StopSkillCoroutine()
     {
         if (skillCoroutine != null)
         {
             StopCoroutine(skillCoroutine);
             skillCoroutine = null;
         }
+    }
+
+    public void EndSkill()
+    {
+        StopSkillCoroutine();
 
         isSkilling = isChargingSkill = skillButtonHeld = false;
         CurrentSkillGemName = string.Empty;
-        Player.Controller.SetSkillGravityZero(false);
+        movement.SetSkillGravityZero(false);
     }
 
     public void CancelSkillStates()
     {
+        StopSkillCoroutine();
+
         isChargingSkill = false;
         isSkilling = false;
         skillButtonHeld = false;
         skillFiredThisHold = true;
+        CurrentSkillGemName = string.Empty;
 
-        var playerController = Player.Controller;
-        if (playerController != null)
-        {
-            playerController.SetSkillCharging(false);
-            playerController.SetSkillGravityZero(false);
-        }
+        CancelInvoke(nameof(AutoFireAtMaxCharge));
+
+        movement.SetSkillCharging(false);
+        movement.SetSkillGravityZero(false);
     }
 
     #endregion
 
-    #region Input Handlers
+    #region Input Handlers & Animator Hooks
 
     public void OnMove(InputValue value) => verticalInput = value.Get<Vector2>().y;
-    public void OnParry() => parryBufferTimer = parryBufferTime;
-    public void OnAttack() { attackPressed = true; attackBufferTimer = parryBufferTime; }
+
+    public void OnParry()
+    {
+        if (isPlunging) return;
+        parryBufferTimer = parryBufferTime;
+    }
+
+    public void OnAttack()
+    {
+        if (IsParrying || isChargingSkill || isPlunging) return;
+
+        attackBufferTimer = attackBufferTime;
+
+        if (isAttacking && canBufferNextCombo)
+        {
+            comboQueued = true;
+        }
+    }
+
+    public void NotifyDashInputReceived()
+    {
+        dashAttackBlockTimer = dashAttackConflictWindow;
+    }
+
+    public void NotifyJumpInputReceived()
+    {
+        jumpAttackBlockTimer = jumpAttackConflictWindow;
+    }
 
     public void OnSAttack(InputValue value)
     {
-        if (Player.Controller.IsWallSliding) return;
-
-        var specialDef = Player.Equipment?.SpecialAttackDef;
+        var specialDef = player.Equipment?.SpecialAttackDef;
 
         if (value.isPressed)
         {
+            if (isPlunging) return;
+            if (movement.IsWallSliding) return;
+            if (specialDef == null) return;
             if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;
 
             skillButtonHeld = true;
             chargingSkillTimer = 0f;
+            singleSkillChargeCost = 0f;
             skillFiredThisHold = false;
 
-            if (specialDef != null && specialDef.SkillExecutionType == SkillExecutionType.Held)
+            CancelParry();
+            ForceCancelAttack();
+
+            if (specialDef.SkillExecutionType == SkillExecutionType.Held)
             {
                 TriggerSkillRelease();
                 return;
             }
 
             isChargingSkill = true;
+            singleSkillCostTick = specialDef.SkillCost / chargingSkillMaxDur;
             CancelInvoke(nameof(AutoFireAtMaxCharge));
             Invoke(nameof(AutoFireAtMaxCharge), chargingSkillMaxDur);
         }
@@ -518,11 +885,13 @@ public bool CheckParry(ParryDirection incomingDirection)
         if (!skillButtonHeld && isSkilling) EndSkill();
     }
 
-    private void AutoFireAtMaxCharge()
+    private void AutoFireAtMaxCharge() => FireChargedSkill(false, chargingSkillMaxDur);
+
+    private void FireChargedSkill(bool triggeredEarly, float chargingDur)
     {
         if (!skillButtonHeld) return;
 
-        chargingSkillTimer = chargingSkillMaxDur;
+        chargingSkillTimer = triggeredEarly ? chargingDur : chargingSkillMaxDur;
         skillButtonHeld = isChargingSkill = false;
         skillFiredThisHold = true;
 
@@ -532,8 +901,32 @@ public bool CheckParry(ParryDirection incomingDirection)
 
     private void StopChargingPhysics()
     {
-        Player.Controller.SetSkillCharging(false);
+        movement.SetSkillCharging(false);
         CancelInvoke(nameof(AutoFireAtMaxCharge));
+    }
+
+    public void ForceCancelAttack()
+    {
+        isAttacking = false;
+        CancelPlunge();
+        attackDurationTimer = 0f;
+        enemiesHitThisAttack.Clear();
+        ResetCombo();
+
+        attackBufferTimer = 0f;
+
+        movement.SetDashLockedDuringAttack(false);
+    }
+
+    public void OpenComboWindow()
+    {
+        canBufferNextCombo = true;
+        comboResetTimer = 0f;
+    }
+
+    public void CloseComboWindow()
+    {
+        canBufferNextCombo = false;
     }
 
     #endregion

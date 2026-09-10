@@ -23,6 +23,7 @@ namespace Enemies.ModuleScripts.Observation
             if (hit == null)
             {
                 ctx.TargetVisible = false;
+                ctx.Target = null;
                 return;
             }
 

@@ -252,10 +252,22 @@ MonoBehaviour:
     Weight: 70
   - Attack: {fileID: 11400000, guid: 21ddc96dd3804204f900378de63451a0, type: 2}
     Weight: 30
+  lootTable: {fileID: 11400000, guid: 6252f6ee048300646a7a55bd5c7f22d6, type: 2}
   behaviorAgent: {fileID: 7603609893098896341}
   animator: {fileID: 1943101255374262222}
   rb2D: {fileID: 2968184197812120870}
   attackCooldown: 0.25
+  placeholderClipName: EmptyAttack
+  hitEvent:
+    Guid:
+      Data1: 515442699
+      Data2: 1331403395
+      Data3: 1112032419
+      Data4: -774162852
+    Path: event:/CombatSFXEvents/EnemyHitEvent
+  spriteRenderer: {fileID: 5107996575365250629}
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.15
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -361,6 +373,7 @@ GameObject:
   - component: {fileID: 5107996575365250629}
   - component: {fileID: 1943101255374262222}
   - component: {fileID: 2769822166128368776}
+  - component: {fileID: 3772755303928414562}
   m_Layer: 12
   m_Name: Graphics
   m_TagString: Untagged
@@ -482,6 +495,27 @@ MonoBehaviour:
   hitbox: {fileID: 6096227191426472029}
   hurtbox: {fileID: 8107799500015843298}
   vfxBox: {fileID: 69754505853120667}
+--- !u!114 &3772755303928414562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7fe7e7487b01904b91af8fbf4024183, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationSFXPlayer
+  sfxEntries:
+  - id: AttackEvent
+    sfxEvent:
+      Guid:
+        Data1: 873030172
+        Data2: 1164482081
+        Data3: -2010547302
+        Data4: 1697953371
+      Path: event:/CombatSFXEvents/EnemyMeleeAttackEvent
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0

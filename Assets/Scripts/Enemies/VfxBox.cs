@@ -6,6 +6,7 @@ namespace Enemies
     public class VfxBox : MonoBehaviour
     {
         private Collider2D col;
+        private ParticleSystem activeParticleSystem; // Track the current effect
 
         private static readonly Color ZeroColor = Color.white;
         private static readonly Color LightColor = Color.cyan;
@@ -17,13 +18,28 @@ namespace Enemies
             col = GetComponent<Collider2D>();
         }
 
+        private void OnDisable()
+        {
+            if (activeParticleSystem != null)
+            {
+                PSpawner.Kill(activeParticleSystem);
+                activeParticleSystem = null;
+            }
+        }
+
         public void PlayVFX(AttackForce attackForce)
         {
-            ParticleSystem ps = PSpawner.Spawn("anticipation", col.bounds.center, Quaternion.identity);
-            if (ps == null) return;
+            if (!gameObject.activeInHierarchy || col == null || !col.enabled) return;
+            if (activeParticleSystem != null && activeParticleSystem.isPlaying)
+            {
+                PSpawner.Kill(activeParticleSystem);
+            }
+
+            activeParticleSystem = PSpawner.Spawn("anticipation", col.bounds.center, Quaternion.identity);
+            if (activeParticleSystem == null) return;
 
             Color color = GetColorForForce(attackForce);
-            var main = ps.main;
+            var main = activeParticleSystem.main;
             main.startColor = color;
         }
 

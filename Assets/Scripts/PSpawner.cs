@@ -92,6 +92,16 @@ public class PSpawner : MonoBehaviour
         }
     }
 
+    public static void Kill(ParticleSystem ps)
+    {
+        if (ps != null)
+        {
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            ps.Clear(true);
+            ps.gameObject.SetActive(false);
+        }
+    }
+
     private static ParticleSystem GetPooledInstance(string key)
     {
         if (Instance == null || !Instance._pools.ContainsKey(key))

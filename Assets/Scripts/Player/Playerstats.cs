@@ -1,3 +1,4 @@
+using FMODUnity;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -16,15 +17,22 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float gearAttackBonus = 0f;
     [SerializeField] private float gearDefenseBonus = 0f;
     [SerializeField] private float gearHumanityBonus = 0f;
+    [SerializeField] private float gemAttackBonus = 0f;
+    [SerializeField] private float gearCritBonus = 0f;
+    [SerializeField] private float gemCritBonus = 0f;
 
     [Header("References")]
     [SerializeField] private PlayerEquipmentManager equipmentManager;
+
+    [Header("FMOD Events")]
+    [SerializeField] private EventReference hitEvent;
 
     public float MaxHealth => maxHealth;
     public float CurrentHealth => currentHealth;
     public float TotalAttack => UpdateAttackDisplay();
     public float TotalDefense => baseDefense + gearDefenseBonus;
     public float TotalHumanity => baseHumanity + gearHumanityBonus;
+    public float TotalCrit => gearCritBonus + gemCritBonus;
     public bool IsDead => currentHealth <= 0f;
 
     public event System.Action<float, float> OnHealthChanged;
@@ -57,10 +65,7 @@ public class PlayerStats : MonoBehaviour
 
     private float UpdateAttackDisplay()
     {
-        if(equipmentManager == null || equipmentManager.EquippedWeapon == null)
-            return  gearAttackBonus;
-        Debug.Log("WeaponBaseDamage: " + equipmentManager.EquippedWeapon.BaseWeaponDamage + ", GearBonus: " + gearAttackBonus);
-        return equipmentManager.EquippedWeapon.BaseWeaponDamage + gearAttackBonus;
+        return baseAttack + gearAttackBonus + gemAttackBonus;
     }
 
     public void RecalculateStats()
@@ -68,6 +73,9 @@ public class PlayerStats : MonoBehaviour
         gearAttackBonus = 0f;
         gearDefenseBonus = 0f;
         gearHumanityBonus = 0f;
+        gemAttackBonus = 0f;
+        gearCritBonus = 0f;
+        gemCritBonus = 0f;
 
         if (equipmentManager != null)
         {
@@ -79,12 +87,20 @@ public class PlayerStats : MonoBehaviour
                     gearAttackBonus += gear.InstBonusAttack;
                     gearDefenseBonus += gear.InstBonusDefense;
                     gearHumanityBonus += gear.InstBonusHumanity;
+                    gearCritBonus += gear.InstBonusCrit;
                 }
+            }
+
+            var gem = equipmentManager.SecondaryGem;
+            if (gem != null && !string.IsNullOrEmpty(gem.InstTemplateID))
+            {
+                gemAttackBonus = gem.InstRolledDamageValue;
+                gemCritBonus = gem.InstRolledCritValue / 100f;
             }
         }
 
         OnStatsRecalculated?.Invoke();
-        Debug.Log($"[PlayerStats] Stats Recalculated -> Atk: {TotalAttack} ({gearAttackBonus:+#;-#;0}), Def: {TotalDefense} ({gearDefenseBonus:+#;-#;0}), Humanity: {TotalHumanity} ({gearHumanityBonus:+#;-#;0})");
+        Debug.Log($"[PlayerStats] Stats Recalculated -> Atk: {TotalAttack} (gear:{gearAttackBonus:+#;-#;0}, gem:{gemAttackBonus:+#;-#;0}), Def: {TotalDefense}, Humanity: {TotalHumanity}, Crit: {TotalCrit:P1}");
     }
 
     public void TakeDamage(float rawDamage)
@@ -96,8 +112,10 @@ public class PlayerStats : MonoBehaviour
         currentHealth = Mathf.Max(0f, currentHealth - effectiveDamage);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
+        AudioManager.PlaySFX(hitEvent, transform.position);
+
         Debug.Log($"Player took dmg:{rawDamage} - def:{TotalDefense} for {effectiveDamage} damage. Current Health: {currentHealth}");
-        
+
         if (currentHealth <= 0f)
             Die();
     }

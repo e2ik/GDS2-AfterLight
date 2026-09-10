@@ -5,8 +5,8 @@ using UnityEngine;
 public class SecondaryGemInstance
 {
     public string InstTemplateID;
-    public float InstDamageMult;
-    public float InstCritMult;
-    public float InstSizeMult;
+    public int InstRolledDamageValue;
+    public int InstRolledCritValue;
+    public int InstRolledDotPercent; // whole number, e.g. 10 = 10%
     public string InstanceGUID;
 }

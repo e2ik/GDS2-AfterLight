@@ -4,6 +4,7 @@ using System.Linq;
 using Enemies;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 [CreateAssetMenu(fileName = "PiercingGem", menuName = "Primary Gems/PiercingGem")]
 public class PiercingGem : PrimaryGemBehaviourDefinition
@@ -12,10 +13,14 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
     private float hitBoxWidth;
     [SerializeField]
     private float travelSpeed;
+    [SerializeField] private float chargeRangeBonus = 2f;
 
     [SerializeField]
     private GameObject testVisPrefab;
-    public override void Execute(AttackContext context, float baseDamage)
+
+    private Vector2 direction;
+    
+    public override void Execute(AttackContext context, float baseDamage, float chargeAmount = 0f)
     {
         Debug.Log("Pierce To Win");
 
@@ -27,36 +32,39 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
         }
         PlayerCombatController pCombat = player.GetComponent<PlayerCombatController>();
         Vector2 center = player.transform.position;
-        Vector2 attackDirection = center *= Vector2.right;
-        context.Runner.StartCoroutine(AttackRoutine(context, hitBoxWidth, travelSpeed, pCombat));
+        direction = player.GetComponent<Player>()?.Controller?.FacingDirection == 1 ? Vector2.right : Vector2.left;
+        context.Runner.StartCoroutine(AttackRoutine(context, pCombat, baseDamage, chargeAmount));
     }
 
-    private IEnumerator AttackRoutine(AttackContext context, float hitBoxWidth, float travelSpeed, PlayerCombatController playerCombat)
+    private IEnumerator AttackRoutine(AttackContext context, PlayerCombatController playerCombat, float baseDamage, float chargeAmount)
     {
         float distanceTravelled = 0f;
         var enemiesHit = new HashSet<Collider2D>();
-        var testVis = Instantiate(testVisPrefab,context.OriginPoint, Quaternion.identity);
+        var testVis = Instantiate(testVisPrefab, context.OriginPoint, Quaternion.identity);
 
-        while (distanceTravelled < SkillRange)
+        float skillDamage = baseDamage * SkillDamageModifier;
+        float skillRange = SkillRange + chargeRangeBonus * chargeAmount;
+        while (distanceTravelled < skillRange)
         {
             float step = travelSpeed * Time.deltaTime;
             distanceTravelled += step;
 
-            Vector2 hitPosition = context.OriginPoint + Vector2.right * distanceTravelled;
+            Vector2 hitPosition = context.OriginPoint + direction * distanceTravelled;
             Collider2D[] hitsAtPos = Physics2D.OverlapBoxAll(hitPosition, new Vector2(hitBoxWidth, hitBoxWidth), 0f, playerCombat.enemyLayer);
             if (hitsAtPos.Count() > 0)
             {
                 foreach (var col in hitsAtPos)
                 {
-                    if(enemiesHit.Contains(col)) continue;
+                    if (enemiesHit.Contains(col)) continue;
                     enemiesHit.Add(col);
-                    if(!col.CompareTag("EnemyHurtBox"))continue;
-                    if(col.transform.root.TryGetComponent(out EnemyHealth enemyHealth)){
-                        enemyHealth.ApplyDamage((int)context.BaseAttackDamage);
+                    if (!col.CompareTag("EnemyHurtBox")) continue;
+                    if (col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
+                    {
+                        enemyHealth.ApplyHit((int)skillDamage, context);
                     }
                 }
             }
-            UpdateVisual(testVis,hitPosition);
+            UpdateVisual(testVis, hitPosition);
             yield return null;
         }
         Destroy(testVis);

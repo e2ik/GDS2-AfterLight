@@ -22,18 +22,20 @@ AnimationClip:
     curve:
     - time: 0
       value: {fileID: -3031680609643799387, guid: 4f9f4667b9f089a46877453e67647ab0, type: 3}
-    - time: 0.025
+    - time: 0.055555556
       value: {fileID: -7834714256021113276, guid: 4f9f4667b9f089a46877453e67647ab0, type: 3}
-    - time: 0.05
+    - time: 0.11111111
       value: {fileID: -519871690524530344, guid: 4f9f4667b9f089a46877453e67647ab0, type: 3}
-    - time: 0.075
+    - time: 0.16666667
+      value: {fileID: 3897035506933569924, guid: 4f9f4667b9f089a46877453e67647ab0, type: 3}
+    - time: 0.22222222
       value: {fileID: 3897035506933569924, guid: 4f9f4667b9f089a46877453e67647ab0, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
     script: {fileID: 0}
     flags: 2
-  m_SampleRate: 40
+  m_SampleRate: 18
   m_WrapMode: 0
   m_Bounds:
     m_Center: {x: 0, y: 0, z: 0}
@@ -54,12 +56,13 @@ AnimationClip:
     - {fileID: -7834714256021113276, guid: 4f9f4667b9f089a46877453e67647ab0, type: 3}
     - {fileID: -519871690524530344, guid: 4f9f4667b9f089a46877453e67647ab0, type: 3}
     - {fileID: 3897035506933569924, guid: 4f9f4667b9f089a46877453e67647ab0, type: 3}
+    - {fileID: 3897035506933569924, guid: 4f9f4667b9f089a46877453e67647ab0, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 0.1
+    m_StopTime: 0.2777778
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -79,7 +82,28 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 0.1
+  - time: 0
+    functionName: PlaySFXEventAttached
+    data: AttackEvent
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.11111111
+    functionName: OpenComboWindow
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.2777778
+    functionName: CloseComboWindow
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.2777778
     functionName: EndAttack
     data: 
     objectReferenceParameter: {fileID: 0}

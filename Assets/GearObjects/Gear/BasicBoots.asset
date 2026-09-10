@@ -15,8 +15,12 @@ MonoBehaviour:
   ItemID: basic_boots
   UIName: Basic Boots
   UISprite: {fileID: 21300000, guid: 3f6b0aca168255a458fc8822be33aa59, type: 3}
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
   Slot: 1
   TemplateID: B1
-  BonusAttackRange: {x: 5, y: 15}
-  BonusDefenseRange: {x: 2, y: 8}
-  BonusHumanityRange: {x: 1, y: 5}
+  BonusAttackRange: {x: 0, y: 0}
+  BonusDefenseRange: {x: 0, y: 0}
+  BonusCritRange: {x: 0.1, y: 0.3}

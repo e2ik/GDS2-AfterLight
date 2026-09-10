@@ -106,7 +106,7 @@ public class PlayerSkillIcon : MonoBehaviour
     {
         if (maxEnergy <= 0f) return;
 
-        float energyNormalized = Mathf.Clamp01(currentEnergy / maxEnergy);
+        float energyNormalized = Mathf.Clamp01(currentEnergy / combatController.SkillActivationCost);
 
         if (meterOverlayImage != null)
         {
