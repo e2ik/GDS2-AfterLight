@@ -41,6 +41,8 @@ public class GameManager : MonoBehaviour
     private Player player;
     public Player Player { get => player; }
 
+    private UIManager uiManager;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) 
@@ -58,6 +60,14 @@ public class GameManager : MonoBehaviour
         return saveManager != null ? saveManager : SaveManager.Instance;
     }
 
+    private UIManager GetUIManager()
+    {
+        if (uiManager == null)
+        {
+            uiManager = FindFirstObjectByType<UIManager>();
+        }
+        return uiManager;
+    }
 
     #region Area State
 
@@ -87,9 +97,29 @@ public class GameManager : MonoBehaviour
 
     #region State Machine Logic
 
+    public void TogglePause()
+    {
+        if (currentState == GameState.Game)
+        {
+            SetState(GameState.Pause);
+        }
+        else if (currentState == GameState.Pause)
+        {
+            SetState(GameState.Game);
+        }
+    }
+
     private void SetState(GameState newState)
     {
         if (currentState == newState) return;
+
+        // Disallow transitioning directly between Title and Pause
+        if ((currentState == GameState.Title && newState == GameState.Pause) ||
+            (currentState == GameState.Pause && newState == GameState.Title))
+        {
+            Debug.LogWarning($"[GameManager] Invalid state transition from {currentState} to {newState}");
+            return;
+        }
 
         currentState = newState;
 
@@ -97,14 +127,26 @@ public class GameManager : MonoBehaviour
         {
             case GameState.Title:
                 Time.timeScale = 1f;
+                GetUIManager()?.SetPauseCanvasActive(false);
                 break;
 
             case GameState.Game:
                 Time.timeScale = 1f;
+                GetUIManager()?.SetPauseCanvasActive(false);
 
                 if (player != null && player.Controller != null)
                 {
                     player.Controller.FreezeMovement(false);
+                }
+                break;
+
+            case GameState.Pause:
+                Time.timeScale = 0f;
+                GetUIManager()?.SetPauseCanvasActive(true);
+
+                if (player != null && player.Controller != null)
+                {
+                    player.Controller.FreezeMovement(true);
                 }
                 break;
         }
@@ -316,6 +358,7 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
+        uiManager = FindFirstObjectByType<UIManager>();
 
         MusicManager musicManager = FindFirstObjectByType<MusicManager>();
         musicManager.SetState(MusicState.Explore);

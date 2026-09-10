@@ -55,7 +55,6 @@ namespace GameUI
 
         private void StartRebind()
         {
-            UISFX.PlayRebindStart();
             rebindButton.interactable = false;
             SetPromptVisible(true);
             InputAction action = actionReference.action;
@@ -77,11 +76,6 @@ namespace GameUI
             {
                 actionReference.action.RemoveBindingOverride(bindingIndex);
                 Debug.LogWarning($"[RebindButton] '{newPath}' is already bound to another action on this map. Rebind reverted.");
-                UISFX.PlayRebindError();
-            }
-            else
-            {
-                UISFX.PlayRebindComplete();
             }
             FinishCleanup();
         }
@@ -89,7 +83,6 @@ namespace GameUI
         private void OnRebindCancelled()
         {
             rebindingOperation.Dispose();
-            UISFX.PlayRebindCancelled();
             FinishCleanup();
         }
 

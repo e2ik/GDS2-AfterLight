@@ -26,13 +26,11 @@ namespace GameUI
 
         private void HandleResumeClicked()
         {
-            UISFX.PlayButtonClick();
             UIManager.Instance.Close(this);
         }
 
         private void HandleReturnToTitleClicked()
         {
-            UISFX.PlayButtonClick();
             confirmWindow.Show(
                 "Return to the title screen? Unsaved progress will be lost.",
                 onConfirmCallback: () =>
@@ -45,7 +43,6 @@ namespace GameUI
 
         private void HandleQuitClicked()
         {
-            UISFX.PlayButtonClick();
             confirmWindow.Show(
                 "Quit the game? Unsaved progress will be lost.",
                 onConfirmCallback: () =>
@@ -61,7 +58,6 @@ namespace GameUI
 
         private void HandleSettingsClicked()
         {
-            UISFX.PlayButtonClick();
             UIManager.Instance.Open(settingsWindow);
         }
     }

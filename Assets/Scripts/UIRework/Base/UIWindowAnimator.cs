@@ -72,8 +72,6 @@ public class UIWindowAnimator : MonoBehaviour
 
     public void Show(bool freezeplayer = false)
     {
-        GameUI.UISFX.PlayWindowOpen();
-
         if (freezeplayer && GameManager.Instance?.Player?.Controller != null)
         {
             GameManager.Instance.Player.Controller.InputEnabled = false;
@@ -95,8 +93,6 @@ public class UIWindowAnimator : MonoBehaviour
 
     public void Hide()
     {
-        GameUI.UISFX.PlayWindowClose();
-
         if (GameManager.Instance?.Player?.Controller != null && !GameManager.Instance.Player.Controller.InputEnabled)
         {
             GameManager.Instance.Player.Controller.InputEnabled = true;

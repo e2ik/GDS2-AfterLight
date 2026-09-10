@@ -1,29 +1,18 @@
+using TMPro;
 using UnityEngine;
 
 namespace GameUI
 {
     public class InteractionPopup : MonoBehaviour
     {
-        [SerializeField] private GameObject iconPrefab;
-        [SerializeField] private Vector2 iconOffset = new Vector2(0f, 0.75f);
+        [SerializeField] private GameObject popupRoot;
+        [SerializeField] private TMP_Text promptText;
 
         private InteractionManager interactionManager;
-        private GameObject iconInstance;
-        private Transform currentTarget;
 
         private void Awake()
         {
-            if (iconPrefab != null)
-            {
-                iconInstance = Instantiate(iconPrefab);
-                iconInstance.SetActive(false);
-            }
-        }
-
-        private void Update()
-        {
-            if (iconInstance == null || currentTarget == null) return;
-            iconInstance.transform.position = (Vector2)currentTarget.position + iconOffset;
+            if (popupRoot != null) { popupRoot.SetActive(false); }
         }
 
         public void Bind(InteractionManager manager)
@@ -34,7 +23,7 @@ namespace GameUI
 
             if (interactionManager != null)
             {
-                interactionManager.OnInteractionTargetChanged += HandleTargetChanged;
+                interactionManager.OnInteractionPromptChanged += HandlePromptChanged;
             }
         }
 
@@ -42,7 +31,7 @@ namespace GameUI
         {
             if (interactionManager != null)
             {
-                interactionManager.OnInteractionTargetChanged -= HandleTargetChanged;
+                interactionManager.OnInteractionPromptChanged -= HandlePromptChanged;
             }
 
             interactionManager = null;
@@ -51,21 +40,14 @@ namespace GameUI
         private void OnDestroy()
         {
             Unbind();
-
-            if (iconInstance != null)
-            {
-                Destroy(iconInstance);
-            }
         }
 
-        private void HandleTargetChanged(Transform target)
+        private void HandlePromptChanged(string prompt)
         {
-            currentTarget = target;
+            bool hasPrompt = !string.IsNullOrEmpty(prompt);
 
-            if (iconInstance != null)
-            {
-                iconInstance.SetActive(target != null);
-            }
+            if (popupRoot != null) { popupRoot.SetActive(hasPrompt); }
+            if (promptText != null) { promptText.text = prompt; }
         }
     }
 }

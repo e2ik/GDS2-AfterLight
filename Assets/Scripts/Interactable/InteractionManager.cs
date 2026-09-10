@@ -10,6 +10,10 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private LayerMask interactableLayers = ~0;
     [SerializeField] private Vector2 raycastOriginOffset = Vector2.zero;
 
+    [Header("Interact Icon")]
+    [SerializeField] private GameObject interactIconPrefab;
+    [SerializeField] private Vector2 iconOffset = new Vector2(0f, 0.75f);
+
     public bool InteractionEnabled { get; set; } = true;
 
     private IInteractable currentInteractable;
@@ -17,11 +21,11 @@ public class InteractionManager : MonoBehaviour
     private SpriteOutlineToggle currentOutlineToggle;
 
     public event System.Action<string> OnInteractionPromptChanged;
-    public event System.Action<Transform> OnInteractionTargetChanged;
 
     private Player player;
     private PlayerController playerController;
     private InputAction interactAction;
+    private GameObject iconInstance;
 
     private void Awake()
     {
@@ -31,6 +35,11 @@ public class InteractionManager : MonoBehaviour
         PlayerInput playerInput = GetComponent<PlayerInput>();
         interactAction = playerInput.actions["Interact"];
 
+        if (interactIconPrefab != null)
+        {
+            iconInstance = Instantiate(interactIconPrefab);
+            iconInstance.SetActive(false);
+        }
     }
 
     private void Update()
@@ -44,6 +53,7 @@ public class InteractionManager : MonoBehaviour
         }
 
         DetectInteractable();
+        UpdateIconPosition();
 
         if (currentInteractable != null && interactAction.WasPressedThisFrame())
         {
@@ -102,7 +112,8 @@ public class InteractionManager : MonoBehaviour
                 }
             }
 
-            OnInteractionTargetChanged?.Invoke(currentInteractableTransform);
+            if (iconInstance != null)
+                iconInstance.SetActive(currentInteractable != null);
 
             OnInteractionPromptChanged?.Invoke(currentInteractable?.InteractionPrompt);
         }
@@ -119,9 +130,17 @@ public class InteractionManager : MonoBehaviour
         currentInteractable = null;
         currentInteractableTransform = null;
 
-        OnInteractionTargetChanged?.Invoke(null);
+        if (iconInstance != null)
+            iconInstance.SetActive(false);
 
         OnInteractionPromptChanged?.Invoke(null);
+    }
+
+    private void UpdateIconPosition()
+    {
+        if (iconInstance == null || currentInteractableTransform == null) return;
+
+        iconInstance.transform.position = (Vector2)currentInteractableTransform.position + iconOffset;
     }
 
     private void OnDrawGizmosSelected()
