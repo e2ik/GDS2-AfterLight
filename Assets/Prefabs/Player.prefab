@@ -296,6 +296,7 @@ MonoBehaviour:
   plungeAdjustedDmg: 1
   plungeGraceWindow: 0.15
   plungeBounceForce: 15
+  plungeRecoveryDuration: 0.3
   attackWidth: 2
   attackDuration: 0.4
   attackCoolDown: 0.1
@@ -395,7 +396,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerEquipmentManager
   equippedWeapon: {fileID: 11400000, guid: 14cafacdf5f57eed19576977769f0367, type: 2}
-  specialAttackDef: {fileID: 11400000, guid: 0c490fd2d61891d90966197bc88509b1, type: 2}
+  specialAttackDef: {fileID: 11400000, guid: 4a67717c87b260bbda8912fe1f79dac4, type: 2}
   secondaryGem:
     InstTemplateID: 
     InstRolledDamageValue: 0
