@@ -102,6 +102,7 @@ public class PlayerAnimation : MonoBehaviour
 
         animator.SetBool(IsSkillingHash, isSkilling);
         animator.SetBool(IsPlungingHash, isPlunging);
+        animator.SetBool(IsDashingHash, player.Controller.IsDashing);
 
         if (isSkilling) return;
 
@@ -113,7 +114,6 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetFloat(YVelocityHash, rb.linearVelocityY);
         animator.SetBool(IsGroundedHash, groundedForAnim);
         animator.SetBool(IsWallSlidingHash, player.Controller.IsWallSliding);
-        animator.SetBool(IsDashingHash, player.Controller.IsDashing);
         animator.SetBool(IsBouncingHash, isBouncing);
         animator.SetBool(IsDirectionalDashHash, player.Controller.IsDirectionalDash);
         animator.SetBool(IsChargingSkillHash, player.CombatController.IsChargeInputHeld);

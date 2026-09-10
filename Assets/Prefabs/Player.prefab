@@ -256,11 +256,11 @@ MonoBehaviour:
   hazardousKnockbackForce: 8
   hazardousStaggerDuration: 0.3
   bounceDuration: 0.25
-  lightForce: 6
+  lightForce: 3
   lightStaggerDuration: 0.1
-  mediumForce: 8
+  mediumForce: 5
   mediumStaggerDuration: 0.2
-  heavyForce: 10
+  heavyForce: 8
   heavyStaggerDuration: 0.4
   groundLayer:
     serializedVersion: 2
@@ -356,13 +356,13 @@ MonoBehaviour:
   baseAttack: 10
   baseDefense: 5
   baseHumanity: 10
+  defenseMitigationPerPoint: 0.02
   gearAttackBonus: 0
   gearDefenseBonus: 0
   gearHumanityBonus: 0
   gemAttackBonus: 0
   gearCritBonus: 0
   gemCritBonus: 0
-  equipmentManager: {fileID: 0}
   hitEvent:
     Guid:
       Data1: -1941217388

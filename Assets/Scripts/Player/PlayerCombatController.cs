@@ -5,7 +5,6 @@ using UnityEngine.InputSystem;
 using System.Collections;
 using System.Collections.Generic;
 using FMODUnity;
-using Unity.VisualScripting;
 
 public enum ParryDirection { Up, Down, Left, Right }
 public enum AttackForce { Zero, Light, Medium, Heavy }
@@ -502,7 +501,9 @@ public class PlayerCombatController : MonoBehaviour
             attackCenter = (Vector2)attackOrigin.position + Vector2.down * (weaponRange * 0.5f);
             Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
 
-            if (enemiesInRange.Length > 0)
+            Collider2D[] validHurtboxes = FilterHurtboxes(enemiesInRange);
+
+            if (validHurtboxes.Length > 0)
             {
                 isPlunging = false;
                 plungeGraceTimer = plungeGraceWindow;
@@ -511,8 +512,8 @@ public class PlayerCombatController : MonoBehaviour
                 float adjusted = plungeTimer * plungeAdjustedDmg;
                 float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
                 AttackContext context = player.Equipment.GetModifiedAttackContext();
-                HitEnemy(enemiesInRange, context, plungeDmgMultiplier);
-                movement.ApplyBounceImpulse(GetClosestBouncePoint(enemiesInRange), plungeBounceForce);
+                HitEnemy(validHurtboxes, context, plungeDmgMultiplier);
+                movement.ApplyBounceImpulse(GetClosestBouncePoint(validHurtboxes), plungeBounceForce);
                 movement.PlayBounceState(movement.BounceDuration);
             }
             else if (player.Controller.IsGrounded)
@@ -527,6 +528,19 @@ public class PlayerCombatController : MonoBehaviour
 
         plungeCoroutine = null;
         EndAttack();
+    }
+
+    private Collider2D[] FilterHurtboxes(Collider2D[] colliders)
+    {
+        List<Collider2D> valid = new List<Collider2D>();
+        foreach (var col in colliders)
+        {
+            if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth _))
+            {
+                valid.Add(col);
+            }
+        }
+        return valid.ToArray();
     }
 
     private Vector2 GetClosestBouncePoint(Collider2D[] enemiesInRange)

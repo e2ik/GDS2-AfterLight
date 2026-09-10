@@ -84,6 +84,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     private IEnumerator InteractionRoutine()
     {
         isInteracting = true;
+        FastTravelManager.Instance?.SetLastInteractedNode(nodeData);
 
         if (anim != null)
         {

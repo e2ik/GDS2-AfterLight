@@ -274,6 +274,81 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region Respawn (Death Flow)
+
+    public void ForceReloadAndRespawn(FastTravelNodeSO node, AreaSide side, System.Action onComplete)
+    {
+        if (node == null)
+        {
+            Debug.LogWarning("[GameManager] ForceReloadAndRespawn called with a null node.");
+            onComplete?.Invoke();
+            return;
+        }
+
+        StartCoroutine(ForceReloadAndRespawnRoutine(node, side, onComplete));
+    }
+
+    private IEnumerator ForceReloadAndRespawnRoutine(FastTravelNodeSO node, AreaSide side, System.Action onComplete)
+    {
+        string targetScene = node.targetSceneName;
+
+        Scene masterScene = SceneManager.GetSceneByName(masterSceneName);
+        if (masterScene.isLoaded)
+        {
+            SceneManager.SetActiveScene(masterScene);
+        }
+
+        Scene existingTargetScene = SceneManager.GetSceneByName(targetScene);
+        if (existingTargetScene.isLoaded)
+        {
+            AsyncOperation forcedUnload = SceneManager.UnloadSceneAsync(existingTargetScene);
+            if (forcedUnload != null)
+            {
+                while (!forcedUnload.isDone)
+                {
+                    yield return null;
+                }
+            }
+        }
+
+        // Also clear out any other loaded area scenes so we return to a single, clean scene state
+        List<Scene> scenesToUnload = new List<Scene>();
+        for (int i = 0; i < SceneManager.sceneCount; i++)
+        {
+            Scene scene = SceneManager.GetSceneAt(i);
+            if (scene.name != masterSceneName && scene.name != targetScene && scene.isLoaded)
+            {
+                scenesToUnload.Add(scene);
+            }
+        }
+
+        foreach (Scene scene in scenesToUnload)
+        {
+            AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(scene);
+            if (asyncUnload != null)
+            {
+                while (!asyncUnload.isDone)
+                {
+                    yield return null;
+                }
+            }
+        }
+
+        yield return LoadSceneAdditive(targetScene);
+        yield return null;
+
+        SetAreaSide(side);
+        ApplyAreaSide(side);
+
+        PlacePlayerAtAnchor(node.spawnAnchorID);
+
+        SaveManager.Instance?.SaveProgressAtLocation(targetScene, node.spawnAnchorID, side);
+
+        onComplete?.Invoke();
+    }
+
+    #endregion
+
     #region Scene & Player Management
 
     private IEnumerator LoadMasterSceneSingle()

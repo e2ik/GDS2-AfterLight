@@ -1,5 +1,4 @@
 using FMODUnity;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
@@ -12,6 +11,7 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float baseAttack = 10f; //using weapon base attack, not sure if this is needed since you will always have a weapon
     [SerializeField] private float baseDefense = 5f;
     [SerializeField] private float baseHumanity = 10f;
+    [SerializeField, Range(0f, 1f)] private float defenseMitigationPerPoint = 0.05f;
 
     [Header("Gear Stats")]
     [SerializeField] private float gearAttackBonus = 0f;
@@ -21,11 +21,11 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float gearCritBonus = 0f;
     [SerializeField] private float gemCritBonus = 0f;
 
-    [Header("References")]
-    [SerializeField] private PlayerEquipmentManager equipmentManager;
-
     [Header("FMOD Events")]
     [SerializeField] private EventReference hitEvent;
+
+    private Player player;
+    private UIManager uiManager;
 
     public float MaxHealth => maxHealth;
     public float CurrentHealth => currentHealth;
@@ -34,6 +34,7 @@ public class PlayerStats : MonoBehaviour
     public float TotalHumanity => baseHumanity + gearHumanityBonus;
     public float TotalCrit => gearCritBonus + gemCritBonus;
     public bool IsDead => currentHealth <= 0f;
+    public bool CanRespawn => FastTravelManager.Instance != null && FastTravelManager.Instance.HasLastVisitedNode;
 
     public event System.Action<float, float> OnHealthChanged;
     public event System.Action OnStatsRecalculated;
@@ -41,10 +42,9 @@ public class PlayerStats : MonoBehaviour
 
     private void Awake()
     {
-        if (equipmentManager == null)
-            equipmentManager = GetComponent<PlayerEquipmentManager>();
+        if (player == null)
+            player = GetComponent<Player>();
 
-        // Calculate stats on game load/initialization
         RecalculateStats();
 
         currentHealth = maxHealth;
@@ -53,14 +53,20 @@ public class PlayerStats : MonoBehaviour
 
     private void OnEnable()
     {
-        if (equipmentManager != null)
-            equipmentManager.OnEquipmentChanged += RecalculateStats;
+        if (player != null)
+            player.Equipment.OnEquipmentChanged += RecalculateStats;
+
+        if (FastTravelManager.Instance != null)
+            FastTravelManager.Instance.OnFastTravelComplete += HandleRespawnComplete;
     }
 
     private void OnDisable()
     {
-        if (equipmentManager != null)
-            equipmentManager.OnEquipmentChanged -= RecalculateStats;
+        if (player != null)
+            player.Equipment.OnEquipmentChanged -= RecalculateStats;
+
+        if (FastTravelManager.Instance != null)
+            FastTravelManager.Instance.OnFastTravelComplete -= HandleRespawnComplete;
     }
 
     private float UpdateAttackDisplay()
@@ -77,9 +83,9 @@ public class PlayerStats : MonoBehaviour
         gearCritBonus = 0f;
         gemCritBonus = 0f;
 
-        if (equipmentManager != null)
+        if (player != null)
         {
-            foreach (var slot in equipmentManager.EquippedGear)
+            foreach (var slot in player.Equipment.EquippedGear)
             {
                 GearInstance gear = slot.Value;
                 if (gear != null)
@@ -91,7 +97,7 @@ public class PlayerStats : MonoBehaviour
                 }
             }
 
-            var gem = equipmentManager.SecondaryGem;
+            var gem = player.Equipment.SecondaryGem;
             if (gem != null && !string.IsNullOrEmpty(gem.InstTemplateID))
             {
                 gemAttackBonus = gem.InstRolledDamageValue;
@@ -107,14 +113,15 @@ public class PlayerStats : MonoBehaviour
     {
         if (IsDead || rawDamage <= 0f) return;
 
-        float effectiveDamage = Mathf.Max(1f, rawDamage - TotalDefense);
+        float mitigationMultiplier = Mathf.Pow(1f - defenseMitigationPerPoint, TotalDefense);
+        float effectiveDamage = Mathf.Max(1f, rawDamage * mitigationMultiplier);
 
         currentHealth = Mathf.Max(0f, currentHealth - effectiveDamage);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
         AudioManager.PlaySFX(hitEvent, transform.position);
 
-        Debug.Log($"Player took dmg:{rawDamage} - def:{TotalDefense} for {effectiveDamage} damage. Current Health: {currentHealth}");
+        Debug.Log($"Player took dmg:{rawDamage} - mitigation:{(1f - mitigationMultiplier):P1} (def:{TotalDefense}) for {effectiveDamage} damage. Current Health: {currentHealth}");
 
         if (currentHealth <= 0f)
             Die();
@@ -128,9 +135,53 @@ public class PlayerStats : MonoBehaviour
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
+    public void ReviveFull()
+    {
+        currentHealth = maxHealth;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+    }
+
     private void Die()
     {
         OnDied?.Invoke();
         Debug.Log("Player died.");
+
+        SetInputLocked(true);
+        GetUIManager()?.SetDeathScreenActive(true);
+    }
+
+    public void OnRespawnButtonPressed()
+    {
+        GetUIManager()?.SetDeathScreenActive(false);
+
+        if (CanRespawn)
+        {
+            FastTravelManager.Instance.RespawnAtLastFastTravel();
+        }
+        else
+        {
+            Debug.LogWarning("[PlayerStats] No fast travel point visited this session; can't respawn.");
+            ReviveFull();
+            SetInputLocked(false);
+        }
+    }
+
+    private void HandleRespawnComplete()
+    {
+        ReviveFull();
+        SetInputLocked(false);
+    }
+
+    private void SetInputLocked(bool locked)
+    {
+        if (player != null)
+            player.Controller.InputEnabled = !locked;
+    }
+
+    private UIManager GetUIManager()
+    {
+        if (uiManager == null)
+            uiManager = FindFirstObjectByType<UIManager>();
+        return uiManager;
     }
 }
