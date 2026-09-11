@@ -215,7 +215,7 @@ public class PlayerAnimation : MonoBehaviour
             normal = isWallJump ? new Vector2(-wallDir, 0f) : Vector2.up;
         }
 
-        float angle = Mathf.Atan2(normal.y, normal.x) * Mathf.Rad2Deg - 90f;
+        float angle = Mathf.Atan2(normal.y, -normal.x) * Mathf.Rad2Deg - 90f;
         Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
 
         PSpawner.Spawn("JumpDust", spawnPosition, rotation);
