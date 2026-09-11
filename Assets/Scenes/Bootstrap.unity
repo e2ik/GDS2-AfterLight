@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 78526262}
   - component: {fileID: 78526261}
   - component: {fileID: 78526263}
+  - component: {fileID: 78526264}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -279,6 +280,25 @@ MonoBehaviour:
     Path: event:/HospitalTheme
   smoothSpeed: 2
   decayPerSecond: 0.125
+--- !u!114 &78526264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 78526255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93fbceed59807a74c85f97a680657382, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameUI.UISFXWatcher
+  uiSelectEvent:
+    Guid:
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
 --- !u!1 &215098120
 GameObject:
   m_ObjectHideFlags: 0
