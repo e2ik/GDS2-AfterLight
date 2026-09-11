@@ -149,6 +149,14 @@ public class InventoryDisplay : MonoBehaviour
             }
         }
 
+        if (activeInventory.PrimaryGems != null)
+        {
+            foreach (PrimaryGemInstance gem in activeInventory.PrimaryGems)
+            {
+                if (gem != null) displayItems.Add(new DisplayItem(gem, gem.PickupOrder));
+            }
+        }
+
         displayItems.Sort((a, b) => a.PickupOrder.CompareTo(b.PickupOrder));
 
         foreach (DisplayItem entry in displayItems)
@@ -158,6 +166,7 @@ public class InventoryDisplay : MonoBehaviour
             {
                 if (entry.Item is SecondaryGemInstance gem) slotScript.SetupSlot(gem);
                 else if (entry.Item is GearInstance gear) slotScript.SetupSlot(gear);
+                else if (entry.Item is PrimaryGemInstance primaryGem) slotScript.SetupSlot(primaryGem);
             }
         }
 

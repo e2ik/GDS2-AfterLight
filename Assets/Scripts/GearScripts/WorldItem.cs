@@ -120,11 +120,12 @@ public class WorldItem : MonoBehaviour
                 break;
 
             case PrimaryGemBehaviourDefinition primaryDef:
-                // PrimaryGemInstance primaryLoot = primaryDef.CreateInstance(); <-- needs implementation
-                // player.Inventory.AddItemToInventory(primaryLoot);
-                //
-                // if (player.Equipment.IsSpecialAttackSlotEmpty())
-                //     player.Equipment.EquipSpecialAttack(primaryDef);
+                PrimaryGemInstance primaryLoot = primaryDef.CreateInstance();
+                player.Inventory.AddItemToInventory(primaryLoot);
+
+                if (player.Equipment.IsSpecialAttackSlotEmpty())
+                    player.Equipment.EquipSpecialAttack(primaryDef);
+
                 Debug.Log($"Picked up Primary Gem: {primaryDef.UIName}");
                 break;
 

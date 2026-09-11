@@ -19,6 +19,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private SecondaryGemInstance currentSecondaryGem;
     private GearInstance currentGear;
+    private PrimaryGemInstance currentPrimaryGem;
     private InventoryDisplay cachedInventoryDisplay;
 
     private void Awake()
@@ -53,6 +54,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         currentSecondaryGem = gem;
         currentGear = null;
+        currentPrimaryGem = null;
 
         if (gem == null || string.IsNullOrEmpty(gem.InstTemplateID))
         {
@@ -77,6 +79,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         currentGear = gear;
         currentSecondaryGem = null;
+        currentPrimaryGem = null;
 
         if (gear == null || string.IsNullOrEmpty(gear.InstTemplateID))
         {
@@ -93,6 +96,27 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         {
             ClearDisplay();
         }
+
+        UpdateEquippedVisuals();
+    }
+
+    public void SetupSlot(PrimaryGemInstance gem)
+    {
+        currentPrimaryGem = gem;
+        currentSecondaryGem = null;
+        currentGear = null;
+
+        if (gem == null || string.IsNullOrEmpty(gem.InstTemplateID))
+        {
+            ClearDisplay();
+            return;
+        }
+
+        var def = GameDatabase.GetPrimaryTemplateFromID(gem.InstTemplateID);
+        if (def != null)
+            SetSlotDisplay(def.UISprite, def.UIName);
+        else
+            ClearDisplay();
 
         UpdateEquippedVisuals();
     }
@@ -160,6 +184,17 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     equipManager.EquipGear(def.Slot, currentGear);
             }
         }
+        else if (currentPrimaryGem != null)
+        {
+            var def = GameDatabase.GetPrimaryTemplateFromID(currentPrimaryGem.InstTemplateID);
+            if (def != null)
+            {
+                if (equipManager.SpecialAttackDef == def)
+                    equipManager.ClearSpecialAttack();
+                else
+                    equipManager.EquipSpecialAttack(def);
+            }
+        }
 
         if (cachedInventoryDisplay == null)
             cachedInventoryDisplay = Object.FindFirstObjectByType<InventoryDisplay>();
@@ -183,6 +218,11 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                 isEquipped = player.Equipment.IsGemEquipped(currentSecondaryGem);
             else if (currentGear != null)
                 isEquipped = player.Equipment.IsGearEquipped(currentGear);
+            else if (currentPrimaryGem != null)
+            {
+                var def = GameDatabase.GetPrimaryTemplateFromID(currentPrimaryGem.InstTemplateID);
+                isEquipped = def != null && player.Equipment.SpecialAttackDef == def;
+            }
         }
 
         Color targetColor = isEquipped ? equippedColor : normalColor;
@@ -230,6 +270,12 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                 string stats = GetGearStatsTooltip(currentGear, def.Slot.ToString());
                 ItemTooltip.Instance.ShowTooltip(def.UIName, stats);
             }
+        }
+        else if (currentPrimaryGem != null)
+        {
+            var def = GameDatabase.GetPrimaryTemplateFromID(currentPrimaryGem.InstTemplateID);
+            if (def != null)
+                ItemTooltip.Instance.ShowTooltip(def.UIName, def.GemAttackDescription);
         }
         else
         {

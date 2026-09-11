@@ -21,6 +21,7 @@ public class PlayerEquipmentManager : MonoBehaviour
 
     private Dictionary<EGearSlot, GearInstance> equippedGear = new Dictionary<EGearSlot, GearInstance>();
     private PlayerCombatController combatController;
+    private PlayerInventoryManager inventory;
 
     public WeaponDefinition EquippedWeapon => equippedWeapon;
     public PrimaryGemBehaviourDefinition SpecialAttackDef => specialAttackDef;
@@ -32,6 +33,7 @@ public class PlayerEquipmentManager : MonoBehaviour
     private void Awake()
     {
         combatController = GetComponent<PlayerCombatController>();
+        inventory = GetComponent<PlayerInventoryManager>();
         InitializeGearSlots();
     }
 
@@ -45,6 +47,14 @@ public class PlayerEquipmentManager : MonoBehaviour
             }
         }
         UpdateDebugView();
+    }
+
+    public void RegisterInspectorAssignedStartingGear()
+    {
+        if (inventory == null) return;
+
+        if (specialAttackDef != null)
+            inventory.AddItemToInventory(specialAttackDef.CreateInstance());
     }
 
     public bool IsGemEquipped(SecondaryGemInstance gem)

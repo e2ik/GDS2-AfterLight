@@ -180,6 +180,9 @@ public class GameManager : MonoBehaviour
         ClearPlayerInventory();
         ClearPlayerEquipment();
 
+        // whatever we assign in inspector gets cached here
+        player.Equipment.RegisterInspectorAssignedStartingGear();
+
         SaveManager targetSaveManager = GetSaveManager();
         if (targetSaveManager != null)
         {

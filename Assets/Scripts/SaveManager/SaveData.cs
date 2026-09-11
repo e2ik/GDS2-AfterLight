@@ -55,5 +55,6 @@ public class InventorySaveData
 {
     public List<SecondaryGemInstance> secondaryGems = new List<SecondaryGemInstance>();
     public List<GearInstance> gearInstances = new List<GearInstance>();
+    public List<PrimaryGemInstance> primaryGems = new List<PrimaryGemInstance>();
     public int equippedSecondaryGemIndex = -1;
 }
