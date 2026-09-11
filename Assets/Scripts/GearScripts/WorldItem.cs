@@ -109,32 +109,43 @@ public class WorldItem : MonoBehaviour
         switch (itemDefinition)
         {
             case SecondaryGemBehaviourDefinition secondaryDef:
-                ERarity randomRarity = GetWeightedRarity();
-                SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(randomRarity);
+                ERarity secondaryRarity = GetWeightedRarity();
+                SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(secondaryRarity);
                 player.Inventory.AddItemToInventory(gemLoot);
-                player.Equipment.EquipSecondaryGem(gemLoot); // for now
-                Debug.Log($"Auto-picked up Secondary Gem: {secondaryDef.UIName} ({randomRarity})");
+
+                if (player.Equipment.IsSecondaryGemSlotEmpty())
+                    player.Equipment.EquipSecondaryGem(gemLoot);
+
+                Debug.Log($"Picked up Secondary Gem: {secondaryDef.UIName} ({secondaryRarity})");
                 break;
 
             case PrimaryGemBehaviourDefinition primaryDef:
                 // PrimaryGemInstance primaryLoot = primaryDef.CreateInstance(); <-- needs implementation
                 // player.Inventory.AddItemToInventory(primaryLoot);
-                Debug.Log($"Auto-picked up Primary Gem: {primaryDef.UIName}");
+                //
+                // if (player.Equipment.IsSpecialAttackSlotEmpty())
+                //     player.Equipment.EquipSpecialAttack(primaryDef);
+                Debug.Log($"Picked up Primary Gem: {primaryDef.UIName}");
                 break;
 
             case WeaponDefinition weaponDef:
                 // WeaponInstance weaponLoot = weaponDef.CreateInstance(); <-- needs implementation
                 // player.Inventory.AddItemToInventory(weaponLoot);
-                Debug.Log($"Auto-picked up Weapon: {weaponDef.UIName}");
+                //
+                // if (player.Equipment.IsWeaponSlotEmpty())
+                //     player.Equipment.EquipWeapon(weaponDef);
+                Debug.Log($"Picked up Weapon: {weaponDef.UIName}");
                 break;
 
             case GearDefinition gearDef:
                 ERarity gearRarity = GetWeightedRarity();
                 GearInstance gearLoot = gearDef.CreateInstance(gearRarity);
-
                 player.Inventory.AddItemToInventory(gearLoot);
-                player.Equipment.EquipGear(gearDef.Slot, gearLoot); 
-                Debug.Log($"Auto-picked up Gear: {gearDef.UIName} ({gearRarity})");
+
+                if (player.Equipment.IsGearSlotEmpty(gearDef.Slot))
+                    player.Equipment.EquipGear(gearDef.Slot, gearLoot);
+
+                Debug.Log($"Picked up Gear: {gearDef.UIName} ({gearRarity})");
                 break;
 
             default:

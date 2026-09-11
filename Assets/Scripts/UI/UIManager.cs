@@ -4,15 +4,18 @@ public class UIManager : MonoBehaviour
 {
     [Header("UI Canvas References")]
     [SerializeField] private GameObject pauseCanvas;
-    
+    [SerializeField] private GameObject deathScreenCanvas;
+
     [Header("Player UI References")]
     [SerializeField] private PlayerHealthBar healthBar;
     [SerializeField] private PlayerEnergyBar energyBar;
     [SerializeField] private PlayerSkillIcon skillIcon;
 
     private UIWindowAnimator pauseAnimator;
+    private UIWindowAnimator deathScreenAnimator;
 
     public GameObject PauseCanvas => pauseCanvas;
+    public GameObject DeathScreenCanvas => deathScreenCanvas;
     public PlayerHealthBar HealthBar => healthBar;
     public PlayerEnergyBar EnergyBar => energyBar;
     public PlayerSkillIcon SkillIcon => skillIcon;
@@ -30,6 +33,20 @@ public class UIManager : MonoBehaviour
             else
             {
                 pauseCanvas.SetActive(false);
+            }
+        }
+
+        if (deathScreenCanvas != null)
+        {
+            deathScreenAnimator = deathScreenCanvas.GetComponentInChildren<UIWindowAnimator>();
+
+            if (deathScreenAnimator != null)
+            {
+                deathScreenAnimator.InstantHide();
+            }
+            else
+            {
+                deathScreenCanvas.SetActive(false);
             }
         }
     }
@@ -52,7 +69,7 @@ public class UIManager : MonoBehaviour
         {
             playerObject.TryGetComponent(out PlayerEquipmentManager equipment);
             playerObject.TryGetComponent(out PlayerCombatController skill);
-            
+
             skillIcon.Bind(equipment, skill);
         }
     }
@@ -88,6 +105,31 @@ public class UIManager : MonoBehaviour
         {
             bool isCurrentlyActive = pauseCanvas.activeSelf;
             SetPauseCanvasActive(!isCurrentlyActive);
+        }
+    }
+
+    public void SetDeathScreenActive(bool state)
+    {
+        if (deathScreenCanvas == null)
+        {
+            Debug.LogWarning("[UIManager] Death Screen Canvas reference is missing!");
+            return;
+        }
+
+        if (deathScreenAnimator != null)
+        {
+            if (state)
+            {
+                deathScreenAnimator.Show(freezeplayer: false);
+            }
+            else
+            {
+                deathScreenAnimator.Hide();
+            }
+        }
+        else
+        {
+            deathScreenCanvas.SetActive(state);
         }
     }
 }

@@ -18,6 +18,9 @@ namespace Enemies.ProjectileScripts
         
         public Projectile SourcePrefab { get; set; }
 
+        private Transform owner;
+        private bool hasOwner;
+
         private float _lifeTimer;
 
         protected void Awake()
@@ -27,12 +30,15 @@ namespace Enemies.ProjectileScripts
             Events = GetComponent<AttackEvents>();
         }
 
-        public void Launch(Vector2 origin, Vector2 initialVelocity, int damage)
+        public void Launch(Vector2 origin, Vector2 initialVelocity, int damage, Transform owner = null)
         {
             transform.position = origin;
             Damage = damage;
             _lifeTimer = lifetime;
-            
+
+            this.owner = owner;
+            hasOwner = owner != null;
+
             HitBox.Enable(damage, CombatUtility.GetDirectionFromVelocity(initialVelocity), attackForce);
             Events.OpenParryWindow();
 
@@ -43,6 +49,12 @@ namespace Enemies.ProjectileScripts
 
         protected void Update()
         {
+            if (hasOwner && (owner == null || !owner.gameObject.activeInHierarchy))
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             _lifeTimer -= Time.deltaTime;
             if (_lifeTimer <= 0f)
             {

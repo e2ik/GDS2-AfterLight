@@ -81,6 +81,15 @@ public class PlayerEquipmentManager : MonoBehaviour
         return false;
     }
 
+    public bool IsWeaponSlotEmpty() => equippedWeapon == null;
+
+    public bool IsSpecialAttackSlotEmpty() => specialAttackDef == null;
+
+    public bool IsSecondaryGemSlotEmpty() =>
+        secondaryGem == null || string.IsNullOrEmpty(secondaryGem.InstTemplateID);
+
+    public bool IsGearSlotEmpty(EGearSlot slot) => GetEquippedGear(slot) == null;
+
     public void EquipWeapon(WeaponDefinition newWeapon)
     {
         equippedWeapon = newWeapon;

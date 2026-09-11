@@ -256,11 +256,11 @@ MonoBehaviour:
   hazardousKnockbackForce: 8
   hazardousStaggerDuration: 0.3
   bounceDuration: 0.25
-  lightForce: 6
+  lightForce: 3
   lightStaggerDuration: 0.1
-  mediumForce: 8
+  mediumForce: 5
   mediumStaggerDuration: 0.2
-  heavyForce: 10
+  heavyForce: 8
   heavyStaggerDuration: 0.4
   groundLayer:
     serializedVersion: 2
@@ -296,7 +296,7 @@ MonoBehaviour:
   plungeAdjustedDmg: 1
   plungeGraceWindow: 0.15
   plungeBounceForce: 15
-  plungeRecoveryDuration: 0.3
+  plungeRecoveryDuration: 1
   attackWidth: 2
   attackDuration: 0.4
   attackCoolDown: 0.1
@@ -356,13 +356,13 @@ MonoBehaviour:
   baseAttack: 10
   baseDefense: 5
   baseHumanity: 10
+  defenseMitigationPerPoint: 0.02
   gearAttackBonus: 0
   gearDefenseBonus: 0
   gearHumanityBonus: 0
   gemAttackBonus: 0
   gearCritBonus: 0
   gemCritBonus: 0
-  equipmentManager: {fileID: 0}
   hitEvent:
     Guid:
       Data1: -1941217388
@@ -382,7 +382,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc3f79ceefdb1c7b84602f1402a42b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventoryManager
-  currentInventory: {fileID: 0}
+  currentInventory: {fileID: 11400000, guid: 04687c2558aa2e8439734379edd53b28, type: 2}
 --- !u!114 &3959588101215870426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -396,7 +396,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerEquipmentManager
   equippedWeapon: {fileID: 11400000, guid: 14cafacdf5f57eed19576977769f0367, type: 2}
-  specialAttackDef: {fileID: 11400000, guid: 4a67717c87b260bbda8912fe1f79dac4, type: 2}
+  specialAttackDef: {fileID: 11400000, guid: 0c490fd2d61891d90966197bc88509b1, type: 2}
   secondaryGem:
     InstTemplateID: 
     InstRolledDamageValue: 0

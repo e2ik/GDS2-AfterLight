@@ -43,7 +43,12 @@ public class MapUIManager : MonoBehaviour
         IsMapOpen = true;
         currentNode = originNode;
         RefreshMapNodes();
-        
+
+        if (GameManager.Instance?.Player?.Controller != null)
+        {
+            GameManager.Instance.Player.Controller.SetPhysicsSuspended(true);
+        }
+
         if (mapWindowAnimator != null)
             mapWindowAnimator.Show(true);
     }
@@ -55,6 +60,7 @@ public class MapUIManager : MonoBehaviour
         if (GameManager.Instance?.Player?.Controller != null)
         {
             GameManager.Instance.Player.Controller.FreezeMovement(false);
+            GameManager.Instance.Player.Controller.SetPhysicsSuspended(false);
         }
 
         if (mapWindowAnimator != null)

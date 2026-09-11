@@ -32,7 +32,7 @@ namespace Enemies.ModuleScripts.Attacks
                 Vector2 velocity = new Vector2(Mathf.Cos(angle) * facing, Mathf.Sin(angle)) * launchSpeed;
 
                 var proj = ProjectilePool.Get(projectilePrefab, ctx.Self.position, Quaternion.identity);
-                proj.Launch(ctx.Self.position, velocity, damage);
+                proj.Launch(ctx.Self.position, velocity, damage, ctx.Self);
             }
         }
 

@@ -265,6 +265,9 @@ MonoBehaviour:
       Data3: 1112032419
       Data4: -774162852
     Path: event:/CombatSFXEvents/EnemyHitEvent
+  spriteRenderer: {fileID: 5107996575365250629}
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.15
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -355,8 +358,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.1543045, y: 0.4083717}
-  m_Size: {x: 2.2514076, y: 4.3356795}
+  m_Offset: {x: -0.1543045, y: 0.20642161}
+  m_Size: {x: 2.2514076, y: 3.9317794}
   m_Direction: 0
 --- !u!1 &5835482462216775301
 GameObject:

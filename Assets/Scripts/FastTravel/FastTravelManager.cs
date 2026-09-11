@@ -7,6 +7,12 @@ public class FastTravelManager : MonoBehaviour
 {
     public static FastTravelManager Instance { get; private set; }
 
+    private FastTravelNodeSO lastVisitedNode;
+    private AreaSide lastVisitedSide;
+
+    public bool HasLastVisitedNode => lastVisitedNode != null;
+    public event System.Action OnFastTravelComplete;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -18,13 +24,43 @@ public class FastTravelManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void TravelTo(FastTravelNodeSO node)
+    public void SetLastInteractedNode(FastTravelNodeSO node)
     {
         if (node == null) return;
 
         AreaSide sideAtInteract = GameManager.Instance != null ? GameManager.Instance.CurrentAreaSide : AreaSide.Exterior;
 
+        lastVisitedNode = node;
+        lastVisitedSide = sideAtInteract;
+    }
+
+    public void TravelTo(FastTravelNodeSO node)
+    {
+        if (node == null) return;
+
+        AreaSide sideAtInteract = GameManager.Instance != null ? GameManager.Instance.CurrentAreaSide : AreaSide.Exterior;
+        SetLastInteractedNode(node);
+
         StartCoroutine(FastTravelRoutine(node, sideAtInteract));
+    }
+
+    public void RespawnAtLastFastTravel()
+    {
+        if (lastVisitedNode == null)
+        {
+            Debug.LogWarning("[FastTravelManager] No fast travel point visited this session; cannot respawn.");
+            OnFastTravelComplete?.Invoke();
+            return;
+        }
+
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("[FastTravelManager] GameManager.Instance missing — cannot respawn.");
+            OnFastTravelComplete?.Invoke();
+            return;
+        }
+
+        GameManager.Instance.ForceReloadAndRespawn(lastVisitedNode, lastVisitedSide, () => OnFastTravelComplete?.Invoke());
     }
 
     private IEnumerator FastTravelRoutine(FastTravelNodeSO destination, AreaSide sideAtInteract)
@@ -37,15 +73,15 @@ public class FastTravelManager : MonoBehaviour
             SceneManager.SetActiveScene(masterScene);
         }
 
-    if (!SceneManager.GetSceneByName(targetScene).isLoaded)
-    {
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetScene, LoadSceneMode.Additive);
-        while (!asyncLoad.isDone)
+        if (!SceneManager.GetSceneByName(targetScene).isLoaded)
         {
+            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetScene, LoadSceneMode.Additive);
+            while (!asyncLoad.isDone)
+            {
+                yield return null;
+            }
             yield return null;
         }
-        yield return null; 
-    }
 
         List<Scene> scenesToUnload = new List<Scene>();
         for (int i = 0; i < SceneManager.sceneCount; i++)
@@ -90,12 +126,18 @@ public class FastTravelManager : MonoBehaviour
                 Debug.LogWarning($"[FastTravelManager] Could not find spawn anchor '{destination.spawnAnchorID}' inside scene '{targetScene}'.");
             }
         }
+        else
+        {
+            Debug.LogWarning("[FastTravelManager] No GameObject tagged 'Player' found — cannot reposition on respawn.");
+        }
+
+        OnFastTravelComplete?.Invoke();
     }
 
     public Transform FindAnchorTransform(string anchorID)
     {
         FastTravelSpawnAnchor[] anchors = Object.FindObjectsByType<FastTravelSpawnAnchor>(
-            FindObjectsInactive.Include, 
+            FindObjectsInactive.Include,
             FindObjectsSortMode.None
         );
 

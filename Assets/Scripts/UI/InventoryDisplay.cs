@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(CanvasGroup))]
@@ -13,6 +14,18 @@ public class InventoryDisplay : MonoBehaviour
     private CanvasGroup canvasGroup;
     private PlayerInventoryManager invManager;
     private bool isVisible = false;
+
+    private readonly struct DisplayItem
+    {
+        public readonly object Item;
+        public readonly int PickupOrder;
+
+        public DisplayItem(object item, int pickupOrder)
+        {
+            Item = item;
+            PickupOrder = pickupOrder;
+        }
+    }
 
     private void Awake()
     {
@@ -118,16 +131,13 @@ public class InventoryDisplay : MonoBehaviour
             Destroy(child.gameObject);
         }
 
+        List<DisplayItem> displayItems = new List<DisplayItem>();
+
         if (activeInventory.SecondaryGems != null)
         {
             foreach (SecondaryGemInstance gem in activeInventory.SecondaryGems)
             {
-                if (gem == null) continue;
-                GameObject newSlot = Instantiate(slotPrefab, slotContainer);
-                if (newSlot.TryGetComponent(out InventorySlot slotScript))
-                {
-                    slotScript.SetupSlot(gem);
-                }
+                if (gem != null) displayItems.Add(new DisplayItem(gem, gem.PickupOrder));
             }
         }
 
@@ -135,14 +145,22 @@ public class InventoryDisplay : MonoBehaviour
         {
             foreach (GearInstance gear in activeInventory.GearInstances)
             {
-                if (gear == null) continue;
-                GameObject newSlot = Instantiate(slotPrefab, slotContainer);
-                if (newSlot.TryGetComponent(out InventorySlot slotScript))
-                {
-                    slotScript.SetupSlot(gear);
-                }
+                if (gear != null) displayItems.Add(new DisplayItem(gear, gear.PickupOrder));
             }
         }
+
+        displayItems.Sort((a, b) => a.PickupOrder.CompareTo(b.PickupOrder));
+
+        foreach (DisplayItem entry in displayItems)
+        {
+            GameObject newSlot = Instantiate(slotPrefab, slotContainer);
+            if (newSlot.TryGetComponent(out InventorySlot slotScript))
+            {
+                if (entry.Item is SecondaryGemInstance gem) slotScript.SetupSlot(gem);
+                else if (entry.Item is GearInstance gear) slotScript.SetupSlot(gear);
+            }
+        }
+
         UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(slotContainer as RectTransform);
     }
 }

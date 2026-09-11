@@ -102,6 +102,7 @@ public class PlayerAnimation : MonoBehaviour
 
         animator.SetBool(IsSkillingHash, isSkilling);
         animator.SetBool(IsPlungingHash, isPlunging);
+        animator.SetBool(IsDashingHash, player.Controller.IsDashing);
 
         if (isSkilling) return;
 
@@ -113,7 +114,6 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetFloat(YVelocityHash, rb.linearVelocityY);
         animator.SetBool(IsGroundedHash, groundedForAnim);
         animator.SetBool(IsWallSlidingHash, player.Controller.IsWallSliding);
-        animator.SetBool(IsDashingHash, player.Controller.IsDashing);
         animator.SetBool(IsBouncingHash, isBouncing);
         animator.SetBool(IsDirectionalDashHash, player.Controller.IsDirectionalDash);
         animator.SetBool(IsChargingSkillHash, player.CombatController.IsChargeInputHeld);
@@ -189,8 +189,25 @@ public class PlayerAnimation : MonoBehaviour
     {
         if (player == null || player.Controller == null) return;
 
-        Vector2 spawnPosition = player.Controller.LastHitPoint;
+        // Vector2 spawnPosition = player.Controller.LastHitPoint;
+        Vector2 spawnPosition;
         Vector2 normal = player.Controller.CurrentSurfaceNormal;
+
+        if (isWallJump) spawnPosition = player.Controller.LastHitPoint;
+        else
+        {
+            Collider2D playerCollider = player.GetComponent<Collider2D>();
+
+            if (playerCollider != null)
+            {
+                Bounds bounds = playerCollider.bounds;
+                spawnPosition = new Vector2(bounds.center.x, bounds.min.y);
+            }
+            else
+            {
+                spawnPosition = Vector2.zero;
+            }
+        }
 
         if (spawnPosition == Vector2.zero)
         {
@@ -198,7 +215,7 @@ public class PlayerAnimation : MonoBehaviour
             normal = isWallJump ? new Vector2(-wallDir, 0f) : Vector2.up;
         }
 
-        float angle = Mathf.Atan2(normal.y, normal.x) * Mathf.Rad2Deg - 90f;
+        float angle = Mathf.Atan2(normal.y, -normal.x) * Mathf.Rad2Deg - 90f;
         Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
 
         PSpawner.Spawn("JumpDust", spawnPosition, rotation);

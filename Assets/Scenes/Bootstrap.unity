@@ -229,13 +229,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PSpawner
   database:
   - key: spark
-    prefab: {fileID: 5497425098577746589, guid: 47eca0ebfe5eb204b82596aacf764024, type: 3}
+    prefab: {fileID: 525218031157934298, guid: cfe360f1890206848aabc05b477a7387, type: 3}
     initialPoolSize: 1
   - key: anticipation
     prefab: {fileID: 5497425098577746589, guid: 3ad1cec5f40777c4d9ea4e8d04c257ba, type: 3}
     initialPoolSize: 1
   - key: JumpDust
-    prefab: {fileID: 5497425098577746589, guid: f0bfe79dbae5a5c47bc3b481467e617b, type: 3}
+    prefab: {fileID: 3808574646349885763, guid: d654844c7ca7a4028a99627c117d2f50, type: 3}
+    initialPoolSize: 1
+  - key: PlayerHit
+    prefab: {fileID: 4761495741035824944, guid: a2d56de8ab6424f38a73fcc0b18c599a, type: 3}
+    initialPoolSize: 1
+  - key: EnemyHit
+    prefab: {fileID: 4761495741035824944, guid: 2bffe2055451b4272ad83de75b03a780, type: 3}
+    initialPoolSize: 1
+  - key: TurnDust
+    prefab: {fileID: 7942674913948366880, guid: cd7cbe25b8ad547008de42f07f2ec482, type: 3}
     initialPoolSize: 1
 --- !u!114 &78526262
 MonoBehaviour:
@@ -1214,6 +1223,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1958938303
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1958938305}
+  - component: {fileID: 1958938304}
+  m_Layer: 0
+  m_Name: ShaderPrewarm
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1958938304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958938303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14bc413b2b696b3468edcf2d0abd1396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShaderPrewarmer
+  materialsToWarm:
+  - {fileID: 2100000, guid: 15c4c1982bbd35d40b3050d0b06a9e29, type: 2}
+  - {fileID: 2100000, guid: 3777f4d643ba84c59ab92c3122bad925, type: 2}
+--- !u!4 &1958938305
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958938303}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -8.32292, y: 3.63323, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2030779158
 GameObject:
   m_ObjectHideFlags: 0
@@ -1360,3 +1416,4 @@ SceneRoots:
   - {fileID: 78526258}
   - {fileID: 1340722507}
   - {fileID: 1903205255}
+  - {fileID: 1958938305}
