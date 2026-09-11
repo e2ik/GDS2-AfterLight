@@ -445,9 +445,9 @@ public class PlayerCombatController : MonoBehaviour
             _ => Vector2.right
         };
 
-        float weaponRange = player.Equipment.EquippedWeapon.BaseWeaponRange;
+        float weaponRange = player.Equipment.EquippedWeapon.InstRolledRange;
         attackDamage = GetDamage();
-        attackCritChance = player.Equipment.EquippedWeapon.BaseWeaponCrit;
+        attackCritChance = player.Equipment.EquippedWeapon.InstRolledCrit;
 
         if (attackDir != Vector2.down)
         {
@@ -615,7 +615,7 @@ public class PlayerCombatController : MonoBehaviour
     public float GetScaledAttackDamage()
     {
         float weaponDamage = player.Equipment.EquippedWeapon != null
-            ? player.Equipment.EquippedWeapon.BaseWeaponDamage
+            ? player.Equipment.EquippedWeapon.InstRolledDamage
             : 0f;
 
         float attackStat = player.Stats.TotalAttack;

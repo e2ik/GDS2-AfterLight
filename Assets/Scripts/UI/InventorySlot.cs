@@ -20,6 +20,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private SecondaryGemInstance currentSecondaryGem;
     private GearInstance currentGear;
     private PrimaryGemInstance currentPrimaryGem;
+    private WeaponInstance currentWeapon;
     private InventoryDisplay cachedInventoryDisplay;
 
     private void Awake()
@@ -55,6 +56,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         currentSecondaryGem = gem;
         currentGear = null;
         currentPrimaryGem = null;
+        currentWeapon = null;
 
         if (gem == null || string.IsNullOrEmpty(gem.InstTemplateID))
         {
@@ -80,6 +82,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         currentGear = gear;
         currentSecondaryGem = null;
         currentPrimaryGem = null;
+        currentWeapon = null;
 
         if (gear == null || string.IsNullOrEmpty(gear.InstTemplateID))
         {
@@ -105,6 +108,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         currentPrimaryGem = gem;
         currentSecondaryGem = null;
         currentGear = null;
+        currentWeapon = null;
 
         if (gem == null || string.IsNullOrEmpty(gem.InstTemplateID))
         {
@@ -125,6 +129,28 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         showText = visible;
         if (nameText != null) nameText.gameObject.SetActive(showText);
+    }
+
+    public void SetupSlot(WeaponInstance weapon)
+    {
+        currentWeapon = weapon;
+        currentSecondaryGem = null;
+        currentGear = null;
+        currentPrimaryGem = null;
+
+        if (weapon == null || string.IsNullOrEmpty(weapon.InstTemplateID))
+        {
+            ClearDisplay();
+            return;
+        }
+
+        var def = GameDatabase.GetWeaponTemplateFromID(weapon.InstTemplateID);
+        if (def != null)
+            SetSlotDisplay(def.UISprite, def.UIName);
+        else
+            ClearDisplay();
+
+        UpdateEquippedVisuals();
     }
 
     private void SetSlotDisplay(Sprite sprite, string title)
@@ -195,6 +221,12 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     equipManager.EquipSpecialAttack(def);
             }
         }
+        // note DO NOT EVER unequip the weapon lol
+        else if (currentWeapon != null)
+        {
+            if (equipManager.EquippedWeapon != currentWeapon)
+                equipManager.EquipWeapon(currentWeapon);
+        }
 
         if (cachedInventoryDisplay == null)
             cachedInventoryDisplay = Object.FindFirstObjectByType<InventoryDisplay>();
@@ -223,6 +255,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                 var def = GameDatabase.GetPrimaryTemplateFromID(currentPrimaryGem.InstTemplateID);
                 isEquipped = def != null && player.Equipment.SpecialAttackDef == def;
             }
+            else if (currentWeapon != null)
+                isEquipped = player.Equipment.EquippedWeapon == currentWeapon;
         }
 
         Color targetColor = isEquipped ? equippedColor : normalColor;
@@ -276,6 +310,15 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             var def = GameDatabase.GetPrimaryTemplateFromID(currentPrimaryGem.InstTemplateID);
             if (def != null)
                 ItemTooltip.Instance.ShowTooltip(def.UIName, def.GemAttackDescription);
+        }
+        else if (currentWeapon != null)
+        {
+            var def = GameDatabase.GetWeaponTemplateFromID(currentWeapon.InstTemplateID);
+            if (def != null)
+            {
+                string stats = $"Damage: {currentWeapon.InstRolledDamage:F1}\nRange: {currentWeapon.InstRolledRange:F1}\nCrit: {currentWeapon.InstRolledCrit * 100f:F1}%";
+                ItemTooltip.Instance.ShowTooltip(def.UIName, stats);
+            }
         }
         else
         {

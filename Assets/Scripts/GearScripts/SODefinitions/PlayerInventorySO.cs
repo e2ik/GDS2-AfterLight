@@ -7,4 +7,5 @@ public class PlayerInventorySO : ScriptableObject
     public List<PrimaryGemInstance> PrimaryGems;
     public List<SecondaryGemInstance> SecondaryGems;
     public List<GearInstance> GearInstances;
+    public List<WeaponInstance> Weapons;
 }

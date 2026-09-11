@@ -6,16 +6,20 @@ public class GameDatabase : MonoBehaviour
     private SecondaryGemTemplateDB secondaryGemTemplateDB;
     [SerializeField] private GearTemplateDB gearTemplateDB;
     [SerializeField] private PrimaryGemTemplateDB primaryGemTemplateDB;
+    [SerializeField] private WeaponTemplateDB weaponTemplateDB;
 
     public static SecondaryGemTemplateDB SecondaryGemTemplateDB{get; private set;}
     public static GearTemplateDB GearTemplateDB{get; private set;}
     public static PrimaryGemTemplateDB PrimaryGemTemplateDB{get; private set;}
+    public static WeaponTemplateDB WeaponTemplateDB{get; private set;}
+    
 
     void Awake()
     {
         SecondaryGemTemplateDB = secondaryGemTemplateDB;
         GearTemplateDB = gearTemplateDB;
         PrimaryGemTemplateDB = primaryGemTemplateDB;
+        WeaponTemplateDB = weaponTemplateDB;
     }
 
     public static SecondaryGemBehaviourDefinition GetSecondaryTemplateFromID(string templateID)
@@ -47,6 +51,19 @@ public class GameDatabase : MonoBehaviour
     public static PrimaryGemBehaviourDefinition GetPrimaryTemplateFromID(string itemID)
     {
         foreach(var template in PrimaryGemTemplateDB.primaryGemTemplates)
+        {
+            if(template.ItemID == itemID)
+            {
+                return template;
+            }
+        }
+        Debug.Log($"ItemID {itemID} not found. ");
+        return null;
+    }
+
+    public static WeaponDefinition GetWeaponTemplateFromID(string itemID)
+    {
+        foreach(var template in WeaponTemplateDB.weaponTemplates)
         {
             if(template.ItemID == itemID)
             {

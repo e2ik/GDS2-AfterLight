@@ -77,6 +77,21 @@ public class PlayerInventoryManager : MonoBehaviour
         OnInventoryChanged?.Invoke();
     }
 
+    // weapon overload
+    public void AddItemToInventory(WeaponInstance item)
+    {
+        if (item == null || currentInventory == null) return;
+
+        if (currentInventory.Weapons == null)
+            currentInventory.Weapons = new System.Collections.Generic.List<WeaponInstance>();
+
+        item.PickupOrder = nextPickupOrder++;
+        currentInventory.Weapons.Add(item);
+        SaveManager.Instance?.SaveInventory(ToSaveData());
+
+        OnInventoryChanged?.Invoke();
+    }
+
     public InventorySaveData ToSaveData()
     {
         var data = new InventorySaveData();
@@ -90,6 +105,9 @@ public class PlayerInventoryManager : MonoBehaviour
 
             if (currentInventory.PrimaryGems != null)
                 data.primaryGems.AddRange(currentInventory.PrimaryGems);
+
+            if (currentInventory.Weapons != null)
+                data.weapons.AddRange(currentInventory.Weapons);
         }
         return data;
     }
@@ -101,6 +119,7 @@ public class PlayerInventoryManager : MonoBehaviour
         currentInventory.SecondaryGems?.Clear();
         currentInventory.GearInstances?.Clear();
         currentInventory.PrimaryGems?.Clear();
+        currentInventory.Weapons?.Clear();
 
         if (data == null)
         {
@@ -117,6 +136,9 @@ public class PlayerInventoryManager : MonoBehaviour
         if (data.primaryGems != null && currentInventory.PrimaryGems != null)
             currentInventory.PrimaryGems.AddRange(data.primaryGems);
 
+        if (data.weapons != null && currentInventory.Weapons != null)
+            currentInventory.Weapons.AddRange(data.weapons);
+
         int highestLoadedOrder = -1;
         if (currentInventory.SecondaryGems != null)
             highestLoadedOrder = Mathf.Max(highestLoadedOrder, currentInventory.SecondaryGems.Count > 0 ? currentInventory.SecondaryGems.Max(g => g.PickupOrder) : -1);
@@ -124,6 +146,8 @@ public class PlayerInventoryManager : MonoBehaviour
             highestLoadedOrder = Mathf.Max(highestLoadedOrder, currentInventory.GearInstances.Count > 0 ? currentInventory.GearInstances.Max(g => g.PickupOrder) : -1);
         if (currentInventory.PrimaryGems != null)
             highestLoadedOrder = Mathf.Max(highestLoadedOrder, currentInventory.PrimaryGems.Count > 0 ? currentInventory.PrimaryGems.Max(g => g.PickupOrder) : -1);
+        if (currentInventory.Weapons != null)
+            highestLoadedOrder = Mathf.Max(highestLoadedOrder, currentInventory.Weapons.Count > 0 ? currentInventory.Weapons.Max(w => w.PickupOrder) : -1);
 
 
         nextPickupOrder = highestLoadedOrder + 1;

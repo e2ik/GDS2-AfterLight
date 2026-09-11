@@ -130,12 +130,14 @@ public class WorldItem : MonoBehaviour
                 break;
 
             case WeaponDefinition weaponDef:
-                // WeaponInstance weaponLoot = weaponDef.CreateInstance(); <-- needs implementation
-                // player.Inventory.AddItemToInventory(weaponLoot);
-                //
-                // if (player.Equipment.IsWeaponSlotEmpty())
-                //     player.Equipment.EquipWeapon(weaponDef);
-                Debug.Log($"Picked up Weapon: {weaponDef.UIName}");
+                ERarity weaponRarity = GetWeightedRarity();
+                WeaponInstance weaponLoot = weaponDef.CreateInstance(weaponRarity);
+                player.Inventory.AddItemToInventory(weaponLoot);
+
+                if (player.Equipment.IsWeaponSlotEmpty())
+                    player.Equipment.EquipWeapon(weaponLoot);
+
+                Debug.Log($"Picked up Weapon: {weaponDef.UIName} ({weaponRarity})");
                 break;
 
             case GearDefinition gearDef:

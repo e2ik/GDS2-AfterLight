@@ -478,6 +478,15 @@ public class GameManager : MonoBehaviour
         {
             p.Equipment.ClearSecondaryGem();
         }
+
+        if (data.equippedWeapon != null && !string.IsNullOrEmpty(data.equippedWeapon.InstTemplateID))
+        {
+            p.Equipment.EquipWeapon(data.equippedWeapon);
+        }
+        else
+        {
+            p.Equipment.ClearWeapon();
+        }
     }
 
     private void ClearPlayerEquipment()
@@ -487,7 +496,7 @@ public class GameManager : MonoBehaviour
 
         p.Equipment.ClearAllGear();
         p.Equipment.ClearSecondaryGem();
-        // p.Equipment.ClearWeapon(); <-- not yet implemented do not clear
+        p.Equipment.ClearWeapon();
         // p.Equipment.ClearSpecialAttack(); <-- not yet implemented do not clear
     }
 

@@ -73,10 +73,18 @@ public class EquipmentDisplay : MonoBehaviour
 
         if (weaponSlot != null)
         {
-            WeaponDefinition weapon = equipmentManager.EquippedWeapon;
-            if (weapon != null)
+            WeaponInstance weapon = equipmentManager.EquippedWeapon;
+            if (weapon != null && !string.IsNullOrEmpty(weapon.InstTemplateID))
             {
-                weaponSlot.DisplayItem(weapon.UISprite, weapon.UIName);
+                var def = GameDatabase.GetWeaponTemplateFromID(weapon.InstTemplateID);
+                if (def != null)
+                {
+                    weaponSlot.DisplayItem(def.UISprite, def.UIName);
+                }
+                else
+                {
+                    weaponSlot.ClearSlot();
+                }
             }
             else
             {

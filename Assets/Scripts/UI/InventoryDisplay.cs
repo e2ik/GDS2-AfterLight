@@ -157,6 +157,14 @@ public class InventoryDisplay : MonoBehaviour
             }
         }
 
+        if (activeInventory.Weapons != null)
+        {
+            foreach (WeaponInstance weapon in activeInventory.Weapons)
+            {
+                if (weapon != null) displayItems.Add(new DisplayItem(weapon, weapon.PickupOrder));
+            }
+        }
+
         displayItems.Sort((a, b) => a.PickupOrder.CompareTo(b.PickupOrder));
 
         foreach (DisplayItem entry in displayItems)
@@ -167,6 +175,7 @@ public class InventoryDisplay : MonoBehaviour
                 if (entry.Item is SecondaryGemInstance gem) slotScript.SetupSlot(gem);
                 else if (entry.Item is GearInstance gear) slotScript.SetupSlot(gear);
                 else if (entry.Item is PrimaryGemInstance primaryGem) slotScript.SetupSlot(primaryGem);
+                else if (entry.Item is WeaponInstance weapon) slotScript.SetupSlot(weapon);
             }
         }
 
