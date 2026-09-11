@@ -68,7 +68,7 @@ public class InventoryDisplay : MonoBehaviour
         if (invManager != null)
         {
             invManager.OnInventoryChanged += RefreshUI;
-            
+
             PlayerEquipmentManager equipManager = invManager.GetComponent<PlayerEquipmentManager>();
             if (equipManager != null)
             {
@@ -117,9 +117,30 @@ public class InventoryDisplay : MonoBehaviour
         }
     }
 
+    private static void AddItems<T>(List<T> items, System.Func<T, int> pickupOrderSelector, List<DisplayItem> into) where T : class
+    {
+        if (items == null) return;
+
+        foreach (T item in items)
+        {
+            if (item != null) into.Add(new DisplayItem(item, pickupOrderSelector(item)));
+        }
+    }
+
+    private static void ApplyToSlot(InventorySlot slot, object item)
+    {
+        switch (item)
+        {
+            case SecondaryGemInstance gem: slot.SetupSlot(gem); break;
+            case GearInstance gear: slot.SetupSlot(gear); break;
+            case PrimaryGemInstance primaryGem: slot.SetupSlot(primaryGem); break;
+            case WeaponInstance weapon: slot.SetupSlot(weapon); break;
+        }
+    }
+
     public void RefreshUI()
     {
-        if (slotContainer == null || slotPrefab == null || invManager == null || invManager.currentInventory == null) 
+        if (slotContainer == null || slotPrefab == null || invManager == null || invManager.currentInventory == null)
             return;
 
         PlayerInventorySO activeInventory = invManager.currentInventory;
@@ -133,37 +154,10 @@ public class InventoryDisplay : MonoBehaviour
 
         List<DisplayItem> displayItems = new List<DisplayItem>();
 
-        if (activeInventory.SecondaryGems != null)
-        {
-            foreach (SecondaryGemInstance gem in activeInventory.SecondaryGems)
-            {
-                if (gem != null) displayItems.Add(new DisplayItem(gem, gem.PickupOrder));
-            }
-        }
-
-        if (activeInventory.GearInstances != null)
-        {
-            foreach (GearInstance gear in activeInventory.GearInstances)
-            {
-                if (gear != null) displayItems.Add(new DisplayItem(gear, gear.PickupOrder));
-            }
-        }
-
-        if (activeInventory.PrimaryGems != null)
-        {
-            foreach (PrimaryGemInstance gem in activeInventory.PrimaryGems)
-            {
-                if (gem != null) displayItems.Add(new DisplayItem(gem, gem.PickupOrder));
-            }
-        }
-
-        if (activeInventory.Weapons != null)
-        {
-            foreach (WeaponInstance weapon in activeInventory.Weapons)
-            {
-                if (weapon != null) displayItems.Add(new DisplayItem(weapon, weapon.PickupOrder));
-            }
-        }
+        AddItems(activeInventory.SecondaryGems, g => g.PickupOrder, displayItems);
+        AddItems(activeInventory.GearInstances, g => g.PickupOrder, displayItems);
+        AddItems(activeInventory.PrimaryGems, g => g.PickupOrder, displayItems);
+        AddItems(activeInventory.Weapons, w => w.PickupOrder, displayItems);
 
         displayItems.Sort((a, b) => a.PickupOrder.CompareTo(b.PickupOrder));
 
@@ -172,10 +166,7 @@ public class InventoryDisplay : MonoBehaviour
             GameObject newSlot = Instantiate(slotPrefab, slotContainer);
             if (newSlot.TryGetComponent(out InventorySlot slotScript))
             {
-                if (entry.Item is SecondaryGemInstance gem) slotScript.SetupSlot(gem);
-                else if (entry.Item is GearInstance gear) slotScript.SetupSlot(gear);
-                else if (entry.Item is PrimaryGemInstance primaryGem) slotScript.SetupSlot(primaryGem);
-                else if (entry.Item is WeaponInstance weapon) slotScript.SetupSlot(weapon);
+                ApplyToSlot(slotScript, entry.Item);
             }
         }
 

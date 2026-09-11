@@ -9,6 +9,7 @@ public class SecondaryGemInstance
     public int InstRolledCritValue;
     public int InstRolledDotPercent; // whole number, e.g. 10 = 10%
     public string InstanceGUID;
+    public ERarity Rarity;
 
     public int PickupOrder;
 }

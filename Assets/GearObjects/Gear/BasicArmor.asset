@@ -21,6 +21,18 @@ MonoBehaviour:
   maxLegendaryValue: 0
   Slot: 0
   TemplateID: A1
-  BonusAttackRange: {x: 0, y: 0}
-  BonusDefenseRange: {x: 2, y: 8}
-  BonusCritRange: {x: 0, y: 0}
+  AttackRanges:
+    Common: {x: 0, y: 0}
+    Rare: {x: 0, y: 0}
+    Epic: {x: 0, y: 0}
+    Legendary: {x: 0, y: 0}
+  DefenseRanges:
+    Common: {x: 5, y: 8}
+    Rare: {x: 8, y: 10}
+    Epic: {x: 10, y: 15}
+    Legendary: {x: 20, y: 25}
+  CritRanges:
+    Common: {x: 0, y: 0}
+    Rare: {x: 0, y: 0}
+    Epic: {x: 0, y: 0}
+    Legendary: {x: 0, y: 0}

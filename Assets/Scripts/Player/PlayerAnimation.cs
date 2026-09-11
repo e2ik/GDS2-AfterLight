@@ -27,6 +27,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
     private static readonly int IsAboutToLandHash = Animator.StringToHash("isAboutToLand");
     private static readonly int ChargeProgressHash = Animator.StringToHash("ChargeProgress");
+    private static readonly int IsDeadHash = Animator.StringToHash("isDead");
 
     [Header("particle prefabs")]
     [SerializeField] private ParticleSystem wallSlideParticleSystem;
@@ -78,6 +79,11 @@ public class PlayerAnimation : MonoBehaviour
 
     private void UpdateAnimationParameters()
     {
+    
+        bool isDead = player.Stats.IsDead;
+        animator.SetBool(IsDeadHash, isDead);
+        if (isDead) return;
+
         bool isParrying = player.CombatController.IsParrying;
         bool aboutToLand = player.Controller.IsAboutToLand(out RaycastHit2D hit);
         animator.SetBool(IsAboutToLandHash, aboutToLand);
