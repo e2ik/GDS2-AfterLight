@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerInventoryManager : MonoBehaviour
@@ -32,64 +33,35 @@ public class PlayerInventoryManager : MonoBehaviour
         }
     }
 
-    // secondaries
-    public void AddItemToInventory(SecondaryGemInstance item)
+    private void AddToList<T>(ref List<T> list, T item, System.Action<T, int> setPickupOrder) where T : class
     {
         if (item == null || currentInventory == null) return;
 
-        if (currentInventory.SecondaryGems == null)
-            currentInventory.SecondaryGems = new System.Collections.Generic.List<SecondaryGemInstance>();
+        if (list == null)
+            list = new List<T>();
 
-        item.PickupOrder = nextPickupOrder++; // NEW
-        currentInventory.SecondaryGems.Add(item);
+        setPickupOrder(item, nextPickupOrder++);
+        list.Add(item);
         SaveManager.Instance?.SaveInventory(ToSaveData());
 
         OnInventoryChanged?.Invoke();
     }
 
-    // gear overload
-    public void AddItemToInventory(GearInstance item)
+    public void AddItemToInventory(SecondaryGemInstance item) =>
+        AddToList(ref currentInventory.SecondaryGems, item, (i, order) => i.PickupOrder = order);
+
+    public void AddItemToInventory(GearInstance item) =>
+        AddToList(ref currentInventory.GearInstances, item, (i, order) => i.PickupOrder = order);
+
+    public void AddItemToInventory(PrimaryGemInstance item) =>
+        AddToList(ref currentInventory.PrimaryGems, item, (i, order) => i.PickupOrder = order);
+
+    public void AddItemToInventory(WeaponInstance item) =>
+        AddToList(ref currentInventory.Weapons, item, (i, order) => i.PickupOrder = order);
+
+    private static void CopyIfPresent<T>(List<T> source, List<T> destination)
     {
-        if (item == null || currentInventory == null) return;
-
-        if (currentInventory.GearInstances == null)
-            currentInventory.GearInstances = new System.Collections.Generic.List<GearInstance>();
-
-        item.PickupOrder = nextPickupOrder++; // NEW
-        currentInventory.GearInstances.Add(item);
-        SaveManager.Instance?.SaveInventory(ToSaveData());
-
-        OnInventoryChanged?.Invoke();
-    }
-
-    // primary overload
-    public void AddItemToInventory(PrimaryGemInstance item)
-    {
-        if (item == null || currentInventory == null) return;
-
-        if (currentInventory.PrimaryGems == null)
-            currentInventory.PrimaryGems = new System.Collections.Generic.List<PrimaryGemInstance>();
-
-        item.PickupOrder = nextPickupOrder++;
-        currentInventory.PrimaryGems.Add(item);
-        SaveManager.Instance?.SaveInventory(ToSaveData());
-
-        OnInventoryChanged?.Invoke();
-    }
-
-    // weapon overload
-    public void AddItemToInventory(WeaponInstance item)
-    {
-        if (item == null || currentInventory == null) return;
-
-        if (currentInventory.Weapons == null)
-            currentInventory.Weapons = new System.Collections.Generic.List<WeaponInstance>();
-
-        item.PickupOrder = nextPickupOrder++;
-        currentInventory.Weapons.Add(item);
-        SaveManager.Instance?.SaveInventory(ToSaveData());
-
-        OnInventoryChanged?.Invoke();
+        if (source != null) destination.AddRange(source);
     }
 
     public InventorySaveData ToSaveData()
@@ -97,17 +69,10 @@ public class PlayerInventoryManager : MonoBehaviour
         var data = new InventorySaveData();
         if (currentInventory != null)
         {
-            if (currentInventory.SecondaryGems != null)
-                data.secondaryGems.AddRange(currentInventory.SecondaryGems);
-
-            if (currentInventory.GearInstances != null)
-                data.gearInstances.AddRange(currentInventory.GearInstances);
-
-            if (currentInventory.PrimaryGems != null)
-                data.primaryGems.AddRange(currentInventory.PrimaryGems);
-
-            if (currentInventory.Weapons != null)
-                data.weapons.AddRange(currentInventory.Weapons);
+            CopyIfPresent(currentInventory.SecondaryGems, data.secondaryGems);
+            CopyIfPresent(currentInventory.GearInstances, data.gearInstances);
+            CopyIfPresent(currentInventory.PrimaryGems, data.primaryGems);
+            CopyIfPresent(currentInventory.Weapons, data.weapons);
         }
         return data;
     }
@@ -127,31 +92,24 @@ public class PlayerInventoryManager : MonoBehaviour
             return;
         }
 
-        if (data.secondaryGems != null && currentInventory.SecondaryGems != null)
-            currentInventory.SecondaryGems.AddRange(data.secondaryGems);
-
-        if (data.gearInstances != null && currentInventory.GearInstances != null)
-            currentInventory.GearInstances.AddRange(data.gearInstances);
-
-        if (data.primaryGems != null && currentInventory.PrimaryGems != null)
-            currentInventory.PrimaryGems.AddRange(data.primaryGems);
-
-        if (data.weapons != null && currentInventory.Weapons != null)
-            currentInventory.Weapons.AddRange(data.weapons);
+        CopyIfPresent(data.secondaryGems, currentInventory.SecondaryGems);
+        CopyIfPresent(data.gearInstances, currentInventory.GearInstances);
+        CopyIfPresent(data.primaryGems, currentInventory.PrimaryGems);
+        CopyIfPresent(data.weapons, currentInventory.Weapons);
 
         int highestLoadedOrder = -1;
-        if (currentInventory.SecondaryGems != null)
-            highestLoadedOrder = Mathf.Max(highestLoadedOrder, currentInventory.SecondaryGems.Count > 0 ? currentInventory.SecondaryGems.Max(g => g.PickupOrder) : -1);
-        if (currentInventory.GearInstances != null)
-            highestLoadedOrder = Mathf.Max(highestLoadedOrder, currentInventory.GearInstances.Count > 0 ? currentInventory.GearInstances.Max(g => g.PickupOrder) : -1);
-        if (currentInventory.PrimaryGems != null)
-            highestLoadedOrder = Mathf.Max(highestLoadedOrder, currentInventory.PrimaryGems.Count > 0 ? currentInventory.PrimaryGems.Max(g => g.PickupOrder) : -1);
-        if (currentInventory.Weapons != null)
-            highestLoadedOrder = Mathf.Max(highestLoadedOrder, currentInventory.Weapons.Count > 0 ? currentInventory.Weapons.Max(w => w.PickupOrder) : -1);
-
+        highestLoadedOrder = Mathf.Max(highestLoadedOrder, HighestOrder(currentInventory.SecondaryGems, g => g.PickupOrder));
+        highestLoadedOrder = Mathf.Max(highestLoadedOrder, HighestOrder(currentInventory.GearInstances, g => g.PickupOrder));
+        highestLoadedOrder = Mathf.Max(highestLoadedOrder, HighestOrder(currentInventory.PrimaryGems, g => g.PickupOrder));
+        highestLoadedOrder = Mathf.Max(highestLoadedOrder, HighestOrder(currentInventory.Weapons, w => w.PickupOrder));
 
         nextPickupOrder = highestLoadedOrder + 1;
 
         OnInventoryChanged?.Invoke();
+    }
+
+    private static int HighestOrder<T>(List<T> list, System.Func<T, int> orderSelector)
+    {
+        return list != null && list.Count > 0 ? list.Max(orderSelector) : -1;
     }
 }

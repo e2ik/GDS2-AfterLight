@@ -1,9 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameDatabase : MonoBehaviour
 {
-    [SerializeField]
-    private SecondaryGemTemplateDB secondaryGemTemplateDB;
+    [SerializeField] private SecondaryGemTemplateDB secondaryGemTemplateDB;
     [SerializeField] private GearTemplateDB gearTemplateDB;
     [SerializeField] private PrimaryGemTemplateDB primaryGemTemplateDB;
     [SerializeField] private WeaponTemplateDB weaponTemplateDB;
@@ -12,7 +12,6 @@ public class GameDatabase : MonoBehaviour
     public static GearTemplateDB GearTemplateDB{get; private set;}
     public static PrimaryGemTemplateDB PrimaryGemTemplateDB{get; private set;}
     public static WeaponTemplateDB WeaponTemplateDB{get; private set;}
-    
 
     void Awake()
     {
@@ -22,55 +21,43 @@ public class GameDatabase : MonoBehaviour
         WeaponTemplateDB = weaponTemplateDB;
     }
 
-    public static SecondaryGemBehaviourDefinition GetSecondaryTemplateFromID(string templateID)
+    private static T FindByID<T>(IEnumerable<T> templates, string id) where T : class
     {
-        foreach(var template in SecondaryGemTemplateDB.secondaryGemTemplates)
+        if (templates == null)
         {
-            if(template.TemplateID == templateID)
-            {
-                return template;
-            }
+            Debug.LogWarning("[GameDatabase] Template list is null — is the DB asset assigned on GameDatabase?");
+            return null;
         }
-        Debug.Log($"TemplateID {templateID} not found. ");
+
+        foreach (var template in templates)
+        {
+            if (GetTemplateID(template) == id) return template;
+        }
+
+        Debug.Log($"ID {id} not found.");
         return null;
     }
 
-    public static GearDefinition GetGearTemplateFromID(string templateID)
+    private static string GetTemplateID<T>(T template) where T : class
     {
-        foreach(var template in GearTemplateDB.gearTemplates)
+        return template switch
         {
-            if(template.TemplateID == templateID)
-            {
-                return template;
-            }
-        }
-        Debug.Log($"TemplateID {templateID} not found. ");
-        return null;
+            SecondaryGemBehaviourDefinition s => s.TemplateID,
+            GearDefinition g => g.TemplateID,
+            InventoryItemBase i => i.ItemID,
+            _ => null
+        };
     }
 
-    public static PrimaryGemBehaviourDefinition GetPrimaryTemplateFromID(string itemID)
-    {
-        foreach(var template in PrimaryGemTemplateDB.primaryGemTemplates)
-        {
-            if(template.ItemID == itemID)
-            {
-                return template;
-            }
-        }
-        Debug.Log($"ItemID {itemID} not found. ");
-        return null;
-    }
+    public static SecondaryGemBehaviourDefinition GetSecondaryTemplateFromID(string templateID) =>
+        FindByID(SecondaryGemTemplateDB?.secondaryGemTemplates, templateID);
 
-    public static WeaponDefinition GetWeaponTemplateFromID(string itemID)
-    {
-        foreach(var template in WeaponTemplateDB.weaponTemplates)
-        {
-            if(template.ItemID == itemID)
-            {
-                return template;
-            }
-        }
-        Debug.Log($"ItemID {itemID} not found. ");
-        return null;
-    }
+    public static GearDefinition GetGearTemplateFromID(string templateID) =>
+        FindByID(GearTemplateDB?.gearTemplates, templateID);
+
+    public static PrimaryGemBehaviourDefinition GetPrimaryTemplateFromID(string itemID) =>
+        FindByID(PrimaryGemTemplateDB?.primaryGemTemplates, itemID);
+
+    public static WeaponDefinition GetWeaponTemplateFromID(string itemID) =>
+        FindByID(WeaponTemplateDB?.weaponTemplates, itemID);
 }
