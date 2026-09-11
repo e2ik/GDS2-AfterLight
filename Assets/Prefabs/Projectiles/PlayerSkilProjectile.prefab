@@ -172,10 +172,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillProjectile
   lifetime: 10
   gravityScale: 0
-  explosionRadius: 1.5
+  explosionRadius: 5
   enemyMask:
     serializedVersion: 2
     m_Bits: 6656
   collideWithMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4800

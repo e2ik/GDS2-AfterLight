@@ -11,7 +11,7 @@ public class ProjectileGem : PrimaryGemBehaviourDefinition
     public override void Execute(AttackContext context, float baseDamage, float chargeAmount = 0)
     {
         Vector2 velocity = Vector2.right * flySpeedMultiplier;
-        GameObject projectile = Instantiate(projectilePrefab,context.OriginPoint,Quaternion.identity);
+        GameObject projectile = Instantiate(projectilePrefab,context.OriginPoint,Quaternion.Euler(0,0,90));
         PlayerProjectileBase projectileScript = projectile.GetComponent<PlayerSkillProjectile>();
         projectileScript.Launch(context.OriginPoint,velocity,damage,context);
     }

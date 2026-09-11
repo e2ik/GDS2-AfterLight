@@ -42,6 +42,7 @@ public class PlayerSkillProjectile : PlayerProjectileBase
     {
         Vector2 originPoint = other.transform.position;
         Collider2D[] hitsAtExplosionPoint = Physics2D.OverlapCircleAll(originPoint, radius,enemyMask);
+        DrawCircle(originPoint,radius,36,1);
         var enemiesHit = new HashSet<Collider2D>();
         if(hitsAtExplosionPoint.Count() > 0)
         {
@@ -65,4 +66,19 @@ public class PlayerSkillProjectile : PlayerProjectileBase
         float adjustedDamage = baseDamage * inverseDistance;
         return (int)adjustedDamage;
     }
+
+    public static void DrawCircle(Vector3 center, float radius, int segments = 36, float duration = 0f)
+{
+
+    float angleStep = 360f / segments;
+    Vector3 prevPoint = center + new Vector3(radius, 0, 0);
+
+    for (int i = 1; i <= segments; i++)
+    {
+        float angle = angleStep * i * Mathf.Deg2Rad;
+        Vector3 newPoint = center + new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0);
+        Debug.DrawLine(prevPoint, newPoint, Color.green, duration);
+        prevPoint = newPoint;
+    }
+}
 }

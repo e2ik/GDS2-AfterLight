@@ -157,7 +157,7 @@ namespace Enemies
 
         private void OnDamaged(int amount, int currentHealth, bool isDot)
         {
-            Debug.Log($"Enemy blud was damaged for {amount}. Current Health: {currentHealth}");
+            Debug.Log($"Enemy {name} was damaged for {amount}. Current Health: {currentHealth}");
             
             AudioManager.PlaySFXAttached(hitEvent, gameObject);
 
