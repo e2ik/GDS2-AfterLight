@@ -16,9 +16,10 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
         Legendary = new Vector2(15f, 20f)
     };
 
-    public override void Trigger(SecondaryGemInstance instance)
+    public override PassiveType Trigger(SecondaryGemInstance instance)
     {
         //trigger is for non-attack context passives (just parry atm)
+        return PassiveType.DoT;
     }
 
     public override SecondaryGemInstance CreateInstance(ERarity rarity)

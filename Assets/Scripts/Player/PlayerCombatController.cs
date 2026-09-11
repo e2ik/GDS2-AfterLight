@@ -808,13 +808,46 @@ public class PlayerCombatController : MonoBehaviour
     public bool IsAttackModified() => player.Equipment.SecondaryGem.Type == SGemType.Attack;
     public bool IsSkillModified() => player.Equipment.SecondaryGem.Type == SGemType.Skill;
 
-    public void ModifyParry()
+    public void ModifyParry(float incomingDamage, Collider2D col)
     {
         if (!IsParryModified()) return;
         var secondaryGem = player.Equipment.SecondaryGem;
         if (secondaryGem == null) return;
         var secondaryDef = GameDatabase.GetSecondaryTemplateFromID(secondaryGem.InstTemplateID);
-        secondaryDef.Trigger(secondaryGem);
+        var passiveType = secondaryDef.Trigger(secondaryGem);
+        switch (passiveType)
+        {
+            case PassiveType.Charge:
+                ChargeSkillMeter(secondaryGem.InstRolledChargeAmount);
+                break;
+            case PassiveType.Reflect:
+                TryReflectDmg(secondaryDef, col, incomingDamage);
+                break;
+            case PassiveType.DoT:
+                // N/A
+                break;
+            default:
+                Debug.Log("secondary gem type not implemented for parries");
+                break;
+        }
+    }
+
+    private void TryReflectDmg(SecondaryGemBehaviourDefinition behaviourDefinition, Collider2D col, float incomingDamage)
+    {
+        if (col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
+        {
+            AttackContext context = new AttackContext
+            {
+                BaseAttackDamage = incomingDamage
+            };
+            
+            behaviourDefinition.Modify(ref context, player.Equipment.SecondaryGem);
+            enemyHealth.ApplyHit((int)context.BaseAttackDamage, context);
+        }
+        else
+        {
+            Debug.Log("can't see enemy health");
+        }
     }
     
     private void ModifyAttack()

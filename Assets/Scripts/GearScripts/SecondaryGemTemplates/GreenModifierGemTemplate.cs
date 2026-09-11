@@ -5,12 +5,21 @@ public class GreenModifierGemTemplate : SecondaryGemBehaviourDefinition
 {
     // Skill Charge on hit or parry Gem
     [SerializeField] private Vector2 chargeAmountRange = new(0.01f, 0.1f);
+
+    private RarityRange chargeAmountByRarity = new RarityRange
+    {
+        Common = new Vector2(0.01f, 0.05f),
+        Rare = new Vector2(0.06f, 0.1f),
+        Epic = new Vector2(0.11f, 0.15f),
+        Legendary = new Vector2(0.16f, 0.2f)
+    };
+    
     public override SecondaryGemInstance CreateInstance(ERarity rarity)
     {
         SecondaryGemInstance instance = base.CreateInstance(rarity);
 
-        float multiplier = GetRarityMultiplier(rarity);
-        instance.InstRolledChargeAmount = Random.Range(chargeAmountRange.x, chargeAmountRange.y) * multiplier;
+        Vector2 range = chargeAmountByRarity.GetRange(rarity);
+        instance.InstRolledChargeAmount = Random.Range(range.x, range.y);
 
         return instance;
     }
@@ -21,9 +30,9 @@ public class GreenModifierGemTemplate : SecondaryGemBehaviourDefinition
         context.ChargeAmount = instance.InstRolledChargeAmount;
     }
 
-    public override void Trigger(SecondaryGemInstance instance)
+    public override PassiveType Trigger(SecondaryGemInstance instance)
     {
         //trigger is for non-attack context passives (just parry atm)
-        
+        return PassiveType.Charge;
     }
 }

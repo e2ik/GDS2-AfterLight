@@ -36,10 +36,10 @@ public class PlayerHurtBox : MonoBehaviour
         var hitbox = other.GetComponent<HitBox>();
         if (hitbox == null || !hitbox.IsActive) return;
         
-        TakeHit(hitbox);
+        TakeHit(hitbox, other);
     }
 
-    public bool TakeHit(HitBox hitbox)
+    public bool TakeHit(HitBox hitbox, Collider2D col2d = null)
     {
         if (Invulnerable) return false;        
 
@@ -49,9 +49,7 @@ public class PlayerHurtBox : MonoBehaviour
         if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
         {
             if (combatController.IsParryModified()) //trigger secondary gem modifier
-            {
-                combatController.ModifyParry();
-            }
+                combatController.ModifyParry(hitbox.Damage, col2d);
             
             return false; // Successfully parried! Did not take damage.
         }

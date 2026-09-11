@@ -15,6 +15,12 @@ public enum SGemType
     Skill
 }
 
+public enum PassiveType
+{
+    Charge,
+    Reflect,
+    DoT
+}
 
 [CreateAssetMenu(fileName = "SecondaryGemBehaviourDefintion", menuName = "ScriptableObjects/SecondaryGemBehaviourDefinition")]
 public abstract class SecondaryGemBehaviourDefinition : InventoryItemBase, ISecondaryGemBehaviour
@@ -41,7 +47,7 @@ public abstract class SecondaryGemBehaviourDefinition : InventoryItemBase, ISeco
     };
 
     public abstract void Modify(ref AttackContext context, SecondaryGemInstance instance);
-    public abstract void Trigger(SecondaryGemInstance instance);
+    public abstract PassiveType Trigger(SecondaryGemInstance instance);
 
     public virtual SecondaryGemInstance CreateInstance(ERarity rarity)
     {

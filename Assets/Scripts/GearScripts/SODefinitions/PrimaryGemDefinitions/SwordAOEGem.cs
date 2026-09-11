@@ -21,13 +21,21 @@ public class SwordAOEGem : PrimaryGemBehaviourDefinition
 
         float skillDamage = baseDamage * SkillDamageModifier;
 
+        bool hitenemy = false;
         foreach (var col in enemiesInRange)
         {
             if (!col.CompareTag("EnemyHurtBox"))
                 continue;
 
-            if (col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
-                enemyHealth.ApplyHit((int)skillDamage, context);
+            if (!col.transform.root.TryGetComponent(out EnemyHealth enemyHealth)) continue;
+            enemyHealth.ApplyHit((int)skillDamage, context);
+            hitenemy = true;
+        }
+
+        if (!hitenemy) return;
+        if (pCombat.IsSkillModified() && context.ChargesSkillMeter)
+        {
+            pCombat.ChargeSkillMeter(context.ChargeAmount);
         }
     }
 }

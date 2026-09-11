@@ -59,6 +59,11 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
                     if (col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
                     {
                         enemyHealth.ApplyHit((int)skillDamage, context);
+                        
+                        if (playerCombat.IsSkillModified() && context.ChargesSkillMeter)
+                        {
+                            playerCombat.ChargeSkillMeter(context.ChargeAmount);
+                        }
                     }
                 }
             }
@@ -75,17 +80,17 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
         proj.transform.SetPositionAndRotation(pos, Quaternion.identity);
     }
     private void DrawDebugBox(Vector2 center, Vector2 size, float duration = 0f)
-{
-    Vector2 halfSize = size * 0.5f;
+    {
+        Vector2 halfSize = size * 0.5f;
 
-    Vector2 topLeft = center + new Vector2(-halfSize.x, halfSize.y);
-    Vector2 topRight = center + new Vector2(halfSize.x, halfSize.y);
-    Vector2 bottomLeft = center + new Vector2(-halfSize.x, -halfSize.y);
-    Vector2 bottomRight = center + new Vector2(halfSize.x, -halfSize.y);
+        Vector2 topLeft = center + new Vector2(-halfSize.x, halfSize.y);
+        Vector2 topRight = center + new Vector2(halfSize.x, halfSize.y);
+        Vector2 bottomLeft = center + new Vector2(-halfSize.x, -halfSize.y);
+        Vector2 bottomRight = center + new Vector2(halfSize.x, -halfSize.y);
 
-    Debug.DrawLine(topLeft, topRight, Color.red, duration);
-    Debug.DrawLine(topRight, bottomRight, Color.red, duration);
-    Debug.DrawLine(bottomRight, bottomLeft, Color.red, duration);
-    Debug.DrawLine(bottomLeft, topLeft, Color.red, duration);
-}
+        Debug.DrawLine(topLeft, topRight, Color.red, duration);
+        Debug.DrawLine(topRight, bottomRight, Color.red, duration);
+        Debug.DrawLine(bottomRight, bottomLeft, Color.red, duration);
+        Debug.DrawLine(bottomLeft, topLeft, Color.red, duration);
+    }
 }
