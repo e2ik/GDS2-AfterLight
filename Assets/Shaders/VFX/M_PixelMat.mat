@@ -46,13 +46,16 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
+    - _AlphaCutOff: 0.1
     - _AlphaToMask: 0
     - _Bits: 8
     - _Blend: 0
+    - _Brightness: 1
     - _CastShadows: 1
     - _Cull: 2
     - _DstBlend: 10
     - _DstBlendAlpha: 10
+    - _PixelResolution: 8
     - _QueueControl: 0
     - _QueueOffset: 0
     - _SrcBlend: 5
@@ -62,7 +65,7 @@ Material:
     - _ZWrite: 0
     - _ZWriteControl: 0
     m_Colors:
-    - _Color: {r: 47.93726, g: 47.93726, b: 47.93726, a: 1}
+    - _Color: {r: 64, g: 9.861622, b: 9.861622, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &2109630671958472707
