@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9af40a4b790cda8868617299c2a95c6e, type: 3}
+  m_Name: ProjectileGem
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileGem
+  ItemID: 
+  UIName: 
+  UISprite: {fileID: 0}
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
+  GemName: SwordAOEAttack
+  GemAttackDescription: 
+  SkillType: 0
+  SkillExecutionType: 0
+  SkillRange: 0
+  SkillDamageModifier: 1
+  SkillCost: 1
+  MinimumHeldDuration: 0.25
+  EnergyDrainTick: 0.33
+  projectilePrefab: {fileID: 3667247752525080938, guid: 581d65cf91f32151285d33277602c52d, type: 3}
+  damage: 75
+  lifeTime: 5
+  flySpeedMultiplier: 20
