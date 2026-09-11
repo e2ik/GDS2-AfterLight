@@ -14,56 +14,50 @@ public class GearDefinition : InventoryItemBase
     public EGearSlot Slot;
     public string TemplateID;
 
-    [Header("Base Stat Ranges (Min / Max)")]
-    public Vector2 BonusAttackRange = new Vector2(5f, 15f);
-    public Vector2 BonusDefenseRange = new Vector2(2f, 8f);
-    public Vector2 BonusCritRange = new Vector2(0f, 1f);
+    [Header("Attack by Rarity")]
+    public RarityRange AttackRanges = new RarityRange
+    {
+        Common = new Vector2(1f, 3f),
+        Rare = new Vector2(3f, 5f),
+        Epic = new Vector2(5f, 10f),
+        Legendary = new Vector2(15f, 20f)
+    };
+
+    [Header("Defense by Rarity")]
+    public RarityRange DefenseRanges = new RarityRange
+    {
+        Common = new Vector2(1f, 3f),
+        Rare = new Vector2(3f, 5f),
+        Epic = new Vector2(5f, 10f),
+        Legendary = new Vector2(15f, 20f)
+    };
+
+    [Header("Crit by Rarity (0-1)")]
+    public RarityRange CritRanges = new RarityRange
+    {
+        Common = new Vector2(0.03f, 0.05f),
+        Rare = new Vector2(0.05f, 0.10f),
+        Epic = new Vector2(0.10f, 0.15f),
+        Legendary = new Vector2(0.15f, 0.20f)
+    };
 
     public GearInstance CreateInstance(ERarity rarity)
     {
-        // Rarity multiplier to scale stats upward for higher rarities
-        float rarityMultiplier = GetRarityMultiplier(rarity);
+        Vector2 atkRange = AttackRanges.GetRange(rarity);
+        Vector2 defRange = DefenseRanges.GetRange(rarity);
+        Vector2 critRange = CritRanges.GetRange(rarity);
 
         GearInstance newInstance = new GearInstance
         {
             InstanceGUID = System.Guid.NewGuid().ToString(),
             InstTemplateID = TemplateID,
             Rarity = rarity,
-            InstBonusAttack = Random.Range(BonusAttackRange.x, BonusAttackRange.y) * rarityMultiplier,
-            InstBonusDefense = Random.Range(BonusDefenseRange.x, BonusDefenseRange.y) * rarityMultiplier,
-            InstBonusCrit = Random.Range(BonusCritRange.x, BonusCritRange.y) * rarityMultiplier,
+            InstBonusAttack = Random.Range(atkRange.x, atkRange.y),
+            InstBonusDefense = Random.Range(defRange.x, defRange.y),
+            InstBonusCrit = Random.Range(critRange.x, critRange.y),
         };
 
         Debug.Log($"Created Gear Instance: {UIName} [{rarity}]");
         return newInstance;
-    }
-
-    private int GetRolledValue(ERarity rarity)
-    {
-        switch (rarity)
-        {
-            case ERarity.Common:
-                return Random.Range(1,maxCommonValue);
-            case ERarity.Rare:
-                return Random.Range(maxCommonValue + 1, maxEpicValue);
-            case ERarity.Epic:
-                return Random.Range(maxRareValue + 1, maxEpicValue);
-            case ERarity.Legendary:
-                return Random.Range(maxEpicValue + 1, maxLegendaryValue);
-            default:
-                return 0;
-        }
-    }
-
-    private float GetRarityMultiplier(ERarity rarity)
-    {
-        switch (rarity)
-        {
-            case ERarity.Common: return 1.0f;
-            case ERarity.Rare: return 1.3f;
-            case ERarity.Epic: return 1.6f;
-            case ERarity.Legendary: return 2.0f;
-            default: return 1.0f;
-        }
     }
 }

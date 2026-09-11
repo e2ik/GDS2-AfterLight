@@ -9,6 +9,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [SerializeField] private Image iconImage;
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private Button actionButton;
+    [SerializeField] private Image borderImage;
 
     [Header("Text Settings")]
     [SerializeField] private bool showText = true;
@@ -16,6 +17,9 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [Header("Equipped Colors")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color equippedColor = Color.green;
+
+    [Header("Border")]
+    [SerializeField] private Color noRarityBorderColor = Color.white;
 
     private object currentItem;
     private InventoryDisplay cachedInventoryDisplay;
@@ -27,14 +31,16 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         public readonly string TooltipBody;
         public readonly bool IsEquipped;
         public readonly System.Action ToggleEquip;
+        public readonly ERarity? Rarity;
 
-        public SlotContext(Sprite sprite, string name, string tooltipBody, bool isEquipped, System.Action toggleEquip)
+        public SlotContext(Sprite sprite, string name, string tooltipBody, bool isEquipped, System.Action toggleEquip, ERarity? rarity)
         {
             Sprite = sprite;
             Name = name;
             TooltipBody = tooltipBody;
             IsEquipped = isEquipped;
             ToggleEquip = toggleEquip;
+            Rarity = rarity;
         }
     }
 
@@ -83,6 +89,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
 
         SetSlotDisplay(ctx.Value.Sprite, ctx.Value.Name);
+        SetBorderColor(ctx.Value.Rarity);
         UpdateEquippedVisuals();
     }
 
@@ -112,7 +119,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     else equip.EquipSecondaryGem(gem);
                 };
 
-                return new SlotContext(def.UISprite, def.UIName, GetGemStatsTooltip(gem), isEquipped, toggle);
+                return new SlotContext(def.UISprite, def.UIName, GetGemStatsTooltip(gem), isEquipped, toggle, gem.Rarity);
             }
 
             case GearInstance gear when !string.IsNullOrEmpty(gear.InstTemplateID):
@@ -128,7 +135,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     else equip.EquipGear(def.Slot, gear);
                 };
 
-                return new SlotContext(def.UISprite, def.UIName, GetGearStatsTooltip(gear, def.Slot.ToString()), isEquipped, toggle);
+                return new SlotContext(def.UISprite, def.UIName, GetGearStatsTooltip(gear, def.Slot.ToString()), isEquipped, toggle, gear.Rarity);
             }
 
             case PrimaryGemInstance primary when !string.IsNullOrEmpty(primary.InstTemplateID):
@@ -144,7 +151,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     else equip.EquipSpecialAttack(def);
                 };
 
-                return new SlotContext(def.UISprite, def.UIName, def.GemAttackDescription, isEquipped, toggle);
+                // Primary gems don't roll rarity — border stays default.
+                return new SlotContext(def.UISprite, def.UIName, def.GemAttackDescription, isEquipped, toggle, null);
             }
 
             case WeaponInstance weapon when !string.IsNullOrEmpty(weapon.InstTemplateID):
@@ -153,7 +161,6 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                 if (def == null) return null;
 
                 bool isEquipped = equip != null && equip.IsWeaponEquipped(weapon);
-                string stats = $"Damage: {weapon.InstRolledDamage:F1}\nRange: {weapon.InstRolledRange:F1}\nCrit: {weapon.InstRolledCrit * 100f:F1}%";
 
                 // note DO NOT EVER unequip the weapon lol — toggle only equips, never clears
                 System.Action toggle = () =>
@@ -162,7 +169,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     if (!equip.IsWeaponEquipped(weapon)) equip.EquipWeapon(weapon);
                 };
 
-                return new SlotContext(def.UISprite, def.UIName, stats, isEquipped, toggle);
+                return new SlotContext(def.UISprite, def.UIName, GetWeaponStatsTooltip(weapon), isEquipped, toggle, weapon.Rarity);
             }
 
             default:
@@ -186,6 +193,15 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
     }
 
+    private void SetBorderColor(ERarity? rarity)
+    {
+        if (borderImage == null) return;
+
+        borderImage.color = rarity.HasValue && GameManager.Instance != null
+            ? GameManager.Instance.GetRarityColor(rarity.Value)
+            : noRarityBorderColor;
+    }
+
     private void ClearDisplay()
     {
         if (iconImage != null)
@@ -199,6 +215,11 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (actionButton != null && actionButton.image != null)
         {
             actionButton.image.color = normalColor;
+        }
+
+        if (borderImage != null)
+        {
+            borderImage.color = noRarityBorderColor;
         }
     }
 
@@ -261,10 +282,20 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         ItemTooltip.Instance.ShowTooltip(ctx.Value.Name, ctx.Value.TooltipBody);
     }
 
+    private static string Colorize(string text, ERarity rarity)
+    {
+        Color color = GameManager.Instance != null
+            ? GameManager.Instance.GetRarityColor(rarity)
+            : Color.white;
+
+        return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{text}</color>";
+    }
+
     private string GetGearStatsTooltip(GearInstance gear, string slotName)
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.AppendLine($"Slot: {slotName}");
+        sb.AppendLine(Colorize($"Rarity: {gear.Rarity}", gear.Rarity));
 
         int attack = (int)gear.InstBonusAttack;
         int defense = (int)gear.InstBonusDefense;
@@ -283,6 +314,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.AppendLine("Type: Secondary Gem");
+        sb.AppendLine(Colorize($"Rarity: {gem.Rarity}", gem.Rarity));
 
         int damageBonus = gem.InstRolledDamageValue;
         int critBonus = gem.InstRolledCritValue;
@@ -291,6 +323,18 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (damageBonus > 0) sb.AppendLine($"Bonus Damage: +{damageBonus}");
         if (critBonus > 0) sb.AppendLine($"Bonus Crit: +{critBonus}%");
         if (dotPercent > 0) sb.AppendLine($"Bleed: {dotPercent}% of hit damage over time");
+
+        return sb.ToString().TrimEnd();
+    }
+
+    private string GetWeaponStatsTooltip(WeaponInstance weapon)
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        sb.AppendLine(Colorize($"Rarity: {weapon.Rarity}", weapon.Rarity));
+
+        if (weapon.InstRolledDamage > 0) sb.AppendLine($"Damage: {weapon.InstRolledDamage:F1}");
+        if (weapon.InstRolledRange > 0) sb.AppendLine($"Range: {weapon.InstRolledRange:F1}");
+        if (weapon.InstRolledCrit > 0) sb.AppendLine($"Crit: {weapon.InstRolledCrit * 100f:F1}%");
 
         return sb.ToString().TrimEnd();
     }
