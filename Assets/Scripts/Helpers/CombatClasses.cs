@@ -17,6 +17,9 @@ public struct AttackContext
     public float DotDamagePercent;
     public float DotTickInterval;
     public float DotDuration;
+
+    public bool ChargesSkillMeter;
+    public float ChargeAmount;
 }
 
 public enum EDamageType

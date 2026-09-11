@@ -47,7 +47,14 @@ public class PlayerHurtBox : MonoBehaviour
         bool isUnparryable = hitbox.AttackForce == AttackForce.Heavy;
 
         if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
+        {
+            if (combatController.IsParryModified()) //trigger secondary gem modifier
+            {
+                combatController.ModifyParry();
+            }
+            
             return false; // Successfully parried! Did not take damage.
+        }
 
         bool isChargedSkillExecuting = combatController != null && combatController.IsSkilling &&
                                     (combatController.GetComponentInParent<Player>()?.Equipment?.SpecialAttackDef?.SkillExecutionType == SkillExecutionType.Charged);

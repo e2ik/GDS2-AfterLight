@@ -8,13 +8,23 @@ public enum ERarity
     Legendary
 }
 
+public enum SGemType
+{
+    Parry,
+    Attack,
+    Skill
+}
+
+
 [CreateAssetMenu(fileName = "SecondaryGemBehaviourDefintion", menuName = "ScriptableObjects/SecondaryGemBehaviourDefinition")]
 
 public abstract class SecondaryGemBehaviourDefinition : InventoryItemBase, ISecondaryGemBehaviour
 {
     public string TemplateID;
+    public SGemType GemType;
 
     public abstract void Modify(ref AttackContext context, SecondaryGemInstance instance);
+    public abstract void Trigger(SecondaryGemInstance instance);
 
     public virtual SecondaryGemInstance CreateInstance(ERarity rarity)
     {
@@ -26,7 +36,8 @@ public abstract class SecondaryGemBehaviourDefinition : InventoryItemBase, ISeco
             InstRolledDamageValue = rolledDamage,
             InstRolledCritValue = rolledCrit,
             InstTemplateID = TemplateID,
-            InstanceGUID = System.Guid.NewGuid().ToString()
+            InstanceGUID = System.Guid.NewGuid().ToString(),
+            Type = GemType
         };
         return newInstance;
     }

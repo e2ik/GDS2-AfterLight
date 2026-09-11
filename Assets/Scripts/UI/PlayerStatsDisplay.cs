@@ -83,7 +83,7 @@ public class PlayerStatsDisplay : MonoBehaviour
 
         if (equipmentManager != null)
         {
-            AttackContext attackContext = equipmentManager.GetModifiedAttackContext();
+            AttackContext attackContext = equipmentManager.GetModifiedAttackContext(isAttack: true);
             totalCrit = attackContext.BaseAttackCrit;
         }
 

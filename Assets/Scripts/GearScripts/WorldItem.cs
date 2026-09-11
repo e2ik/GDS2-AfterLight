@@ -110,7 +110,7 @@ public class WorldItem : MonoBehaviour
         {
             case SecondaryGemBehaviourDefinition secondaryDef:
                 ERarity secondaryRarity = GetWeightedRarity();
-                SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(secondaryRarity);
+                SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(secondaryRarity); // need to be able to check type
                 player.Inventory.AddItemToInventory(gemLoot);
 
                 if (player.Equipment.IsSecondaryGemSlotEmpty())

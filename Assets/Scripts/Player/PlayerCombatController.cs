@@ -336,13 +336,9 @@ public class PlayerCombatController : MonoBehaviour
     public bool CheckParry(ParryDirection incomingDirection)
     {
         bool directionMatches = parryDir == incomingDirection || !movement.IsGrounded;
-
-        if (isParrying && directionMatches)
-        {
-            OnSuccessfulParry();
-            return true;
-        }
-        return false;
+        if (!isParrying || !directionMatches) return false;
+        OnSuccessfulParry();
+        return true;
     }
 
     private void OnSuccessfulParry()
@@ -350,7 +346,6 @@ public class PlayerCombatController : MonoBehaviour
         player.Animation.FlashGreenOnParrySuccess();
         CancelParry();
         AudioManager.PlaySFX(parryEvent, transform.position);
-
         ChargeSkillMeter(chargeSkillAmount);
         isCounterAttacking = true;
 
@@ -459,8 +454,12 @@ public class PlayerCombatController : MonoBehaviour
             Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
             if (enemiesInRange.Length > 0)
             {
-                AttackContext context = player.Equipment.GetModifiedAttackContext();
+                AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: true);
                 HitEnemy(enemiesInRange, context);
+                if (IsAttackModified() && context.ChargesSkillMeter)
+                {
+                    ChargeSkillMeter(context.ChargeAmount);
+                }
             }
         }
         else
@@ -511,7 +510,7 @@ public class PlayerCombatController : MonoBehaviour
 
                 float adjusted = plungeTimer * plungeAdjustedDmg;
                 float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
-                AttackContext context = player.Equipment.GetModifiedAttackContext();
+                AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: true);
                 HitEnemy(validHurtboxes, context, plungeDmgMultiplier);
                 movement.ApplyBounceImpulse(GetClosestBouncePoint(validHurtboxes), plungeBounceForce);
                 movement.PlayBounceState(movement.BounceDuration);
@@ -721,12 +720,12 @@ public class PlayerCombatController : MonoBehaviour
     {
         SkillMeter -= SkillActivationCost;
         RaiseEnergyChanged();
-        def.Execute(player.Equipment.GetModifiedAttackContext(), GetDamage() * multiplier, chargePercentage);
+        def.Execute(player.Equipment.GetModifiedAttackContext(isAttack: false), GetDamage() * multiplier, chargePercentage);
     }
 
     private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
     {
-        var context = player.Equipment.GetModifiedAttackContext();
+        var context = player.Equipment.GetModifiedAttackContext(isAttack: false);
         float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : DefaultEnergyDrainTick;
 
         bool isHeld = def.SkillExecutionType == SkillExecutionType.Held;
@@ -799,6 +798,33 @@ public class PlayerCombatController : MonoBehaviour
 
         movement.SetSkillCharging(false);
         movement.SetSkillGravityZero(false);
+    }
+
+    #endregion
+
+    #region SecondaryGem Logic
+
+    public bool IsParryModified() => player.Equipment.SecondaryGem.Type == SGemType.Parry;
+    public bool IsAttackModified() => player.Equipment.SecondaryGem.Type == SGemType.Attack;
+    public bool IsSkillModified() => player.Equipment.SecondaryGem.Type == SGemType.Skill;
+
+    public void ModifyParry()
+    {
+        if (!IsParryModified()) return;
+        var secondaryGem = player.Equipment.SecondaryGem;
+        if (secondaryGem == null) return;
+        var secondaryDef = GameDatabase.GetSecondaryTemplateFromID(secondaryGem.InstTemplateID);
+        secondaryDef.Trigger(secondaryGem);
+    }
+    
+    private void ModifyAttack()
+    {
+        
+    }
+    
+    private void ModifySkill()
+    {
+        
     }
 
     #endregion

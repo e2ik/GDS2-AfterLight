@@ -212,7 +212,7 @@ public class PlayerEquipmentManager : MonoBehaviour
         OnEquipmentChanged?.Invoke();
     }
 
-    public AttackContext GetModifiedAttackContext()
+    public AttackContext GetModifiedAttackContext(bool isAttack) //true = attack, false = skill
     {
         float scaledAttackDamage = combatController != null ? combatController.GetScaledAttackDamage() : 0f;
 
@@ -228,11 +228,11 @@ public class PlayerEquipmentManager : MonoBehaviour
             OriginPoint = gameObject.transform.position
         };
 
-        if (secondaryGem != null && !string.IsNullOrEmpty(secondaryGem.InstTemplateID))
-        {
-            SecondaryGemBehaviourDefinition secondaryDef = GameDatabase.GetSecondaryTemplateFromID(secondaryGem.InstTemplateID);
-            secondaryDef?.Modify(ref context, secondaryGem);
-        }
+        if (secondaryGem == null || string.IsNullOrEmpty(secondaryGem.InstTemplateID)) return context;
+        
+        SecondaryGemBehaviourDefinition secondaryDef = GameDatabase.GetSecondaryTemplateFromID(secondaryGem.InstTemplateID);
+        if((isAttack && secondaryDef.GemType == SGemType.Attack) || (!isAttack && secondaryDef.GemType == SGemType.Skill)) 
+            secondaryDef.Modify(ref context, secondaryGem);
 
         return context;
     }

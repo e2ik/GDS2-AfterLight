@@ -5,10 +5,13 @@ using UnityEngine;
 public class SecondaryGemInstance
 {
     public string InstTemplateID;
+    public string InstanceGUID;
+    public SGemType Type;
+    public int PickupOrder;
+    
     public int InstRolledDamageValue;
     public int InstRolledCritValue;
     public int InstRolledDotPercent; // whole number, e.g. 10 = 10%
-    public string InstanceGUID;
 
-    public int PickupOrder;
+    public float InstRolledChargeAmount;
 }

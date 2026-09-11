@@ -7,6 +7,11 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
     [SerializeField] private float dotDuration = 3f;
     [SerializeField] private Vector2 dotPercentRange = new Vector2(5f, 15f);
 
+    public override void Trigger(SecondaryGemInstance instance)
+    {
+        //trigger is for non-attack context passives (just parry atm)
+    }
+
     public override SecondaryGemInstance CreateInstance(ERarity rarity)
     {
         SecondaryGemInstance instance = base.CreateInstance(rarity);
