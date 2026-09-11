@@ -1,4 +1,5 @@
 using System.Collections;
+using FMODUnity;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,9 +15,6 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private TMP_Text characterNameText;
     [SerializeField] private TMP_Text dialogueText;
     [SerializeField] private GameObject nextDialogueIndicator;
-
-    [Header("Typewriter")]
-    [SerializeField] private AudioSource dialogueAudioSource;
 
     [Header("Dialogue Box Animation")]
     [SerializeField] private RectTransform dialoguePanelRect;
@@ -296,16 +294,13 @@ public class DialogueManager : MonoBehaviour
 
     private void PlayTypingSound(DialogueLine line)
     {
-        if (dialogueAudioSource == null)
-            return;
-
         if (line.Speaker == null)
             return;
 
-        if (line.Speaker.TypingSound == null)
+        if (line.Speaker.TypingSound.IsNull)
             return;
 
-        dialogueAudioSource.PlayOneShot(line.Speaker.TypingSound);
+        AudioManager.PlaySFX(line.Speaker.TypingSound);
     }
 
     private void PlaySlideIn()
