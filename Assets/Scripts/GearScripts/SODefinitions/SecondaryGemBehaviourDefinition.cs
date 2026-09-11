@@ -17,7 +17,7 @@ public enum SGemType
 
 public enum PassiveType
 {
-    Charge,
+    Energy,
     Reflect,
     DoT
 }
@@ -47,7 +47,7 @@ public abstract class SecondaryGemBehaviourDefinition : InventoryItemBase, ISeco
     };
 
     public abstract void Modify(ref AttackContext context, SecondaryGemInstance instance);
-    public abstract PassiveType Trigger(SecondaryGemInstance instance);
+    public abstract PassiveType GetPassiveType(SecondaryGemInstance instance);
 
     public virtual SecondaryGemInstance CreateInstance(ERarity rarity)
     {

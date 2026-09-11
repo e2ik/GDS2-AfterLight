@@ -59,11 +59,7 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
                     if (col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
                     {
                         enemyHealth.ApplyHit((int)skillDamage, context);
-                        
-                        if (playerCombat.IsSkillModified() && context.ChargesSkillMeter)
-                        {
-                            playerCombat.ChargeSkillMeter(context.ChargeAmount);
-                        }
+                        playerCombat.CheckEnergyChargePassive(isAttack: false, context);
                     }
                 }
             }

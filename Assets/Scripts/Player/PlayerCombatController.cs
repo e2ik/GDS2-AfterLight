@@ -456,10 +456,7 @@ public class PlayerCombatController : MonoBehaviour
             {
                 AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: true);
                 HitEnemy(enemiesInRange, context);
-                if (IsAttackModified() && context.ChargesSkillMeter)
-                {
-                    ChargeSkillMeter(context.ChargeAmount);
-                }
+                CheckEnergyChargePassive(isAttack: true, context);
             }
         }
         else
@@ -803,31 +800,35 @@ public class PlayerCombatController : MonoBehaviour
     #endregion
 
     #region SecondaryGem Logic
-
-    public bool IsParryModified() => player.Equipment.SecondaryGem.Type == SGemType.Parry;
-    public bool IsAttackModified() => player.Equipment.SecondaryGem.Type == SGemType.Attack;
-    public bool IsSkillModified() => player.Equipment.SecondaryGem.Type == SGemType.Skill;
-
-    public void ModifyParry(float incomingDamage, Collider2D col)
+    
+    public void CheckEnergyChargePassive(bool isAttack, AttackContext context)
     {
-        if (!IsParryModified()) return;
-        var secondaryGem = player.Equipment.SecondaryGem;
-        if (secondaryGem == null) return;
-        var secondaryDef = GameDatabase.GetSecondaryTemplateFromID(secondaryGem.InstTemplateID);
-        var passiveType = secondaryDef.Trigger(secondaryGem);
-        switch (passiveType)
+        if ((player.Equipment.SecondaryGem.Type == SGemType.Attack && isAttack)
+            || player.Equipment.SecondaryGem.Type == SGemType.Skill && !isAttack)
         {
-            case PassiveType.Charge:
+            ChargeSkillMeter(context.ChargeAmount);
+        }
+    }
+
+    public void TryModifyParry(float incomingDamage, Collider2D col)
+    {
+        if (player.Equipment.SecondaryGem == null || player.Equipment.SecondaryGem.Type != SGemType.Parry) return;
+        
+        var secondaryGem = player.Equipment.SecondaryGem;
+        var secondaryDef = GameDatabase.GetSecondaryTemplateFromID(secondaryGem.InstTemplateID);
+        switch (secondaryDef.GetPassiveType(secondaryGem))
+        {
+            case PassiveType.Energy:
                 ChargeSkillMeter(secondaryGem.InstRolledChargeAmount);
                 break;
             case PassiveType.Reflect:
                 TryReflectDmg(secondaryDef, col, incomingDamage);
                 break;
             case PassiveType.DoT:
-                // N/A
+                Debug.Log("parry trying triggering DoT passive");
                 break;
             default:
-                Debug.Log("secondary gem type not implemented for parries");
+                Debug.Log("secondary gem passive type not implemented for parries");
                 break;
         }
     }
@@ -846,18 +847,8 @@ public class PlayerCombatController : MonoBehaviour
         }
         else
         {
-            Debug.Log("can't see enemy health");
+            Debug.Log("can't see enemy health, no reflect damage");
         }
-    }
-    
-    private void ModifyAttack()
-    {
-        
-    }
-    
-    private void ModifySkill()
-    {
-        
     }
 
     #endregion

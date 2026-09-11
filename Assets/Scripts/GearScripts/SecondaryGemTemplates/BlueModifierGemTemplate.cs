@@ -19,18 +19,17 @@ public class BlueModifierGemTemplate : SecondaryGemBehaviourDefinition
         SecondaryGemInstance instance = base.CreateInstance(rarity);
 
         Vector2 range = reflectAmountByRarity.GetRange(rarity);
-        instance.InstRolledChargeAmount = Random.Range(range.x, range.y);
+        instance.InstRolledReflectPercent = Random.Range(range.x, range.y);
 
         return instance;
     }
     public override void Modify(ref AttackContext context, SecondaryGemInstance instance)
     {
-        context.BaseAttackDamage *= instance.InstRolledChargeAmount;
+        context.BaseAttackDamage *= instance.InstRolledReflectPercent;
     }
 
-    public override PassiveType Trigger(SecondaryGemInstance instance)
+    public override PassiveType GetPassiveType(SecondaryGemInstance instance)
     {
-        //trigger is for non-attack context passives (just parry atm)
         return PassiveType.Reflect;
     }
 }

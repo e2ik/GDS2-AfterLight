@@ -30,9 +30,8 @@ public class GreenModifierGemTemplate : SecondaryGemBehaviourDefinition
         context.ChargeAmount = instance.InstRolledChargeAmount;
     }
 
-    public override PassiveType Trigger(SecondaryGemInstance instance)
+    public override PassiveType GetPassiveType(SecondaryGemInstance instance)
     {
-        //trigger is for non-attack context passives (just parry atm)
-        return PassiveType.Charge;
+        return PassiveType.Energy;
     }
 }

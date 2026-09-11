@@ -16,12 +16,6 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
         Legendary = new Vector2(15f, 20f)
     };
 
-    public override PassiveType Trigger(SecondaryGemInstance instance)
-    {
-        //trigger is for non-attack context passives (just parry atm)
-        return PassiveType.DoT;
-    }
-
     public override SecondaryGemInstance CreateInstance(ERarity rarity)
     {
         SecondaryGemInstance instance = base.CreateInstance(rarity);
@@ -38,5 +32,10 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
         context.DotDamagePercent = instance.InstRolledDotPercent / 100f;
         context.DotTickInterval = dotTickInterval;
         context.DotDuration = dotDuration;
+    }
+    
+    public override PassiveType GetPassiveType(SecondaryGemInstance instance)
+    {
+        return PassiveType.DoT;
     }
 }

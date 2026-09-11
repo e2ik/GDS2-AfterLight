@@ -48,9 +48,7 @@ public class PlayerHurtBox : MonoBehaviour
 
         if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
         {
-            if (combatController.IsParryModified()) //trigger secondary gem modifier
-                combatController.ModifyParry(hitbox.Damage, col2d);
-            
+            combatController.TryModifyParry(hitbox.Damage, col2d); //trigger secondary gem effect
             return false; // Successfully parried! Did not take damage.
         }
 
