@@ -37,6 +37,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] private WorldMapStateSO worldMapState;
     [SerializeField] private SaveManager saveManager;
 
+    [Header("Rarity Colors")]
+    [SerializeField] private Color commonColor = new Color(0.69f, 0.69f, 0.69f);
+    [SerializeField] private Color rareColor = new Color(0.56f, 0.76f, 1.0f);
+    [SerializeField] private Color epicColor = new Color(0.78f, 0.61f, 1.0f);
+    [SerializeField] private Color legendaryColor = new Color(1.0f, 0.71f, 0.44f);
+    [SerializeField] private Color defaultRarityColor = Color.white;
+
     private GameObject _playerInstance;
     private Player player;
     public Player Player { get => player; }
@@ -179,6 +186,9 @@ public class GameManager : MonoBehaviour
 
         ClearPlayerInventory();
         ClearPlayerEquipment();
+
+        // whatever we assign in inspector gets cached here
+        player.Equipment.RegisterInspectorAssignedStartingGear();
 
         SaveManager targetSaveManager = GetSaveManager();
         if (targetSaveManager != null)
@@ -475,6 +485,15 @@ public class GameManager : MonoBehaviour
         {
             p.Equipment.ClearSecondaryGem();
         }
+
+        if (data.equippedWeapon != null && !string.IsNullOrEmpty(data.equippedWeapon.InstTemplateID))
+        {
+            p.Equipment.EquipWeapon(data.equippedWeapon);
+        }
+        else
+        {
+            p.Equipment.ClearWeapon();
+        }
     }
 
     private void ClearPlayerEquipment()
@@ -484,9 +503,21 @@ public class GameManager : MonoBehaviour
 
         p.Equipment.ClearAllGear();
         p.Equipment.ClearSecondaryGem();
-        // p.Equipment.ClearWeapon(); <-- not yet implemented do not clear
+        p.Equipment.ClearWeapon();
         // p.Equipment.ClearSpecialAttack(); <-- not yet implemented do not clear
     }
 
     #endregion
+
+    public Color GetRarityColor(ERarity rarity)
+    {
+        switch (rarity)
+        {
+            case ERarity.Common: return commonColor;
+            case ERarity.Rare: return rareColor;
+            case ERarity.Epic: return epicColor;
+            case ERarity.Legendary: return legendaryColor;
+            default: return defaultRarityColor;
+        }
+    }
 }

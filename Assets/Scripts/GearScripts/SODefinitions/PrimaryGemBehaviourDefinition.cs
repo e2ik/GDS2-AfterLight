@@ -27,4 +27,13 @@ public abstract class PrimaryGemBehaviourDefinition : InventoryItemBase, IPrimar
     public abstract void Execute(AttackContext context, float baseDamage, float chargeAmount = 0f);
     public float MinimumHeldDuration = 0.25f; // so hold skills don't cancel immediately
     public float EnergyDrainTick = 0.33f; // for timed skills, how often to drain energy + for single skills, charging uses skill meter
+
+    public PrimaryGemInstance CreateInstance()
+    {
+        return new PrimaryGemInstance
+        {
+            InstTemplateID = ItemID,
+            InstanceGUID = System.Guid.NewGuid().ToString()
+        };
+    }
 }

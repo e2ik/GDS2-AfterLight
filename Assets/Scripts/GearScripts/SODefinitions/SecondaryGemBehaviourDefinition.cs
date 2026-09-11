@@ -17,57 +17,46 @@ public enum SGemType
 
 
 [CreateAssetMenu(fileName = "SecondaryGemBehaviourDefintion", menuName = "ScriptableObjects/SecondaryGemBehaviourDefinition")]
-
 public abstract class SecondaryGemBehaviourDefinition : InventoryItemBase, ISecondaryGemBehaviour
 {
     public string TemplateID;
     public SGemType GemType;
+
+    [Header("Damage by Rarity")]
+    public RarityRange DamageByRarity = new RarityRange
+    {
+        Common = new Vector2(1f, 3f),
+        Rare = new Vector2(3f, 5f),
+        Epic = new Vector2(5f, 10f),
+        Legendary = new Vector2(15f, 20f)
+    };
+
+    [Header("Crit by Rarity (0-1)")]
+    public RarityRange CritByRarity = new RarityRange
+    {
+        Common = new Vector2(0.03f, 0.05f),
+        Rare = new Vector2(0.05f, 0.10f),
+        Epic = new Vector2(0.10f, 0.15f),
+        Legendary = new Vector2(0.15f, 0.20f)
+    };
 
     public abstract void Modify(ref AttackContext context, SecondaryGemInstance instance);
     public abstract void Trigger(SecondaryGemInstance instance);
 
     public virtual SecondaryGemInstance CreateInstance(ERarity rarity)
     {
-        int rolledDamage = GetRolledValue(rarity);
-        int rolledCrit = GetRolledValue(rarity);
+        Vector2 dmgRange = DamageByRarity.GetRange(rarity);
+        Vector2 critRange = CritByRarity.GetRange(rarity);
 
         SecondaryGemInstance newInstance = new SecondaryGemInstance
         {
-            InstRolledDamageValue = rolledDamage,
-            InstRolledCritValue = rolledCrit,
+            InstRolledDamageValue = Mathf.RoundToInt(Random.Range(dmgRange.x, dmgRange.y)),
+            InstRolledCritValue = Mathf.RoundToInt(Random.Range(critRange.x, critRange.y) * 100f),
             InstTemplateID = TemplateID,
             InstanceGUID = System.Guid.NewGuid().ToString(),
-            Type = GemType
+            Type = GemType,
+            Rarity = rarity
         };
         return newInstance;
-    }
-
-    protected int GetRolledValue(ERarity rarity)
-    {
-        switch (rarity)
-        {
-            case ERarity.Common:
-                return Random.Range(2, maxCommonValue);
-            case ERarity.Rare:
-                return Random.Range(maxCommonValue + 1, maxRareValue);
-            case ERarity.Epic:
-                return Random.Range(maxRareValue + 1, maxEpicValue);
-            case ERarity.Legendary:
-                return Random.Range(maxEpicValue + 1, maxLegendaryValue);
-            default:
-                return 1;
-        }
-    }
-
-    protected float GetRarityMultiplier(ERarity rarity)
-    {
-        switch (rarity)
-        {
-            case ERarity.Common: return 1.0f;
-            case ERarity.Rare: return 1.3f;
-            case ERarity.Epic: return 1.6f;
-            case ERarity.Legendary: return 2.0f;
-            default: return 1.0f;
-        }
     }
 }

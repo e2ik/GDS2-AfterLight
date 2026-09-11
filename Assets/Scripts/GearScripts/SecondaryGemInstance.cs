@@ -8,6 +8,7 @@ public class SecondaryGemInstance
     public string InstanceGUID;
     public SGemType Type;
     public int PickupOrder;
+    public ERarity Rarity;
     
     public int InstRolledDamageValue;
     public int InstRolledCritValue;

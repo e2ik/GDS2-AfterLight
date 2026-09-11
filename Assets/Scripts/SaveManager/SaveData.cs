@@ -5,7 +5,7 @@ public class SaveData
 {
     public PlayerStatsSaveData playerStats;
     public List<ItemInstanceSaveData> inventory; // example not sure if will use
-    public ItemInstanceSaveData equippedWeapon;
+    public WeaponInstance equippedWeapon;
     public List<EquippedGearSaveData> equippedGear = new List<EquippedGearSaveData>();
     public SecondaryGemInstance equippedSecondaryGem;
     public ProgressSaveData progress;
@@ -55,5 +55,7 @@ public class InventorySaveData
 {
     public List<SecondaryGemInstance> secondaryGems = new List<SecondaryGemInstance>();
     public List<GearInstance> gearInstances = new List<GearInstance>();
+    public List<PrimaryGemInstance> primaryGems = new List<PrimaryGemInstance>();
+    public List<WeaponInstance> weapons = new List<WeaponInstance>();
     public int equippedSecondaryGemIndex = -1;
 }

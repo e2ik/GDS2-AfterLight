@@ -21,6 +21,10 @@ namespace Enemies
         [SerializeField] private float attackCooldown;
         [SerializeField] private string placeholderClipName = "EmptyAttack";
 
+        [Header("Stagger")]
+        [SerializeField] private float staggerImmunityDuration = 2f;
+        private float staggerImmunityTimer;
+
         [Header("FMOD Events")] 
         [SerializeField] private EventReference hitEvent;
     
@@ -109,6 +113,7 @@ namespace Enemies
             animator.SetFloat("Speed", Mathf.Abs(Context.Body.linearVelocityX));
 
             attackCooldownTimer = Mathf.Max(0, attackCooldownTimer - Time.deltaTime);
+            staggerImmunityTimer = Mathf.Max(0, staggerImmunityTimer - Time.deltaTime);
 
             bool attackReady = false;
 
@@ -179,9 +184,16 @@ namespace Enemies
 
             if (isDot) return;
 
-            if (!Context.IsAttacking || (Context.CurrentAttackForce != AttackForce.Heavy) || Context.CurrentAttackForce == AttackForce.Zero)
+            bool forceAllowsStagger = !Context.IsAttacking
+                || Context.CurrentAttackForce != AttackForce.Heavy
+                || Context.CurrentAttackForce == AttackForce.Zero;
+
+            if (forceAllowsStagger && staggerImmunityTimer <= 0f)
+            {
                 animator.SetTrigger("Hurt");
-            
+                staggerImmunityTimer = staggerImmunityDuration;
+            }
+
             PSpawner.Spawn("EnemyHit", transform.position);
         }
 

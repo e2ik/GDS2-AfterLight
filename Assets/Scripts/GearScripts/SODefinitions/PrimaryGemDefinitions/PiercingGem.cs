@@ -2,9 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Enemies;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 [CreateAssetMenu(fileName = "PiercingGem", menuName = "Primary Gems/PiercingGem")]
 public class PiercingGem : PrimaryGemBehaviourDefinition

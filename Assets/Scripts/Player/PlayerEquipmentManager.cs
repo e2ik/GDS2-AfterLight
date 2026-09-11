@@ -11,8 +11,12 @@ public class PlayerEquipmentManager : MonoBehaviour
         public GearInstance EquippedGear;
     }
 
+    [Header("Starting Loadout")]
+    [SerializeField] private WeaponDefinition startingWeapon;
+    [SerializeField] private ERarity startingWeaponRarity = ERarity.Common;
+
     [Header("Equipped Items")]
-    [SerializeField] private WeaponDefinition equippedWeapon;
+    [SerializeField] private WeaponInstance equippedWeapon;
     [SerializeField] private PrimaryGemBehaviourDefinition specialAttackDef;
     [SerializeField] private SecondaryGemInstance secondaryGem = new SecondaryGemInstance();
 
@@ -21,8 +25,9 @@ public class PlayerEquipmentManager : MonoBehaviour
 
     private Dictionary<EGearSlot, GearInstance> equippedGear = new Dictionary<EGearSlot, GearInstance>();
     private PlayerCombatController combatController;
+    private PlayerInventoryManager inventory;
 
-    public WeaponDefinition EquippedWeapon => equippedWeapon;
+    public WeaponInstance EquippedWeapon => equippedWeapon;
     public PrimaryGemBehaviourDefinition SpecialAttackDef => specialAttackDef;
     public SecondaryGemInstance SecondaryGem => secondaryGem;
     public IReadOnlyDictionary<EGearSlot, GearInstance> EquippedGear => equippedGear;
@@ -32,6 +37,7 @@ public class PlayerEquipmentManager : MonoBehaviour
     private void Awake()
     {
         combatController = GetComponent<PlayerCombatController>();
+        inventory = GetComponent<PlayerInventoryManager>();
         InitializeGearSlots();
     }
 
@@ -45,6 +51,21 @@ public class PlayerEquipmentManager : MonoBehaviour
             }
         }
         UpdateDebugView();
+    }
+
+    public void RegisterInspectorAssignedStartingGear()
+    {
+        if (inventory == null) return;
+
+        if (specialAttackDef != null)
+            inventory.AddItemToInventory(specialAttackDef.CreateInstance());
+
+        if (startingWeapon != null && equippedWeapon == null)
+        {
+            WeaponInstance startingInstance = startingWeapon.CreateInstance(startingWeaponRarity);
+            inventory.AddItemToInventory(startingInstance);
+            EquipWeapon(startingInstance);
+        }
     }
 
     public bool IsGemEquipped(SecondaryGemInstance gem)
@@ -81,6 +102,20 @@ public class PlayerEquipmentManager : MonoBehaviour
         return false;
     }
 
+    public bool IsWeaponEquipped(WeaponInstance weapon)
+    {
+        if (weapon == null || equippedWeapon == null) return false;
+
+        if (equippedWeapon == weapon) return true;
+
+        if (!string.IsNullOrEmpty(equippedWeapon.InstanceGUID) && !string.IsNullOrEmpty(weapon.InstanceGUID))
+        {
+            return equippedWeapon.InstanceGUID == weapon.InstanceGUID;
+        }
+
+        return false;
+    }
+
     public bool IsWeaponSlotEmpty() => equippedWeapon == null;
 
     public bool IsSpecialAttackSlotEmpty() => specialAttackDef == null;
@@ -90,7 +125,7 @@ public class PlayerEquipmentManager : MonoBehaviour
 
     public bool IsGearSlotEmpty(EGearSlot slot) => GetEquippedGear(slot) == null;
 
-    public void EquipWeapon(WeaponDefinition newWeapon)
+    public void EquipWeapon(WeaponInstance newWeapon)
     {
         equippedWeapon = newWeapon;
         OnEquipmentChanged?.Invoke();
@@ -217,13 +252,13 @@ public class PlayerEquipmentManager : MonoBehaviour
         float scaledAttackDamage = combatController != null ? combatController.GetScaledAttackDamage() : 0f;
 
         PlayerStats playerStats = GetComponent<PlayerStats>();
-        float totalCrit = (equippedWeapon != null ? equippedWeapon.BaseWeaponCrit : 0f) + (playerStats != null ? playerStats.TotalCrit : 0f);
+        float totalCrit = (equippedWeapon != null ? equippedWeapon.InstRolledCrit : 0f) + (playerStats != null ? playerStats.TotalCrit : 0f);
 
         AttackContext context = new AttackContext
         {
             BaseAttackDamage = scaledAttackDamage,
             BaseAttackCrit = totalCrit,
-            BaseAttackRange = equippedWeapon != null ? equippedWeapon.BaseWeaponRange : 0f,
+            BaseAttackRange = equippedWeapon != null ? equippedWeapon.InstRolledRange : 0f,
             Runner = this,
             OriginPoint = gameObject.transform.position
         };

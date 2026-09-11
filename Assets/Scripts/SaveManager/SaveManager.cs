@@ -115,11 +115,14 @@ public class SaveManager : MonoBehaviour
             if (player.Inventory != null)
                 _currentSaveData.inventoryData = player.Inventory.ToSaveData();
 
-            if (player.Equipment != null)
-            {
-                _currentSaveData.equippedGear = player.Equipment.GetEquippedGearSaveData();
-                _currentSaveData.equippedSecondaryGem = player.Equipment.SecondaryGem;
-            }
+if (player.Equipment != null)
+{
+    Debug.Log($"[SaveDebug] Player={player.GetInstanceID()} EquippedWeapon={(player.Equipment.EquippedWeapon != null ? player.Equipment.EquippedWeapon.InstTemplateID : "NULL")}");
+
+    _currentSaveData.equippedGear = player.Equipment.GetEquippedGearSaveData();
+    _currentSaveData.equippedSecondaryGem = player.Equipment.SecondaryGem;
+    _currentSaveData.equippedWeapon = player.Equipment.EquippedWeapon;
+}
         }
 
         CommitToDisk();

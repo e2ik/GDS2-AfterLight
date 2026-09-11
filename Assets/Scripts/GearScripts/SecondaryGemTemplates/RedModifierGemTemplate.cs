@@ -5,7 +5,16 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
 {
     [SerializeField] private float dotTickInterval = 1f;
     [SerializeField] private float dotDuration = 3f;
-    [SerializeField] private Vector2 dotPercentRange = new Vector2(5f, 15f);
+
+    [Header("Dot Percent by Rarity")]
+    [SerializeField]
+    private RarityRange dotPercentByRarity = new RarityRange
+    {
+        Common = new Vector2(3f, 5f),
+        Rare = new Vector2(5f, 10f),
+        Epic = new Vector2(10f, 15f),
+        Legendary = new Vector2(15f, 20f)
+    };
 
     public override void Trigger(SecondaryGemInstance instance)
     {
@@ -16,8 +25,8 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
     {
         SecondaryGemInstance instance = base.CreateInstance(rarity);
 
-        float multiplier = GetRarityMultiplier(rarity);
-        instance.InstRolledDotPercent = Mathf.RoundToInt(Random.Range(dotPercentRange.x, dotPercentRange.y) * multiplier);
+        Vector2 dotRange = dotPercentByRarity.GetRange(rarity);
+        instance.InstRolledDotPercent = Mathf.RoundToInt(Random.Range(dotRange.x, dotRange.y));
 
         return instance;
     }

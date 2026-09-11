@@ -120,21 +120,24 @@ public class WorldItem : MonoBehaviour
                 break;
 
             case PrimaryGemBehaviourDefinition primaryDef:
-                // PrimaryGemInstance primaryLoot = primaryDef.CreateInstance(); <-- needs implementation
-                // player.Inventory.AddItemToInventory(primaryLoot);
-                //
-                // if (player.Equipment.IsSpecialAttackSlotEmpty())
-                //     player.Equipment.EquipSpecialAttack(primaryDef);
+                PrimaryGemInstance primaryLoot = primaryDef.CreateInstance();
+                player.Inventory.AddItemToInventory(primaryLoot);
+
+                if (player.Equipment.IsSpecialAttackSlotEmpty())
+                    player.Equipment.EquipSpecialAttack(primaryDef);
+
                 Debug.Log($"Picked up Primary Gem: {primaryDef.UIName}");
                 break;
 
             case WeaponDefinition weaponDef:
-                // WeaponInstance weaponLoot = weaponDef.CreateInstance(); <-- needs implementation
-                // player.Inventory.AddItemToInventory(weaponLoot);
-                //
-                // if (player.Equipment.IsWeaponSlotEmpty())
-                //     player.Equipment.EquipWeapon(weaponDef);
-                Debug.Log($"Picked up Weapon: {weaponDef.UIName}");
+                ERarity weaponRarity = GetWeightedRarity();
+                WeaponInstance weaponLoot = weaponDef.CreateInstance(weaponRarity);
+                player.Inventory.AddItemToInventory(weaponLoot);
+
+                if (player.Equipment.IsWeaponSlotEmpty())
+                    player.Equipment.EquipWeapon(weaponLoot);
+
+                Debug.Log($"Picked up Weapon: {weaponDef.UIName} ({weaponRarity})");
                 break;
 
             case GearDefinition gearDef:
