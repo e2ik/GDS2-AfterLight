@@ -416,6 +416,9 @@ public class PlayerController : MonoBehaviour
             }
 
             rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
+        
+            playerAnimation.TriggerDashEffect();
+
             ConsumeDashInput();
 
             CancelInvoke(nameof(StopDashing));
@@ -611,8 +614,7 @@ public class PlayerController : MonoBehaviour
 
                 if (isGrounded)
                 {
-                    Vector2 spawnPosition = new Vector2(cachedBounds.center.x,cachedBounds.min.y);
-                    PSpawner.Spawn("TurnDust", spawnPosition);
+                    playerAnimation.TriggerTurnDustEffect(FacingDirection);
                 }
                 lastFacingDirection = FacingDirection;
                 transform.localScale = new Vector3(FacingDirection,transform.localScale.y,transform.localScale.z);

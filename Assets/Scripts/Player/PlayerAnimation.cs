@@ -156,6 +156,11 @@ public class PlayerAnimation : MonoBehaviour
         }
     }
 
+    public void TriggerSpinSkillEffect()
+    {
+        PSpawner.Spawn("SwordAOE", transform.position, null, transform);
+    }
+
     public void EndSkillAnimation()
     {
         player.CombatController.EndSkill();
@@ -237,6 +242,64 @@ public class PlayerAnimation : MonoBehaviour
         Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
 
         PSpawner.Spawn("JumpDust", spawnPosition, rotation);
+    }
+
+    public void TriggerDashEffect()
+    {
+        if (player == null || player.Controller == null) return;
+
+        bool isDirectionalDash = player.Controller.IsDirectionalDash;
+
+        float dashDirection = isDirectionalDash ? player.Controller.FacingDirection : -player.Controller.FacingDirection;
+
+        Collider2D playerCollider = player.GetComponent<Collider2D>();
+
+        Vector2 spawnPosition = transform.position;
+
+        if (playerCollider != null)
+        {
+            Bounds bounds = playerCollider.bounds;
+
+            float horizontalOffset = bounds.extents.x + 0.1f;
+
+            spawnPosition = new Vector2( bounds.center.x - dashDirection * horizontalOffset, bounds.min.y);
+        }
+
+        ParticleSystem dashEffect = PSpawner.Spawn("DustDashEffect", spawnPosition);
+
+        if (dashEffect != null)
+        {
+            Vector3 scale = dashEffect.transform.localScale;
+
+            scale.x = dashDirection > 0f ? -Mathf.Abs(scale.x) : Mathf.Abs(scale.x);
+
+            dashEffect.transform.localScale = scale;
+        }
+    }
+
+    public void TriggerTurnDustEffect(int newFacingDirection)
+    {
+        if (player == null) return;
+
+        Collider2D playerCollider = player.GetComponent<Collider2D>();
+        Vector2 spawnPosition = transform.position;
+
+        if (playerCollider != null)
+        {
+            Bounds bounds = playerCollider.bounds;
+            float horizontalOffset = 0.5f;
+            float offsetX = newFacingDirection > 0 ? horizontalOffset : -horizontalOffset;
+            spawnPosition = new Vector2(bounds.center.x + offsetX, bounds.min.y);
+        }
+
+        ParticleSystem turnDust = PSpawner.Spawn("TurnDust", spawnPosition);
+
+        if (turnDust != null)
+        {
+            Vector3 scale = turnDust.transform.localScale;
+            scale.x = newFacingDirection > 0 ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
+            turnDust.transform.localScale = scale;
+        }
     }
 
     #region Helper Methods

@@ -186,6 +186,8 @@ MonoBehaviour:
   backgroundDarkenedColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
   horizontalParallaxFactor: 0.1
   verticalParallaxFactor: 0.05
+  tileGridSize: 3
+  tileOverlap: 0.02
 --- !u!4 &78526258
 Transform:
   m_ObjectHideFlags: 0
@@ -259,6 +261,15 @@ MonoBehaviour:
     initialPoolSize: 1
   - key: ProjectileExplode
     prefab: {fileID: 5497425098577746589, guid: 6679b307d9c79084b8e7c2bd601a4d4f, type: 3}
+    initialPoolSize: 1
+  - key: FastTravel
+    prefab: {fileID: 7942674913948366880, guid: 081d2c84a0d2a4477ba80868242216b5, type: 3}
+    initialPoolSize: 1
+  - key: SwordAOE
+    prefab: {fileID: 7942674913948366880, guid: d61bcd65a54e2455cb38c76d9dea061b, type: 3}
+    initialPoolSize: 1
+  - key: DustDashEffect
+    prefab: {fileID: 7942674913948366880, guid: 2eceff67d1d024141bdf3a1aaa66715d, type: 3}
     initialPoolSize: 1
 --- !u!114 &78526262
 MonoBehaviour:

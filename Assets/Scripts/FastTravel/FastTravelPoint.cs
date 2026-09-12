@@ -11,6 +11,10 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     [SerializeField] private bool canBeInteractedWith = true;
     [SerializeField] private float mapOpenDelay = 0.5f;
 
+    [Header("VFX")]
+    [SerializeField] private string fastTravelVFXKey = "FastTravel";
+    [SerializeField] private Transform vfxSpawnPoint;
+
     private static readonly int IsDiscoveredHash = Animator.StringToHash("isDiscovered");
     private static readonly int IsIdleHash = Animator.StringToHash("isIdle");
     private static readonly int IsInteractedHash = Animator.StringToHash("isInteracted");
@@ -103,6 +107,9 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
         if (!isAlreadyUnlocked && worldMapState != null)
         {
+            Vector3 vfxPosition = vfxSpawnPoint != null ? vfxSpawnPoint.position : transform.position;
+            PSpawner.Spawn(fastTravelVFXKey, vfxPosition);
+            
             worldMapState.UnlockNode(nodeData);
         }
 
