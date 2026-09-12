@@ -181,6 +181,11 @@ MonoBehaviour:
   epicColor: {r: 0.78, g: 0.61, b: 1, a: 1}
   legendaryColor: {r: 1, g: 0.71, b: 0.44, a: 1}
   defaultRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  tempBackgroundPrefab: {fileID: 8412158347902167548, guid: f6bdba2aea3bb1741a687ba8d5d96a43, type: 3}
+  backgroundNormalColor: {r: 1, g: 1, b: 1, a: 1}
+  backgroundDarkenedColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
+  horizontalParallaxFactor: 0.1
+  verticalParallaxFactor: 0.05
 --- !u!4 &78526258
 Transform:
   m_ObjectHideFlags: 0
