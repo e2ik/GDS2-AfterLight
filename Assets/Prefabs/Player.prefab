@@ -405,15 +405,18 @@ MonoBehaviour:
     InstRolledRange: 0
     InstRolledCrit: 0
     PickupOrder: 0
-  specialAttackDef: {fileID: 11400000, guid: 4a67717c87b260bbda8912fe1f79dac4, type: 2}
+  specialAttackDef: {fileID: 11400000, guid: 0c490fd2d61891d90966197bc88509b1, type: 2}
   secondaryGem:
     InstTemplateID: 
+    InstanceGUID: 
+    Type: 0
+    PickupOrder: 0
+    Rarity: 0
     InstRolledDamageValue: 0
     InstRolledCritValue: 0
     InstRolledDotPercent: 0
-    InstanceGUID: 
-    Rarity: 0
-    PickupOrder: 0
+    InstRolledChargeAmount: 0
+    InstRolledReflectPercent: 0
   equippedGearDebug: []
 --- !u!114 &4056446563424932215
 MonoBehaviour:

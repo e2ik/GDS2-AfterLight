@@ -316,6 +316,13 @@ public class PlayerController : MonoBehaviour
 
         if (onWall && !isGrounded && wallCoyoteTimer > 0f)
         {
+            if (!isWallSliding)
+            {
+                combat.ForceCancelAttack();
+                combat.CancelParry();
+                if (combat.IsSkilling) combat.EndSkill();
+            }
+
             isWallSliding = true;
             if (rb.linearVelocityY > 0f) rb.linearVelocityY *= wallSlideUpwardDampening;
             rb.linearVelocityY = Mathf.Clamp(rb.linearVelocityY, -wallSlideSpeed, float.MaxValue);

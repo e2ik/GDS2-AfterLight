@@ -521,7 +521,7 @@ PlatformEffector2D:
   m_RotationalOffset: 0
   m_UseOneWay: 1
   m_UseOneWayGrouping: 0
-  m_SurfaceArc: 180
+  m_SurfaceArc: 90
   m_UseSideFriction: 0
   m_UseSideBounce: 0
   m_SideArc: 1
@@ -17887,11 +17887,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 722239228623532784, guid: 16fa915773ac7fe44942dec77e5fab9c, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.09949684
+      value: 0.36482507
       objectReference: {fileID: 0}
     - target: {fileID: 722239228623532784, guid: 16fa915773ac7fe44942dec77e5fab9c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 12.08
+      value: 11.91
       objectReference: {fileID: 0}
     - target: {fileID: 722239228623532784, guid: 16fa915773ac7fe44942dec77e5fab9c, type: 3}
       propertyPath: m_LocalPosition.y
@@ -17928,6 +17928,10 @@ PrefabInstance:
     - target: {fileID: 722239228623532784, guid: 16fa915773ac7fe44942dec77e5fab9c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 5177441144140921305, guid: 16fa915773ac7fe44942dec77e5fab9c, type: 3}
+      propertyPath: m_Color.a
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9122095458612250848, guid: 16fa915773ac7fe44942dec77e5fab9c, type: 3}
       propertyPath: m_Name
@@ -18048,11 +18052,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1736449659351613941, guid: 8015440860f5979418dc59eb224ed33f, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.07958228
+      value: 0.38050637
       objectReference: {fileID: 0}
     - target: {fileID: 1736449659351613941, guid: 8015440860f5979418dc59eb224ed33f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.7
+      value: -1.55
       objectReference: {fileID: 0}
     - target: {fileID: 1736449659351613941, guid: 8015440860f5979418dc59eb224ed33f, type: 3}
       propertyPath: m_LocalPosition.y
@@ -18089,6 +18093,10 @@ PrefabInstance:
     - target: {fileID: 1736449659351613941, guid: 8015440860f5979418dc59eb224ed33f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 2189629777779481681, guid: 8015440860f5979418dc59eb224ed33f, type: 3}
+      propertyPath: m_Color.a
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2953617539935948174, guid: 8015440860f5979418dc59eb224ed33f, type: 3}
       propertyPath: m_Name

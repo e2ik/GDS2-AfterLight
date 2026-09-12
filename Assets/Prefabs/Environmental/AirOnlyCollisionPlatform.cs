@@ -28,7 +28,7 @@ public class AirOnlyCollisionPlatform : MonoBehaviour
         }
 
         bool nearSolidFace = IsNearSolidFace();
-        bool wantIgnore = cachedPlayer.Controller.IsGrounded || !nearSolidFace;
+        bool wantIgnore = cachedPlayer.Controller.IsGrounded || cachedPlayer.Controller.IsDashing || !nearSolidFace;
 
         bool shouldIgnore = wantIgnore || (currentlyIgnoring && IsWithinBuffer());
 
