@@ -699,7 +699,11 @@ public class PlayerCombatController : MonoBehaviour
         }
 
         movement.SetSkillCharging(false);
-        if (wasCharged) movement.SetSkillGravityZero(true);
+
+        if (specialDef.SkillExecutionType != SkillExecutionType.Held)
+        {
+            movement.SetSkillGravityZero(true);
+        }
 
         if (specialDef.SkillExecutionType == SkillExecutionType.Held)
         {

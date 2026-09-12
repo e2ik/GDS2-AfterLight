@@ -46,10 +46,18 @@ public class SaveManager : MonoBehaviour
     {
         if (_currentSaveData == null) return;
 
+        Player player = FindFirstObjectByType<Player>();
+        if (player != null && player.Equipment != null)
+        {
+            _currentSaveData.equippedGear = player.Equipment.GetEquippedGearSaveData();
+            _currentSaveData.equippedSecondaryGem = player.Equipment.SecondaryGem;
+            _currentSaveData.equippedWeapon = player.Equipment.EquippedWeapon;
+        }
+
         try
         {
             string json = JsonUtility.ToJson(_currentSaveData, prettyPrint: true);
-            
+
             File.WriteAllText(TempSavePath, json);
             File.Copy(TempSavePath, SavePath, overwrite: true);
             File.Delete(TempSavePath);

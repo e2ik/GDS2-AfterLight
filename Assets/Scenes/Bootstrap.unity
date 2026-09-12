@@ -176,6 +176,11 @@ MonoBehaviour:
   playerPrefab: {fileID: 6310612592100663882, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
   worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
   saveManager: {fileID: 78526259}
+  commonColor: {r: 0.69, g: 0.69, b: 0.69, a: 1}
+  rareColor: {r: 0.56, g: 0.76, b: 1, a: 1}
+  epicColor: {r: 0.78, g: 0.61, b: 1, a: 1}
+  legendaryColor: {r: 1, g: 0.71, b: 0.44, a: 1}
+  defaultRarityColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!4 &78526258
 Transform:
   m_ObjectHideFlags: 0
@@ -246,6 +251,9 @@ MonoBehaviour:
     initialPoolSize: 1
   - key: TurnDust
     prefab: {fileID: 7942674913948366880, guid: cd7cbe25b8ad547008de42f07f2ec482, type: 3}
+    initialPoolSize: 1
+  - key: ProjectileExplode
+    prefab: {fileID: 5497425098577746589, guid: 6679b307d9c79084b8e7c2bd601a4d4f, type: 3}
     initialPoolSize: 1
 --- !u!114 &78526262
 MonoBehaviour:
