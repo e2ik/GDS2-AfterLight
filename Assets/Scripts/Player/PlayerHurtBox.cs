@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Enemies;
 using UnityEngine;
 
@@ -48,7 +49,10 @@ public class PlayerHurtBox : MonoBehaviour
 
         if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
         {
+            if (hitbox.HasBeenParried) return false;
+            hitbox.SetParried();
             combatController.TryModifyParry(hitbox.Damage, col2d); //trigger secondary gem effect
+            
             return false; // Successfully parried! Did not take damage.
         }
 

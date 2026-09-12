@@ -12,6 +12,7 @@ namespace Enemies
         public ParryDirection ParryDirection { get; private set; }
         public AttackForce AttackForce { get; private set; }
         public bool IsActive => col.enabled;
+        public bool HasBeenParried { get; private set; }
 
         private void Awake()
         {
@@ -26,9 +27,12 @@ namespace Enemies
             col.enabled = true;
             ParryDirection = parryDirection;
             AttackForce = attackForce;
+            HasBeenParried = false;
         }
 
         public void UpdateParryDirection(ParryDirection direction) => ParryDirection = direction;
+
+        public void SetParried() => HasBeenParried = true;
 
         public void Disable() => col.enabled = false;
         
