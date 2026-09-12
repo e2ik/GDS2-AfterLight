@@ -39,6 +39,7 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
         float distanceTravelled = 0f;
         var enemiesHit = new HashSet<Collider2D>();
         var testVis = Instantiate(testVisPrefab, context.OriginPoint, Quaternion.identity);
+        FlipVisual(testVis, direction);
 
         float skillDamage = baseDamage * SkillDamageModifier;
         float skillRange = SkillRange + chargeRangeBonus * chargeAmount;
@@ -70,22 +71,30 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
 
     private void UpdateVisual(GameObject proj, Vector2 pos)
     {
-        DrawDebugBox(pos,new Vector2(hitBoxWidth,hitBoxWidth),0.05f);
-        if(proj == null) return;
-        proj.transform.SetPositionAndRotation(pos, Quaternion.identity);
+        DrawDebugBox(pos, new Vector2(hitBoxWidth, hitBoxWidth), 0.05f);
+        if (proj == null) return;
+        proj.transform.position = pos;
     }
+
+    private void FlipVisual(GameObject proj, Vector2 dir)
+    {
+        Vector3 scale = proj.transform.localScale;
+        scale.x = Mathf.Abs(scale.x) * (dir.x < 0 ? -1f : 1f);
+        proj.transform.localScale = scale;
+    }
+
     private void DrawDebugBox(Vector2 center, Vector2 size, float duration = 0f)
-{
-    Vector2 halfSize = size * 0.5f;
+    {
+        Vector2 halfSize = size * 0.5f;
 
-    Vector2 topLeft = center + new Vector2(-halfSize.x, halfSize.y);
-    Vector2 topRight = center + new Vector2(halfSize.x, halfSize.y);
-    Vector2 bottomLeft = center + new Vector2(-halfSize.x, -halfSize.y);
-    Vector2 bottomRight = center + new Vector2(halfSize.x, -halfSize.y);
+        Vector2 topLeft = center + new Vector2(-halfSize.x, halfSize.y);
+        Vector2 topRight = center + new Vector2(halfSize.x, halfSize.y);
+        Vector2 bottomLeft = center + new Vector2(-halfSize.x, -halfSize.y);
+        Vector2 bottomRight = center + new Vector2(halfSize.x, -halfSize.y);
 
-    Debug.DrawLine(topLeft, topRight, Color.red, duration);
-    Debug.DrawLine(topRight, bottomRight, Color.red, duration);
-    Debug.DrawLine(bottomRight, bottomLeft, Color.red, duration);
-    Debug.DrawLine(bottomLeft, topLeft, Color.red, duration);
-}
+        Debug.DrawLine(topLeft, topRight, Color.red, duration);
+        Debug.DrawLine(topRight, bottomRight, Color.red, duration);
+        Debug.DrawLine(bottomRight, bottomLeft, Color.red, duration);
+        Debug.DrawLine(bottomLeft, topLeft, Color.red, duration);
+    }
 }
