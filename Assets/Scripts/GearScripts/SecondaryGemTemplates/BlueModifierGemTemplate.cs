@@ -8,10 +8,10 @@ public class BlueModifierGemTemplate : SecondaryGemBehaviourDefinition
 
     private RarityRange reflectAmountByRarity = new RarityRange
     {
-        Common = new Vector2(0.01f, 0.25f),
-        Rare = new Vector2(0.26f, 0.5f),
-        Epic = new Vector2(0.51f, 0.75f),
-        Legendary = new Vector2(0.76f, 1f)
+        Common = new Vector2(0.01f, 0.1f),
+        Rare = new Vector2(0.11f, 0.2f),
+        Epic = new Vector2(0.21f, 0.3f),
+        Legendary = new Vector2(0.31f, 4f)
     };
     
     public override SecondaryGemInstance CreateInstance(ERarity rarity)
