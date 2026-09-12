@@ -1176,7 +1176,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1152909633
+--- !u!1 &1634439988
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1184,44 +1184,188 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1152909635}
-  - component: {fileID: 1152909634}
+  - component: {fileID: 1634439997}
+  - component: {fileID: 1634439996}
+  - component: {fileID: 1634439995}
+  - component: {fileID: 1634439994}
+  - component: {fileID: 1634439993}
+  - component: {fileID: 1634439992}
+  - component: {fileID: 1634439991}
+  - component: {fileID: 1634439990}
+  - component: {fileID: 1634439989}
   m_Layer: 0
-  m_Name: PSpawner
+  m_Name: Managers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1152909634
+--- !u!114 &1634439989
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1152909633}
+  m_GameObject: {fileID: 1634439988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93fbceed59807a74c85f97a680657382, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameUI.UISFXWatcher
+  uiSelectEvent:
+    Guid:
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
+--- !u!114 &1634439990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1634439988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d495cdc66305ce447af6bb257ca9274b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MusicManager
+  musicEvent:
+    Guid:
+      Data1: 300044231
+      Data2: 1214001075
+      Data3: 842542756
+      Data4: -412094302
+    Path: event:/HospitalTheme
+  smoothSpeed: 2
+  decayPerSecond: 0.125
+--- !u!114 &1634439991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1634439988}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dca45967bcf9004699e206ce29e0e70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PSpawner
   database:
-  - key: 
-    prefab: {fileID: 0}
-    initialPoolSize: 0
-  - key: 
-    prefab: {fileID: 0}
-    initialPoolSize: 0
---- !u!4 &1152909635
+  - key: spark
+    prefab: {fileID: 525218031157934298, guid: cfe360f1890206848aabc05b477a7387, type: 3}
+    initialPoolSize: 1
+  - key: anticipation
+    prefab: {fileID: 5497425098577746589, guid: 3ad1cec5f40777c4d9ea4e8d04c257ba, type: 3}
+    initialPoolSize: 1
+  - key: JumpDust
+    prefab: {fileID: 3808574646349885763, guid: d654844c7ca7a4028a99627c117d2f50, type: 3}
+    initialPoolSize: 1
+  - key: PlayerHit
+    prefab: {fileID: 4761495741035824944, guid: a2d56de8ab6424f38a73fcc0b18c599a, type: 3}
+    initialPoolSize: 1
+  - key: EnemyHit
+    prefab: {fileID: 4761495741035824944, guid: 2bffe2055451b4272ad83de75b03a780, type: 3}
+    initialPoolSize: 1
+  - key: TurnDust
+    prefab: {fileID: 7942674913948366880, guid: cd7cbe25b8ad547008de42f07f2ec482, type: 3}
+    initialPoolSize: 1
+  - key: ProjectileExplode
+    prefab: {fileID: 5497425098577746589, guid: 6679b307d9c79084b8e7c2bd601a4d4f, type: 3}
+    initialPoolSize: 1
+--- !u!114 &1634439992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1634439988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9469e95082ad1cc4cb76d83c122ddae6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CamControls
+--- !u!114 &1634439993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1634439988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da1972d6c136bc94b8b35266ba6693f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldStreamer
+--- !u!114 &1634439994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1634439988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41f6fc173fb32c14b855fd526d4832a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaveManager
+  worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
+--- !u!114 &1634439995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1634439988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38bc156dc0bf0f841bd2641f95da1c7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FastTravelManager
+--- !u!114 &1634439996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1634439988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53d6205038a0a31468c335e174d35f11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  currentState: 0
+  currentAreaSide: 0
+  masterSceneName: WorldMaster
+  defaultStartSceneName: Tutorial
+  defaultSpawnAnchorID: start
+  titleSceneName: Bootstrap
+  playerPrefab: {fileID: 6310612592100663882, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
+  worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
+  saveManager: {fileID: 1634439994}
+  commonColor: {r: 0.69, g: 0.69, b: 0.69, a: 1}
+  rareColor: {r: 0.56, g: 0.76, b: 1, a: 1}
+  epicColor: {r: 0.78, g: 0.61, b: 1, a: 1}
+  legendaryColor: {r: 1, g: 0.71, b: 0.44, a: 1}
+  defaultRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  tempBackgroundPrefab: {fileID: 8412158347902167548, guid: f6bdba2aea3bb1741a687ba8d5d96a43, type: 3}
+  backgroundNormalColor: {r: 1, g: 1, b: 1, a: 1}
+  backgroundDarkenedColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
+  horizontalParallaxFactor: 0.1
+  verticalParallaxFactor: 0.05
+  tileGridSize: 3
+  tileOverlap: 0.02
+--- !u!4 &1634439997
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1152909633}
+  m_GameObject: {fileID: 1634439988}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.30088, y: 0.00771, z: 0}
+  m_LocalPosition: {x: 16.94476, y: 8.80638, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1319,6 +1463,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   secondaryGemTemplateDB: {fileID: 11400000, guid: 1de000d958e21378185792a838b4b00b, type: 2}
   gearTemplateDB: {fileID: 0}
+  primaryGemTemplateDB: {fileID: 0}
+  weaponTemplateDB: {fileID: 0}
 --- !u!4 &1789125270
 Transform:
   m_ObjectHideFlags: 0
@@ -1643,9 +1789,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 973674558610837145, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4000684074867719090, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
       propertyPath: m_Name
       value: DialogueCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000684074867719090, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9135317614618536408, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
       propertyPath: m_Pivot.x
@@ -1814,4 +1968,4 @@ SceneRoots:
   - {fileID: 8892981758551516557}
   - {fileID: 2000548341}
   - {fileID: 419353259}
-  - {fileID: 1152909635}
+  - {fileID: 1634439997}
