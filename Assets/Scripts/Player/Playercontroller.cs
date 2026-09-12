@@ -668,13 +668,14 @@ public class PlayerController : MonoBehaviour
     private bool CheckWallRay(Vector2 origin, float dir, float len)
     {
         RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.right * dir, len, groundLayer);
-        if (hit.collider != null && Mathf.Abs(hit.normal.x) > wallCheckNormalThreshold)
-        {
-            currentSurfaceNormal = hit.normal;
-            lastHitPoint = hit.point;
-            return true;
-        }
-        return false;
+        if (hit.collider == null || Mathf.Abs(hit.normal.x) <= wallCheckNormalThreshold) return false;
+
+        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsWallSlideFrom(hit.normal)) // CHANGED
+            return false;
+
+        currentSurfaceNormal = hit.normal;
+        lastHitPoint = hit.point;
+        return true;
     }
 
     public bool IsAboutToLand(out RaycastHit2D hitInfo, float lookAheadDistance = 0.5f)
