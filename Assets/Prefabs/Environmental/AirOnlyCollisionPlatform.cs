@@ -1,16 +1,17 @@
 using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(Collider2D))]
 public class AirOnlyCollisionPlatform : MonoBehaviour
 {
     [SerializeField] private Vector2 solidLocalDirection = Vector2.up;
-    [SerializeField] private float clearanceBuffer = 0.05f;
+    [SerializeField] private float ignoreDuration = 0.75f;
 
     private Collider2D platformCollider;
     private BoxCollider2D boxCollider;
     private Player cachedPlayer;
     private Collider2D[] playerColliders;
-    private bool currentlyIgnoring;
+    private Coroutine ignoreRoutine;
 
     private void Awake()
     {
@@ -28,18 +29,29 @@ public class AirOnlyCollisionPlatform : MonoBehaviour
         }
 
         bool nearSolidFace = IsNearSolidFace();
-        bool wantIgnore = cachedPlayer.Controller.IsGrounded || cachedPlayer.Controller.IsDashing || !nearSolidFace;
+        bool wrongSide = cachedPlayer.Controller.IsGrounded || cachedPlayer.Controller.IsDashing || !nearSolidFace;
 
-        bool shouldIgnore = wantIgnore || (currentlyIgnoring && IsWithinBuffer());
-
-        if (shouldIgnore != currentlyIgnoring)
+        if (wrongSide && ignoreRoutine == null)
         {
-            currentlyIgnoring = shouldIgnore;
-            foreach (var col in playerColliders)
-            {
-                if (col != null) Physics2D.IgnoreCollision(col, platformCollider, shouldIgnore);
-            }
+            ignoreRoutine = StartCoroutine(IgnoreCollisionTemporarily());
         }
+    }
+
+    private IEnumerator IgnoreCollisionTemporarily()
+    {
+        foreach (var col in playerColliders)
+        {
+            if (col != null) Physics2D.IgnoreCollision(col, platformCollider, true);
+        }
+
+        yield return new WaitForSeconds(ignoreDuration);
+
+        foreach (var col in playerColliders)
+        {
+            if (col != null) Physics2D.IgnoreCollision(col, platformCollider, false);
+        }
+
+        ignoreRoutine = null;
     }
 
     private bool IsNearSolidFace()
@@ -62,18 +74,13 @@ public class AirOnlyCollisionPlatform : MonoBehaviour
         return Vector2.Dot(dominantAxis, solidLocalDirection.normalized) > 0.5f;
     }
 
-    private bool IsWithinBuffer()
+    public bool AllowsWallSlideFrom(Vector2 hitNormal)
     {
-        foreach (var col in playerColliders)
-        {
-            if (col == null) continue;
-            ColliderDistance2D dist = col.Distance(platformCollider);
-            if (dist.distance < clearanceBuffer) return true;
-        }
-        return false;
+        Vector2 worldSolidDir = transform.TransformDirection(solidLocalDirection.normalized);
+        return Vector2.Dot(hitNormal.normalized, worldSolidDir) > 0.7f;
     }
 
-    public bool AllowsWallSlideFrom(Vector2 hitNormal)
+    public bool AllowsGroundCheckFrom(Vector2 hitNormal)
     {
         Vector2 worldSolidDir = transform.TransformDirection(solidLocalDirection.normalized);
         return Vector2.Dot(hitNormal.normalized, worldSolidDir) > 0.7f;

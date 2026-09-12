@@ -623,7 +623,12 @@ public class PlayerController : MonoBehaviour
     private bool RaycastGroundAt(Vector2 origin, float distance, out RaycastHit2D hit)
     {
         hit = Physics2D.Raycast(origin, Vector2.down, distance, groundLayer);
-        return hit.collider != null && hit.normal.y > groundCheckNormalThreshold;
+        if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
+
+        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsGroundCheckFrom(hit.normal))
+            return false;
+
+        return true;
     }
 
     private void GroundCheckUpdate()
