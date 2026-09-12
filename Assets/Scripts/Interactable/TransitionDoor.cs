@@ -14,6 +14,10 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     [SerializeField] private CanvasGroup fadeCanvas;
     [SerializeField] private float fadeDuration = 0.5f;
 
+    [Header("Door Animation")]
+    [SerializeField] private Animator doorAnimator;
+    [SerializeField] private string openTriggerName = "Open";
+
     private Coroutine currentTransition;
 
     public void Interact(Player player)
@@ -25,7 +29,12 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     private IEnumerator TransitionRoutine(Player player)
     {
         canInteract = false;
-        
+
+        if (doorAnimator != null)
+        {
+            doorAnimator.SetTrigger(openTriggerName);
+        }
+
         if (player.Controller != null)
         {
             player.Controller.InputEnabled = false;
@@ -36,7 +45,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
         if (sceneAreaState != null)
         {
             AreaSide newSide = sceneAreaState.CurrentSide == AreaSide.Interior ? AreaSide.Exterior : AreaSide.Interior;
-            
+
             sceneAreaState.SetSide(newSide);
 
             if (GameManager.Instance != null)
@@ -53,7 +62,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
             player.Controller.InputEnabled = true;
             player.Controller.FreezeMovement(false);
         }
-        
+
         canInteract = true;
         currentTransition = null;
     }
@@ -75,7 +84,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
             fadeCanvas.alpha = Mathf.Lerp(from, to, t / fadeDuration);
             yield return null;
         }
-        
+
         fadeCanvas.alpha = to;
     }
 }
