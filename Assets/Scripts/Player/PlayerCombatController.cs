@@ -74,6 +74,7 @@ public class PlayerCombatController : MonoBehaviour
     private bool isPlunging;
     private float plungeGraceTimer;
     private float plungeRecoveryTimer;
+    private bool passiveTriggeredThisAttack;
 
     private HashSet<EnemyHealth> enemiesHitThisAttack = new HashSet<EnemyHealth>();
 
@@ -420,6 +421,7 @@ public class PlayerCombatController : MonoBehaviour
             attackDurationTimer = attackDuration;
 
             enemiesHitThisAttack.Clear();
+            passiveTriggeredThisAttack = false;
 
             if (movement.IsDashing)
             {
@@ -456,7 +458,6 @@ public class PlayerCombatController : MonoBehaviour
             {
                 AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: true);
                 HitEnemy(enemiesInRange, context);
-                CheckEnergyChargePassive(isAttack: true, context);
             }
         }
         else
@@ -583,7 +584,7 @@ public class PlayerCombatController : MonoBehaviour
 
         return baseDmg * comboMultiplier;
     }
-
+    
     private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
     {
         foreach (var col in enemiesInRange)
@@ -606,6 +607,10 @@ public class PlayerCombatController : MonoBehaviour
                 }
             }
         }
+
+        if (passiveTriggeredThisAttack) return;
+        passiveTriggeredThisAttack = true;
+        CheckEnergyChargePassive(isAttack: true, context);
     }
 
     public float GetScaledAttackDamage()

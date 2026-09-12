@@ -12,15 +12,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dda202757d2cafec2b3638228bd698ad, type: 3}
   m_Name: DotSkillGem
   m_EditorClassIdentifier: Assembly-CSharp::RedModifierGemTemplate
-  ItemID: RedGem
-  UIName: Red Gem
+  ItemID: DoTSkillGem
+  UIName: DoT On Skill
   UISprite: {fileID: 21300000, guid: 0d6cc8dee1d1f50439f03fe550ab1c4b, type: 3}
   maxCommonValue: 5
   maxRareValue: 9
   maxEpicValue: 15
   maxLegendaryValue: 20
-  TemplateID: T0
-  Type: 2
+  TemplateID: T1
+  GemType: 2
+  DamageByRarity:
+    Common: {x: 1, y: 3}
+    Rare: {x: 3, y: 5}
+    Epic: {x: 5, y: 10}
+    Legendary: {x: 15, y: 20}
+  CritByRarity:
+    Common: {x: 0.03, y: 0.05}
+    Rare: {x: 0.05, y: 0.1}
+    Epic: {x: 0.1, y: 0.15}
+    Legendary: {x: 0.15, y: 0.2}
   dotTickInterval: 1
   dotDuration: 3
-  dotPercentRange: {x: 20, y: 50}
+  dotPercentByRarity:
+    Common: {x: 3, y: 5}
+    Rare: {x: 5, y: 10}
+    Epic: {x: 10, y: 15}
+    Legendary: {x: 15, y: 20}

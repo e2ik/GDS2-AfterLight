@@ -10,10 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4f9bffe9a1e452aa6b4d5fe9c52c1edd, type: 3}
-  m_Name: GreenModifierGemTemplate
+  m_Name: EnergySkillGem
   m_EditorClassIdentifier: Assembly-CSharp::GreenModifierGemTemplate
-  ItemID: GreenGem
-  UIName: Green Gem
+  ItemID: EnergySkillGem
+  UIName: Energy On Skill
   UISprite: {fileID: 21300000, guid: be2ac5defc2bfb541b0cfcf7fa2ab4a3, type: 3}
-  DamageMult: 2
-  TemplateID: T1
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
+  TemplateID: T4
+  GemType: 2
+  DamageByRarity:
+    Common: {x: 1, y: 3}
+    Rare: {x: 3, y: 5}
+    Epic: {x: 5, y: 10}
+    Legendary: {x: 15, y: 20}
+  CritByRarity:
+    Common: {x: 0.03, y: 0.05}
+    Rare: {x: 0.05, y: 0.1}
+    Epic: {x: 0.1, y: 0.15}
+    Legendary: {x: 0.15, y: 0.2}
+  chargeAmountRange: {x: 0.01, y: 0.1}

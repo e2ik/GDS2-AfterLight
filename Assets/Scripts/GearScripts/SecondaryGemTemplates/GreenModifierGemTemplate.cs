@@ -25,7 +25,6 @@ public class GreenModifierGemTemplate : SecondaryGemBehaviourDefinition
     }
     public override void Modify(ref AttackContext context, SecondaryGemInstance instance)
     {
-        // no longer required we implement the effect here
         context.ChargesSkillMeter = true;
         context.ChargeAmount = instance.InstRolledChargeAmount;
     }

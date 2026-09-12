@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f9bffe9a1e452aa6b4d5fe9c52c1edd, type: 3}
+  m_Name: EnergyAttackGem
+  m_EditorClassIdentifier: Assembly-CSharp::GreenModifierGemTemplate
+  ItemID: EnergyAttackGem
+  UIName: Energy On Attack
+  UISprite: {fileID: 21300000, guid: be2ac5defc2bfb541b0cfcf7fa2ab4a3, type: 3}
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
+  TemplateID: T2
+  GemType: 1
+  DamageByRarity:
+    Common: {x: 1, y: 3}
+    Rare: {x: 3, y: 5}
+    Epic: {x: 5, y: 10}
+    Legendary: {x: 15, y: 20}
+  CritByRarity:
+    Common: {x: 0.03, y: 0.05}
+    Rare: {x: 0.05, y: 0.1}
+    Epic: {x: 0.1, y: 0.15}
+    Legendary: {x: 0.15, y: 0.2}
+  chargeAmountRange: {x: 0.01, y: 0.1}
