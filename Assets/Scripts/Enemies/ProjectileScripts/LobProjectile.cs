@@ -69,7 +69,7 @@ namespace Enemies.ProjectileScripts
 
         private void Explode(PlayerHurtBox directHitBox = null)
         {
-            PSpawner.Spawn("anticipation", transform.position, Quaternion.identity);
+            PSpawner.Spawn("ProjectileExplode", transform.position, Quaternion.identity);
 
             var hits = Physics2D.OverlapCircleAll(transform.position, explosionRadius, playerMask);
             foreach (var hit in hits)
