@@ -35,6 +35,7 @@ namespace Enemies
             if (context.AppliesDot)
             {
                 float dotDamagePerTick = damage * context.DotDamagePercent;
+                if (dotDamagePerTick < 1f) dotDamagePerTick = 1f; // at least 1 damage
 
                 if (dotRoutine != null)
                     StopCoroutine(dotRoutine);

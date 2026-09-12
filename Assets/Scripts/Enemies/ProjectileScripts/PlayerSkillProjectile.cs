@@ -18,7 +18,24 @@ public class PlayerSkillProjectile : PlayerProjectileBase
         hasTriggered = false;
         Rb.gravityScale = gravityScale;
         Rb.linearVelocity = initialVelocity;
-        
+
+        IgnoreInitialOverlaps();
+    }
+
+    private void IgnoreInitialOverlaps()
+    {
+        Collider2D myCollider = GetComponent<Collider2D>();
+        if (myCollider == null) return;
+
+        ContactFilter2D filter = ContactFilter2D.noFilter;
+        Collider2D[] results = new Collider2D[16];
+        int count = Physics2D.OverlapCollider(myCollider, filter, results);
+
+        for (int i = 0; i < count; i++)
+        {
+            if (results[i] != null)
+                Physics2D.IgnoreCollision(myCollider, results[i], true);
+        }
     }
 
     protected override bool OnHitTrigger(Collider2D other)
