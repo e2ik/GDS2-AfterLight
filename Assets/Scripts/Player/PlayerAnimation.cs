@@ -36,6 +36,7 @@ public class PlayerAnimation : MonoBehaviour
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
     private bool wasInvulnerable;
+    private bool wasDeadLastFrame;
 
     private void Awake()
     {
@@ -79,10 +80,22 @@ public class PlayerAnimation : MonoBehaviour
 
     private void UpdateAnimationParameters()
     {
-    
         bool isDead = player.Stats.IsDead;
         animator.SetBool(IsDeadHash, isDead);
-        if (isDead) return;
+
+        if (isDead)
+        {
+            if (!wasDeadLastFrame)
+            {
+                animator.SetFloat(SpeedHash, 0f);
+                animator.SetFloat(YVelocityHash, 0f);
+                animator.SetBool(IsGroundedHash, true);
+                animator.SetBool(IsAboutToLandHash, false);
+            }
+            wasDeadLastFrame = true;
+            return;
+        }
+        wasDeadLastFrame = false;
 
         bool isParrying = player.CombatController.IsParrying;
         bool aboutToLand = player.Controller.IsAboutToLand(out RaycastHit2D hit);
@@ -195,7 +208,6 @@ public class PlayerAnimation : MonoBehaviour
     {
         if (player == null || player.Controller == null) return;
 
-        // Vector2 spawnPosition = player.Controller.LastHitPoint;
         Vector2 spawnPosition;
         Vector2 normal = player.Controller.CurrentSurfaceNormal;
 

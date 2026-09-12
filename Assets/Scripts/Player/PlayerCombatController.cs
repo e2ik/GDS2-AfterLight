@@ -821,10 +821,14 @@ public class PlayerCombatController : MonoBehaviour
 
     public void TryModifyParry(float incomingDamage, Collider2D col)
     {
-        if (player.Equipment.SecondaryGem == null || player.Equipment.SecondaryGem.Type != SGemType.Parry) return;
-        
         var secondaryGem = player.Equipment.SecondaryGem;
+
+        if (secondaryGem == null || string.IsNullOrEmpty(secondaryGem.InstTemplateID) || secondaryGem.Type != SGemType.Parry)
+            return;
+
         var secondaryDef = GameDatabase.GetSecondaryTemplateFromID(secondaryGem.InstTemplateID);
+        if (secondaryDef == null) return;
+
         switch (secondaryDef.GetPassiveType(secondaryGem))
         {
             case PassiveType.Energy:

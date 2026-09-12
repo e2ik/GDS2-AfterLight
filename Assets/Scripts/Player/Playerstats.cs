@@ -1,5 +1,6 @@
 using FMODUnity;
 using UnityEngine;
+using System.Collections;
 
 public class PlayerStats : MonoBehaviour
 {
@@ -146,9 +147,30 @@ public class PlayerStats : MonoBehaviour
         OnDied?.Invoke();
         Debug.Log("Player died.");
 
+        if (player != null)
+        {
+            player.CombatController.ForceCancelAttack();
+            player.CombatController.CancelParry();
+            player.CombatController.EndSkill();
+        }
+
         SetInputLocked(true);
-        if (player != null) player.Controller.SetPhysicsSuspended(true);
+
+        if (player != null)
+            StartCoroutine(WaitForLandingThenSuspend());
+
         GetUIManager()?.SetDeathScreenActive(true);
+    }
+
+    private IEnumerator WaitForLandingThenSuspend()
+    {
+        while (player.Controller != null && !player.Controller.IsGrounded)
+        {
+            yield return null;
+        }
+
+        if (player.Controller != null)
+            player.Controller.SetPhysicsSuspended(true);
     }
 
     public void OnRespawnButtonPressed()
