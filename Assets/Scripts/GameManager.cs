@@ -266,6 +266,8 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator ReturnToTitleRoutine()
     {
+        SaveManager.Instance?.CommitToDisk();
+
         SetState(GameState.Title);
 
         if (_playerInstance != null)
