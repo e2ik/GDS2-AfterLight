@@ -3,7 +3,6 @@ using UnityEngine;
 public class UIManager : MonoBehaviour
 {
     [Header("UI Canvas References")]
-    [SerializeField] private GameObject pauseCanvas;
     [SerializeField] private GameObject deathScreenCanvas;
 
     [Header("Player UI References")]
@@ -11,10 +10,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private PlayerEnergyBar energyBar;
     [SerializeField] private PlayerSkillIcon skillIcon;
 
-    private UIWindowAnimator pauseAnimator;
     private UIWindowAnimator deathScreenAnimator;
 
-    public GameObject PauseCanvas => pauseCanvas;
     public GameObject DeathScreenCanvas => deathScreenCanvas;
     public PlayerHealthBar HealthBar => healthBar;
     public PlayerEnergyBar EnergyBar => energyBar;
@@ -22,20 +19,6 @@ public class UIManager : MonoBehaviour
 
     private void Awake()
     {
-        if (pauseCanvas != null)
-        {
-            pauseAnimator = pauseCanvas.GetComponentInChildren<UIWindowAnimator>();
-
-            if (pauseAnimator != null)
-            {
-                pauseAnimator.InstantHide();
-            }
-            else
-            {
-                pauseCanvas.SetActive(false);
-            }
-        }
-
         if (deathScreenCanvas != null)
         {
             deathScreenAnimator = deathScreenCanvas.GetComponentInChildren<UIWindowAnimator>();
@@ -71,40 +54,6 @@ public class UIManager : MonoBehaviour
             playerObject.TryGetComponent(out PlayerCombatController skill);
 
             skillIcon.Bind(equipment, skill);
-        }
-    }
-
-    public void SetPauseCanvasActive(bool state)
-    {
-        if (pauseCanvas == null)
-        {
-            Debug.LogWarning("[UIManager] Pause Canvas reference is missing!");
-            return;
-        }
-
-        if (pauseAnimator != null)
-        {
-            if (state)
-            {
-                pauseAnimator.Show(freezeplayer: false);
-            }
-            else
-            {
-                pauseAnimator.Hide();
-            }
-        }
-        else
-        {
-            pauseCanvas.SetActive(state);
-        }
-    }
-
-    public void TogglePauseCanvas()
-    {
-        if (pauseCanvas != null)
-        {
-            bool isCurrentlyActive = pauseCanvas.activeSelf;
-            SetPauseCanvasActive(!isCurrentlyActive);
         }
     }
 

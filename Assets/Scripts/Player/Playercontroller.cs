@@ -606,7 +606,6 @@ public class PlayerController : MonoBehaviour
 
     public void OnDash(InputValue value) { dashPressed = value.isPressed; dashReleased = !value.isPressed; }
     public void OnInventory() => inventoryPressed = true;
-    public void OnPause(InputValue value) { if (value.isPressed) GameManager.Instance?.TogglePause(); }
 
     private void ConsumeJumpInput()
     {

@@ -36,7 +36,7 @@ namespace GameUI
                 onConfirmCallback: () =>
                 {
                     UIManager.Instance.Close(this);
-                    Debug.Log("Would return to title here.");
+                    GameManager.Instance.ReturnToTitle();
                 }
             );
         }
