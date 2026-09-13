@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedModifierGemTemplate
   ItemID: DoTAttackGem
   UIName: DoT On Attack
-  UISprite: {fileID: 21300000, guid: 0d6cc8dee1d1f50439f03fe550ab1c4b, type: 3}
+  UISprite: {fileID: 21300000, guid: c073c3d2e1e169c47b4885d2dba98c7b, type: 3}
   maxCommonValue: 5
   maxRareValue: 9
   maxEpicValue: 15
@@ -34,7 +34,7 @@ MonoBehaviour:
   dotTickInterval: 1
   dotDuration: 3
   dotPercentByRarity:
-    Common: {x: 3, y: 5}
-    Rare: {x: 5, y: 10}
-    Epic: {x: 10, y: 15}
-    Legendary: {x: 15, y: 20}
+    Common: {x: 10, y: 15}
+    Rare: {x: 15, y: 20}
+    Epic: {x: 20, y: 25}
+    Legendary: {x: 30, y: 50}

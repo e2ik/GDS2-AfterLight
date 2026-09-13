@@ -125,6 +125,10 @@ public class PlayerCombatController : MonoBehaviour
     public string CurrentSkillGemName { get; private set; }
     public float ChargingSkillTimer => chargingSkillTimer;
     public float ChargingSkillMaxDur => chargingSkillMaxDur;
+    public bool IsSkillReady =>
+        currentSkillDef != null
+        && skillTimer <= 0f
+        && (skillMeterAlwaysFull || SkillMeter >= SkillActivationCost);
 
     private float _skillMeter;
     public float SkillMeter
@@ -722,7 +726,7 @@ public class PlayerCombatController : MonoBehaviour
         {
             if (specialDef.SkillType == SkillType.Single)
             {
-                PerformSingleSkill(specialDef, chargeRatio, chargeDamageMultiplier);
+                PerformSingleSkill(specialDef, chargeRatio, chargeDamageMultiplier, wasCharged);
             }
             else if (specialDef.SkillType == SkillType.Timed)
             {
@@ -731,11 +735,14 @@ public class PlayerCombatController : MonoBehaviour
         }
     }
 
-    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float chargePercentage, float multiplier)
+    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float chargePercentage, float multiplier, bool alreadyPaidViaCharge = false)
     {
-        SkillMeter -= SkillActivationCost;
-        RaiseEnergyChanged();
-        def.Execute(player.Equipment.GetModifiedAttackContext(isAttack: false), GetDamage() * multiplier, chargePercentage);
+        if (!alreadyPaidViaCharge)
+        {
+            SkillMeter -= SkillActivationCost;
+            RaiseEnergyChanged();
+        }
+        def.Execute(player.Equipment.GetModifiedAttackContext(isAttack: false), GetScaledAttackDamage() * multiplier, chargePercentage);
     }
 
     private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
@@ -770,7 +777,7 @@ public class PlayerCombatController : MonoBehaviour
                 currentChargePercentage = chargeRatio;
             }
 
-            float currentTickDamage = GetDamage() * dynamicRampMultiplier;
+            float currentTickDamage = GetScaledAttackDamage() * dynamicRampMultiplier;
             def.Execute(context, currentTickDamage, currentChargePercentage);
 
             yield return new WaitForSeconds(tick);

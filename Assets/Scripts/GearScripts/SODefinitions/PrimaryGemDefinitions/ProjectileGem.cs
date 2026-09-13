@@ -30,7 +30,7 @@ public class ProjectileGem : PrimaryGemBehaviourDefinition
         int facing = player.GetComponent<Player>()?.Controller?.FacingDirection ?? 1;
         Vector2 velocity = new Vector2(facing, 0f) * flySpeedMultiplier;
 
-        float skillDamage = baseDamage * SkillDamageModifier;
+        float skillDamage = (baseDamage + damage) * SkillDamageModifier;
 
         GameObject projectile = Instantiate(
             projectilePrefab,
