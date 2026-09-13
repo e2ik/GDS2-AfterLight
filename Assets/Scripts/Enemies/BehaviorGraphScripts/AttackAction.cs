@@ -35,7 +35,7 @@ public partial class AttackAction : Action
         
         _enemy.MarkAttackStarted();
         _selected.Begin(_enemy.Context);
-        
+
         return Status.Running;
     }
 

@@ -10,46 +10,81 @@ namespace Enemies.ModuleScripts.Observation
         [SerializeField] private LayerMask targetMask;
         [SerializeField] private LayerMask obstructionMask;
 
+        [Header("Close-range awareness (any direction)")]
+        [Tooltip("Radius around the enemy that detects a target regardless of facing direction, so a player sneaking up from behind still gets noticed.")]
+        [SerializeField] private float proximityRadius = 1.25f;
+
+        [Header("Aggro memory")]
+        [Tooltip("How long (seconds) the enemy keeps chasing the last known position after losing sight, before fully giving up.")]
+        [SerializeField] private float memoryDuration = 2.5f;
+
+
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
-            int dir = ctx.FacingRight ? 1 : -1;
             Vector2 origin = ctx.Self.position;
+
+            Collider2D hit = TryFacingCone(ctx, origin);
+            if (hit == null)
+                hit = Physics2D.OverlapCircle(origin, proximityRadius, targetMask);
+
+            if (hit != null)
+            {
+                Vector2 toTarget = (Vector2)hit.transform.position - origin;
+                bool losBlocked = Physics2D.Raycast(origin, toTarget.normalized, toTarget.magnitude, obstructionMask);
+
+                if (!losBlocked)
+                {
+                    ctx.TimeSinceTargetSeen = 0f;
+                    ctx.TargetVisible = true;
+                    ctx.Target = hit.transform;
+                    ctx.TargetPosition = hit.transform.position;
+                    ctx.LastKnownTargetPosition = hit.transform.position;
+                    return;
+                }
+            }
+
+            ctx.TimeSinceTargetSeen += deltaTime;
+
+            bool stillRemembers = ctx.Target != null && ctx.TimeSinceTargetSeen <= memoryDuration;
+
+            if (stillRemembers)
+            {
+                ctx.TargetVisible = true;
+                ctx.TargetPosition = ctx.LastKnownTargetPosition;
+            }
+            else
+            {
+                ctx.TargetVisible = false;
+                ctx.Target = null;
+            }
+        }
+
+        private Collider2D TryFacingCone(EnemyContext ctx, Vector2 origin)
+        {
+            int dir = ctx.FacingRight ? 1 : -1;
             Vector2 size = new Vector2(viewDistance, viewHeight);
             Vector2 center = origin + Vector2.right * dir * (viewDistance / 2f);
 
             var hit = Physics2D.OverlapBox(center, size, 0f, targetMask);
             //DebugDrawOverlapBox(center, size, 0f, hit ? Color.red : Color.green);
-            
-            if (hit == null)
-            {
-                ctx.TargetVisible = false;
-                ctx.Target = null;
-                return;
-            }
-
-            Vector2 toTarget = (Vector2)hit.transform.position - origin;
-            bool losBlocked = Physics2D.Raycast(origin, toTarget.normalized, toTarget.magnitude, obstructionMask);
-
-            ctx.TargetVisible = !losBlocked;
-            ctx.Target = hit.transform;
-            ctx.TargetPosition = hit.transform.position;
+            return hit;
         }
-        
+
         public void DebugDrawOverlapBox(Vector2 center, Vector2 size, float angle, Color color)
         {
             float radians = angle * Mathf.Deg2Rad;
             float cos = Mathf.Cos(radians);
             float sin = Mathf.Sin(radians);
-            
+
             Vector2 halfSize = size * 0.5f;
-            
+
             Vector2[] localCorners = new Vector2[4] {
                 new Vector2(-halfSize.x, -halfSize.y),
                 new Vector2(halfSize.x, -halfSize.y),
                 new Vector2(halfSize.x, halfSize.y),
                 new Vector2(-halfSize.x, halfSize.y)
             };
-            
+
             Vector2[] worldCorners = new Vector2[4];
             for (int i = 0; i < 4; i++)
             {
@@ -59,7 +94,7 @@ namespace Enemies.ModuleScripts.Observation
                 );
                 worldCorners[i] = center + rotated;
             }
-            
+
             Debug.DrawLine(worldCorners[0], worldCorners[1], color);
             Debug.DrawLine(worldCorners[1], worldCorners[2], color);
             Debug.DrawLine(worldCorners[2], worldCorners[3], color);
