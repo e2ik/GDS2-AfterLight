@@ -1,5 +1,6 @@
 using Enemies.ProjectileScripts;
 using UnityEngine;
+using EventReference = FMODUnity.EventReference;
 
 namespace Enemies.ModuleScripts.Attacks
 {
@@ -16,12 +17,16 @@ namespace Enemies.ModuleScripts.Attacks
         [SerializeField] private AnimationClip clip;
         [SerializeField] private string placeholderClipName = "AttackPlaceholder";
         [SerializeField] private string attackStateName = "Attack";
+
+        [SerializeField] private EventReference launchEvent;
         
         public override void Begin(EnemyContext ctx)
         {
             ctx.OverrideController[ctx.PlaceholderClip] = clip;
             ctx.Animator.Play(attackStateName, 0, 0f);
             ctx.Animator.Update(0f);
+            
+            AudioManager.PlaySFXAttached(launchEvent, ctx.Self.gameObject);
             
             int facing = ctx.FacingRight ? 1 : -1;
             float startAngle = launchAngleDegrees - shotSpacingDegrees * (shotCount - 1) / 2f;
