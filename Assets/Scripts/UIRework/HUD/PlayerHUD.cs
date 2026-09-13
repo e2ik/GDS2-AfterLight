@@ -79,6 +79,17 @@ namespace GameUI
 
         private void Update()
         {
+            if (combat != null)
+            {
+                bool ready = combat.IsSkillReady;
+                if (ready != isReadyToUse)
+                {
+                    isReadyToUse = ready;
+                    if (readyGlowImage != null) readyGlowImage.enabled = ready;
+                    if (!ready) ResetGlowState();
+                }
+            }
+
             if (isReadyToUse && readyGlowImage != null && readyGlowImage.enabled)
             {
                 Color c = readyGlowImage.color;
@@ -101,14 +112,6 @@ namespace GameUI
         {
             float normalized = maxEnergy > 0f ? currentEnergy / maxEnergy : 0f;
             if (meterOverlayImage != null) meterOverlayImage.fillAmount = 1f - normalized;
-
-            bool ready = normalized >= 1f;
-            if (ready != isReadyToUse)
-            {
-                isReadyToUse = ready;
-                if (readyGlowImage != null) readyGlowImage.enabled = ready;
-                if (!ready) ResetGlowState();
-            }
         }
 
         private void HandleEquipmentChanged()

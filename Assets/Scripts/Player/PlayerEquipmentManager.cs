@@ -14,6 +14,7 @@ public class PlayerEquipmentManager : MonoBehaviour
     [Header("Starting Loadout")]
     [SerializeField] private WeaponDefinition startingWeapon;
     [SerializeField] private ERarity startingWeaponRarity = ERarity.Common;
+    [SerializeField] private SecondaryGemBehaviourDefinition startingSecondaryGem; // this is testing only
 
     [Header("Equipped Items")]
     [SerializeField] private WeaponInstance equippedWeapon;
@@ -65,6 +66,12 @@ public class PlayerEquipmentManager : MonoBehaviour
             WeaponInstance startingInstance = startingWeapon.CreateInstance(startingWeaponRarity);
             inventory.AddItemToInventory(startingInstance);
             EquipWeapon(startingInstance);
+        }
+
+        // test only
+        if (startingSecondaryGem != null && IsSecondaryGemSlotEmpty())
+        {
+            EquipSecondaryGem(startingSecondaryGem.CreateInstance(startingWeaponRarity));
         }
     }
 
