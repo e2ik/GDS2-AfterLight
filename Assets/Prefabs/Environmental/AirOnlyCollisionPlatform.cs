@@ -6,6 +6,7 @@ public class AirOnlyCollisionPlatform : MonoBehaviour
 {
     [SerializeField] private Vector2 solidLocalDirection = Vector2.up;
     [SerializeField] private float ignoreDuration = 0.75f;
+    [SerializeField] private LayerMask enemyLayer;
 
     private Collider2D platformCollider;
     private BoxCollider2D boxCollider;
@@ -19,6 +20,14 @@ public class AirOnlyCollisionPlatform : MonoBehaviour
         boxCollider = platformCollider as BoxCollider2D;
     }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (((1 << collision.gameObject.layer) & enemyLayer) != 0)
+        {
+            Physics2D.IgnoreCollision(collision.collider, platformCollider, true);
+        }
+    }
+
     private void FixedUpdate()
     {
         if (cachedPlayer == null)
@@ -28,30 +37,34 @@ public class AirOnlyCollisionPlatform : MonoBehaviour
             playerColliders = cachedPlayer.GetComponentsInChildren<Collider2D>(true);
         }
 
-        bool nearSolidFace = IsNearSolidFace();
-        bool wrongSide = cachedPlayer.Controller.IsGrounded || cachedPlayer.Controller.IsDashing || !nearSolidFace;
+        bool wrongSide = cachedPlayer.Controller.IsGrounded || cachedPlayer.Controller.IsDashing || !IsNearSolidFace();
 
         if (wrongSide && ignoreRoutine == null)
         {
-            ignoreRoutine = StartCoroutine(IgnoreCollisionTemporarily());
+            IgnoreCollisionFor(playerColliders, ignoreDuration);
         }
     }
 
-    private IEnumerator IgnoreCollisionTemporarily()
+    public void IgnoreCollisionFor(Collider2D[] colliders, float duration)
     {
-        foreach (var col in playerColliders)
-        {
-            if (col != null) Physics2D.IgnoreCollision(col, platformCollider, true);
-        }
+        if (ignoreRoutine != null) StopCoroutine(ignoreRoutine);
+        ignoreRoutine = StartCoroutine(IgnoreCollisionRoutine(colliders, duration));
+    }
 
-        yield return new WaitForSeconds(ignoreDuration);
-
-        foreach (var col in playerColliders)
-        {
-            if (col != null) Physics2D.IgnoreCollision(col, platformCollider, false);
-        }
-
+    private IEnumerator IgnoreCollisionRoutine(Collider2D[] colliders, float duration)
+    {
+        SetIgnore(colliders, true);
+        yield return new WaitForSeconds(duration);
+        SetIgnore(colliders, false);
         ignoreRoutine = null;
+    }
+
+    private void SetIgnore(Collider2D[] colliders, bool ignore)
+    {
+        foreach (var col in colliders)
+        {
+            if (col != null) Physics2D.IgnoreCollision(col, platformCollider, ignore);
+        }
     }
 
     private bool IsNearSolidFace()
@@ -74,13 +87,7 @@ public class AirOnlyCollisionPlatform : MonoBehaviour
         return Vector2.Dot(dominantAxis, solidLocalDirection.normalized) > 0.5f;
     }
 
-    public bool AllowsWallSlideFrom(Vector2 hitNormal)
-    {
-        Vector2 worldSolidDir = transform.TransformDirection(solidLocalDirection.normalized);
-        return Vector2.Dot(hitNormal.normalized, worldSolidDir) > 0.7f;
-    }
-
-    public bool AllowsGroundCheckFrom(Vector2 hitNormal)
+    public bool AllowsSolidContactFrom(Vector2 hitNormal)
     {
         Vector2 worldSolidDir = transform.TransformDirection(solidLocalDirection.normalized);
         return Vector2.Dot(hitNormal.normalized, worldSolidDir) > 0.7f;

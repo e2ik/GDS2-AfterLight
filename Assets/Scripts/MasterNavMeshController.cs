@@ -173,6 +173,20 @@ public class MasterNavMeshController : MonoBehaviour
 
         foreach (GameObject obj in sceneObjects)
         {
+            AirOnlyCollisionPlatform airOnlyPlatform = obj.GetComponent<AirOnlyCollisionPlatform>();
+
+            if (airOnlyPlatform != null)
+            {
+                NavMeshPlus.Components.NavMeshModifier airPlatformModifier = obj.GetComponent<NavMeshPlus.Components.NavMeshModifier>();
+                if (airPlatformModifier == null)
+                {
+                    airPlatformModifier = obj.AddComponent<NavMeshPlus.Components.NavMeshModifier>();
+                }
+                airPlatformModifier.overrideArea = false;
+                airPlatformModifier.ignoreFromBuild = true;
+                continue;
+            }
+
             if ((obstacleLayer.value & (1 << obj.layer)) == 0) continue;
             if (obj.GetComponent<Collider2D>() == null) continue;
 

@@ -324,6 +324,7 @@ public class PlayerController : MonoBehaviour
             }
 
             isWallSliding = true;
+            rb.linearVelocityX = 0f; // prevent sliding into the wall
             if (rb.linearVelocityY > 0f) rb.linearVelocityY *= wallSlideUpwardDampening;
             rb.linearVelocityY = Mathf.Clamp(rb.linearVelocityY, -wallSlideSpeed, float.MaxValue);
         }
@@ -415,6 +416,8 @@ public class PlayerController : MonoBehaviour
                 activeDuration *= backDashMultiplier;
             }
 
+            IgnoreAllAirOnlyPlatformsDuringDash(activeDuration);
+
             rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
         
             playerAnimation.TriggerDashEffect();
@@ -426,6 +429,15 @@ public class PlayerController : MonoBehaviour
         }
 
         if (dashReleased) ConsumeDashInput();
+    }
+
+    private void IgnoreAllAirOnlyPlatformsDuringDash(float duration)
+    {
+        AirOnlyCollisionPlatform[] platforms = FindObjectsByType<AirOnlyCollisionPlatform>(FindObjectsSortMode.None);
+        foreach (var platform in platforms)
+        {
+            platform.IgnoreCollisionFor(playerColliders, duration);
+        }
     }
 
     public void SetDashLockedDuringAttack(bool locked)
@@ -626,8 +638,7 @@ public class PlayerController : MonoBehaviour
     {
         hit = Physics2D.Raycast(origin, Vector2.down, distance, groundLayer);
         if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
-
-        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsGroundCheckFrom(hit.normal))
+        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
             return false;
 
         return true;
@@ -683,9 +694,8 @@ public class PlayerController : MonoBehaviour
     {
         RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.right * dir, len, groundLayer);
         if (hit.collider == null || Mathf.Abs(hit.normal.x) <= wallCheckNormalThreshold) return false;
-
-        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsWallSlideFrom(hit.normal)) // CHANGED
-            return false;
+    if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
+        return false;
 
         currentSurfaceNormal = hit.normal;
         lastHitPoint = hit.point;

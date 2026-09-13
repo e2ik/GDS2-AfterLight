@@ -69,8 +69,11 @@ namespace Enemies.ProjectileScripts
         protected void ReturnToPool() => ProjectilePool.Release(SourcePrefab, this);
         
         protected virtual bool OnHitTrigger(Collider2D other) => true;
+
         private void OnTriggerEnter2D(Collider2D other)
         {
+            if (other.GetComponentInParent<AirOnlyCollisionPlatform>() != null) return;
+
             if(OnHitTrigger(other))
                 ReturnToPool();
         }

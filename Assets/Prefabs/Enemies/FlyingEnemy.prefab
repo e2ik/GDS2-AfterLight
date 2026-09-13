@@ -80,7 +80,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 15
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: caa6d7edf0bc6ab45881a8286a3b5f20, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -194,7 +194,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 14
   m_MaskInteraction: 0
   m_Sprite: {fileID: 311756765435210426, guid: 49dfabf1d39411e47b10534d29e99bad, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -318,6 +318,7 @@ MonoBehaviour:
   rb2D: {fileID: 1037170224883650968}
   attackCooldown: 1
   placeholderClipName: EmptyAttack
+  staggerImmunityDuration: 2
   hitEvent:
     Guid:
       Data1: 515442699

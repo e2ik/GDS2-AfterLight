@@ -108,7 +108,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirOnlyCollisionPlatform
   solidLocalDirection: {x: 0, y: 1}
-  clearanceBuffer: 0.05
+  ignoreDuration: 0.75
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 6656
 --- !u!61 &6250442489848657055
 BoxCollider2D:
   m_ObjectHideFlags: 0
