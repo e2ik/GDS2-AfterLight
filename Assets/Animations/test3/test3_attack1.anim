@@ -733,6 +733,13 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
+  - time: 0.4
+    functionName: PlaySFXEventAttached
+    data: AttackEvent
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 0.6
     functionName: EnableHitbox
     data: 
@@ -768,6 +775,13 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
+  - time: 0.9
+    functionName: PlaySFXEventAttached
+    data: AttackEvent
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 1.1
     functionName: EnableHitbox
     data: 
@@ -799,6 +813,13 @@ AnimationClip:
   - time: 1.5
     functionName: OpenParryWindow
     data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.5
+    functionName: PlaySFXEventAttached
+    data: AttackEvent
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0

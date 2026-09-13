@@ -1,3 +1,4 @@
+using FMODUnity;
 using UnityEngine;
 
 namespace Enemies
@@ -5,6 +6,8 @@ namespace Enemies
     [RequireComponent(typeof(Collider2D))]
     public class VfxBox : MonoBehaviour
     {
+        [SerializeField] private EventReference warningEvent;
+        
         private Collider2D col;
         private ParticleSystem activeParticleSystem; // Track the current effect
 
@@ -34,6 +37,8 @@ namespace Enemies
             {
                 PSpawner.Kill(activeParticleSystem);
             }
+            
+            AudioManager.PlaySFXAttached(warningEvent, gameObject);
 
             activeParticleSystem = PSpawner.Spawn("anticipation", col.bounds.center, Quaternion.identity);
             if (activeParticleSystem == null) return;
