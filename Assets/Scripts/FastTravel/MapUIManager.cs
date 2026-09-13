@@ -1,24 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MapUIManager : MonoBehaviour
+public class MapUIManager : GameUI.UIWindow
 {
     public static MapUIManager Instance { get; private set; }
-    public bool IsMapOpen { get; private set; }
+    public bool IsMapOpen => IsOpen;
 
     [Header("Data References")]
     [SerializeField] private WorldMapStateSO worldMapState;
 
     [Header("UI References")]
-    [SerializeField] private UIWindowAnimator mapWindowAnimator; 
     [SerializeField] private RectTransform mapContainer;
     [SerializeField] private FastTravelNodeUI nodeButtonPrefab;
     [SerializeField] private Button closeButton;
 
     private FastTravelNodeSO currentNode;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -28,43 +29,38 @@ public class MapUIManager : MonoBehaviour
 
         if (closeButton != null)
             closeButton.onClick.AddListener(CloseMap);
-
-        // Instantly hide the map UI when the scene boots up
-        if (mapWindowAnimator != null)
-        {
-            mapWindowAnimator.InstantHide();
-        }
-        
-        IsMapOpen = false;
     }
 
     public void OpenMap(FastTravelNodeSO originNode)
     {
-        IsMapOpen = true;
         currentNode = originNode;
+        GameUI.UIManager.Instance.Open(this);
+    }
+
+    public void CloseMap()
+    {
+        GameUI.UIManager.Instance.Close(this);
+    }
+
+    protected override void OnWindowOpened()
+    {
         RefreshMapNodes();
 
         if (GameManager.Instance?.Player?.Controller != null)
         {
             GameManager.Instance.Player.Controller.SetPhysicsSuspended(true);
+            GameManager.Instance.Player.Controller.InputEnabled = false;
         }
-
-        if (mapWindowAnimator != null)
-            mapWindowAnimator.Show(true);
     }
 
-    public void CloseMap()
+    protected override void OnWindowClosed()
     {
-        IsMapOpen = false;
-
         if (GameManager.Instance?.Player?.Controller != null)
         {
+            GameManager.Instance.Player.Controller.InputEnabled = true;
             GameManager.Instance.Player.Controller.FreezeMovement(false);
             GameManager.Instance.Player.Controller.SetPhysicsSuspended(false);
         }
-
-        if (mapWindowAnimator != null)
-            mapWindowAnimator.Hide();
     }
 
     private void RefreshMapNodes()

@@ -43,7 +43,11 @@ namespace GameUI
             window.HandleOpened();
             UISFX.PlayOpen();
 
-            if (wasEmpty && window.BlocksPlayerInput) { Time.timeScale = 0f; }
+            if (wasEmpty)
+            {
+                if (window.BlocksPlayerInput) { Time.timeScale = 0f; }
+                GameManager.Instance?.Player?.InteractionManager?.SetInteractionBlocked(true);
+            }
         }
 
         public void Close(UIWindow window)
@@ -63,6 +67,7 @@ namespace GameUI
             if (openWindows.Count == 0)
             {
                 Time.timeScale = 1f;
+                GameManager.Instance?.Player?.InteractionManager?.SetInteractionBlocked(false);
             }
             else
             {

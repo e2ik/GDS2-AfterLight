@@ -149,7 +149,7 @@ public class DialogueManager : MonoBehaviour
         if (currentPlayer != null)
         {
             currentPlayer.Controller.InputEnabled = false;
-            currentPlayer.InteractionManager.InteractionEnabled = false;
+            currentPlayer.InteractionManager.SetInteractionBlocked(true);
         }
 
         ResetHoldSkip();
@@ -367,7 +367,7 @@ public class DialogueManager : MonoBehaviour
         if (currentPlayer != null)
         {
             currentPlayer.Controller.InputEnabled = true;
-            currentPlayer.InteractionManager.InteractionEnabled = true;
+            currentPlayer.InteractionManager.SetInteractionBlocked(false);
         }
 
         if (currentNPC != null)

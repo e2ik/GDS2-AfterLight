@@ -10,7 +10,8 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private LayerMask interactableLayers = ~0;
     [SerializeField] private Vector2 raycastOriginOffset = Vector2.zero;
 
-    public bool InteractionEnabled { get; set; } = true;
+    private int interactionDisableCount;
+    public bool InteractionEnabled => interactionDisableCount <= 0;
 
     private IInteractable currentInteractable;
     private Transform currentInteractableTransform;
@@ -54,6 +55,11 @@ public class InteractionManager : MonoBehaviour
 
             currentInteractable.Interact(player);
         }
+    }
+
+    public void SetInteractionBlocked(bool blocked)
+    {
+        interactionDisableCount = blocked ? interactionDisableCount + 1 : Mathf.Max(0, interactionDisableCount - 1);
     }
 
     private void DetectInteractable()

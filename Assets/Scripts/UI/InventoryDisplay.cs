@@ -1,19 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CanvasGroup))]
-public class InventoryDisplay : MonoBehaviour
+public class InventoryDisplay : GameUI.UIWindow
 {
     [Header("UI Container")]
     [SerializeField] private Transform slotContainer;
     [SerializeField] private GameObject slotPrefab;
 
-    [Header("Animation Reference")]
-    [SerializeField] private UIWindowAnimator windowAnimator;
-
-    private CanvasGroup canvasGroup;
     private PlayerInventoryManager invManager;
-    private bool isVisible = false;
 
     private readonly struct DisplayItem
     {
@@ -24,27 +18,6 @@ public class InventoryDisplay : MonoBehaviour
         {
             Item = item;
             PickupOrder = pickupOrder;
-        }
-    }
-
-    private void Awake()
-    {
-        canvasGroup = GetComponent<CanvasGroup>();
-
-        if (windowAnimator == null)
-            windowAnimator = GetComponent<UIWindowAnimator>();
-    }
-
-    private void Start()
-    {
-        if (windowAnimator != null)
-        {
-            windowAnimator.InstantHide();
-            isVisible = false;
-        }
-        else
-        {
-            SetVisibility(false);
         }
     }
 
@@ -76,44 +49,23 @@ public class InventoryDisplay : MonoBehaviour
                 equipManager.OnEquipmentChanged += RefreshUI;
             }
 
-            if (isVisible)
+            if (IsOpen)
             {
                 RefreshUI();
             }
         }
     }
 
-    public void ToggleInventory()
+    protected override void OnWindowOpened()
     {
-        SetVisibility(!isVisible);
+        RefreshUI();
     }
 
-    public void SetVisibility(bool visible)
+    protected override void OnWindowClosed()
     {
-        isVisible = visible;
-
-        if (windowAnimator != null)
+        if (ItemTooltip.Instance != null)
         {
-            if (visible)
-            {
-                RefreshUI();
-                windowAnimator.Show();
-            }
-            else
-            {
-                windowAnimator.Hide();
-            }
-        }
-        else if (canvasGroup != null)
-        {
-            canvasGroup.alpha = visible ? 1f : 0f;
-            canvasGroup.interactable = visible;
-            canvasGroup.blocksRaycasts = visible;
-
-            if (visible)
-            {
-                RefreshUI();
-            }
+            ItemTooltip.Instance.HideTooltip();
         }
     }
 

@@ -120,5 +120,10 @@ namespace GameUI
             }
             return false;
         }
+
+        public void CancelIfRebinding()
+        {
+            rebindingOperation?.Cancel();
+        }
     }
 }

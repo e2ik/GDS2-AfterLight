@@ -26,7 +26,7 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private EventReference hitEvent;
 
     private Player player;
-    private UIManager uiManager;
+    private GameUI.DeathWindow deathWindow;
 
     public float MaxHealth => maxHealth;
     public float CurrentHealth => currentHealth;
@@ -159,7 +159,8 @@ public class PlayerStats : MonoBehaviour
         if (player != null)
             StartCoroutine(WaitForLandingThenSuspend());
 
-        GetUIManager()?.SetDeathScreenActive(true);
+        GameUI.DeathWindow window = GetDeathWindow();
+        if (window != null) GameUI.UIManager.Instance.Open(window);
     }
 
     private IEnumerator WaitForLandingThenSuspend()
@@ -175,7 +176,8 @@ public class PlayerStats : MonoBehaviour
 
     public void OnRespawnButtonPressed()
     {
-        GetUIManager()?.SetDeathScreenActive(false);
+        GameUI.DeathWindow window = GetDeathWindow();
+        if (window != null) GameUI.UIManager.Instance.Close(window);
 
         if (CanRespawn)
         {
@@ -203,10 +205,10 @@ public class PlayerStats : MonoBehaviour
             player.Controller.InputEnabled = !locked;
     }
 
-    private UIManager GetUIManager()
+    private GameUI.DeathWindow GetDeathWindow()
     {
-        if (uiManager == null)
-            uiManager = FindFirstObjectByType<UIManager>();
-        return uiManager;
+        if (deathWindow == null)
+            deathWindow = FindFirstObjectByType<GameUI.DeathWindow>();
+        return deathWindow;
     }
 }

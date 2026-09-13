@@ -40,6 +40,14 @@ namespace GameUI
             ShowAudioTab();
         }
 
+        protected override void OnWindowClosed()
+        {
+            foreach (RebindButton button in GetComponentsInChildren<RebindButton>(true))
+            {
+                button.CancelIfRebinding();
+            }
+        }
+
         private void ShowAudioTab()
         {
             audioPanel.SetActive(true);

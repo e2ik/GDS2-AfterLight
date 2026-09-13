@@ -50,6 +50,7 @@ public class ItemTooltip : MonoBehaviour
         if (titleText != null) titleText.text = title;
         if (descriptionText != null) descriptionText.text = description;
 
+        transform.SetAsLastSibling();
         gameObject.SetActive(true);
         FollowMouse();
     }

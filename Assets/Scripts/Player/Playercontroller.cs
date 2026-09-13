@@ -766,8 +766,13 @@ public class PlayerController : MonoBehaviour
         if (!inventoryPressed) return;
         inventoryPressed = false;
 
-        if (inventoryDisplay == null) inventoryDisplay = UnityEngine.Object.FindFirstObjectByType<InventoryDisplay>();
-        inventoryDisplay?.ToggleInventory();
+        if (inventoryDisplay == null)
+            inventoryDisplay = UnityEngine.Object.FindFirstObjectByType<InventoryDisplay>(FindObjectsInactive.Include);
+
+        if (inventoryDisplay != null && GameUI.UIGlobalInput.Instance != null)
+        {
+            GameUI.UIGlobalInput.Instance.ToggleWindow(inventoryDisplay);
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D col) => HandleHazardousCollision(col);
