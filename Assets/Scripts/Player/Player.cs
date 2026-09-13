@@ -37,14 +37,17 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
-        UIManager uiManager = FindFirstObjectByType<UIManager>();
-        if (uiManager != null)
+        GameUI.PlayerHUD hud = FindFirstObjectByType<GameUI.PlayerHUD>();
+        if (hud != null)
         {
-            uiManager.InitializePlayerUI(gameObject);
+            hud.Bind(GetComponent<PlayerStats>(), GetComponent<PlayerCombatController>(), GetComponent<PlayerEquipmentManager>());
         }
-        else
+
+        GameUI.InteractionPopup popup = FindFirstObjectByType<GameUI.InteractionPopup>();
+        InteractionManager interactionManager = GetComponent<InteractionManager>();
+        if (popup != null && interactionManager != null)
         {
-            Debug.LogWarning("No UIManager found in the scene. Player UI will not be initialized.");
+            popup.Bind(interactionManager);
         }
     }
 }

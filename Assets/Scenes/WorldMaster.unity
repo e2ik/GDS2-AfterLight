@@ -1208,6 +1208,9 @@ MonoBehaviour:
   blinkSpeed: 15
   minAlpha: 0.15
   maxAlpha: 1
+  equipmentManager: {fileID: 0}
+  combatController: {fileID: 0}
+  isReadyToUse: 0
 --- !u!222 &268905003
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1665,9 +1668,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
   deathScreenCanvas: {fileID: 12749362}
-  healthBar: {fileID: 1738739366}
-  energyBar: {fileID: 1042674262}
-  skillIcon: {fileID: 268905002}
 --- !u!114 &358202635
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2668,6 +2668,7 @@ GameObject:
   - component: {fileID: 623672063}
   - component: {fileID: 623672062}
   - component: {fileID: 623672061}
+  - component: {fileID: 623672064}
   m_Layer: 0
   m_Name: HUD
   m_TagString: Untagged
@@ -2762,6 +2763,27 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &623672064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 623672059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 273627622c22a47418e126d61228a215, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameUI.PlayerHUD
+  healthFillImage: {fileID: 840207588}
+  energyFillImage: {fileID: 1910176607}
+  skillIconImage: {fileID: 1233590216}
+  meterOverlayImage: {fileID: 345431370}
+  readyGlowImage: {fileID: 1849696394}
+  emptySlotSprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  blinkSpeed: 15
+  minAlpha: 0.15
+  maxAlpha: 1
 --- !u!1 &658040407
 GameObject:
   m_ObjectHideFlags: 0
@@ -4343,6 +4365,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerEnergyBar
   energyFillImage: {fileID: 1910176607}
+  currentStats: {fileID: 0}
 --- !u!222 &1042674263
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5509,6 +5532,7 @@ GameObject:
   - component: {fileID: 1259280010}
   - component: {fileID: 1259280012}
   - component: {fileID: 1259280011}
+  - component: {fileID: 1259280013}
   m_Layer: 0
   m_Name: UISystem
   m_TagString: Untagged
@@ -5558,6 +5582,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameUI.UIManager
   actionAsset: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+--- !u!114 &1259280013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259280009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83a833e0e3359834dbbd67d69b843a01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameUI.InteractionPopup
+  iconPrefab: {fileID: 999654685950981340, guid: d96e24872caa42d43b9b0c0c42c0a4ea, type: 3}
+  iconOffset: {x: 0, y: 0.75}
 --- !u!1 &1284252394
 GameObject:
   m_ObjectHideFlags: 0
@@ -6324,7 +6362,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6965080885634829713, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 630
+      value: 650
       objectReference: {fileID: 0}
     - target: {fileID: 6965080885634829713, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -6332,7 +6370,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6965080885634829713, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -115
+      value: -95
       objectReference: {fileID: 0}
     - target: {fileID: 7177489252190523553, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchorMax.y
@@ -7839,6 +7877,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealthBar
   healthFillImage: {fileID: 840207588}
+  currentStats: {fileID: 0}
 --- !u!222 &1738739367
 CanvasRenderer:
   m_ObjectHideFlags: 0
