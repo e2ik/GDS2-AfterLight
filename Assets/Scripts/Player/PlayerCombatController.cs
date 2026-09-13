@@ -735,7 +735,7 @@ public class PlayerCombatController : MonoBehaviour
     {
         SkillMeter -= SkillActivationCost;
         RaiseEnergyChanged();
-        def.Execute(player.Equipment.GetModifiedAttackContext(isAttack: false), GetDamage() * multiplier, chargePercentage);
+        def.Execute(player.Equipment.GetModifiedAttackContext(isAttack: false), GetScaledAttackDamage() * multiplier, chargePercentage);
     }
 
     private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
@@ -770,7 +770,7 @@ public class PlayerCombatController : MonoBehaviour
                 currentChargePercentage = chargeRatio;
             }
 
-            float currentTickDamage = GetDamage() * dynamicRampMultiplier;
+            float currentTickDamage = GetScaledAttackDamage() * dynamicRampMultiplier;
             def.Execute(context, currentTickDamage, currentChargePercentage);
 
             yield return new WaitForSeconds(tick);
