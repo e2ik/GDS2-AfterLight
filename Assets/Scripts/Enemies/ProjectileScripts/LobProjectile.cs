@@ -1,3 +1,4 @@
+using FMODUnity;
 using UnityEngine;
 
 namespace Enemies.ProjectileScripts
@@ -8,6 +9,7 @@ namespace Enemies.ProjectileScripts
         [SerializeField] private float explosionRadius = 1.5f;
         [SerializeField] private LayerMask playerMask;
         [SerializeField] private LayerMask collideWithMask;
+        [SerializeField] private EventReference explodeEvent;
 
         // guard against multiple hits (player has more than 1 collider)
         private bool hasTriggered = false;
@@ -70,6 +72,8 @@ namespace Enemies.ProjectileScripts
         private void Explode(PlayerHurtBox directHitBox = null)
         {
             PSpawner.Spawn("ProjectileExplode", transform.position, Quaternion.identity);
+            
+            AudioManager.PlaySFX(explodeEvent, transform.position);
 
             var hits = Physics2D.OverlapCircleAll(transform.position, explosionRadius, playerMask);
             foreach (var hit in hits)
