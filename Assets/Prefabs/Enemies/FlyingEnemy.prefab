@@ -197,7 +197,7 @@ SpriteRenderer:
   m_SortingOrder: 14
   m_MaskInteraction: 0
   m_Sprite: {fileID: 311756765435210426, guid: 49dfabf1d39411e47b10534d29e99bad, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.79687494, g: 1, b: 0.49999988, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -293,7 +293,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9b08fde3cea1e74eaa88ad2dd99a63a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
-  maxHealth: 100
+  maxHealth: 60
 --- !u!114 &5011396066847478461
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -322,6 +322,7 @@ MonoBehaviour:
   rb2D: {fileID: 1037170224883650968}
   attackCooldown: 1
   placeholderClipName: EmptyAttack
+  isStaggerImmune: 0
   staggerImmunityDuration: 2
   hitEvent:
     Guid:

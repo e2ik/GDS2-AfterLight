@@ -22,6 +22,7 @@ namespace Enemies
         [SerializeField] private string placeholderClipName = "EmptyAttack";
 
         [Header("Stagger")]
+        [SerializeField] private bool isStaggerImmune = false;
         [SerializeField] private float staggerImmunityDuration = 2f;
         private float staggerImmunityTimer;
 
@@ -188,6 +189,12 @@ namespace Enemies
             flashRoutine = StartCoroutine(FlashRed());
 
             if (isDot) return;
+
+            if (isStaggerImmune)
+            {
+                PSpawner.Spawn("EnemyHit", transform.position);
+                return;
+            }
 
             bool forceAllowsStagger = !Context.IsAttacking
                 || Context.CurrentAttackForce != AttackForce.Heavy

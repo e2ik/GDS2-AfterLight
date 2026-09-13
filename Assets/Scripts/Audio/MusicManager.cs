@@ -30,6 +30,7 @@ public class MusicManager : MonoBehaviour
     private float _currentIntensity;
     private float _targetIntensity;
     private MusicState _currentState = MusicState.Chill;
+    private bool _hasUnlockedAudio = false;
 
     private void Awake()
     {
@@ -41,8 +42,10 @@ public class MusicManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        
+
+#if !UNITY_WEBGL
         PlayMusic();
+#endif
     }
 
     public void PlayMusic()
@@ -95,6 +98,14 @@ public class MusicManager : MonoBehaviour
 
     private void Update()
     {
+#if UNITY_WEBGL
+        if (!_hasUnlockedAudio && Input.anyKeyDown)
+        {
+            _hasUnlockedAudio = true;
+            PlayMusic();
+        }
+#endif
+
         if (!_instance.isValid()) return;
 
         var (min, _) = MusicRanges.GetRange(_currentState);

@@ -258,7 +258,8 @@ MonoBehaviour:
   rb2D: {fileID: 2968184197812120870}
   attackCooldown: 0.25
   placeholderClipName: EmptyAttack
-  staggerImmunityDuration: 2
+  isStaggerImmune: 0
+  staggerImmunityDuration: 3
   hitEvent:
     Guid:
       Data1: 515442699
@@ -450,7 +451,7 @@ SpriteRenderer:
   m_SortingOrder: 15
   m_MaskInteraction: 0
   m_Sprite: {fileID: 4301079142537974084, guid: 8bb048460e48a744ea912e71d145c89d, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.37421376, g: 1, b: 0.9843553, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
