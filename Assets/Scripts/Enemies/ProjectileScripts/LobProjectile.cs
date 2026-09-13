@@ -55,7 +55,9 @@ namespace Enemies.ProjectileScripts
 
             if (directHitBox != null)
             {
-                if (!directHitBox.TakeHit(HitBox))
+                Collider2D ownerCollider = Owner != null ? Owner.GetComponentInChildren<Collider2D>() : null;
+
+                if (!directHitBox.TakeHit(HitBox, ownerCollider))
                 {
                     wasParried = true;
                 }

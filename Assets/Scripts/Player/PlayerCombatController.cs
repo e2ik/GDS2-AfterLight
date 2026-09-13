@@ -864,6 +864,11 @@ public class PlayerCombatController : MonoBehaviour
 
     private void TryReflectDmg(SecondaryGemBehaviourDefinition behaviourDefinition, Collider2D col, float incomingDamage)
     {
+        if (col == null)
+        {
+            Debug.Log("no collider provided, no reflect damage");
+            return;
+        }
         if (col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
         {
             AttackContext context = new AttackContext

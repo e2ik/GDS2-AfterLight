@@ -17,6 +17,7 @@ namespace Enemies.ProjectileScripts
         protected int Damage { get; private set; }
         
         public Projectile SourcePrefab { get; set; }
+        public Transform Owner => owner;
 
         private Transform owner;
         private bool hasOwner;
