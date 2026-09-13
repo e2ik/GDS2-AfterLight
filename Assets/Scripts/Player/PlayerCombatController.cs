@@ -887,7 +887,12 @@ public class PlayerCombatController : MonoBehaviour
 
     public void OnAttack()
     {
-        if (IsParrying || isChargingSkill || isPlunging) return;
+        if (isChargingSkill || isPlunging) return;
+
+        if (IsParrying)
+        {
+            CancelParry();
+        }
 
         attackBufferTimer = attackBufferTime;
 

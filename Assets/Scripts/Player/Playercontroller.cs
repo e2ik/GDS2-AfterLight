@@ -595,7 +595,15 @@ public class PlayerController : MonoBehaviour
         horizontalInput = Mathf.Abs(raw.x) > InputDeadzone ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude) : 0f;
     }
 
-    public void OnJump(InputValue value) { jumpPressed = value.isPressed; jumpReleased = !value.isPressed; }
+    public void OnJump(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            combat.CancelParry();
+        }
+        jumpPressed = value.isPressed; jumpReleased = !value.isPressed;
+    }
+
     public void OnDash(InputValue value) { dashPressed = value.isPressed; dashReleased = !value.isPressed; }
     public void OnInventory() => inventoryPressed = true;
     public void OnPause(InputValue value) { if (value.isPressed) GameManager.Instance?.TogglePause(); }
