@@ -250,6 +250,7 @@ MonoBehaviour:
   backDashMultiplier: 0.5
   dashDuration: 0.2
   dashCoolDown: 0.2
+  dashSkillEnergyCost: 0.1
   hazardousLayers:
     serializedVersion: 2
     m_Bits: 4096
@@ -282,7 +283,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCombatController
   parryActiveDuration: 0.2
-  parryRecoveryDuration: 0
+  parryRecoveryDuration: 0.2
   parryBufferTime: 0.15
   successfulParryVisualDuration: 0.15
   attackOrigin: {fileID: 6444912443510829891}

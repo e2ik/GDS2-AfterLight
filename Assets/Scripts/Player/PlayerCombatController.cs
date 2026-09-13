@@ -319,6 +319,14 @@ public class PlayerCombatController : MonoBehaviour
     private void ExecuteParry()
     {
         ForceCancelAttack();
+
+        if (parrySuccessResetCoroutine != null)
+        {
+            StopCoroutine(parrySuccessResetCoroutine);
+            parrySuccessResetCoroutine = null;
+        }
+        isParrySuccess = false;
+
         parryBufferTimer = 0f;
         isParrying = true;
         isParryInRecovery = false;
@@ -376,6 +384,7 @@ public class PlayerCombatController : MonoBehaviour
 
         isParrying = isParryInRecovery = isParrySuccess = false;
         parryActiveTimer = parryRecoveryTimer = 0f;
+        parryBufferTimer = 0f;
         movement.FreezeMovement(false);
     }
 

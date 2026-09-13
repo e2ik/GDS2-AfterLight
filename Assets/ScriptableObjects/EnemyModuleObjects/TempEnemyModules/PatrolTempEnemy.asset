@@ -16,6 +16,8 @@ MonoBehaviour:
   edgeCheckDistance: 1
   groundCheckDepth: 2
   wallCheckDistance: 0.7
+  wallCheckHeight: 0.1
+  wallCheckBoxSize: {x: 0.1, y: 0.2}
   groundMask:
     serializedVersion: 2
     m_Bits: 64

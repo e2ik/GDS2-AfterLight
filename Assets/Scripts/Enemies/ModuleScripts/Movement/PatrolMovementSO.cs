@@ -11,6 +11,9 @@ namespace Enemies.ModuleScripts
         [SerializeField] private float edgeCheckDistance = 0.5f;
         [SerializeField] private float groundCheckDepth = 1f;
         [SerializeField] private float wallCheckDistance = 0.3f;
+        [SerializeField] private float wallCheckHeight = 0.1f;
+        [SerializeField] private Vector2 wallCheckBoxSize = new Vector2(0.1f, 0.2f);
+
         [SerializeField] private LayerMask groundMask;
 
         private readonly Dictionary<Transform, Collider2D> hitBoxCache = new();
@@ -53,9 +56,9 @@ namespace Enemies.ModuleScripts
 
         Bounds bounds = hurtBox.bounds;
 
-        // edge of the collider in the facing direction
         float edgeX = dir > 0 ? bounds.max.x : bounds.min.x;
-        Vector2 edgeOrigin = new Vector2(edgeX, bounds.center.y);
+        float edgeY = bounds.min.y + wallCheckHeight;
+        Vector2 edgeOrigin = new Vector2(edgeX, edgeY);
 
         bool wallHit = Physics2D.Raycast(edgeOrigin, castDir, wallCheckDistance, mask);
         Debug.DrawRay(edgeOrigin, castDir * wallCheckDistance, wallHit ? Color.green : Color.red);

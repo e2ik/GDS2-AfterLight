@@ -40,6 +40,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] [Range(0.1f, 1f)] private float backDashMultiplier = 0.5f;
     [SerializeField] private float dashDuration = 0.2f;
     [SerializeField] private float dashCoolDown = 0.2f;
+    [SerializeField] private float dashSkillEnergyCost = 0.1f;
 
     [Header("Knockback Settings")]
     [SerializeField] private LayerMask hazardousLayers;
@@ -387,9 +388,12 @@ public class PlayerController : MonoBehaviour
             if (isBouncing) return;
             if (combat.IsChargeInputHeld) return;
             if (combat.IsSkilling) return;
+            if (combat.SkillMeter <= 0f) return;
             if (combat.IsParrying) combat.CancelParry();
             if (IsMovementFrozen) return;
             if (combat.IsAttacking) combat.ForceCancelAttack();
+
+            combat.ChargeSkillMeter(-dashSkillEnergyCost);
 
             isDashing = true;
             isDashLocked = false;

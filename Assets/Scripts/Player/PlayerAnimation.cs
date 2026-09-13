@@ -71,7 +71,18 @@ public class PlayerAnimation : MonoBehaviour
     private void LateUpdate()
     {
         if (player == null || rb == null) return;
+
         UpdateAnimationParameters();
+
+        if (player.Stats.IsDead)
+        {
+            if (wallSlideParticleSystem != null)
+                wallSlideParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            if (skillChargeParticleSystem != null)
+                skillChargeParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            return;
+        }
+
         HandleSkillAnimation();
         HandleInvulnerabilityVisuals();
         HandleWallSlideVisuals();
@@ -85,13 +96,27 @@ public class PlayerAnimation : MonoBehaviour
 
         if (isDead)
         {
-            if (!wasDeadLastFrame)
-            {
-                animator.SetFloat(SpeedHash, 0f);
-                animator.SetFloat(YVelocityHash, 0f);
-                animator.SetBool(IsGroundedHash, true);
-                animator.SetBool(IsAboutToLandHash, false);
-            }
+            animator.SetFloat(SpeedHash, 0f);
+            animator.SetFloat(YVelocityHash, 0f);
+            animator.SetBool(IsGroundedHash, true);
+            animator.SetBool(IsAboutToLandHash, false);
+
+            animator.SetBool(IsWallSlidingHash, false);
+            animator.SetBool(IsDashingHash, false);
+            animator.SetBool(IsDirectionalDashHash, false);
+            animator.SetBool(IsBouncingHash, false);
+
+            animator.SetBool(IsChargingSkillHash, false);
+            animator.SetFloat(ChargeProgressHash, 0f);
+
+            animator.SetBool(IsParryingHash, false);
+            animator.SetBool(IsParrySuccessHash, false);
+
+            animator.SetBool(IsAttackingHash, false);
+            animator.SetInteger(AttackIndexHash, 0);
+            animator.SetBool(IsSkillingHash, false);
+            animator.SetBool(IsPlungingHash, false);
+
             wasDeadLastFrame = true;
             return;
         }
