@@ -41,6 +41,7 @@ namespace GameUI
             openWindows.Push(window);
             window.transform.SetAsLastSibling();
             window.HandleOpened();
+            UISFX.PlayOpen();
 
             if (wasEmpty && window.BlocksPlayerInput) { Time.timeScale = 0f; }
         }
@@ -57,6 +58,7 @@ namespace GameUI
 
             openWindows.Pop();
             window.HandleClosed();
+            UISFX.PlayClose();
 
             if (openWindows.Count == 0)
             {

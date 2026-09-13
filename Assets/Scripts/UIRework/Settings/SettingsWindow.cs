@@ -28,8 +28,8 @@ namespace GameUI
             backButton.onClick.AddListener(HandleBackClicked);
             masterVolumeSlider.onValueChanged.AddListener(HandleMasterVolumeChanged);
 
-            audioTabButton.onClick.AddListener(ShowAudioTab);
-            controlsTabButton.onClick.AddListener(ShowControlsTab);
+            audioTabButton.onClick.AddListener(HandleAudioTabClicked);
+            controlsTabButton.onClick.AddListener(HandleControlsTabClicked);
         }
 
         protected override void OnWindowOpened()
@@ -54,6 +54,22 @@ namespace GameUI
 
         private void HandleMasterVolumeChanged(float value) => masterBus.setVolume(value);
 
-        private void HandleBackClicked() => UIManager.Instance.Close(this);
+        private void HandleAudioTabClicked()
+        {
+            UISFX.PlayClick();
+            ShowAudioTab();
+        }
+
+        private void HandleControlsTabClicked()
+        {
+            UISFX.PlayClick();
+            ShowControlsTab();
+        }
+
+        private void HandleBackClicked()
+        {
+            UISFX.PlayClick();
+            UIManager.Instance.Close(this);
+        }
     }
 }

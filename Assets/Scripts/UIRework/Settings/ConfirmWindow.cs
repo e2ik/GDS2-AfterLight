@@ -33,12 +33,14 @@ namespace GameUI
 
         private void HandleConfirmClicked()
         {
+            UISFX.PlayClick();
             UIManager.Instance.Close(this);
             onConfirm?.Invoke();
         }
 
         private void HandleCancelClicked()
         {
+            UISFX.PlayClick();
             UIManager.Instance.Close(this);
             onCancel?.Invoke();
         }
