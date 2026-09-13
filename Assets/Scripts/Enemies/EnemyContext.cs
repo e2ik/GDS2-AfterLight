@@ -32,5 +32,8 @@ namespace Enemies
         public bool TargetVisible;
         public bool TargetInRange;
         public Vector2 TargetPosition;
+        public float TimeSinceTargetSeen;
+        public Vector2 LastKnownTargetPosition;
+        public float AttackElapsed;
     }
 }

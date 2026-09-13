@@ -99,10 +99,15 @@ namespace Enemies
             bool isTargetingPlayer = Context.TargetVisible;
             if (isTargetingPlayer != wasTargetingPlayer)
             {
-                if(isTargetingPlayer) 
+                if(isTargetingPlayer)
+                {
                     EnemyCombatTracker.EnemyStartedTargeting(this);
+                    // can spawn aggro here
+                    PSpawner.Spawn("Aggro", transform.position);
+                }
                 else
                     EnemyCombatTracker.EnemyStoppedTargeting(this);
+                    // can spawn deaggro here
 
                 wasTargetingPlayer = isTargetingPlayer;
             }
@@ -115,13 +120,12 @@ namespace Enemies
             attackCooldownTimer = Mathf.Max(0, attackCooldownTimer - Time.deltaTime);
             staggerImmunityTimer = Mathf.Max(0, staggerImmunityTimer - Time.deltaTime);
 
-            bool attackReady = false;
-
+            bool attackReady = IsAttacking;
 
             foreach (AttackInstance attack in attacks)
             {
                 attack.Tick(Context, Time.deltaTime);
-                if (attackCooldownTimer <= 0 && !IsAttacking && Context.CanReachTarget && attack.IsValid)
+                if (!IsAttacking && attackCooldownTimer <= 0 && Context.CanReachTarget && attack.IsValid)
                     attackReady = true;
             }
 
@@ -163,6 +167,7 @@ namespace Enemies
         {
             IsAttacking = true;
             Context.IsAttacking = true;
+            Context.Body.linearVelocity = Vector2.zero;
         }
 
         public void MarkAttackEnded()
