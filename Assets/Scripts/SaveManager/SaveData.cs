@@ -42,6 +42,7 @@ public class ProgressSaveData
     public string lastVisitedSceneName;
     public string lastSpawnAnchorID;
     public AreaSide lastAreaSide = AreaSide.Exterior;
+    public string lastInteractedFastTravelID;
 }
 
 [System.Serializable]

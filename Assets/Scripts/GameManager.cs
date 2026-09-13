@@ -262,6 +262,19 @@ public class GameManager : MonoBehaviour
         SetAreaSide(savedSide);
         ApplyAreaSide(savedSide);
 
+        if (data.progress != null && !string.IsNullOrEmpty(data.progress.lastInteractedFastTravelID))
+        {
+            FastTravelNodeSO lastNode = FastTravelNodeResolver.GetByID(data.progress.lastInteractedFastTravelID);
+            if (lastNode != null)
+            {
+                FastTravelManager.Instance?.SetLastInteractedNode(lastNode);
+            }
+            else
+            {
+                Debug.LogWarning($"[GameManager] Could not resolve saved fast travel node ID '{data.progress.lastInteractedFastTravelID}'.");
+            }
+        }
+
         if (worldMapState != null && data.progress != null && data.progress.unlockedFastTravelIDs != null)
         {
             worldMapState.LoadFromSaveIDs(data.progress.unlockedFastTravelIDs);

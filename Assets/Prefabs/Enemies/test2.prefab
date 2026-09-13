@@ -250,11 +250,11 @@ MonoBehaviour:
   attacks:
   - Attack: {fileID: 11400000, guid: 7411ed713c0ca1942bc732a7dc39d2de, type: 2}
     Weight: 70
-    leashMultiplier: 1.2
+    leashMultiplier: 0
     maxDuration: 3
   - Attack: {fileID: 11400000, guid: 751f14cc21839bf458d141af3c78dca3, type: 2}
     Weight: 30
-    leashMultiplier: 1.2
+    leashMultiplier: 0
     maxDuration: 3
   lootTable: {fileID: 11400000, guid: 567a4ae1129c3c74b9bcb59707e14432, type: 2}
   behaviorAgent: {fileID: 7603609893098896341}
@@ -363,8 +363,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.1543045, y: 0.20642161}
-  m_Size: {x: 2.2514076, y: 3.9317794}
+  m_Offset: {x: 0.31871605, y: 0.20642161}
+  m_Size: {x: 3.1974487, y: 3.9317794}
   m_Direction: 0
 --- !u!1 &5835482462216775301
 GameObject:

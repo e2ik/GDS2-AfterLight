@@ -32,6 +32,16 @@ public class FastTravelManager : MonoBehaviour
 
         lastVisitedNode = node;
         lastVisitedSide = sideAtInteract;
+
+        if (SaveManager.Instance != null)
+        {
+            var saveData = SaveManager.Instance.GetSaveData();
+            if (saveData?.progress != null)
+            {
+                saveData.progress.lastInteractedFastTravelID = node.nodeID;
+                saveData.progress.lastAreaSide = sideAtInteract;
+            }
+        }
     }
 
     public void TravelTo(FastTravelNodeSO node)
