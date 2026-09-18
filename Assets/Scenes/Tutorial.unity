@@ -2221,7 +2221,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 359096b6fa27c3b40a4527735bf9c9f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialTriggerVolume
+  uiMode: 2
   sequence: {fileID: 11400000, guid: 56e8a04fccadc4743824e38a3610a420, type: 2}
+  speechBubbleText: Where am I....
+  speechBubbleDuration: 3
   disableAfterTriggering: 1
 --- !u!212 &250873779
 SpriteRenderer:
@@ -14668,7 +14671,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 359096b6fa27c3b40a4527735bf9c9f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialTriggerVolume
+  uiMode: 0
   sequence: {fileID: 11400000, guid: a66b957c9b8d8174ba828cbc11375297, type: 2}
+  speechBubbleText: 
+  speechBubbleDuration: 3
   disableAfterTriggering: 1
 --- !u!212 &731070165
 SpriteRenderer:
