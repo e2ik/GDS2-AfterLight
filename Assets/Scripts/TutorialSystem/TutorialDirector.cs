@@ -63,7 +63,13 @@ namespace Tutorial
         public bool BeginSequence(TutorialSequenceDefinition sequence, bool force = false)
         {
             if (sequence == null || sequence.Steps == null || sequence.Steps.Length == 0) return false;
-            if (IsRunningSequence) return false;
+
+            if (IsRunningSequence)
+            {
+                if (activeSequence == sequence) return false;
+                AbortActiveSequence();
+            }
+
             if (!force && !sequence.CanRepeat && IsSequenceCompleted(sequence.SequenceID)) return false;
 
             sequenceRoutine = StartCoroutine(RunSequence(sequence));

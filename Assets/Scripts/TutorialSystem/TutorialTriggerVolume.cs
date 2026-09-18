@@ -18,6 +18,9 @@ namespace Tutorial
 
         [SerializeField] private TutorialSequenceDefinition sequence;
 
+        [Tooltip("If > 0, aborts the active sequence once the player moves this far from the volume. 0 = disabled.")]
+        [SerializeField] private float maxDistanceFromPlayer = 0f;
+
         [TextArea(2, 4)]
         [SerializeField] private string speechBubbleText;
         [SerializeField] private float speechBubbleDuration = 3f;
@@ -84,6 +87,23 @@ namespace Tutorial
         private void HandleSequenceCompleted(TutorialSequenceDefinition finishedSequence)
         {
             if (finishedSequence == sequence) sequenceActiveFromThisVolume = false;
+        }
+
+        private void Update()
+        {
+            if (!sequenceActiveFromThisVolume || maxDistanceFromPlayer <= 0f) return;
+
+            Transform player = GameManager.Instance != null && GameManager.Instance.Player != null
+                ? GameManager.Instance.Player.transform
+                : null;
+            if (player == null) return;
+
+            float sqrDistance = (player.position - transform.position).sqrMagnitude;
+            if (sqrDistance > maxDistanceFromPlayer * maxDistanceFromPlayer)
+            {
+                TutorialDirector.Instance?.AbortActiveSequence();
+                sequenceActiveFromThisVolume = false;
+            }
         }
 
         private void OnTriggerEnter2D(Collider2D other)

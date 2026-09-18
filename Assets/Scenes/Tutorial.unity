@@ -2224,9 +2224,9 @@ MonoBehaviour:
   uiMode: 2
   triggerID: 
   sequence: {fileID: 11400000, guid: 56e8a04fccadc4743824e38a3610a420, type: 2}
+  maxDistanceFromPlayer: 0
   speechBubbleText: Where am I....
   speechBubbleDuration: 3
-  disableAfterTriggering: 1
 --- !u!212 &250873779
 SpriteRenderer:
   serializedVersion: 2
@@ -14675,9 +14675,9 @@ MonoBehaviour:
   uiMode: 0
   triggerID: 
   sequence: {fileID: 11400000, guid: a66b957c9b8d8174ba828cbc11375297, type: 2}
+  maxDistanceFromPlayer: 5
   speechBubbleText: 
   speechBubbleDuration: 3
-  disableAfterTriggering: 1
 --- !u!212 &731070165
 SpriteRenderer:
   serializedVersion: 2
