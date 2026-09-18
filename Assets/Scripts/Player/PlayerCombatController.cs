@@ -138,6 +138,7 @@ public class PlayerCombatController : MonoBehaviour
     }
 
     public event Action<float, float> OnEnergyChanged;
+    public event Action OnParrySuccess;
 
     private void RaiseEnergyChanged() => OnEnergyChanged?.Invoke(SkillMeter, 1f);
 
@@ -356,6 +357,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void OnSuccessfulParry()
     {
+        OnParrySuccess?.Invoke();
         player.Animation.FlashGreenOnParrySuccess();
         CancelParry();
         AudioManager.PlaySFX(parryEvent, transform.position);

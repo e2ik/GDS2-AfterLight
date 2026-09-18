@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using UnityEngine;
+using Tutorial;
 
 public class SaveManager : MonoBehaviour
 {
@@ -53,6 +54,9 @@ public class SaveManager : MonoBehaviour
             _currentSaveData.equippedSecondaryGem = player.Equipment.SecondaryGem;
             _currentSaveData.equippedWeapon = player.Equipment.EquippedWeapon;
         }
+        
+        if (TutorialDirector.Instance != null)
+            _currentSaveData.progress.completedTutorialSequenceIDs = TutorialDirector.Instance.GetCompletedSequencesForSave();
 
         try
         {
@@ -104,6 +108,8 @@ public class SaveManager : MonoBehaviour
         if (_currentSaveData.inventoryData == null) _currentSaveData.inventoryData = new InventorySaveData();
         if (_currentSaveData.equippedGear == null) 
             _currentSaveData.equippedGear = new System.Collections.Generic.List<EquippedGearSaveData>();
+        if (_currentSaveData.progress.completedTutorialSequenceIDs == null)
+            _currentSaveData.progress.completedTutorialSequenceIDs = new System.Collections.Generic.List<string>();
     }
 
     public void SaveProgressAtLocation(string sceneName, string anchorID, AreaSide side)

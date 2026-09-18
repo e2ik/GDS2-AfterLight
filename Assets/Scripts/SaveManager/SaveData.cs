@@ -43,6 +43,7 @@ public class ProgressSaveData
     public string lastSpawnAnchorID;
     public AreaSide lastAreaSide = AreaSide.Exterior;
     public string lastInteractedFastTravelID;
+    public List<string> completedTutorialSequenceIDs = new List<string>();
 }
 
 [System.Serializable]
