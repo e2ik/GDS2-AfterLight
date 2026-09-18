@@ -9,6 +9,8 @@ namespace Tutorial
         [SerializeField] private UIWindowAnimator windowAnimator;
         [SerializeField] private TMP_Text promptLabel;
         [SerializeField] private Button continueButton;
+        [Tooltip("The RectTransform with the Content Size Fitter (usually promptLabel's parent panel). Auto-detected if left empty.")]
+        [SerializeField] private RectTransform layoutRoot;
 
         private bool subscribed;
 
@@ -16,6 +18,8 @@ namespace Tutorial
         {
             if (continueButton != null)
                 continueButton.onClick.AddListener(HandleContinueClicked);
+
+            if (layoutRoot == null && promptLabel != null) layoutRoot = promptLabel.transform.parent as RectTransform;
 
             windowAnimator?.InstantHide();
         }
@@ -47,6 +51,7 @@ namespace Tutorial
         private void HandleStepBegan(TutorialStepDefinition step)
         {
             if (promptLabel != null) promptLabel.text = step.PromptText;
+            if (layoutRoot != null) LayoutRebuilder.ForceRebuildLayoutImmediate(layoutRoot);
 
             bool needsContinueButton = step.ConditionType == TutorialStepConditionType.Prompt;
             if (continueButton != null) continueButton.gameObject.SetActive(needsContinueButton);

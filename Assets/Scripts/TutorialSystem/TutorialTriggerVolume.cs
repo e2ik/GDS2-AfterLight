@@ -14,31 +14,93 @@ namespace Tutorial
     {
         [SerializeField] private TutorialTriggerUIMode uiMode = TutorialTriggerUIMode.TutorialUI;
 
-        [Header("Tutorial UI — sequence-driven, step-tracked, save-gated")]
+        [SerializeField] private string triggerID;
+
         [SerializeField] private TutorialSequenceDefinition sequence;
 
-        [Header("Speech Bubble — standalone flavor text, not save-gated")]
         [TextArea(2, 4)]
         [SerializeField] private string speechBubbleText;
         [SerializeField] private float speechBubbleDuration = 3f;
 
-        [SerializeField] private bool disableAfterTriggering = true;
+        private bool sequenceActiveFromThisVolume;
+
+        private string ResolvedGateID
+        {
+            get
+            {
+                if (uiMode == TutorialTriggerUIMode.SpeechBubble)
+                    return string.IsNullOrEmpty(triggerID) ? null : triggerID;
+
+                return sequence != null ? sequence.SequenceID : null;
+            }
+        }
 
         private void Reset()
         {
             if (TryGetComponent(out Collider2D col)) col.isTrigger = true;
+            if (string.IsNullOrEmpty(triggerID)) triggerID = System.Guid.NewGuid().ToString("N");
+        }
+
+        [ContextMenu("Regenerate Trigger ID")]
+        private void RegenerateTriggerID() => triggerID = System.Guid.NewGuid().ToString("N");
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (uiMode != TutorialTriggerUIMode.SpeechBubble || string.IsNullOrEmpty(triggerID)) return;
+
+            var all = FindObjectsByType<TutorialTriggerVolume>(FindObjectsSortMode.None);
+            foreach (var other in all)
+            {
+                if (other != this && other.triggerID == triggerID)
+                {
+                    Debug.LogWarning(
+                        $"[TutorialTriggerVolume] '{name}' shares triggerID '{triggerID}' with '{other.name}'.",
+                        this);
+                    break;
+                }
+            }
+        }
+#endif
+
+        private void OnEnable()
+        {
+            if (TutorialDirector.Instance != null)
+                TutorialDirector.Instance.OnSequenceCompleted += HandleSequenceCompleted;
+        }
+
+        private void OnDisable()
+        {
+            if (TutorialDirector.Instance != null)
+            {
+                TutorialDirector.Instance.OnSequenceCompleted -= HandleSequenceCompleted;
+
+                if (sequenceActiveFromThisVolume)
+                    TutorialDirector.Instance.AbortActiveSequence();
+            }
+            sequenceActiveFromThisVolume = false;
+        }
+
+        private void HandleSequenceCompleted(TutorialSequenceDefinition finishedSequence)
+        {
+            if (finishedSequence == sequence) sequenceActiveFromThisVolume = false;
         }
 
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (!other.CompareTag("Player")) return;
 
-            bool triggeredSomething = false;
+            string gateID = ResolvedGateID;
+            if (!string.IsNullOrEmpty(gateID) && TutorialDirector.Instance != null && TutorialDirector.Instance.IsSequenceCompleted(gateID))
+                return;
 
             if (uiMode == TutorialTriggerUIMode.TutorialUI || uiMode == TutorialTriggerUIMode.Both)
             {
                 if (TutorialDirector.Instance != null && sequence != null)
-                    triggeredSomething |= TutorialDirector.Instance.BeginSequence(sequence);
+                {
+                    bool started = TutorialDirector.Instance.BeginSequence(sequence);
+                    if (started) sequenceActiveFromThisVolume = true;
+                }
             }
 
             if (uiMode == TutorialTriggerUIMode.SpeechBubble || uiMode == TutorialTriggerUIMode.Both)
@@ -50,11 +112,11 @@ namespace Tutorial
                         : other.transform;
 
                     TutorialSpeechBubblePool.Instance.Show(speechBubbleText, followTarget, speechBubbleDuration);
-                    triggeredSomething = true;
+
+                    if (uiMode == TutorialTriggerUIMode.SpeechBubble && !string.IsNullOrEmpty(gateID))
+                        TutorialDirector.Instance?.MarkCompleted(gateID);
                 }
             }
-
-            if (triggeredSomething && disableAfterTriggering) gameObject.SetActive(false);
         }
     }
 }

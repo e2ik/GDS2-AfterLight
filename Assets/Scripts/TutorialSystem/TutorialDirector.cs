@@ -9,7 +9,6 @@ namespace Tutorial
     {
         public static TutorialDirector Instance { get; private set; }
 
-        // UI subscriptions
         public event Action<TutorialSequenceDefinition> OnSequenceBegan;
         public event Action<TutorialSequenceDefinition> OnSequenceCompleted;
         public event Action<TutorialStepDefinition> OnStepBegan;
@@ -45,6 +44,11 @@ namespace Tutorial
 
         public bool IsSequenceCompleted(string sequenceID) => completedSequenceIDs.Contains(sequenceID);
 
+        public void MarkCompleted(string id)
+        {
+            if (!string.IsNullOrEmpty(id)) completedSequenceIDs.Add(id);
+        }
+
         public void LoadCompletedSequences(IEnumerable<string> ids)
         {
             completedSequenceIDs.Clear();
@@ -53,7 +57,9 @@ namespace Tutorial
         }
 
         public List<string> GetCompletedSequencesForSave() => new(completedSequenceIDs);
+
         public void ClearCompletedSequences() => completedSequenceIDs.Clear();
+
         public bool BeginSequence(TutorialSequenceDefinition sequence, bool force = false)
         {
             if (sequence == null || sequence.Steps == null || sequence.Steps.Length == 0) return false;
@@ -68,9 +74,30 @@ namespace Tutorial
         {
             if (!IsRunningSequence) return;
             if (sequenceRoutine != null) StopCoroutine(sequenceRoutine);
-            activeEvaluator?.End();
+            EndActiveStepAbruptly();
             SetCutsceneState(false, false);
-            FinishSequence(activeSequence);
+            FinishSequence(activeSequence, markCompleted: true);
+        }
+
+        public void AbortActiveSequence()
+        {
+            if (!IsRunningSequence) return;
+            if (sequenceRoutine != null) StopCoroutine(sequenceRoutine);
+            EndActiveStepAbruptly();
+            SetCutsceneState(false, false);
+            FinishSequence(activeSequence, markCompleted: false);
+        }
+
+        private void EndActiveStepAbruptly()
+        {
+            activeEvaluator?.End();
+            activeEvaluator = null;
+
+            if (activeStep != null)
+            {
+                OnStepEnded?.Invoke(activeStep);
+                activeStep = null;
+            }
         }
 
         public void NotifyPlayerContinued() => PlayerContinued?.Invoke();
@@ -88,7 +115,7 @@ namespace Tutorial
                 yield return RunStep(step, player);
             }
 
-            FinishSequence(sequence);
+            FinishSequence(sequence, markCompleted: true);
         }
 
         private IEnumerator RunStep(TutorialStepDefinition step, Player player)
@@ -123,9 +150,9 @@ namespace Tutorial
             activeStep = null;
         }
 
-        private void FinishSequence(TutorialSequenceDefinition sequence)
+        private void FinishSequence(TutorialSequenceDefinition sequence, bool markCompleted)
         {
-            if (sequence != null && !sequence.CanRepeat) completedSequenceIDs.Add(sequence.SequenceID);
+            if (markCompleted && sequence != null && !sequence.CanRepeat) completedSequenceIDs.Add(sequence.SequenceID);
             activeSequence = null;
             sequenceRoutine = null;
             OnSequenceCompleted?.Invoke(sequence);
