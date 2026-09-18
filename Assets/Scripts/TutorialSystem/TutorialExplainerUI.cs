@@ -6,16 +6,18 @@ namespace Tutorial
 {
     public class TutorialExplainerUI : MonoBehaviour
     {
-        [SerializeField] private GameObject panelRoot;
+        [SerializeField] private UIWindowAnimator windowAnimator;
         [SerializeField] private TMP_Text promptLabel;
         [SerializeField] private Button continueButton;
+
+        private bool subscribed;
 
         private void Awake()
         {
             if (continueButton != null)
                 continueButton.onClick.AddListener(HandleContinueClicked);
 
-            SetPanelVisible(false);
+            windowAnimator?.InstantHide();
         }
 
         private void OnEnable() => TrySubscribe();
@@ -25,8 +27,6 @@ namespace Tutorial
         {
             TrySubscribe();
         }
-
-        private bool subscribed;
 
         private void TrySubscribe()
         {
@@ -51,16 +51,11 @@ namespace Tutorial
             bool needsContinueButton = step.ConditionType == TutorialStepConditionType.Prompt;
             if (continueButton != null) continueButton.gameObject.SetActive(needsContinueButton);
 
-            SetPanelVisible(true);
+            windowAnimator?.Show(freezeplayer: false);
         }
 
-        private void HandleStepEnded(TutorialStepDefinition step) => SetPanelVisible(false);
+        private void HandleStepEnded(TutorialStepDefinition step) => windowAnimator?.Hide();
 
         private void HandleContinueClicked() => TutorialDirector.Instance?.NotifyPlayerContinued();
-
-        private void SetPanelVisible(bool visible)
-        {
-            if (panelRoot != null) panelRoot.SetActive(visible);
-        }
     }
 }
