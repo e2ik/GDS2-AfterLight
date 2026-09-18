@@ -119,7 +119,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     else equip.EquipSecondaryGem(gem);
                 };
 
-                return new SlotContext(def.UISprite, def.UIName, GetGemStatsTooltip(gem), isEquipped, toggle, gem.Rarity);
+                SecondaryGemInstance equippedGemForCompare = (!isEquipped && equip != null && !equip.IsSecondaryGemSlotEmpty()) ? equip.SecondaryGem : null;
+                return new SlotContext(def.UISprite, def.UIName, ItemTooltipTextBuilder.BuildSecondaryGemTooltip(gem, equippedGemForCompare), isEquipped, toggle, gem.Rarity);
             }
 
             case GearInstance gear when !string.IsNullOrEmpty(gear.InstTemplateID):
@@ -135,7 +136,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     else equip.EquipGear(def.Slot, gear);
                 };
 
-                return new SlotContext(def.UISprite, def.UIName, GetGearStatsTooltip(gear, def.Slot.ToString()), isEquipped, toggle, gear.Rarity);
+                GearInstance equippedGearForCompare = (!isEquipped && equip != null) ? equip.GetEquippedGear(def.Slot) : null;
+                return new SlotContext(def.UISprite, def.UIName, ItemTooltipTextBuilder.BuildGearTooltip(gear, def.Slot.ToString(), equippedGearForCompare), isEquipped, toggle, gear.Rarity);
             }
 
             case PrimaryGemInstance primary when !string.IsNullOrEmpty(primary.InstTemplateID):
@@ -152,7 +154,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                 };
 
                 // Primary gems don't roll rarity — border stays default.
-                return new SlotContext(def.UISprite, def.UIName, def.GemAttackDescription, isEquipped, toggle, null);
+                return new SlotContext(def.UISprite, def.UIName, ItemTooltipTextBuilder.BuildPrimaryGemTooltip(def), isEquipped, toggle, null);
             }
 
             case WeaponInstance weapon when !string.IsNullOrEmpty(weapon.InstTemplateID):
@@ -169,7 +171,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     if (!equip.IsWeaponEquipped(weapon)) equip.EquipWeapon(weapon);
                 };
 
-                return new SlotContext(def.UISprite, def.UIName, GetWeaponStatsTooltip(weapon), isEquipped, toggle, weapon.Rarity);
+                WeaponInstance equippedWeaponForCompare = (!isEquipped && equip != null) ? equip.EquippedWeapon : null;
+                return new SlotContext(def.UISprite, def.UIName, ItemTooltipTextBuilder.BuildWeaponTooltip(weapon, equippedWeaponForCompare), isEquipped, toggle, weapon.Rarity);
             }
 
             default:
@@ -280,63 +283,6 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
 
         ItemTooltip.Instance.ShowTooltip(ctx.Value.Name, ctx.Value.TooltipBody);
-    }
-
-    private static string Colorize(string text, ERarity rarity)
-    {
-        Color color = GameManager.Instance != null
-            ? GameManager.Instance.GetRarityColor(rarity)
-            : Color.white;
-
-        return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{text}</color>";
-    }
-
-    private string GetGearStatsTooltip(GearInstance gear, string slotName)
-    {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine($"Slot: {slotName}");
-        sb.AppendLine(Colorize($"Rarity: {gear.Rarity}", gear.Rarity));
-
-        int attack = (int)gear.InstBonusAttack;
-        int defense = (int)gear.InstBonusDefense;
-        int humanity = (int)gear.InstBonusHumanity;
-        float crit = gear.InstBonusCrit;
-
-        if (attack > 0) sb.AppendLine($"Attack: +{attack}");
-        if (defense > 0) sb.AppendLine($"Defense: +{defense}");
-        if (humanity > 0) sb.AppendLine($"Humanity: +{humanity}");
-        if (crit > 0) sb.AppendLine($"Crit: +{crit * 100f:F1}%");
-
-        return sb.ToString().TrimEnd();
-    }
-
-    private string GetGemStatsTooltip(SecondaryGemInstance gem)
-    {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine("Type: Secondary Gem");
-        sb.AppendLine(Colorize($"Rarity: {gem.Rarity}", gem.Rarity));
-
-        int damageBonus = gem.InstRolledDamageValue;
-        int critBonus = gem.InstRolledCritValue;
-        int dotPercent = gem.InstRolledDotPercent;
-
-        if (damageBonus > 0) sb.AppendLine($"Bonus Damage: +{damageBonus}");
-        if (critBonus > 0) sb.AppendLine($"Bonus Crit: +{critBonus}%");
-        if (dotPercent > 0) sb.AppendLine($"Bleed: {dotPercent}% of hit damage over time");
-
-        return sb.ToString().TrimEnd();
-    }
-
-    private string GetWeaponStatsTooltip(WeaponInstance weapon)
-    {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine(Colorize($"Rarity: {weapon.Rarity}", weapon.Rarity));
-
-        if (weapon.InstRolledDamage > 0) sb.AppendLine($"Damage: {weapon.InstRolledDamage:F1}");
-        if (weapon.InstRolledRange > 0) sb.AppendLine($"Range: {weapon.InstRolledRange:F1}");
-        if (weapon.InstRolledCrit > 0) sb.AppendLine($"Crit: {weapon.InstRolledCrit * 100f:F1}%");
-
-        return sb.ToString().TrimEnd();
     }
 
     #endregion
