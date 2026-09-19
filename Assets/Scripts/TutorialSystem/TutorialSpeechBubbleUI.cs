@@ -45,6 +45,8 @@ namespace Tutorial
             if (logDiagnostics && canvasRect == null)
                 Debug.LogWarning("[TutorialSpeechBubbleUI] No Canvas found in parents — this object needs to be a child of a Canvas.", this);
 
+            TutorialDirector.Instance?.RegisterExcludedWindow(windowAnimator);
+
             windowAnimator?.InstantHide();
         }
 

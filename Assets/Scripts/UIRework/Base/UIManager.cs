@@ -31,6 +31,8 @@ namespace GameUI
             InputRebindSaver.Load(actionAsset);
         }
 
+        public bool IsTopmost(UIWindow window) => openWindows.Count > 0 && openWindows.Peek() == window;
+
         public void Open(UIWindow window)
         {
             if (window == null || window.IsOpen) { return; }

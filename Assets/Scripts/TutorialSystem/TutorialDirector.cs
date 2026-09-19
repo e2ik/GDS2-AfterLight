@@ -15,15 +15,17 @@ namespace Tutorial
         public event Action<TutorialStepDefinition> OnStepEnded;
         public event Action OnCutsceneEntered;
         public event Action OnCutsceneExited;
-
         public event Action PlayerContinued;
 
         private readonly HashSet<string> completedSequenceIDs = new();
+        private readonly HashSet<UIWindowAnimator> excludedWindows = new();
+        private readonly Dictionary<string, int> resumeIndices = new();
 
         private TutorialSequenceDefinition activeSequence;
         private TutorialStepDefinition activeStep;
         private ITutorialStepEvaluator activeEvaluator;
         private Coroutine sequenceRoutine;
+        private int activeStepIndex;
 
         private bool cutsceneMovementLocked;
         private bool cutsceneInputLocked;
@@ -40,6 +42,24 @@ namespace Tutorial
             }
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            UIWindowAnimator.OnAnyShown += HandleAnyWindowShown;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this) UIWindowAnimator.OnAnyShown -= HandleAnyWindowShown;
+        }
+
+        public void RegisterExcludedWindow(UIWindowAnimator window)
+        {
+            if (window != null) excludedWindows.Add(window);
+        }
+
+        private void HandleAnyWindowShown(UIWindowAnimator window)
+        {
+            if (excludedWindows.Contains(window)) return;
+            if (IsRunningSequence) AbortActiveSequence();
         }
 
         public bool IsSequenceCompleted(string sequenceID) => completedSequenceIDs.Contains(sequenceID);
@@ -58,7 +78,11 @@ namespace Tutorial
 
         public List<string> GetCompletedSequencesForSave() => new(completedSequenceIDs);
 
-        public void ClearCompletedSequences() => completedSequenceIDs.Clear();
+        public void ClearCompletedSequences()
+        {
+            completedSequenceIDs.Clear();
+            resumeIndices.Clear();
+        }
 
         public bool BeginSequence(TutorialSequenceDefinition sequence, bool force = false)
         {
@@ -72,7 +96,8 @@ namespace Tutorial
 
             if (!force && !sequence.CanRepeat && IsSequenceCompleted(sequence.SequenceID)) return false;
 
-            sequenceRoutine = StartCoroutine(RunSequence(sequence));
+            int startIndex = resumeIndices.TryGetValue(sequence.SequenceID, out int savedIndex) ? savedIndex : 0;
+            sequenceRoutine = StartCoroutine(RunSequence(sequence, startIndex));
             return true;
         }
 
@@ -91,6 +116,9 @@ namespace Tutorial
             if (sequenceRoutine != null) StopCoroutine(sequenceRoutine);
             EndActiveStepAbruptly();
             SetCutsceneState(false, false);
+
+            if (activeSequence != null) resumeIndices[activeSequence.SequenceID] = activeStepIndex;
+
             FinishSequence(activeSequence, markCompleted: false);
         }
 
@@ -108,16 +136,19 @@ namespace Tutorial
 
         public void NotifyPlayerContinued() => PlayerContinued?.Invoke();
 
-        private IEnumerator RunSequence(TutorialSequenceDefinition sequence)
+        private IEnumerator RunSequence(TutorialSequenceDefinition sequence, int startIndex)
         {
             activeSequence = sequence;
             OnSequenceBegan?.Invoke(sequence);
 
             Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
 
-            foreach (var step in sequence.Steps)
+            for (int i = startIndex; i < sequence.Steps.Length; i++)
             {
+                var step = sequence.Steps[i];
                 if (step == null) continue;
+
+                activeStepIndex = i;
                 yield return RunStep(step, player);
             }
 
@@ -158,7 +189,11 @@ namespace Tutorial
 
         private void FinishSequence(TutorialSequenceDefinition sequence, bool markCompleted)
         {
-            if (markCompleted && sequence != null && !sequence.CanRepeat) completedSequenceIDs.Add(sequence.SequenceID);
+            if (markCompleted)
+            {
+                if (sequence != null && !sequence.CanRepeat) completedSequenceIDs.Add(sequence.SequenceID);
+                if (sequence != null) resumeIndices.Remove(sequence.SequenceID);
+            }
             activeSequence = null;
             sequenceRoutine = null;
             OnSequenceCompleted?.Invoke(sequence);

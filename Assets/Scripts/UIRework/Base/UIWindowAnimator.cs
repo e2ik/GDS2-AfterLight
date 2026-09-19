@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -19,6 +20,8 @@ public enum Direction
 [RequireComponent(typeof(CanvasGroup))]
 public class UIWindowAnimator : MonoBehaviour
 {
+    public static event Action<UIWindowAnimator> OnAnyShown;
+
     [Header("Animation Settings")]
     [SerializeField] private UIAnimationType animationType = UIAnimationType.SlideAndFade;
     [SerializeField] private Direction slideFrom = Direction.Right;
@@ -31,8 +34,10 @@ public class UIWindowAnimator : MonoBehaviour
     private Vector2 targetPosition;
     private Coroutine activeAnimation;
     private bool isInitialized = false;
+    private float settledAtTime = float.NegativeInfinity;
 
     public bool IsAnimating => isActiveAndEnabled && activeAnimation != null && duration > 0f;
+    public float SecondsSinceSettled => IsAnimating ? 0f : Time.unscaledTime - settledAtTime;
 
     private void Awake()
     {
@@ -74,6 +79,8 @@ public class UIWindowAnimator : MonoBehaviour
 
     public void Show(bool freezeplayer = false)
     {
+        OnAnyShown?.Invoke(this);
+
         if (freezeplayer && GameManager.Instance?.Player?.Controller != null)
         {
             GameManager.Instance.Player.Controller.InputEnabled = false;
@@ -157,6 +164,7 @@ public class UIWindowAnimator : MonoBehaviour
             if (!keepActiveWhenHidden) { gameObject.SetActive(false); }
         }
 
+        settledAtTime = Time.unscaledTime;
         activeAnimation = null;
     }
 
