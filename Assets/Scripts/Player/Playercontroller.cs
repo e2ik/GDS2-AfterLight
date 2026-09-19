@@ -137,7 +137,9 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (CanMove()) Flip();
+        bool uiOpen = GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.HasOpenWindows;
+
+        if (!uiOpen && CanMove()) Flip();
         if (InputEnabled && !IsMovementFrozen) PerformInventoryAction();
     }
 

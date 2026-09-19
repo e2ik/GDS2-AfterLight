@@ -32,6 +32,8 @@ public class UIWindowAnimator : MonoBehaviour
     private Coroutine activeAnimation;
     private bool isInitialized = false;
 
+    public bool IsAnimating => isActiveAndEnabled && activeAnimation != null && duration > 0f;
+
     private void Awake()
     {
         EnsureInitialized();
@@ -93,11 +95,6 @@ public class UIWindowAnimator : MonoBehaviour
 
     public void Hide()
     {
-        if (GameManager.Instance?.Player?.Controller != null && !GameManager.Instance.Player.Controller.InputEnabled)
-        {
-            GameManager.Instance.Player.Controller.InputEnabled = true;
-        }
-
         EnsureInitialized();
 
         canvasGroup.blocksRaycasts = false;
@@ -152,9 +149,12 @@ public class UIWindowAnimator : MonoBehaviour
         rectTransform.anchoredPosition = endPos;
         canvasGroup.alpha = endAlpha;
 
-        if (!show && !keepActiveWhenHidden)
+        if (!show)
         {
-            gameObject.SetActive(false);
+            var controller = GameManager.Instance?.Player?.Controller;
+            if (controller != null) { controller.InputEnabled = true; }
+
+            if (!keepActiveWhenHidden) { gameObject.SetActive(false); }
         }
 
         activeAnimation = null;
