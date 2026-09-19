@@ -19,6 +19,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float friction = 0.2f;
     [SerializeField] private float passThroughPlatformDuration = 0.25f;
 
+    // controller specific thresholds
+    [SerializeField] private float verticalDeadzone = 0.3f;
+    [SerializeField] private float upIntentThreshold = 0.5f;
+    [SerializeField] private float downIntentThreshold = 0.7f;
+    public float VerticalInput => verticalInput;
+    public bool IsUpIntent { get; private set; }
+    public bool IsDownIntent { get; private set; }
+
     [Header("Gravity Settings")]
     [SerializeField] private float normGravity = 3f;
     [SerializeField] private float jumpGravity = 2.5f;
@@ -226,6 +234,7 @@ public class PlayerController : MonoBehaviour
     }
 
     public bool CanMove() => InputEnabled
+                             && !IsMovementFrozen
                              && !isWallJumping
                              && !isDashing
                              && !isStaggered
@@ -237,7 +246,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
-        if (IsMovementLockedBySkill || isStaggered) return;
+        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered) return;
 
         bool duringWallJump = isWallJumping && Mathf.Abs(horizontalInput) > InputDeadzone;
         if (!CanMove() && !duringWallJump) return;
@@ -591,8 +600,16 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputValue value)
     {
         Vector2 raw = value.Get<Vector2>();
-        verticalInput = raw.y;
-        horizontalInput = Mathf.Abs(raw.x) > InputDeadzone ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude) : 0f;
+
+        verticalInput = Mathf.Abs(raw.y) > verticalDeadzone ? raw.y : 0f;
+
+        bool verticalDominant = Mathf.Abs(raw.y) > Mathf.Abs(raw.x);
+        IsUpIntent = raw.y > upIntentThreshold && verticalDominant;
+        IsDownIntent = raw.y < -downIntentThreshold && verticalDominant;
+
+        horizontalInput = Mathf.Abs(raw.x) > InputDeadzone
+            ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude)
+            : 0f;
     }
 
     public void OnJump(InputValue value)

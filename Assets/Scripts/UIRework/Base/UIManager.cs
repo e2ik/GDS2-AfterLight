@@ -81,5 +81,20 @@ namespace GameUI
         {
             if (openWindows.Count > 0) { Close(openWindows.Peek()); }
         }
+        
+        public void CloseAll()
+        {
+            if (openWindows.Count == 0) { return; }
+
+            while (openWindows.Count > 0)
+            {
+                UIWindow window = openWindows.Pop();
+                window.HandleClosed();
+            }
+
+            UISFX.PlayClose();
+            Time.timeScale = 1f;
+            GameManager.Instance?.Player?.InteractionManager?.SetInteractionBlocked(false);
+        }
     }
 }

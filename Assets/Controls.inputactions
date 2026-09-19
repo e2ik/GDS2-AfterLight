@@ -64,7 +64,7 @@
                     "name": "Previous",
                     "type": "Button",
                     "id": "2776c80d-3c14-4091-8c56-d04ced07a2b0",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -392,7 +392,7 @@
                 {
                     "name": "",
                     "id": "8cbb2f4b-a784-49cc-8d5e-c010b8c7f4e6",
-                    "path": "<Gamepad>/leftTrigger",
+                    "path": "<Gamepad>/rightShoulder",
                     "interactions": "Press(behavior=2)",
                     "processors": "",
                     "groups": "Gamepad",
@@ -523,8 +523,8 @@
                 },
                 {
                     "name": "",
-                    "id": "1727bacc-62d9-44a7-af2a-5f2949d74cab",
-                    "path": "<Gamepad>/buttonEast",
+                    "id": "35a77eef-6917-4db4-ab2a-132e1c52139c",
+                    "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -546,7 +546,7 @@
                 {
                     "name": "",
                     "id": "92ab9dbe-ed2a-4d26-b966-272dd1414b55",
-                    "path": "<Gamepad>/select",
+                    "path": "<Gamepad>/dpad/right",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -579,7 +579,7 @@
                 {
                     "name": "",
                     "id": "a4b21bef-5a08-4fdf-8efb-69fc808380e9",
-                    "path": "<Gamepad>/leftShoulder",
+                    "path": "<Gamepad>/buttonEast",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -601,7 +601,7 @@
                 {
                     "name": "",
                     "id": "13bb6d5a-0321-47ea-9e89-f6339cf1d454",
-                    "path": "<Gamepad>/start",
+                    "path": "<DualShockGamepad>/start",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -613,6 +613,17 @@
                     "name": "",
                     "id": "81dc419e-e3e8-4e12-8c8d-9d2f735e92de",
                     "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8adaca39-37de-4605-b2b6-df8ca03e4fc5",
+                    "path": "<Gamepad>/select",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
