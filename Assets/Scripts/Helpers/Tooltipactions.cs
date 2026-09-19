@@ -47,6 +47,14 @@ public static class ItemActionFactory
         };
     }
 
+    public static SecondaryGemInstance GetComparableGem(SecondaryGemInstance gem, PlayerEquipmentManager equip)
+    {
+        if (gem == null || equip == null || equip.IsSecondaryGemSlotEmpty()) return null;
+        if (equip.IsGemEquipped(gem)) return null;
+
+        return equip.SecondaryGem;
+    }
+
     public static string BuildTooltipBody(object item)
     {
         if (item == null) return null;
@@ -61,7 +69,7 @@ public static class ItemActionFactory
         {
             case SecondaryGemInstance gem:
             {
-                SecondaryGemInstance compare = (!isEquipped && !equip.IsSecondaryGemSlotEmpty()) ? equip.SecondaryGem : null;
+                SecondaryGemInstance compare = GetComparableGem(gem, equip);
                 return ItemTooltipTextBuilder.BuildSecondaryGemTooltip(gem, compare);
             }
 

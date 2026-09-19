@@ -481,6 +481,15 @@ public class GameManager : MonoBehaviour
         {
             p.Equipment.ClearWeapon();
         }
+        
+        if (data.equippedPrimaryGemSaved)
+        {
+            p.Equipment.EquipSpecialAttackByID(data.equippedPrimaryGemID);
+        }
+        else
+        {
+            p.Equipment.ClearSpecialAttack();
+        }
     }
 
     private void ClearPlayerEquipment()

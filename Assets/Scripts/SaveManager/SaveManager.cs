@@ -43,6 +43,15 @@ public class SaveManager : MonoBehaviour
         CommitToDisk(); 
     }
 
+    private void WriteEquipmentToSaveData(PlayerEquipmentManager equipment)
+    {
+        _currentSaveData.equippedGear = equipment.GetEquippedGearSaveData();
+        _currentSaveData.equippedSecondaryGem = equipment.SecondaryGem;
+        _currentSaveData.equippedWeapon = equipment.EquippedWeapon;
+        _currentSaveData.equippedPrimaryGemID = equipment.GetEquippedPrimaryGemID();
+        _currentSaveData.equippedPrimaryGemSaved = true;
+    }
+
     public void CommitToDisk()
     {
         if (_currentSaveData == null) return;
@@ -50,9 +59,7 @@ public class SaveManager : MonoBehaviour
         Player player = FindFirstObjectByType<Player>();
         if (player != null && player.Equipment != null)
         {
-            _currentSaveData.equippedGear = player.Equipment.GetEquippedGearSaveData();
-            _currentSaveData.equippedSecondaryGem = player.Equipment.SecondaryGem;
-            _currentSaveData.equippedWeapon = player.Equipment.EquippedWeapon;
+            WriteEquipmentToSaveData(player.Equipment);
         }
         
         if (TutorialDirector.Instance != null)
@@ -129,14 +136,12 @@ public class SaveManager : MonoBehaviour
             if (player.Inventory != null)
                 _currentSaveData.inventoryData = player.Inventory.ToSaveData();
 
-if (player.Equipment != null)
-{
-    Debug.Log($"[SaveDebug] Player={player.GetInstanceID()} EquippedWeapon={(player.Equipment.EquippedWeapon != null ? player.Equipment.EquippedWeapon.InstTemplateID : "NULL")}");
+            if (player.Equipment != null)
+            {
+                Debug.Log($"[SaveDebug] Player={player.GetInstanceID()} EquippedWeapon={(player.Equipment.EquippedWeapon != null ? player.Equipment.EquippedWeapon.InstTemplateID : "NULL")}");
 
-    _currentSaveData.equippedGear = player.Equipment.GetEquippedGearSaveData();
-    _currentSaveData.equippedSecondaryGem = player.Equipment.SecondaryGem;
-    _currentSaveData.equippedWeapon = player.Equipment.EquippedWeapon;
-}
+                WriteEquipmentToSaveData(player.Equipment);
+            }
         }
 
         CommitToDisk();

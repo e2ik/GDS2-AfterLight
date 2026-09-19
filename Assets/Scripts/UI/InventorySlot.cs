@@ -166,7 +166,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     else equip.EquipSecondaryGem(gem);
                 };
 
-                SecondaryGemInstance equippedGemForCompare = (!isEquipped && equip != null && !equip.IsSecondaryGemSlotEmpty()) ? equip.SecondaryGem : null;
+                SecondaryGemInstance equippedGemForCompare = ItemActionFactory.GetComparableGem(gem, equip);
                 return new SlotContext(def.UISprite, def.UIName, () => ItemTooltipTextBuilder.BuildSecondaryGemTooltip(gem, equippedGemForCompare), isEquipped, toggle, gem.Rarity);
             }
 
