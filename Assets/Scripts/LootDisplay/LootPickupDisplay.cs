@@ -22,8 +22,6 @@ public class LootPickupDisplay : MonoBehaviour
     [Header("Setup")]
     [SerializeField] private LootPickupEntry entryPrefab;
     [SerializeField] private Transform contentParent;
-    [SerializeField] private RectTransform tooltipDock;
-    public RectTransform TooltipDock => tooltipDock;
 
     [Header("Line Cap")]
     [SerializeField] private int maxVisibleLines = 5;
@@ -38,9 +36,13 @@ public class LootPickupDisplay : MonoBehaviour
     [Header("Controller Inspect")]
     [SerializeField] private InputActionReference inspectAction;
     [SerializeField] private float inspectDuration = 4f;
+
+    [Header("Tooltip")]
+    [SerializeField] private RectTransform tooltipDock;
     [SerializeField] private TooltipAnchorSettings inspectAnchor = new TooltipAnchorSettings();
 
     public TooltipAnchorSettings TooltipAnchor => inspectAnchor;
+    public RectTransform TooltipDock => tooltipDock;
 
     private readonly List<LootPickupEntry> activeEntries = new List<LootPickupEntry>();
     private readonly Stack<LootPickupEntry> pool = new Stack<LootPickupEntry>();
@@ -114,7 +116,7 @@ public class LootPickupDisplay : MonoBehaviour
     }
 #endif
 
-    public void AddPickup(Sprite icon, string itemName, ERarity? rarity, string tooltipBody)
+    public void AddPickup(Sprite icon, string itemName, ERarity? rarity, string tooltipBody, object item = null)
     {
         if (entryPrefab == null || contentParent == null)
         {
@@ -125,7 +127,7 @@ public class LootPickupDisplay : MonoBehaviour
         LootPickupEntry entry = GetPooledEntry();
         entry.transform.SetParent(contentParent, false);
         entry.transform.SetAsLastSibling();
-        entry.Setup(this, icon, itemName, rarity, tooltipBody, holdDuration, fadeDuration);
+        entry.Setup(this, icon, itemName, rarity, tooltipBody, holdDuration, fadeDuration, item);
 
         entryData[entry] = new PickupData(itemName, tooltipBody);
         activeEntries.Insert(0, entry);
@@ -170,7 +172,7 @@ public class LootPickupDisplay : MonoBehaviour
         entry.SetInspected(true);
 
         InputModeTracker.ForceNonMouse();
-        ItemTooltip.Instance.ShowTooltipAnchored(data.Name, data.Body, (RectTransform)entry.transform, inspectAnchor, tooltipDock);
+        ItemTooltip.Instance.ShowTooltipAnchored(data.Name, entry.GetTooltipBody(), (RectTransform)entry.transform, inspectAnchor, tooltipDock, entry.BuildActions());
     }
 
     private void EndInspect()

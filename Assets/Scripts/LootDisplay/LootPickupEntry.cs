@@ -20,6 +20,7 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private string itemName;
     private string tooltipBody;
+    private object item;
 
     private float holdDuration;
     private float fadeDuration;
@@ -55,11 +56,12 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    public void Setup(LootPickupDisplay owner, Sprite icon, string itemName, ERarity? rarity, string tooltipBody, float holdDuration, float fadeDuration)
+    public void Setup(LootPickupDisplay owner, Sprite icon, string itemName, ERarity? rarity, string tooltipBody, float holdDuration, float fadeDuration, object item = null)
     {
         this.owner = owner;
         this.itemName = itemName;
         this.tooltipBody = tooltipBody;
+        this.item = item;
         this.holdDuration = holdDuration;
         this.fadeDuration = fadeDuration;
         this.spawnTime = Time.time;
@@ -81,6 +83,17 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         canvasGroup.alpha = 1f;
         gameObject.SetActive(true);
+    }
+
+    public TooltipActions BuildActions()
+    {
+        return ItemActionFactory.ForLoot(item);
+    }
+
+    public string GetTooltipBody()
+    {
+        string fresh = ItemActionFactory.BuildTooltipBody(item);
+        return string.IsNullOrEmpty(fresh) ? tooltipBody : fresh;
     }
 
     public void SetInspected(bool inspected)
@@ -115,7 +128,13 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (ItemTooltip.Instance != null)
         {
-            ItemTooltip.Instance.ShowTooltipAnchored(itemName, tooltipBody, rectTransform, owner != null ? owner.TooltipAnchor : null, owner != null ? owner.TooltipDock : null);
+            ItemTooltip.Instance.ShowTooltipAnchored(
+                itemName,
+                GetTooltipBody(),
+                rectTransform,
+                owner != null ? owner.TooltipAnchor : null,
+                owner != null ? owner.TooltipDock : null,
+                BuildActions());
         }
     }
 

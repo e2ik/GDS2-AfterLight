@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using TMPro;
 
@@ -16,6 +18,20 @@ public class ItemTooltip : MonoBehaviour
     [Header("Anchored Positioning")]
     [SerializeField] private float aboveTargetGap = 8f;
     [SerializeField] private Vector2 anchoredOffset = Vector2.zero;
+
+    [Header("Loot Panel (Quick Equip)")]
+    [FormerlySerializedAs("equipPrompt")]
+    [SerializeField] private GameObject lootPanel;
+    [FormerlySerializedAs("equipAction")]
+    [SerializeField] private InputActionReference quickEquipAction;
+
+    [Header("Inventory Panel (Equip Hint + Delete)")]
+    [SerializeField] private GameObject inventoryPanel;
+    [SerializeField] private GameObject inventoryEquipPrompt;
+    [SerializeField] private GameObject deletePrompt;
+    [SerializeField] private InputActionReference deleteAction;
+    [SerializeField] private Image deleteProgressFill;
+    [SerializeField, Min(0.1f)] private float deleteHoldDuration = 1f;
 
     private enum Placement
     {
@@ -35,6 +51,12 @@ public class ItemTooltip : MonoBehaviour
     private RectTransform owner;
     private bool hasOwner;
     private bool hidePending;
+
+    private TooltipActions currentActions;
+    private bool quickEquipEnabled;
+    private bool deleteEnabled;
+    private float holdTimer;
+    private bool deleteLatched;
 
     private static readonly Vector3[] cornerBuffer = new Vector3[4];
 
@@ -58,6 +80,12 @@ public class ItemTooltip : MonoBehaviour
         HideTooltip();
     }
 
+    private void OnEnable()
+    {
+        EnsureEnabled(quickEquipAction);
+        EnsureEnabled(deleteAction);
+    }
+
     private void Update()
     {
         if (!gameObject.activeSelf) return;
@@ -67,6 +95,12 @@ public class ItemTooltip : MonoBehaviour
             HideTooltip();
             return;
         }
+
+        EnsureEnabled(quickEquipAction);
+        EnsureEnabled(deleteAction);
+
+        if (RefreshPanels()) RebuildLayoutNow();
+        if (HandleActionInput()) return;
 
         Reposition();
     }
@@ -78,19 +112,19 @@ public class ItemTooltip : MonoBehaviour
 
     public void ShowTooltip(string title, string description)
     {
-        Present(title, description, Placement.Cursor, null, null, null);
+        Present(title, description, Placement.Cursor, null, null, null, null);
     }
 
     public void ShowTooltipAbove(string title, string description, RectTransform target)
     {
-        Present(title, description, Placement.Above, null, target, null);
+        Present(title, description, Placement.Above, null, target, null, null);
     }
 
-    public void ShowTooltipAnchored(string title, string description, RectTransform tooltipOwner, TooltipAnchorSettings settings, RectTransform anchorRect = null)
+    public void ShowTooltipAnchored(string title, string description, RectTransform tooltipOwner, TooltipAnchorSettings settings, RectTransform anchorRect = null, TooltipActions actions = null)
     {
         if (tooltipOwner == null) return;
 
-        Present(title, description, Placement.Anchored, tooltipOwner, anchorRect != null ? anchorRect : tooltipOwner, settings);
+        Present(title, description, Placement.Anchored, tooltipOwner, anchorRect != null ? anchorRect : tooltipOwner, settings, actions);
     }
 
     public void HideTooltip()
@@ -101,6 +135,12 @@ public class ItemTooltip : MonoBehaviour
         owner = null;
         hasOwner = false;
         hidePending = false;
+
+        currentActions = null;
+        quickEquipEnabled = false;
+        deleteEnabled = false;
+        holdTimer = 0f;
+        SetDeleteProgress(0f);
     }
 
     public void HideTooltip(RectTransform requester)
@@ -109,7 +149,7 @@ public class ItemTooltip : MonoBehaviour
         hidePending = true;
     }
 
-    private void Present(string title, string description, Placement newPlacement, RectTransform newOwner, RectTransform target, TooltipAnchorSettings settings)
+    private void Present(string title, string description, Placement newPlacement, RectTransform newOwner, RectTransform target, TooltipAnchorSettings settings, TooltipActions actions)
     {
         if (!BeginShow(title, description)) return;
 
@@ -119,7 +159,13 @@ public class ItemTooltip : MonoBehaviour
         hasOwner = newOwner != null;
         anchorTarget = target;
         anchorSettings = settings;
+        currentActions = actions;
 
+        holdTimer = 0f;
+        SetDeleteProgress(0f);
+        if (deleteAction != null && deleteAction.action.IsPressed()) deleteLatched = true;
+
+        RefreshPanels();
         RebuildLayoutNow();
         Reposition();
     }
@@ -139,6 +185,87 @@ public class ItemTooltip : MonoBehaviour
 
         if (!gameObject.activeSelf) gameObject.SetActive(true);
         return true;
+    }
+
+    private static void EnsureEnabled(InputActionReference reference)
+    {
+        if (reference != null && !reference.action.enabled) reference.action.Enable();
+    }
+
+    private static bool IsUIOpen()
+    {
+        return GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.IsInputLocked;
+    }
+
+    private bool RefreshPanels()
+    {
+        TooltipPanel panel = currentActions != null ? currentActions.Panel : TooltipPanel.None;
+
+        bool showLoot = panel == TooltipPanel.Loot && currentActions.EquipAvailable && !IsUIOpen();
+        bool showInventory = panel == TooltipPanel.Inventory;
+        bool showEquipHint = showInventory && currentActions.EquipHintAvailable;
+        bool showDelete = showInventory && currentActions.DeleteAvailable;
+
+        quickEquipEnabled = showLoot;
+        deleteEnabled = showDelete;
+
+        bool changed = false;
+        changed |= SetActiveIfChanged(lootPanel, showLoot);
+        changed |= SetActiveIfChanged(inventoryPanel, showInventory);
+        changed |= SetActiveIfChanged(inventoryEquipPrompt, showEquipHint);
+        changed |= SetActiveIfChanged(deletePrompt, showDelete);
+        return changed;
+    }
+
+    private static bool SetActiveIfChanged(GameObject target, bool active)
+    {
+        if (target == null || target.activeSelf == active) return false;
+
+        target.SetActive(active);
+        return true;
+    }
+
+    private bool HandleActionInput()
+    {
+        if (currentActions == null) return false;
+
+        if (quickEquipEnabled && quickEquipAction != null && quickEquipAction.action.WasPressedThisFrame())
+        {
+            TooltipActions actions = currentActions;
+            HideTooltip();
+            actions.Equip();
+            return true;
+        }
+
+        bool pressed = deleteAction != null && deleteAction.action.IsPressed();
+        if (!pressed) deleteLatched = false;
+
+        if (deleteEnabled && pressed && !deleteLatched)
+        {
+            holdTimer += Time.unscaledDeltaTime;
+            SetDeleteProgress(holdTimer / deleteHoldDuration);
+
+            if (holdTimer >= deleteHoldDuration)
+            {
+                TooltipActions actions = currentActions;
+                HideTooltip();
+                deleteLatched = true;
+                actions.Delete();
+                return true;
+            }
+        }
+        else if (holdTimer > 0f)
+        {
+            holdTimer = 0f;
+            SetDeleteProgress(0f);
+        }
+
+        return false;
+    }
+
+    private void SetDeleteProgress(float value)
+    {
+        if (deleteProgressFill != null) deleteProgressFill.fillAmount = Mathf.Clamp01(value);
     }
 
     private void RebuildLayoutNow()

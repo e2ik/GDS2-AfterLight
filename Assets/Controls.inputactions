@@ -753,6 +753,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "QuickEquip",
+                    "type": "Button",
+                    "id": "a297f61e-4a0f-4f75-b1c4-87a408ad2370",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "DeleteItem",
+                    "type": "Button",
+                    "id": "111c7d74-df3f-435e-8723-89197fadf9be",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1226,6 +1244,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "LootDisplay",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c5eba500-872a-47f5-b0ad-77c2a2211d2c",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "QuickEquip",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5cd24f08-81d2-42fc-9132-e0235780e0e5",
+                    "path": "<Gamepad>/dpad/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "QuickEquip",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "83aab2aa-98ea-4ee7-a923-d21beb665e1f",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DeleteItem",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

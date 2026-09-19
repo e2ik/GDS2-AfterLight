@@ -341,8 +341,9 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         InventoryDisplay display = Display;
         RectTransform dock = display != null ? display.TooltipDock : null;
         TooltipAnchorSettings settings = display != null ? display.TooltipAnchor : null;
+        TooltipActions actions = ItemActionFactory.ForInventory(currentItem);
 
-        ItemTooltip.Instance.ShowTooltipAnchored(ctx.Value.Name, ctx.Value.TooltipBody(), rectTransform, settings, dock);
+        ItemTooltip.Instance.ShowTooltipAnchored(ctx.Value.Name, ctx.Value.TooltipBody(), rectTransform, settings, dock, actions);
     }
 
     #endregion
