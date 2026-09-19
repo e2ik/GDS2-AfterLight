@@ -109,7 +109,6 @@ public class PlayerCombatController : MonoBehaviour
     private float singleSkillChargeCost;
     private Coroutine plungeCoroutine;
 
-    private float verticalInput;
     private Player player;
     private PlayerController movement;
 
@@ -602,7 +601,7 @@ public class PlayerCombatController : MonoBehaviour
 
         return baseDmg * comboMultiplier;
     }
-    
+
     private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
     {
         foreach (var col in enemiesInRange)
@@ -830,7 +829,7 @@ public class PlayerCombatController : MonoBehaviour
     #endregion
 
     #region SecondaryGem Logic
-    
+
     public void CheckEnergyChargePassive(bool isAttack, AttackContext context)
     {
         if ((player.Equipment.SecondaryGem.Type == SGemType.Attack && isAttack)
@@ -880,7 +879,7 @@ public class PlayerCombatController : MonoBehaviour
             {
                 BaseAttackDamage = incomingDamage
             };
-            
+
             behaviourDefinition.Modify(ref context, player.Equipment.SecondaryGem);
             enemyHealth.ApplyHit((int)context.BaseAttackDamage, context);
         }
@@ -896,13 +895,13 @@ public class PlayerCombatController : MonoBehaviour
 
     public void OnParry()
     {
-        if (isPlunging) return;
+        if (isPlunging || movement.IsUILocked) return;
         parryBufferTimer = parryBufferTime;
     }
 
     public void OnAttack()
     {
-        if (isChargingSkill || isPlunging) return;
+        if (isChargingSkill || isPlunging || movement.IsUILocked) return;
 
         if (IsParrying)
         {
@@ -933,7 +932,7 @@ public class PlayerCombatController : MonoBehaviour
 
         if (value.isPressed)
         {
-            if (isPlunging) return;
+            if (isPlunging || movement.IsUILocked) return;
             if (movement.IsWallSliding) return;
             if (specialDef == null) return;
             if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;

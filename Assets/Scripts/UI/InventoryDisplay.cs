@@ -3,11 +3,20 @@ using UnityEngine;
 
 public class InventoryDisplay : GameUI.UIWindow
 {
+    public enum InventoryFilter
+    {
+        All,
+        GearAndWeapons,
+        Primary,
+        Secondary
+    }
+
     [Header("UI Container")]
     [SerializeField] private Transform slotContainer;
     [SerializeField] private GameObject slotPrefab;
 
     private PlayerInventoryManager invManager;
+    private InventoryFilter currentFilter = InventoryFilter.All;
 
     private readonly struct DisplayItem
     {
@@ -27,6 +36,18 @@ public class InventoryDisplay : GameUI.UIWindow
         {
             invManager.OnInventoryChanged -= RefreshUI;
         }
+    }
+
+    public void ShowAll() => SetFilter(InventoryFilter.All);
+    public void ShowGearAndWeapons() => SetFilter(InventoryFilter.GearAndWeapons);
+    public void ShowPrimary() => SetFilter(InventoryFilter.Primary);
+    public void ShowSecondary() => SetFilter(InventoryFilter.Secondary);
+
+    public void SetFilter(InventoryFilter filter)
+    {
+        if (currentFilter == filter) { return; }
+        currentFilter = filter;
+        RefreshUI();
     }
 
     public void RegisterInventoryManager(PlayerInventoryManager manager)
@@ -63,6 +84,8 @@ public class InventoryDisplay : GameUI.UIWindow
 
     protected override void OnWindowClosed()
     {
+        currentFilter = InventoryFilter.All;
+
         if (ItemTooltip.Instance != null)
         {
             ItemTooltip.Instance.HideTooltip();
@@ -106,10 +129,14 @@ public class InventoryDisplay : GameUI.UIWindow
 
         List<DisplayItem> displayItems = new List<DisplayItem>();
 
-        AddItems(activeInventory.SecondaryGems, g => g.PickupOrder, displayItems);
-        AddItems(activeInventory.GearInstances, g => g.PickupOrder, displayItems);
-        AddItems(activeInventory.PrimaryGems, g => g.PickupOrder, displayItems);
-        AddItems(activeInventory.Weapons, w => w.PickupOrder, displayItems);
+        bool showGearAndWeapons = currentFilter is InventoryFilter.All or InventoryFilter.GearAndWeapons;
+        bool showPrimary = currentFilter is InventoryFilter.All or InventoryFilter.Primary;
+        bool showSecondary = currentFilter is InventoryFilter.All or InventoryFilter.Secondary;
+
+        if (showSecondary) { AddItems(activeInventory.SecondaryGems, g => g.PickupOrder, displayItems); }
+        if (showGearAndWeapons) { AddItems(activeInventory.GearInstances, g => g.PickupOrder, displayItems); }
+        if (showPrimary) { AddItems(activeInventory.PrimaryGems, g => g.PickupOrder, displayItems); }
+        if (showGearAndWeapons) { AddItems(activeInventory.Weapons, w => w.PickupOrder, displayItems); }
 
         displayItems.Sort((a, b) => a.PickupOrder.CompareTo(b.PickupOrder));
 
