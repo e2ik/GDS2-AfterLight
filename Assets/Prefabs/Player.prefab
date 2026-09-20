@@ -235,6 +235,9 @@ MonoBehaviour:
   velocityPower: 1.2
   friction: 0.2
   passThroughPlatformDuration: 0.25
+  verticalDeadzone: 0.3
+  upIntentThreshold: 0.5
+  downIntentThreshold: 0.7
   normGravity: 5
   jumpGravity: 4
   fallGravity: 11
@@ -264,8 +267,8 @@ MonoBehaviour:
   mediumStaggerDuration: 0.2
   heavyForce: 8
   heavyStaggerDuration: 0.4
-  climbStartOffset: {x: -2.07, y: -0.35}
-  climbEndOffset: {x: -0.8, y: 2}
+  climbStartOffset: {x: -1, y: -0.4}
+  climbEndOffset: {x: 0, y: 1}
   onEdge: 0
   groundLayer:
     serializedVersion: 2
@@ -621,7 +624,7 @@ Transform:
   m_GameObject: {fileID: 8291432046283232270}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.973, y: 0.927, z: 0}
+  m_LocalPosition: {x: 0.67, y: 0.927, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -639,7 +642,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74eda1ac4de37cc40b2bea57b660a904, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  radius: 0.22
+  radius: 0.2
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -678,7 +681,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.113925874, y: 0.20153648}
+  m_Offset: {x: 0.01671946, y: 0.13006115}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -688,7 +691,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.0956967, y: 0.41191006}
+  m_Size: {x: 0.5810746, y: 0.2689594}
   m_EdgeRadius: 0
 --- !u!1 &8844592283841214288
 GameObject:

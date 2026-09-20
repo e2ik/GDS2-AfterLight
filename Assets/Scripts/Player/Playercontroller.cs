@@ -211,7 +211,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private bool IsGravityZeroed => isParryGravityActive || isChargingSkillPhysics || isSkillGravityZeroed;
+    private bool IsGravityZeroed => isParryGravityActive || isChargingSkillPhysics || isSkillGravityZeroed || isClimbing;
 
     private void ApplyGravityZeroLock()
     {
@@ -254,7 +254,8 @@ public class PlayerController : MonoBehaviour
                              && !isStaggered
                              && !isWallSliding
                              && !IsMovementLockedBySkill
-                             && !combat.IsPlunging;
+                             && !combat.IsPlunging
+                             && !isClimbing;
 
     #region Movement Handlers
 
