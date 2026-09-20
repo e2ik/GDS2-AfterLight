@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     [SerializeField] private float wallCheckNormalThreshold = 0.5f;
-    [SerializeField] private Vector2 wallJumpForce = new(10f, 16f);
+    [SerializeField] private Vector2 wallJumpForce = new(8f, 16f);
     [SerializeField] private float wallJumpDuration = 0.4f;
     [SerializeField] private float wallJumpBufferTime = 0.2f;
 

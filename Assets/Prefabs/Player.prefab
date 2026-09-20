@@ -234,6 +234,9 @@ MonoBehaviour:
   velocityPower: 1.2
   friction: 0.2
   passThroughPlatformDuration: 0.25
+  verticalDeadzone: 0.3
+  upIntentThreshold: 0.5
+  downIntentThreshold: 0.7
   normGravity: 5
   jumpGravity: 4
   fallGravity: 11
@@ -243,7 +246,7 @@ MonoBehaviour:
   wallJumpCounterStrength: 0.1
   wallSlideUpwardDampening: 0.9
   wallCheckNormalThreshold: 0.5
-  wallJumpForce: {x: 10, y: 16}
+  wallJumpForce: {x: 8, y: 16}
   wallJumpDuration: 0.4
   wallJumpBufferTime: 0.2
   dashVelocity: 15
@@ -303,6 +306,8 @@ MonoBehaviour:
   attackCoolDown: 0.1
   attackBufferTime: 0.15
   counterAttackWindow: 0.5
+  passiveEnergyCooldown: 4
+  passiveEnergyRegenMult: 0.2
   maxComboCount: 3
   comboResetDelay: 1
   comboDamageMultipliers:
