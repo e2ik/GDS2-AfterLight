@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c09c11e19b6b44a68868910cee0b3520, type: 3}
+  m_Name: TestDialogue3
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  lines:
+  - speaker: {fileID: 11400000, guid: 7cf8c61c594454a87961398ff2177a74, type: 2}
+    text: I'm feeling neutral
+    overrideTextSpeed: 0
+    textSpeed: 1
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 7cf8c61c594454a87961398ff2177a74, type: 2}
+    text: I'm kinda angry
+    overrideTextSpeed: 0
+    textSpeed: 0.03
+    effect: 1
+  - speaker: {fileID: 11400000, guid: 7cf8c61c594454a87961398ff2177a74, type: 2}
+    text: this is unstable
+    overrideTextSpeed: 0
+    textSpeed: 0.03
+    effect: 2
+  - speaker: {fileID: 11400000, guid: 7cf8c61c594454a87961398ff2177a74, type: 2}
+    text: text glitchy glitchy
+    overrideTextSpeed: 0
+    textSpeed: 0.03
+    effect: 3

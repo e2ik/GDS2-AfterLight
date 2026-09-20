@@ -15,6 +15,7 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private TMP_Text characterNameText;
     [SerializeField] private TMP_Text dialogueText;
     [SerializeField] private GameObject nextDialogueIndicator;
+    [SerializeField] private DialogueEffects dialogueEffects;
 
     [Header("Dialogue Box Animation")]
     [SerializeField] private RectTransform dialoguePanelRect;
@@ -77,7 +78,6 @@ public class DialogueManager : MonoBehaviour
         if (interactAction == null)
             return;
 
-        // Ignore the release from the button press that originally opened dialogue.
         if (waitingForInitialInteractRelease)
         {
             if (interactAction.WasReleasedThisFrame())
@@ -212,6 +212,8 @@ public class DialogueManager : MonoBehaviour
     {
         DialogueLine line = currentDialogue.Lines[currentLineIndex];
 
+        if (dialogueEffects != null) dialogueEffects.PlayEffect(line.Effect);
+
         if (line.Speaker != null)
         {
             characterNameText.text = line.Speaker.CharacterName;
@@ -256,7 +258,11 @@ public class DialogueManager : MonoBehaviour
 
             PlayTypingSound(line);
 
-            yield return new WaitForSeconds(line.TextSpeed);
+            float textSpeed = line.TextSpeed;
+
+            if (line.Effect == DialogueEffect.Angry) textSpeed *= 0.7f;
+
+            yield return new WaitForSecondsRealtime(textSpeed);
         }
 
         isTyping = false;
@@ -362,6 +368,7 @@ public class DialogueManager : MonoBehaviour
         inputLocked = true;
 
         ResetHoldSkip();
+        if (dialogueEffects != null) dialogueEffects.StopEffects(); // stop effects
         dialoguePanel.SetActive(false);
 
         if (currentPlayer != null)

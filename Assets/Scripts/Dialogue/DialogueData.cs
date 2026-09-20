@@ -41,9 +41,9 @@ public class DialogueLine
 }
 
 public enum DialogueEffect
-{ // for later dynamic dialogue???? 
+{ 
     Default,
-    Scary,
     Angry,
-    Shout
+    Unstable,
+    Glitch
 }
