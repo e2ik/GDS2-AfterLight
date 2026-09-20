@@ -316,7 +316,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleWallSlide()
     {
-        if (IsFrozenOrSkillLocked)
+        if (IsFrozenOrSkillLocked || combat.IsAttacking)
         {
             isWallSliding = false;
             return;

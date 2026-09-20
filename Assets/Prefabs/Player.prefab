@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 250246425763685576}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.105, y: -1.158, z: 0}
-  m_LocalScale: {x: 6.864691, y: 1.2830659, z: 1}
+  m_LocalPosition: {x: 0.117, y: -1.038, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8579385553579684227}
@@ -82,12 +82,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 7
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: b63ffe0b640654b49808c4cf72d82a4d, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.2, y: 0.2}
+  m_Size: {x: 1.7777778, y: 0.8888889}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -110,10 +110,10 @@ MonoBehaviour:
   bodyCollider: {fileID: 1978134003100231202}
   maxDistance: 5
   originOffset: 0.05
-  groundOffset: 0.01
+  groundOffset: 0.09
   surfaceTolerance: 1
-  edgeSearchSteps: 5
-  nearAlpha: 0.5
+  edgeSearchSteps: 8
+  nearAlpha: 0.4
   farAlpha: 0
   farScaleMultiplier: 0.5
 --- !u!1 &3610837456973314076
@@ -460,6 +460,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimation
   wallSlideParticleSystem: {fileID: 8438840527263229074}
   skillChargeParticleSystem: {fileID: 2201935112284764111}
+  airParryState: p_airparry
+  groundParryState: p_parry
 --- !u!114 &6264206310521610964
 MonoBehaviour:
   m_ObjectHideFlags: 0

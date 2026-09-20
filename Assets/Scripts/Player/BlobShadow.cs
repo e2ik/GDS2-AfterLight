@@ -20,6 +20,7 @@ public class BlobShadow : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float farScaleMultiplier = 0.5f;
 
     private SpriteRenderer sr;
+    private Rigidbody2D body;
     private Vector3 baseScale;
     private float baseHalfWidth;
 
@@ -31,6 +32,9 @@ public class BlobShadow : MonoBehaviour
 
         if (bodyCollider == null)
             bodyCollider = GetComponentInParent<Collider2D>();
+
+        if (bodyCollider != null)
+            body = bodyCollider.attachedRigidbody;
 
         if (groundLayer.value == 0)
         {
@@ -47,9 +51,13 @@ public class BlobShadow : MonoBehaviour
             return;
         }
 
+        Vector2 visualOffset = body != null
+            ? (Vector2)body.transform.position - body.position
+            : Vector2.zero;
+
         Bounds bounds = bodyCollider.bounds;
-        float centerX = bounds.center.x;
-        float originY = bounds.min.y + originOffset;
+        float centerX = bounds.center.x + visualOffset.x;
+        float originY = bounds.min.y + visualOffset.y + originOffset;
         float leftX = centerX - baseHalfWidth;
         float rightX = centerX + baseHalfWidth;
 

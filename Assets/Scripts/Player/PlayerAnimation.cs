@@ -33,6 +33,14 @@ public class PlayerAnimation : MonoBehaviour
     [SerializeField] private ParticleSystem wallSlideParticleSystem;
     [SerializeField] private ParticleSystem skillChargeParticleSystem;
 
+    [Header("Parry Animation Sync")]
+    [SerializeField] private string airParryState = "AirParry";
+    [SerializeField] private string groundParryState = "GroundParry";
+
+    private int airParryHash;
+    private int groundParryHash;
+    private bool wasGroundedForAnim;
+
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
     private bool wasInvulnerable;
@@ -48,6 +56,9 @@ public class PlayerAnimation : MonoBehaviour
             sr = GetComponentInParent<SpriteRenderer>();
             if (sr != null) ogColor = sr.color;
         }
+
+        airParryHash = Animator.StringToHash(airParryState);
+        groundParryHash = Animator.StringToHash(groundParryState);
 
         if (wallSlideParticleSystem == null)
         {
@@ -153,6 +164,8 @@ public class PlayerAnimation : MonoBehaviour
         bool groundedForAnim = isAttacking
             ? player.CombatController.AttackStartedGrounded
             : player.Controller.IsGrounded;
+
+        SyncParryAcrossGroundChange(isParrying, groundedForAnim);
 
         animator.SetFloat(SpeedHash, Mathf.Abs(rb.linearVelocityX));
         animator.SetFloat(YVelocityHash, rb.linearVelocityY);
@@ -328,6 +341,24 @@ public class PlayerAnimation : MonoBehaviour
     }
 
     #region Helper Methods
+
+    private void SyncParryAcrossGroundChange(bool isParrying, bool groundedNow)
+    {
+        if (isParrying && groundedNow != wasGroundedForAnim)
+        {
+            AnimatorStateInfo info = animator.IsInTransition(0)
+                ? animator.GetNextAnimatorStateInfo(0)
+                : animator.GetCurrentAnimatorStateInfo(0);
+
+            int from = wasGroundedForAnim ? groundParryHash : airParryHash;
+            int to = groundedNow ? groundParryHash : airParryHash;
+
+            if (info.shortNameHash == from || info.fullPathHash == from)
+                animator.Play(to, 0, info.normalizedTime);
+        }
+
+        wasGroundedForAnim = groundedNow;
+    }
 
     private void StartFlashColor(Color flashColor, float duration)
     {
