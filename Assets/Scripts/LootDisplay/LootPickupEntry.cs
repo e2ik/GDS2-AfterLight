@@ -20,11 +20,13 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private string itemName;
     private string tooltipBody;
+    private object item;
 
     private float holdDuration;
     private float fadeDuration;
     private float spawnTime;
     private bool isHovered;
+    private bool isInspected;
 
     private void Awake()
     {
@@ -34,7 +36,7 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Update()
     {
-        if (isHovered) return;
+        if (isHovered || isInspected) return;
 
         float elapsed = Time.time - spawnTime;
 
@@ -54,15 +56,17 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    public void Setup(LootPickupDisplay owner, Sprite icon, string itemName, ERarity? rarity, string tooltipBody, float holdDuration, float fadeDuration)
+    public void Setup(LootPickupDisplay owner, Sprite icon, string itemName, ERarity? rarity, string tooltipBody, float holdDuration, float fadeDuration, object item = null)
     {
         this.owner = owner;
         this.itemName = itemName;
         this.tooltipBody = tooltipBody;
+        this.item = item;
         this.holdDuration = holdDuration;
         this.fadeDuration = fadeDuration;
         this.spawnTime = Time.time;
         this.isHovered = false;
+        this.isInspected = false;
 
         if (iconImage != null)
         {
@@ -81,6 +85,33 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
         gameObject.SetActive(true);
     }
 
+    public TooltipActions BuildActions()
+    {
+        return ItemActionFactory.ForLoot(item);
+    }
+
+    public string GetTooltipBody()
+    {
+        string fresh = ItemActionFactory.BuildTooltipBody(item);
+        return string.IsNullOrEmpty(fresh) ? tooltipBody : fresh;
+    }
+
+    public void SetInspected(bool inspected)
+    {
+        if (isInspected == inspected) return;
+
+        isInspected = inspected;
+
+        if (inspected)
+        {
+            canvasGroup.alpha = 1f;
+        }
+        else
+        {
+            spawnTime = Time.time;
+        }
+    }
+
     private void SetBorderColor(ERarity? rarity)
     {
         if (borderImage == null) return;
@@ -97,7 +128,13 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (ItemTooltip.Instance != null)
         {
-            ItemTooltip.Instance.ShowTooltipAbove(itemName, tooltipBody, rectTransform);
+            ItemTooltip.Instance.ShowTooltipAnchored(
+                itemName,
+                GetTooltipBody(),
+                rectTransform,
+                owner != null ? owner.TooltipAnchor : null,
+                owner != null ? owner.TooltipDock : null,
+                BuildActions());
         }
     }
 
@@ -118,5 +155,6 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
             ItemTooltip.Instance.HideTooltip();
         }
         isHovered = false;
+        isInspected = false;
     }
 }

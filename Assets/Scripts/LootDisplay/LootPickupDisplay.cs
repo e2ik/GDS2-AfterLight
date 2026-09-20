@@ -1,10 +1,23 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class LootPickupDisplay : MonoBehaviour
 {
     public static LootPickupDisplay Instance { get; private set; }
+
+    private readonly struct PickupData
+    {
+        public readonly string Name;
+        public readonly string Body;
+
+        public PickupData(string name, string body)
+        {
+            Name = name;
+            Body = body;
+        }
+    }
 
     [Header("Setup")]
     [SerializeField] private LootPickupEntry entryPrefab;
@@ -20,9 +33,24 @@ public class LootPickupDisplay : MonoBehaviour
     [SerializeField] private float holdDuration = 3f;
     [SerializeField] private float fadeDuration = 1.5f;
 
+    [Header("Controller Inspect")]
+    [SerializeField] private InputActionReference inspectAction;
+    [SerializeField] private float inspectDuration = 4f;
+
+    [Header("Tooltip")]
+    [SerializeField] private RectTransform tooltipDock;
+    [SerializeField] private TooltipAnchorSettings inspectAnchor = new TooltipAnchorSettings();
+
+    public TooltipAnchorSettings TooltipAnchor => inspectAnchor;
+    public RectTransform TooltipDock => tooltipDock;
+
     private readonly List<LootPickupEntry> activeEntries = new List<LootPickupEntry>();
     private readonly Stack<LootPickupEntry> pool = new Stack<LootPickupEntry>();
+    private readonly Dictionary<LootPickupEntry, PickupData> entryData = new Dictionary<LootPickupEntry, PickupData>();
     private VerticalLayoutGroup layoutGroup;
+
+    private LootPickupEntry inspectedEntry;
+    private float inspectTimer;
 
     private void Awake()
     {
@@ -34,6 +62,35 @@ public class LootPickupDisplay : MonoBehaviour
 
         Instance = this;
         ApplyOrdering();
+    }
+
+    private void OnEnable()
+    {
+        if (inspectAction == null) return;
+
+        if (!inspectAction.action.enabled) inspectAction.action.Enable();
+        inspectAction.action.performed += HandleInspect;
+    }
+
+    private void OnDisable()
+    {
+        if (inspectAction != null)
+        {
+            inspectAction.action.performed -= HandleInspect;
+        }
+
+        EndInspect();
+    }
+
+    private void Update()
+    {
+        if (inspectedEntry == null) return;
+
+        inspectTimer -= Time.unscaledDeltaTime;
+        if (inspectTimer <= 0f || InputModeTracker.IsUsingMouse)
+        {
+            EndInspect();
+        }
     }
 
     private void ApplyOrdering()
@@ -59,7 +116,7 @@ public class LootPickupDisplay : MonoBehaviour
     }
 #endif
 
-    public void AddPickup(Sprite icon, string itemName, ERarity? rarity, string tooltipBody)
+    public void AddPickup(Sprite icon, string itemName, ERarity? rarity, string tooltipBody, object item = null)
     {
         if (entryPrefab == null || contentParent == null)
         {
@@ -70,8 +127,9 @@ public class LootPickupDisplay : MonoBehaviour
         LootPickupEntry entry = GetPooledEntry();
         entry.transform.SetParent(contentParent, false);
         entry.transform.SetAsLastSibling();
-        entry.Setup(this, icon, itemName, rarity, tooltipBody, holdDuration, fadeDuration);
+        entry.Setup(this, icon, itemName, rarity, tooltipBody, holdDuration, fadeDuration, item);
 
+        entryData[entry] = new PickupData(itemName, tooltipBody);
         activeEntries.Insert(0, entry);
 
         while (activeEntries.Count > maxVisibleLines)
@@ -90,6 +148,46 @@ public class LootPickupDisplay : MonoBehaviour
         }
     }
 
+    private void HandleInspect(InputAction.CallbackContext context)
+    {
+        if (activeEntries.Count == 0) return;
+        if (GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.IsInputLocked) return;
+
+        int current = inspectedEntry != null ? activeEntries.IndexOf(inspectedEntry) : -1;
+        ShowInspect(activeEntries[(current + 1) % activeEntries.Count]);
+    }
+
+    private void ShowInspect(LootPickupEntry entry)
+    {
+        if (ItemTooltip.Instance == null) return;
+        if (!entryData.TryGetValue(entry, out PickupData data)) return;
+
+        if (inspectedEntry != null && inspectedEntry != entry)
+        {
+            inspectedEntry.SetInspected(false);
+        }
+
+        inspectedEntry = entry;
+        inspectTimer = inspectDuration;
+        entry.SetInspected(true);
+
+        InputModeTracker.ForceNonMouse();
+        ItemTooltip.Instance.ShowTooltipAnchored(data.Name, entry.GetTooltipBody(), (RectTransform)entry.transform, inspectAnchor, tooltipDock, entry.BuildActions());
+    }
+
+    private void EndInspect()
+    {
+        if (inspectedEntry == null) return;
+
+        if (ItemTooltip.Instance != null)
+        {
+            ItemTooltip.Instance.HideTooltip((RectTransform)inspectedEntry.transform);
+        }
+
+        inspectedEntry.SetInspected(false);
+        inspectedEntry = null;
+    }
+
     private LootPickupEntry GetPooledEntry()
     {
         if (pool.Count > 0)
@@ -104,6 +202,9 @@ public class LootPickupDisplay : MonoBehaviour
 
     private void ReturnToPool(LootPickupEntry entry)
     {
+        if (entry == inspectedEntry) EndInspect();
+
+        entryData.Remove(entry);
         entry.gameObject.SetActive(false);
         entry.transform.SetParent(transform, false);
         pool.Push(entry);

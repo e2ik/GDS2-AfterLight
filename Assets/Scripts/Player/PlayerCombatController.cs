@@ -109,7 +109,6 @@ public class PlayerCombatController : MonoBehaviour
     private float singleSkillChargeCost;
     private Coroutine plungeCoroutine;
 
-    private float verticalInput;
     private Player player;
     private PlayerController movement;
 
@@ -342,8 +341,8 @@ public class PlayerCombatController : MonoBehaviour
 
     private ParryDirection GetInputDirection()
     {
-        if (verticalInput > 0.01f) return ParryDirection.Up;
-        if (verticalInput < -0.01f && !movement.IsGrounded) return ParryDirection.Down;
+        if (movement.IsUpIntent) return ParryDirection.Up;
+        if (movement.IsDownIntent && !movement.IsGrounded) return ParryDirection.Down;
         return movement.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
     }
 
@@ -382,6 +381,8 @@ public class PlayerCombatController : MonoBehaviour
 
     public void CancelParry()
     {
+        bool wasParrying = isParrying || isParryInRecovery;
+
         if (parrySuccessResetCoroutine != null)
         {
             StopCoroutine(parrySuccessResetCoroutine);
@@ -391,7 +392,8 @@ public class PlayerCombatController : MonoBehaviour
         isParrying = isParryInRecovery = isParrySuccess = false;
         parryActiveTimer = parryRecoveryTimer = 0f;
         parryBufferTimer = 0f;
-        movement.FreezeMovement(false);
+
+        if (wasParrying) movement.FreezeMovement(false);
     }
 
     #endregion
@@ -599,7 +601,7 @@ public class PlayerCombatController : MonoBehaviour
 
         return baseDmg * comboMultiplier;
     }
-    
+
     private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
     {
         foreach (var col in enemiesInRange)
@@ -827,7 +829,7 @@ public class PlayerCombatController : MonoBehaviour
     #endregion
 
     #region SecondaryGem Logic
-    
+
     public void CheckEnergyChargePassive(bool isAttack, AttackContext context)
     {
         if ((player.Equipment.SecondaryGem.Type == SGemType.Attack && isAttack)
@@ -877,7 +879,7 @@ public class PlayerCombatController : MonoBehaviour
             {
                 BaseAttackDamage = incomingDamage
             };
-            
+
             behaviourDefinition.Modify(ref context, player.Equipment.SecondaryGem);
             enemyHealth.ApplyHit((int)context.BaseAttackDamage, context);
         }
@@ -891,17 +893,15 @@ public class PlayerCombatController : MonoBehaviour
 
     #region Input Handlers & Animator Hooks
 
-    public void OnMove(InputValue value) => verticalInput = value.Get<Vector2>().y;
-
     public void OnParry()
     {
-        if (isPlunging) return;
+        if (isPlunging || movement.IsUILocked) return;
         parryBufferTimer = parryBufferTime;
     }
 
     public void OnAttack()
     {
-        if (isChargingSkill || isPlunging) return;
+        if (isChargingSkill || isPlunging || movement.IsUILocked) return;
 
         if (IsParrying)
         {
@@ -932,7 +932,7 @@ public class PlayerCombatController : MonoBehaviour
 
         if (value.isPressed)
         {
-            if (isPlunging) return;
+            if (isPlunging || movement.IsUILocked) return;
             if (movement.IsWallSliding) return;
             if (specialDef == null) return;
             if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;

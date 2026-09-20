@@ -29,6 +29,17 @@ public static class ItemTooltipTextBuilder
         return $" <color={color}>({diffText})</color>";
     }
 
+    private static string TriggerLabel(SGemType type)
+    {
+        switch (type)
+        {
+            case SGemType.Attack: return "OnHit";
+            case SGemType.Skill: return "OnSkill";
+            case SGemType.Parry: return "OnParry";
+            default: return null;
+        }
+    }
+
     public static string BuildLootLineText(string itemName, ERarity? rarity)
     {
         if (!rarity.HasValue)
@@ -70,13 +81,47 @@ public static class ItemTooltipTextBuilder
         sb.AppendLine("Type: Secondary Gem");
         sb.AppendLine(ColorizeByRarity($"Rarity: {gem.Rarity}", gem.Rarity));
 
+        string trigger = TriggerLabel(gem.Type);
+        if (trigger != null) sb.AppendLine($"Trigger: {trigger}");
+
         float? eqDamage = equippedComparison != null ? (float?)equippedComparison.InstRolledDamageValue : null;
         float? eqCrit = equippedComparison != null ? (float?)equippedComparison.InstRolledCritValue : null;
-        float? eqDot = equippedComparison != null ? (float?)equippedComparison.InstRolledDotPercent : null;
 
-        if (gem.InstRolledDamageValue > 0) sb.AppendLine($"Bonus Damage: +{gem.InstRolledDamageValue}{BuildDiffSuffix(gem.InstRolledDamageValue, eqDamage)}");
-        if (gem.InstRolledCritValue > 0) sb.AppendLine($"Bonus Crit: +{gem.InstRolledCritValue}%{BuildDiffSuffix(gem.InstRolledCritValue, eqCrit, "0", "%")}");
-        if (gem.InstRolledDotPercent > 0) sb.AppendLine($"Bleed: {gem.InstRolledDotPercent}%{BuildDiffSuffix(gem.InstRolledDotPercent, eqDot, "0", "%")} of hit damage over time");
+        if (gem.InstRolledDamageValue > 0) sb.AppendLine($"DMG: +{gem.InstRolledDamageValue}{BuildDiffSuffix(gem.InstRolledDamageValue, eqDamage)}");
+        if (gem.InstRolledCritValue > 0) sb.AppendLine($"CRIT: +{gem.InstRolledCritValue}%{BuildDiffSuffix(gem.InstRolledCritValue, eqCrit, "0", "%")}");
+
+        SecondaryGemInstance effectComparison = equippedComparison != null && equippedComparison.Type == gem.Type
+            ? equippedComparison
+            : null;
+
+        if (gem.InstRolledDotPercent > 0)
+        {
+            float? eqDot = effectComparison != null && effectComparison.InstRolledDotPercent > 0
+                ? (float?)effectComparison.InstRolledDotPercent
+                : null;
+
+            sb.AppendLine($"BLEED: {gem.InstRolledDotPercent}%{BuildDiffSuffix(gem.InstRolledDotPercent, eqDot, "0", "%")} of hit");
+        }
+
+        if (gem.InstRolledChargeAmount > 0f)
+        {
+            float charge = gem.InstRolledChargeAmount * 100f;
+            float? eqCharge = effectComparison != null && effectComparison.InstRolledChargeAmount > 0f
+                ? (float?)(effectComparison.InstRolledChargeAmount * 100f)
+                : null;
+
+            sb.AppendLine($"ENERGY: {charge:F1}%{BuildDiffSuffix(charge, eqCharge, "F1", "%")}");
+        }
+
+        if (gem.InstRolledReflectPercent > 0f)
+        {
+            float reflect = gem.InstRolledReflectPercent * 100f;
+            float? eqReflect = effectComparison != null && effectComparison.InstRolledReflectPercent > 0f
+                ? (float?)(effectComparison.InstRolledReflectPercent * 100f)
+                : null;
+
+            sb.AppendLine($"REFLECT: {reflect:F1}%{BuildDiffSuffix(reflect, eqReflect, "F1", "%")} of incoming damage");
+        }
 
         return sb.ToString().TrimEnd();
     }

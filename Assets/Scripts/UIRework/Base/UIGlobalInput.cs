@@ -8,7 +8,14 @@ namespace GameUI
         public static UIGlobalInput Instance { get; private set; }
 
         [SerializeField] private InputActionReference cancelAction;
+        [SerializeField] private InputActionReference menuAction;
         [SerializeField] private PauseWindow pauseWindow;
+
+        [Tooltip("If a window is open, should the menu button close everything instead of doing nothing?")]
+        [SerializeField] private bool menuClosesOpenWindows = true;
+
+        private bool cancelRequested;
+        private bool menuRequested;
 
         private void Awake()
         {
@@ -24,24 +31,55 @@ namespace GameUI
         {
             cancelAction.action.Enable();
             cancelAction.action.performed += HandleCancel;
+
+            menuAction.action.Enable();
+            menuAction.action.performed += HandleMenu;
         }
 
         private void OnDisable()
         {
             cancelAction.action.performed -= HandleCancel;
+            menuAction.action.performed -= HandleMenu;
         }
 
         private void HandleCancel(InputAction.CallbackContext context)
         {
-            if (UIManager.Instance.SuppressCancel) { return; }
+            if (UIManager.Instance != null && UIManager.Instance.SuppressCancel) { return; }
+            cancelRequested = true;
+        }
 
-            if (UIManager.Instance.HasOpenWindows)
+        private void HandleMenu(InputAction.CallbackContext context)
+        {
+            if (UIManager.Instance != null && UIManager.Instance.SuppressCancel) { return; }
+            menuRequested = true;
+        }
+
+        private void LateUpdate()
+        {
+            if (!cancelRequested && !menuRequested) { return; }
+
+            bool cancel = cancelRequested;
+            bool menu = menuRequested;
+            cancelRequested = false;
+            menuRequested = false;
+
+            UIManager manager = UIManager.Instance;
+            if (manager == null) { return; }
+
+            if (manager.HasOpenWindows)
             {
-                UIManager.Instance.CloseTopmost();
+                if (menu && menuClosesOpenWindows)
+                {
+                    manager.CloseAll();
+                }
+                else if (cancel)
+                {
+                    manager.CloseTopmost();
+                }
             }
-            else
+            else if (menu)
             {
-                UIManager.Instance.Open(pauseWindow);
+                manager.Open(pauseWindow);
             }
         }
 

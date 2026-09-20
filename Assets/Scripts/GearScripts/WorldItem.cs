@@ -119,7 +119,8 @@ public class WorldItem : MonoBehaviour
 
                 LootPickupDisplay.Instance?.AddPickup(
                     secondaryDef.UISprite, secondaryDef.UIName, secondaryRarity,
-                    ItemTooltipTextBuilder.BuildSecondaryGemTooltip(gemLoot, previouslyEquippedGem));
+                    ItemTooltipTextBuilder.BuildSecondaryGemTooltip(gemLoot, previouslyEquippedGem),
+                    gemLoot);
 
                 Debug.Log($"Picked up Secondary Gem: {secondaryDef.UIName} ({secondaryRarity})");
                 break;
@@ -133,7 +134,8 @@ public class WorldItem : MonoBehaviour
 
                 LootPickupDisplay.Instance?.AddPickup(
                     primaryDef.UISprite, primaryDef.UIName, null,
-                    ItemTooltipTextBuilder.BuildPrimaryGemTooltip(primaryDef));
+                    ItemTooltipTextBuilder.BuildPrimaryGemTooltip(primaryDef),
+                    primaryLoot);
 
                 Debug.Log($"Picked up Primary Gem: {primaryDef.UIName}");
                 break;
@@ -149,7 +151,8 @@ public class WorldItem : MonoBehaviour
 
                 LootPickupDisplay.Instance?.AddPickup(
                     weaponDef.UISprite, weaponDef.UIName, weaponRarity,
-                    ItemTooltipTextBuilder.BuildWeaponTooltip(weaponLoot, previouslyEquippedWeapon));
+                    ItemTooltipTextBuilder.BuildWeaponTooltip(weaponLoot, previouslyEquippedWeapon),
+                    weaponLoot);
 
                 Debug.Log($"Picked up Weapon: {weaponDef.UIName} ({weaponRarity})");
                 break;
@@ -165,7 +168,8 @@ public class WorldItem : MonoBehaviour
 
                 LootPickupDisplay.Instance?.AddPickup(
                     gearDef.UISprite, gearDef.UIName, gearRarity,
-                    ItemTooltipTextBuilder.BuildGearTooltip(gearLoot, gearDef.Slot.ToString(), previouslyEquippedGear));
+                    ItemTooltipTextBuilder.BuildGearTooltip(gearLoot, gearDef.Slot.ToString(), previouslyEquippedGear),
+                    gearLoot);
 
                 Debug.Log($"Picked up Gear: {gearDef.UIName} ({gearRarity})");
                 break;

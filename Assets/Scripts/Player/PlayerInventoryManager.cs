@@ -59,6 +59,52 @@ public class PlayerInventoryManager : MonoBehaviour
     public void AddItemToInventory(WeaponInstance item) =>
         AddToList(ref currentInventory.Weapons, item, (i, order) => i.PickupOrder = order);
 
+    public bool RemoveItem(object item)
+    {
+        if (item == null || currentInventory == null) return false;
+
+        bool removed;
+        switch (item)
+        {
+            case SecondaryGemInstance gem:
+                removed = RemoveFrom(currentInventory.SecondaryGems, gem, g => g.InstanceGUID);
+                break;
+            case GearInstance gear:
+                removed = RemoveFrom(currentInventory.GearInstances, gear, g => g.InstanceGUID);
+                break;
+            case PrimaryGemInstance primary:
+                removed = RemoveFrom(currentInventory.PrimaryGems, primary, null);
+                break;
+            case WeaponInstance weapon:
+                removed = RemoveFrom(currentInventory.Weapons, weapon, w => w.InstanceGUID);
+                break;
+            default:
+                removed = false;
+                break;
+        }
+
+        if (!removed) return false;
+
+        SaveManager.Instance?.SaveInventory(ToSaveData());
+        OnInventoryChanged?.Invoke();
+        return true;
+    }
+
+    private static bool RemoveFrom<T>(List<T> list, T item, System.Func<T, string> guidSelector) where T : class
+    {
+        if (list == null) return false;
+        if (list.Remove(item)) return true;
+
+        string guid = guidSelector != null ? guidSelector(item) : null;
+        if (string.IsNullOrEmpty(guid)) return false;
+
+        int index = list.FindIndex(x => guidSelector(x) == guid);
+        if (index < 0) return false;
+
+        list.RemoveAt(index);
+        return true;
+    }
+
     private static void CopyIfPresent<T>(List<T> source, List<T> destination)
     {
         if (source != null) destination.AddRange(source);

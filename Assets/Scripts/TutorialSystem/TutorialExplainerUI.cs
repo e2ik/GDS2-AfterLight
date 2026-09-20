@@ -37,6 +37,7 @@ namespace Tutorial
             if (subscribed || TutorialDirector.Instance == null) return;
             TutorialDirector.Instance.OnStepBegan += HandleStepBegan;
             TutorialDirector.Instance.OnStepEnded += HandleStepEnded;
+            TutorialDirector.Instance.RegisterExcludedWindow(windowAnimator);
             subscribed = true;
         }
 
