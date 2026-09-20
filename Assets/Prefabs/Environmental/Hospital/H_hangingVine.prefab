@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2086882834781481306}
   - component: {fileID: 8724128694862624420}
   m_Layer: 0
-  m_Name: H_plant02
+  m_Name: H_hangingVine
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -84,8 +84,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 25
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -4004330094508372482, guid: 7c54e2df21321fa44ba47245f8759b92, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: -1153875531151498168, guid: 1d5d72f22eaebbb4aa0860023aea306f, type: 3}
+  m_Color: {r: 0.39617676, g: 0.55345905, b: 0.36723223, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -110,6 +110,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 29192
   triggerOnce: 0
+  useCooldown: 0
+  cooldownDuration: 0
   animatorTriggerName: Activate
   useBoolInstead: 0
   animatorBoolName: IsActive
@@ -123,7 +125,7 @@ Animator:
   m_GameObject: {fileID: 3004490955946628216}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: f33b9f9760e7e0f4791296d267b9ad2d, type: 2}
+  m_Controller: {fileID: 9100000, guid: d7c50a453d261be468c310ac2cd83b3b, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -169,7 +171,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.047184706, y: -0.15244234}
+  m_Offset: {x: -0.06537461, y: 1.0584462}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -179,5 +181,5 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.165196, y: 1.6951153}
+  m_Size: {x: 1.034946, y: 1.9501909}
   m_EdgeRadius: 0

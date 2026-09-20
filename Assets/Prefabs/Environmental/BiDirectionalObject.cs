@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider2D))]
-public class HDoorScript : MonoBehaviour
+public class BiDirectionalObject : MonoBehaviour
 {
     private enum Side { None, Left, Right }
 

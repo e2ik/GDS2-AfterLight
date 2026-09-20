@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2086882834781481306}
   - component: {fileID: 8724128694862624420}
   m_Layer: 0
-  m_Name: H_plant02
+  m_Name: H_plant03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -82,10 +82,10 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 25
+  m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -4004330094508372482, guid: 7c54e2df21321fa44ba47245f8759b92, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: -965422475337088489, guid: 2ee8f306046d0be4ea8ba1e28a1870a0, type: 3}
+  m_Color: {r: 0.7045881, g: 0.7610062, b: 0.4570823, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -123,7 +123,7 @@ Animator:
   m_GameObject: {fileID: 3004490955946628216}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: f33b9f9760e7e0f4791296d267b9ad2d, type: 2}
+  m_Controller: {fileID: 9100000, guid: 8d2f4b17cb6883742ac8197a54165e25, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -169,15 +169,15 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.047184706, y: -0.15244234}
+  m_Offset: {x: -0.002804041, y: -0.12618631}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2, y: 4}
+    oldSize: {x: 2, y: 2}
     newSize: {x: 2, y: 2}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.165196, y: 1.6951153}
+  m_Size: {x: 1.4111314, y: 1.7476274}
   m_EdgeRadius: 0
