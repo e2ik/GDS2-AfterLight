@@ -1,7 +1,9 @@
 using System.Collections;
 using Enemies;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -31,7 +33,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     [SerializeField] private float wallCheckNormalThreshold = 0.5f;
-    [SerializeField] private Vector2 wallJumpForce = new(10f, 16f);
+    [SerializeField] private Vector2 wallJumpForce = new(8f, 16f);
     [SerializeField] private float wallJumpDuration = 0.4f;
     [SerializeField] private float wallJumpBufferTime = 0.2f;
 
@@ -51,6 +53,16 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float lightForce = 8f, lightStaggerDuration = 0.1f;
     [SerializeField] private float mediumForce = 10f, mediumStaggerDuration = 0.2f;
     [SerializeField] private float heavyForce = 14f, heavyStaggerDuration = 0.4f;
+    
+    
+    private Vector2 climbStartPos;
+    private Vector2 climbEndPos;
+    [Header("Edge Climb Settings")]
+    [SerializeField] private Vector2 climbStartOffset;
+    [SerializeField] private Vector2 climbEndOffset;
+    private bool canClimbEdge = true;
+    private bool isClimbing;
+    [HideInInspector] public bool onEdge;
 
     [Header("Detection Settings")]
     public LayerMask groundLayer;
@@ -92,6 +104,7 @@ public class PlayerController : MonoBehaviour
     public bool IsBouncing => isBouncing;
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
     public bool IsInvulnerable => IsNeutralDash;
+    public bool IsClimbing => isClimbing;
     private bool IsSkillBaseLocked =>
         isChargingSkillPhysics
         || isSkillGravityZeroed
@@ -143,6 +156,7 @@ public class PlayerController : MonoBehaviour
         WallCheckUpdate();
 
         HandleMovement();
+        HandleEdgeClimb();
         HandleWallSlide();
         HandleJump();
         HandleWallJump();
@@ -477,6 +491,37 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocityX = 0;
     }
 
+    private void HandleEdgeClimb()
+    {
+        if (IsFrozenOrSkillLocked)
+        {
+            isClimbing = false;
+            return;
+        }
+        
+        if (onEdge && canClimbEdge)
+        {
+            canClimbEdge = false;
+            Vector2 edgePosition = GetComponentInChildren<PlayerEdgeDetection>().transform.position;
+            
+            climbStartPos = edgePosition + new Vector2(climbStartOffset.x * FacingDirection, climbStartOffset.y);
+            climbEndPos = edgePosition + new Vector2(climbEndOffset.x * FacingDirection, climbEndOffset.y);
+
+            isClimbing = true;
+        }
+        if (isClimbing)
+            transform.position = climbStartPos;
+    }
+
+    private void Climb() //triggered in animation events
+    {
+        isClimbing = false;
+        transform.position = climbEndPos;
+        Invoke("AllowClimb", 0.1f);
+    }
+
+    private void AllowClimb() => canClimbEdge = true;
+
     private void UpdateGravity()
     {
         if (IsGravityZeroed)
@@ -683,6 +728,7 @@ public class PlayerController : MonoBehaviour
     private void WallCheckUpdate()
     {
         onWall = false;
+
         if (isGrounded || IsMovementLockedBySkill || Mathf.Abs(horizontalInput) < InputDeadzone) return;
 
         Bounds bounds = cachedBounds;
@@ -692,7 +738,7 @@ public class PlayerController : MonoBehaviour
         Vector2 head = new(bounds.center.x, bounds.max.y - (bounds.size.y * 0.1f));
         Vector2 chest = new(bounds.center.x, bounds.center.y + (bounds.extents.y * 0.2f));
         Vector2 waist = new(bounds.center.x, bounds.min.y + (bounds.size.y * 0.3f));
-
+        
         int hits = 0;
         if (CheckWallRay(head, dir, rayLen)) hits++;
         if (CheckWallRay(chest, dir, rayLen)) hits++;

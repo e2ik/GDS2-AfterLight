@@ -28,6 +28,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsAboutToLandHash = Animator.StringToHash("isAboutToLand");
     private static readonly int ChargeProgressHash = Animator.StringToHash("ChargeProgress");
     private static readonly int IsDeadHash = Animator.StringToHash("isDead");
+    private static readonly int IsClimbingHash = Animator.StringToHash("isClimbing");
 
     [Header("particle prefabs")]
     [SerializeField] private ParticleSystem wallSlideParticleSystem;
@@ -116,6 +117,8 @@ public class PlayerAnimation : MonoBehaviour
             animator.SetInteger(AttackIndexHash, 0);
             animator.SetBool(IsSkillingHash, false);
             animator.SetBool(IsPlungingHash, false);
+            
+            animator.SetBool(IsClimbingHash, false);
 
             wasDeadLastFrame = true;
             return;
@@ -147,6 +150,7 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetBool(IsSkillingHash, isSkilling);
         animator.SetBool(IsPlungingHash, isPlunging);
         animator.SetBool(IsDashingHash, player.Controller.IsDashing);
+        animator.SetBool(IsClimbingHash, player.Controller.IsClimbing);
 
         if (isSkilling) return;
 
