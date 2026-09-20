@@ -16,7 +16,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3172339659433684392
 RectTransform:
   m_ObjectHideFlags: 0
@@ -98,6 +98,7 @@ MonoBehaviour:
   characterNameText: {fileID: 8944796770309333061}
   dialogueText: {fileID: 7175199179248166007}
   nextDialogueIndicator: {fileID: 8061826658173525820}
+  dialogueEffects: {fileID: 2688857852123776669}
   dialoguePanelRect: {fileID: 3172339659433684392}
   slideOffsetY: -200
   slideDuration: 0.25
@@ -116,12 +117,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b66128650204546a4a81dffe8598ea6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogueEffects
-  dialoguePanel: {fileID: 0}
-  dialogueText: {fileID: 0}
-  angryShakeDuration: 0.35
-  angryBoxShakeStrength: 8
+  dialoguePanel: {fileID: 3172339659433684392}
+  dialogueText: {fileID: 7175199179248166007}
+  angryShakeDuration: 1.5
+  angryBoxShakeStrength: 6
   angryTextShakeStrength: 1.5
-  angryFontSizeMultiplier: 1.15
+  angryFontSizeMultiplier: 1.5
   unstableStrength: 2
   unstableSpeed: 8
 --- !u!1 &4000684074867719090

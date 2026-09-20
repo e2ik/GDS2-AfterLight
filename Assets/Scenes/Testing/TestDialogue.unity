@@ -85015,6 +85015,18 @@ PrefabInstance:
       propertyPath: dialoguePanel
       value: 
       objectReference: {fileID: 7995224957627441305}
+    - target: {fileID: 2688857852123776669, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
+      propertyPath: angryShakeDuration
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2688857852123776669, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
+      propertyPath: angryBoxShakeStrength
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2688857852123776669, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
+      propertyPath: angryFontSizeMultiplier
+      value: 1.5
+      objectReference: {fileID: 0}
     - target: {fileID: 4000684074867719090, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
       propertyPath: m_Name
       value: DialogueCanvas

@@ -128,7 +128,7 @@ public class DialogueEffects : MonoBehaviour
         }
     }
 
-    private IEnumerator WiggleCharacters()
+     private IEnumerator WiggleCharacters()
     {
         while (currentEffect == DialogueEffect.Unstable)
         {
@@ -147,16 +147,16 @@ public class DialogueEffects : MonoBehaviour
 
                 Vector3[] vertices = textInfo.meshInfo[materialIndex].vertices;
 
-                float offsetY = Mathf.Sin(Time.unscaledTime * unstableSpeed + i * 0.5f) * unstableStrength;
+                float offsetX = Random.Range(-unstableStrength * 0.5f, unstableStrength * 0.5f);
+                float offsetY = Random.Range(-unstableStrength, unstableStrength);
 
-                Vector3 offset = new Vector3(0f, offsetY, 0f);
+                Vector3 offset = new Vector3(offsetX, offsetY, 0f);
 
                 for (int j = 0; j < 4; j++) vertices[vertexIndex + j] += offset;
             }
 
             UpdateTextMesh(textInfo);
-
-            yield return null;
+            yield return new WaitForSecondsRealtime(1f / unstableSpeed);
         }
     }
 
