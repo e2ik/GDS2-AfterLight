@@ -1,9 +1,7 @@
 using System.Collections;
 using Enemies;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -286,11 +284,12 @@ public class PlayerController : MonoBehaviour
     private void HandleJump()
     {
         bool canJump = InputEnabled
-            && !isWallJumping
-            && !isStaggered
-            && !isWallSliding
-            && !IsMovementLockedBySkill
-            && !combat.IsPlunging;
+                       && !isWallJumping
+                       && !isStaggered
+                       && !isWallSliding
+                       && !IsMovementLockedBySkill
+                       && !combat.IsPlunging
+                       && !isClimbing;
         if (!canJump) return;
 
         coyoteTimeCounter = isGrounded ? coyoteTime : coyoteTimeCounter - Time.fixedDeltaTime;
@@ -339,7 +338,7 @@ public class PlayerController : MonoBehaviour
 
         wallCoyoteTimer = (onWall && !isGrounded && Mathf.Abs(horizontalInput) > InputDeadzone) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
 
-        if (onWall && !isGrounded && wallCoyoteTimer > 0f)
+        if (onWall && !isGrounded && wallCoyoteTimer > 0f && !isClimbing)
         {
             if (!isWallSliding)
             {
