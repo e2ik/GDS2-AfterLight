@@ -111,10 +111,16 @@ public class WorldItem : MonoBehaviour
             case SecondaryGemBehaviourDefinition secondaryDef:
                 ERarity secondaryRarity = GetWeightedRarity();
                 SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(secondaryRarity); // need to be able to check type
+                SecondaryGemInstance previouslyEquippedGem = !player.Equipment.IsSecondaryGemSlotEmpty() ? player.Equipment.SecondaryGem : null;
                 player.Inventory.AddItemToInventory(gemLoot);
 
                 if (player.Equipment.IsSecondaryGemSlotEmpty())
                     player.Equipment.EquipSecondaryGem(gemLoot);
+
+                LootPickupDisplay.Instance?.AddPickup(
+                    secondaryDef.UISprite, secondaryDef.UIName, secondaryRarity,
+                    ItemTooltipTextBuilder.BuildSecondaryGemTooltip(gemLoot, previouslyEquippedGem),
+                    gemLoot);
 
                 Debug.Log($"Picked up Secondary Gem: {secondaryDef.UIName} ({secondaryRarity})");
                 break;
@@ -126,16 +132,27 @@ public class WorldItem : MonoBehaviour
                 if (player.Equipment.IsSpecialAttackSlotEmpty())
                     player.Equipment.EquipSpecialAttack(primaryDef);
 
+                LootPickupDisplay.Instance?.AddPickup(
+                    primaryDef.UISprite, primaryDef.UIName, null,
+                    ItemTooltipTextBuilder.BuildPrimaryGemTooltip(primaryDef),
+                    primaryLoot);
+
                 Debug.Log($"Picked up Primary Gem: {primaryDef.UIName}");
                 break;
 
             case WeaponDefinition weaponDef:
                 ERarity weaponRarity = GetWeightedRarity();
                 WeaponInstance weaponLoot = weaponDef.CreateInstance(weaponRarity);
+                WeaponInstance previouslyEquippedWeapon = player.Equipment.EquippedWeapon;
                 player.Inventory.AddItemToInventory(weaponLoot);
 
                 if (player.Equipment.IsWeaponSlotEmpty())
                     player.Equipment.EquipWeapon(weaponLoot);
+
+                LootPickupDisplay.Instance?.AddPickup(
+                    weaponDef.UISprite, weaponDef.UIName, weaponRarity,
+                    ItemTooltipTextBuilder.BuildWeaponTooltip(weaponLoot, previouslyEquippedWeapon),
+                    weaponLoot);
 
                 Debug.Log($"Picked up Weapon: {weaponDef.UIName} ({weaponRarity})");
                 break;
@@ -143,10 +160,16 @@ public class WorldItem : MonoBehaviour
             case GearDefinition gearDef:
                 ERarity gearRarity = GetWeightedRarity();
                 GearInstance gearLoot = gearDef.CreateInstance(gearRarity);
+                GearInstance previouslyEquippedGear = player.Equipment.GetEquippedGear(gearDef.Slot);
                 player.Inventory.AddItemToInventory(gearLoot);
 
                 if (player.Equipment.IsGearSlotEmpty(gearDef.Slot))
                     player.Equipment.EquipGear(gearDef.Slot, gearLoot);
+
+                LootPickupDisplay.Instance?.AddPickup(
+                    gearDef.UISprite, gearDef.UIName, gearRarity,
+                    ItemTooltipTextBuilder.BuildGearTooltip(gearLoot, gearDef.Slot.ToString(), previouslyEquippedGear),
+                    gearLoot);
 
                 Debug.Log($"Picked up Gear: {gearDef.UIName} ({gearRarity})");
                 break;

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Tutorial;
 
 public class GameManager : MonoBehaviour
 {
@@ -193,6 +194,7 @@ public class GameManager : MonoBehaviour
         if (data == null)
         {
             Debug.LogWarning("[GameManager] No save data found — falling back to new game.");
+            TutorialDirector.Instance?.ClearCompletedSequences();
             yield return LoadSceneAdditive(defaultStartSceneName);
             yield return null;
             
@@ -205,6 +207,7 @@ public class GameManager : MonoBehaviour
 
         LoadPlayerInventory(data.inventoryData);
         LoadPlayerEquipment(data);
+        TutorialDirector.Instance?.LoadCompletedSequences(data.progress?.completedTutorialSequenceIDs);
 
         string sceneToLoad = (data.progress != null && !string.IsNullOrEmpty(data.progress.lastVisitedSceneName))
             ? data.progress.lastVisitedSceneName
@@ -477,6 +480,15 @@ public class GameManager : MonoBehaviour
         else
         {
             p.Equipment.ClearWeapon();
+        }
+        
+        if (data.equippedPrimaryGemSaved)
+        {
+            p.Equipment.EquipSpecialAttackByID(data.equippedPrimaryGemID);
+        }
+        else
+        {
+            p.Equipment.ClearSpecialAttack();
         }
     }
 

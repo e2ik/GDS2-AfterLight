@@ -21,7 +21,6 @@ namespace GameUI
             animator.InstantHide();
         }
 
-        // Open & Close Only callable by UIManager
         internal void HandleOpened()
         {
             IsOpen = true;
@@ -29,10 +28,7 @@ namespace GameUI
             OnWindowOpened();
             animator.Show();
 
-            if (firstSelected != null)
-            {
-                EventSystem.current?.SetSelectedGameObject(firstSelected.gameObject);
-            }
+            SelectInitial();
         }
 
         internal void HandleClosed()
@@ -50,14 +46,22 @@ namespace GameUI
 
         internal void Reselect()
         {
-            if (firstSelected != null)
+            SelectInitial();
+        }
+
+        // need this because some windows are not selectable and they need their own implementation
+        protected virtual Selectable GetInitialSelectable() => firstSelected;
+
+        private void SelectInitial()
+        {
+            Selectable target = GetInitialSelectable();
+            if (target != null)
             {
-                EventSystem.current?.SetSelectedGameObject(firstSelected.gameObject);
+                EventSystem.current?.SetSelectedGameObject(target.gameObject);
             }
         }
 
         protected virtual void OnWindowOpened() { }
         protected virtual void OnWindowClosed() { }
-
     }
 }

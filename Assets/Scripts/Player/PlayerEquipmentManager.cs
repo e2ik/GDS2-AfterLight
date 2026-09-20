@@ -144,6 +144,26 @@ public class PlayerEquipmentManager : MonoBehaviour
         OnEquipmentChanged?.Invoke();
     }
 
+    public string GetEquippedPrimaryGemID()
+    {
+        return specialAttackDef != null ? specialAttackDef.ItemID : string.Empty;
+    }
+
+    public bool EquipSpecialAttackByID(string itemID)
+    {
+        if (string.IsNullOrEmpty(itemID))
+        {
+            ClearSpecialAttack();
+            return true;
+        }
+
+        PrimaryGemBehaviourDefinition def = GameDatabase.GetPrimaryTemplateFromID(itemID);
+        if (def == null) return false;
+
+        EquipSpecialAttack(def);
+        return true;
+    }
+
     public void EquipSecondaryGem(SecondaryGemInstance newGem)
     {
         secondaryGem = newGem;

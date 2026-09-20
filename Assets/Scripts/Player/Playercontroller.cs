@@ -21,6 +21,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float friction = 0.2f;
     [SerializeField] private float passThroughPlatformDuration = 0.25f;
 
+    [SerializeField] private float verticalDeadzone = 0.3f;
+    [SerializeField] private float upIntentThreshold = 0.5f;
+    [SerializeField] private float downIntentThreshold = 0.7f;
+    public float VerticalInput => verticalInput;
+    public bool IsUpIntent { get; private set; }
+    public bool IsDownIntent { get; private set; }
+
     [Header("Gravity Settings")]
     [SerializeField] private float normGravity = 3f;
     [SerializeField] private float jumpGravity = 2.5f;
@@ -93,6 +100,8 @@ public class PlayerController : MonoBehaviour
     public bool InputEnabled { get; set; } = true;
     public int FacingDirection { get; private set; } = 1;
     public bool IsMovementFrozen => movementFreezeCount > 0;
+    public bool IsUILocked =>
+        GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.IsInputLocked;
     public bool IsGrounded => isGrounded;
     public bool IsWallSliding => isWallSliding;
     public bool IsDashing => isDashing;
@@ -133,7 +142,6 @@ public class PlayerController : MonoBehaviour
         playerColliders = GetComponentsInChildren<Collider2D>(true);
     }
 
-    //private void Start() => rb.gravityScale = normGravity;
     private void Start()
     {
         rb.gravityScale = normGravity;
@@ -142,7 +150,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (CanMove()) Flip();
+        if (!IsUILocked && CanMove()) Flip();
         if (InputEnabled && !IsMovementFrozen) PerformInventoryAction();
     }
 
@@ -240,6 +248,7 @@ public class PlayerController : MonoBehaviour
     }
 
     public bool CanMove() => InputEnabled
+                             && !IsMovementFrozen
                              && !isWallJumping
                              && !isDashing
                              && !isStaggered
@@ -251,7 +260,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
-        if (IsMovementLockedBySkill || isStaggered) return;
+        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered) return;
 
         bool duringWallJump = isWallJumping && Mathf.Abs(horizontalInput) > InputDeadzone;
         if (!CanMove() && !duringWallJump) return;
@@ -339,7 +348,7 @@ public class PlayerController : MonoBehaviour
             }
 
             isWallSliding = true;
-            rb.linearVelocityX = 0f; // prevent sliding into the wall
+            rb.linearVelocityX = 0f;
             if (rb.linearVelocityY > 0f) rb.linearVelocityY *= wallSlideUpwardDampening;
             rb.linearVelocityY = Mathf.Clamp(rb.linearVelocityY, -wallSlideSpeed, float.MaxValue);
         }
@@ -437,7 +446,7 @@ public class PlayerController : MonoBehaviour
             IgnoreAllAirOnlyPlatformsDuringDash(activeDuration);
 
             rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
-        
+
             playerAnimation.TriggerDashEffect();
 
             ConsumeDashInput();
@@ -560,7 +569,7 @@ public class PlayerController : MonoBehaviour
         if (physicsSuspended) return;
 
         combat.ForceCancelAttack();
-        if(applyStagger) playerAnimation.PlayHurtAnimation();
+        if (applyStagger) playerAnimation.PlayHurtAnimation();
 
         KnockbackData data = attackForce switch
         {
@@ -574,7 +583,7 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         rb.AddForce(dir * data.Force, ForceMode2D.Impulse);
 
-        if(applyStagger) StartHitStagger(data.StaggerDuration);
+        if (applyStagger) StartHitStagger(data.StaggerDuration);
     }
 
     private void StartHitStagger(float duration)
@@ -593,7 +602,7 @@ public class PlayerController : MonoBehaviour
 
     public void ApplyBounceImpulse(Vector2 sourcePosition, float force)
     {
-        if (physicsSuspended) return; // NEW
+        if (physicsSuspended) return;
 
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
         rb.linearVelocity = Vector2.zero;
@@ -602,7 +611,7 @@ public class PlayerController : MonoBehaviour
 
     public void TriggerBounce(Vector2 sourcePosition, float force, float duration)
     {
-        if (physicsSuspended) return; // NEW
+        if (physicsSuspended) return;
 
         combat.ForceCancelAttack();
 
@@ -615,7 +624,7 @@ public class PlayerController : MonoBehaviour
 
     public void PlayBounceState(float duration)
     {
-        if (physicsSuspended) return; // NEW
+        if (physicsSuspended) return;
 
         if (bounceRoutine != null) StopCoroutine(bounceRoutine);
         bounceRoutine = StartCoroutine(BounceCoroutine(duration));
@@ -636,12 +645,22 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputValue value)
     {
         Vector2 raw = value.Get<Vector2>();
-        verticalInput = raw.y;
-        horizontalInput = Mathf.Abs(raw.x) > InputDeadzone ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude) : 0f;
+
+        verticalInput = Mathf.Abs(raw.y) > verticalDeadzone ? raw.y : 0f;
+
+        bool verticalDominant = Mathf.Abs(raw.y) > Mathf.Abs(raw.x);
+        IsUpIntent = raw.y > upIntentThreshold && verticalDominant;
+        IsDownIntent = raw.y < -downIntentThreshold && verticalDominant;
+
+        horizontalInput = Mathf.Abs(raw.x) > InputDeadzone
+            ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude)
+            : 0f;
     }
 
     public void OnJump(InputValue value)
     {
+        if (value.isPressed && IsUILocked) return;
+
         if (value.isPressed)
         {
             combat.CancelParry();
@@ -649,7 +668,13 @@ public class PlayerController : MonoBehaviour
         jumpPressed = value.isPressed; jumpReleased = !value.isPressed;
     }
 
-    public void OnDash(InputValue value) { dashPressed = value.isPressed; dashReleased = !value.isPressed; }
+    public void OnDash(InputValue value)
+    {
+        if (value.isPressed && IsUILocked) return;
+
+        dashPressed = value.isPressed; dashReleased = !value.isPressed;
+    }
+
     public void OnInventory() => inventoryPressed = true;
 
     private void ConsumeJumpInput()
@@ -672,8 +697,6 @@ public class PlayerController : MonoBehaviour
     {
         if (Mathf.Abs(horizontalInput) > InputDeadzone)
         {
-            // FacingDirection = horizontalInput > 0f ? 1 : -1;
-            // transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
             int newFacingDirection = horizontalInput > 0f ? 1 : -1;
 
             if (newFacingDirection != FacingDirection)
@@ -685,7 +708,7 @@ public class PlayerController : MonoBehaviour
                     playerAnimation.TriggerTurnDustEffect(FacingDirection);
                 }
                 lastFacingDirection = FacingDirection;
-                transform.localScale = new Vector3(FacingDirection,transform.localScale.y,transform.localScale.z);
+                transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
             }
         }
     }
@@ -751,8 +774,8 @@ public class PlayerController : MonoBehaviour
     {
         RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.right * dir, len, groundLayer);
         if (hit.collider == null || Mathf.Abs(hit.normal.x) <= wallCheckNormalThreshold) return false;
-    if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
-        return false;
+        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
+            return false;
 
         currentSurfaceNormal = hit.normal;
         lastHitPoint = hit.point;

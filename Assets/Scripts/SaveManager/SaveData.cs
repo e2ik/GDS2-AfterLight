@@ -8,6 +8,8 @@ public class SaveData
     public WeaponInstance equippedWeapon;
     public List<EquippedGearSaveData> equippedGear = new List<EquippedGearSaveData>();
     public SecondaryGemInstance equippedSecondaryGem;
+    public string equippedPrimaryGemID;
+    public bool equippedPrimaryGemSaved;
     public ProgressSaveData progress;
     public ChestSaveData chestData;
     public InventorySaveData inventoryData;
@@ -43,6 +45,7 @@ public class ProgressSaveData
     public string lastSpawnAnchorID;
     public AreaSide lastAreaSide = AreaSide.Exterior;
     public string lastInteractedFastTravelID;
+    public List<string> completedTutorialSequenceIDs = new List<string>();
 }
 
 [System.Serializable]
