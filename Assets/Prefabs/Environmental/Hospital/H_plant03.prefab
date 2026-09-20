@@ -82,7 +82,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 6
   m_MaskInteraction: 0
   m_Sprite: {fileID: -965422475337088489, guid: 2ee8f306046d0be4ea8ba1e28a1870a0, type: 3}
   m_Color: {r: 0.7045881, g: 0.7610062, b: 0.4570823, a: 1}
@@ -110,6 +110,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 29192
   triggerOnce: 0
+  useCooldown: 0
+  cooldownDuration: 1
   animatorTriggerName: Activate
   useBoolInstead: 0
   animatorBoolName: IsActive
