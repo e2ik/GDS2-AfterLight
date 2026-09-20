@@ -79970,7 +79970,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Don't worry you won't die here
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2caf916d51a264dbba559afef366c187, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -80037,7 +80037,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 12.686844, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1448924082
@@ -83406,7 +83406,7 @@ MonoBehaviour:
 
     "Space" to Jump'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2caf916d51a264dbba559afef366c187, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -83473,7 +83473,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 12.686844, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1760279870
@@ -83543,8 +83543,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Try Wall Slides!
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2caf916d51a264dbba559afef366c187, type: 2}
+  m_sharedMaterial: {fileID: 5256162471703705019, guid: 2caf916d51a264dbba559afef366c187, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -83866,17 +83866,6 @@ MonoBehaviour:
   - key: p
     prefab: {fileID: 525218031157934298, guid: cfe360f1890206848aabc05b477a7387, type: 3}
     initialPoolSize: 1
---- !u!114 &1958188125 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2688857852123776669, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-  m_PrefabInstance: {fileID: 7995224957627441304}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b66128650204546a4a81dffe8598ea6c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DialogueEffects
 --- !u!1 &1971896904
 GameObject:
   m_ObjectHideFlags: 0
@@ -84999,34 +84988,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 973674558610837145, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 976119884718912025, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-      propertyPath: dialogueEffects
-      value: 
-      objectReference: {fileID: 1958188125}
-    - target: {fileID: 2688857852123776669, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-      propertyPath: dialogueText
-      value: 
-      objectReference: {fileID: 7995224957627441306}
-    - target: {fileID: 2688857852123776669, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-      propertyPath: dialoguePanel
-      value: 
-      objectReference: {fileID: 7995224957627441305}
-    - target: {fileID: 2688857852123776669, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-      propertyPath: angryShakeDuration
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2688857852123776669, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-      propertyPath: angryBoxShakeStrength
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 2688857852123776669, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-      propertyPath: angryFontSizeMultiplier
-      value: 1.5
-      objectReference: {fileID: 0}
     - target: {fileID: 4000684074867719090, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
       propertyPath: m_Name
       value: DialogueCanvas
@@ -85116,22 +85077,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
---- !u!224 &7995224957627441305 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 3172339659433684392, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-  m_PrefabInstance: {fileID: 7995224957627441304}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &7995224957627441306 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7175199179248166007, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-  m_PrefabInstance: {fileID: 7995224957627441304}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1001 &8892981758551516557
 PrefabInstance:
   m_ObjectHideFlags: 0

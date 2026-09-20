@@ -9,10 +9,13 @@ public class DialogueEffects : MonoBehaviour
     [SerializeField] private TMP_Text dialogueText;
 
     [Header("Angry")]
+    [SerializeField] private bool keepShakingBox = true; //. shake nonstop
+
     [SerializeField] private float angryShakeDuration = 0.35f;
     [SerializeField] private float angryBoxShakeStrength = 8f;
     [SerializeField] private float angryTextShakeStrength = 1.5f;
     [SerializeField] private float angryFontSizeMultiplier = 1.15f;
+    
 
     [Header("Unstable")]
     [SerializeField] private float unstableStrength = 2f;
@@ -85,7 +88,7 @@ public class DialogueEffects : MonoBehaviour
     {
         float elapsed = 0f;
 
-        while (elapsed < angryShakeDuration)
+        while (currentEffect == DialogueEffect.Angry && (keepShakingBox || elapsed < angryShakeDuration))
         {
             elapsed += Time.unscaledDeltaTime;
 
