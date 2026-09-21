@@ -10,10 +10,7 @@ public class BiDirectionalObject : MonoBehaviour
     [SerializeField] private Animator animator;
 
     [Header("Detection")]
-    [Tooltip("Only colliders with this tag will open the door.")]
-    [SerializeField] private string playerTag = "Player";
-
-    [Tooltip("Swap left and right if they come out the wrong way round.")]
+    [SerializeField] private LayerMask playerLayer;
     [SerializeField] private bool invertSides = false;
 
     [Header("Animator State Names")]
@@ -43,7 +40,7 @@ public class BiDirectionalObject : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag)) return;
+        if (!IsOnPlayerLayer(other)) return;
 
         occupants.Add(other);
 
@@ -64,6 +61,11 @@ public class BiDirectionalObject : MonoBehaviour
         openedFromSide = Side.None;
     }
 
+    private bool IsOnPlayerLayer(Collider2D other)
+    {
+        return ((1 << other.gameObject.layer) & playerLayer.value) != 0;
+    }
+
     private Side GetSide(Vector3 worldPosition)
     {
         Vector3 local = transform.InverseTransformPoint(worldPosition);
@@ -79,7 +81,7 @@ public class BiDirectionalObject : MonoBehaviour
     {
         if (animator == null)
         {
-            Debug.LogWarning($"{name}: No Animator assigned to DoorTrigger.", this);
+            Debug.LogWarning($"{name}: No Animator assigned to BiDirectionalObject.", this);
             return;
         }
 

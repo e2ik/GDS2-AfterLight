@@ -803,29 +803,33 @@ public class PlayerController : MonoBehaviour
 
     private void HandleHazardousCollision(Collision2D col)
     {
-        if (((1 << col.gameObject.layer) & hazardousLayers) == 0 || isStaggered || isBouncing || IsSkillActive) return;
-        if (combat.IsPlunging) return;
+        if (((1 << col.gameObject.layer) & hazardousLayers) == 0) return;
 
         bool isEnemyLayer = ((1 << col.gameObject.layer) & combat.enemyLayer) != 0;
         if (isEnemyLayer && !col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
 
-        bool wasPlunging = combat.IsPlunging || combat.WasRecentlyPlunging;
+        ApplyHazardKnockback(col.GetContact(0).point);
+    }
+
+    public void ApplyHazardKnockback(Vector2 contactPoint) =>
+        ApplyHazardKnockback(contactPoint, hazardousKnockbackForce, hazardousStaggerDuration);
+
+    public bool ApplyHazardKnockback(Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null)
+    {
+        if (physicsSuspended || isStaggered || isBouncing || IsSkillActive || combat.IsPlunging) return false;
+
+        bool wasPlunging = combat.WasRecentlyPlunging;
 
         combat.ForceCancelAttack();
 
-        ContactPoint2D contact = col.GetContact(0);
         rb.linearVelocity = Vector2.zero;
-        Vector2 dir = new Vector2(transform.position.x >= contact.point.x ? 1f : -1f, 1f).normalized;
-        rb.AddForce(dir * hazardousKnockbackForce, ForceMode2D.Impulse);
+        Vector2 dir = directionOverride ?? new Vector2(transform.position.x >= contactPoint.x ? 1f : -1f, 1f);
+        rb.AddForce(dir.normalized * force, ForceMode2D.Impulse);
 
-        if (wasPlunging)
-        {
-            PlayBounceState(bounceDuration);
-        }
-        else
-        {
-            StartHitStagger(hazardousStaggerDuration);
-        }
+        if (wasPlunging) PlayBounceState(bounceDuration);
+        else StartHitStagger(staggerDuration);
+
+        return true;
     }
 
     #endregion
