@@ -1,49 +1,52 @@
 fileFormatVersion: 2
-guid: 86a965db6fc8c4d068e57c45bb7879c5
+guid: 96ff7ad3f1e3c4631bb78f3ba7d921a4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3603556060819865620
-    second: ball_0
+      213: -8096701174073055094
+    second: energy-ball_0
   - first:
-      213: 7826395881470743827
-    second: ball_1
+      213: -8841330699341727701
+    second: energy-ball_1
   - first:
-      213: 5641732428763174162
-    second: ball_2
+      213: -5682313650225669190
+    second: energy-ball_2
   - first:
-      213: -2809790316608957549
-    second: ball_3
+      213: 2804654650954920372
+    second: energy-ball_3
   - first:
-      213: 4121045027123494526
-    second: ball_4
+      213: -1900340474675441323
+    second: energy-ball_4
   - first:
-      213: 487225773713915244
-    second: ball_5
+      213: 5303004346273290735
+    second: energy-ball_5
   - first:
-      213: -7102346000423677967
-    second: ball_6
+      213: -6721307182860250260
+    second: energy-ball_6
   - first:
-      213: -1764221517815304217
-    second: ball_7
+      213: -2746543254022809814
+    second: energy-ball_7
   - first:
-      213: -134726451804706446
-    second: ball_8
+      213: 1546237321895422223
+    second: energy-ball_8
   - first:
-      213: 4716163243082697586
-    second: ball_9
+      213: -3881135590596698614
+    second: energy-ball_9
   - first:
-      213: 2743904897393940529
-    second: ball_10
+      213: -6892599294065474567
+    second: energy-ball_10
   - first:
-      213: 5851614765119538088
-    second: ball_11
+      213: 3269145115488446106
+    second: energy-ball_11
   - first:
-      213: 475864970227001295
-    second: ball_12
+      213: 4986541833409120182
+    second: energy-ball_12
   - first:
-      213: 9078195853359407407
-    second: ball_13
+      213: -8328109938247932958
+    second: energy-ball_13
+  - first:
+      213: -3034405398384870656
+    second: energy-ball_14
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -90,7 +93,7 @@ TextureImporter:
   spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 16
+  spritePixelsToUnits: 32
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -191,7 +194,117 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ball_0
+      name: EnergyBall_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fafe8c50ad80c49d7a6879416f83167b
+      internalID: -94323540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EnergyBall_1
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 456cb1a36cd634493b73fd51883a283e
+      internalID: -1933085923
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EnergyBall_2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1f8d608d2270e45229ca8fb818d87ca2
+      internalID: 1520756748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EnergyBall_3
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0ee0d977a4d964b6db19ce97d2a61567
+      internalID: -1811072834
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EnergyBall_4
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1bac7f5a21cbf4afcad1cf991c3fabc3
+      internalID: -1669644030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EnergyBall_5
       rect:
         serializedVersion: 2
         x: 0
@@ -204,16 +317,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: cef30aaead89dfdc0800000000000000
-      internalID: -3603556060819865620
+      spriteID: d8261477413ee436d97dd977d87a1178
+      internalID: -760586183
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ball_1
+      name: EnergyBall_6
       rect:
         serializedVersion: 2
         x: 32
@@ -226,16 +339,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 315d4a29691fc9c60800000000000000
-      internalID: 7826395881470743827
+      spriteID: 18ece3254107b42a8807945c937be39e
+      internalID: 2122859600
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ball_2
+      name: EnergyBall_7
       rect:
         serializedVersion: 2
         x: 64
@@ -248,16 +361,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2151b36b0c57b4e40800000000000000
-      internalID: 5641732428763174162
+      spriteID: a7b3d2727e6fa4f8792eb7b9ccc80024
+      internalID: 1368999362
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ball_3
+      name: EnergyBall_8
       rect:
         serializedVersion: 2
         x: 96
@@ -270,16 +383,38 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 393d03d089e9109d0800000000000000
-      internalID: -2809790316608957549
+      spriteID: 3dc4992598ff64ec6876bcdc8b4220e9
+      internalID: 1471890968
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ball_4
+      name: EnergyBall_9
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 32
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5c3aeea37085049cfa4360e5f2a7a07c
+      internalID: 1281576770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EnergyBall_10
       rect:
         serializedVersion: 2
         x: 0
@@ -292,16 +427,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: e7ef5113e94e03930800000000000000
-      internalID: 4121045027123494526
+      spriteID: c9be174193e2f41cb9b7db2a2962dd6b
+      internalID: -1885888816
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ball_5
+      name: EnergyBall_11
       rect:
         serializedVersion: 2
         x: 32
@@ -314,16 +449,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: c6df1af7249f2c600800000000000000
-      internalID: 487225773713915244
+      spriteID: 028c18212c3794df39a3fadde928b373
+      internalID: -1753461941
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ball_6
+      name: EnergyBall_12
       rect:
         serializedVersion: 2
         x: 64
@@ -336,16 +471,16 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 1ff84d441f56f6d90800000000000000
-      internalID: -7102346000423677967
+      spriteID: 0c49ae5cf79ac4c41b168bec0e972758
+      internalID: 980687738
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ball_7
+      name: EnergyBall_13
       rect:
         serializedVersion: 2
         x: 96
@@ -358,10 +493,32 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7efa48570e93487e0800000000000000
-      internalID: -1764221517815304217
+      spriteID: 2722d898b309447858ff010c5db7cb3c
+      internalID: -1529465587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EnergyBall_14
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 78948c3fc9ca74c19893245dd5f68fae
+      internalID: -748564041
       vertices: []
       indices: 
       edges: []
@@ -370,7 +527,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 799db05a5fe434aacae2a0619ef3b1de
+    spriteID: 6335034651122429ba51eb1ae80d50db
     internalID: 0
     vertices: []
     indices: 
@@ -382,14 +539,21 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      ball_0: -3603556060819865620
-      ball_1: 7826395881470743827
-      ball_2: 5641732428763174162
-      ball_3: -2809790316608957549
-      ball_4: 4121045027123494526
-      ball_5: 487225773713915244
-      ball_6: -7102346000423677967
-      ball_7: -1764221517815304217
+      EnergyBall_0: -94323540
+      EnergyBall_1: -1933085923
+      EnergyBall_10: -1885888816
+      EnergyBall_11: -1753461941
+      EnergyBall_12: 980687738
+      EnergyBall_13: -1529465587
+      EnergyBall_14: -748564041
+      EnergyBall_2: 1520756748
+      EnergyBall_3: -1811072834
+      EnergyBall_4: -1669644030
+      EnergyBall_5: -760586183
+      EnergyBall_6: 2122859600
+      EnergyBall_7: 1368999362
+      EnergyBall_8: 1471890968
+      EnergyBall_9: 1281576770
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

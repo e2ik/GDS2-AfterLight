@@ -44,26 +44,17 @@ public class NPCDialogue : MonoBehaviour, IInteractable
         // zero playermovement
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
 
-        if (rb != null)
-            rb.linearVelocity = Vector2.zero;
-
+        if (rb != null) rb.linearVelocity = Vector2.zero;
 
         DialogueData dialogue = conversations[conversationIndex];
 
         if (dialogue == null)
         {
-            Debug.LogWarning(
-                $"[NPCDialogue] Missing dialogue at index {conversationIndex} on {gameObject.name}."
-            );
-
+            Debug.LogWarning($"[NPCDialogue] Missing dialogue.");
             return;
         }
 
-        DialogueManager.Instance.StartDialogue(
-            dialogue,
-            player,
-            this
-        );
+        DialogueManager.Instance.StartDialogue(dialogue,player,this, true);
     }
 
     public void OnDialogueFinished()

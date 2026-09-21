@@ -126,14 +126,15 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    public void StartDialogue(DialogueData dialogue, Player player = null, NPCDialogue npc = null)
+    // startedByInteract = true to start dialogue by interact, false to trigger by an event
+    public void StartDialogue(DialogueData dialogue, Player player = null, NPCDialogue npc = null, bool startedByInteract = false) 
     {
         if (IsDialogueActive)
             return;
 
         if (dialogue == null || dialogue.Lines == null || dialogue.Lines.Length == 0)
         {
-            Debug.LogWarning("[DialogueManager] Cannot start empty dialogue.");
+            Debug.LogWarning("[DialogueManager] dialogue is empty");
             return;
         }
 
@@ -144,7 +145,7 @@ public class DialogueManager : MonoBehaviour
 
         IsDialogueActive = true;
         inputLocked = true;
-        waitingForInitialInteractRelease = true;
+        waitingForInitialInteractRelease = startedByInteract; 
 
         if (currentPlayer != null)
         {
