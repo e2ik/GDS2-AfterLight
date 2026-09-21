@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Enemies;
 using UnityEngine;
 
@@ -9,6 +7,7 @@ public class PlayerHurtBox : MonoBehaviour
     [SerializeField] private PlayerStats stats;
     [SerializeField] private PlayerCombatController combatController;
     private PlayerController playerController;
+    private PlayerAnimation playerAnimation;
     private Collider2D col;
     private bool manualInvulnerable;
     public bool Invulnerable 
@@ -27,6 +26,12 @@ public class PlayerHurtBox : MonoBehaviour
 
         if (playerController == null)
             playerController = GetComponentInParent<PlayerController>();
+
+        if (playerAnimation == null)
+        {
+            Player player = GetComponentInParent<Player>();
+            if (player != null) playerAnimation = player.Animation;
+        }
 
         if (col == null)
             col = GetComponent<Collider2D>();
@@ -77,5 +82,20 @@ public class PlayerHurtBox : MonoBehaviour
         }
 
         return true; // Successfully took the hit.
+    }
+
+    public bool TakeHazardHit(float damage, Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null, bool dealsDamage = true)
+    {
+        if (Invulnerable) return false;
+        if (stats == null || playerController == null || stats.IsDead) return false;
+
+        if (!playerController.ApplyHazardKnockback(contactPoint, force, staggerDuration, directionOverride)) return false;
+        if (!dealsDamage) return true;
+
+        stats.TakeDamage(damage);
+        PSpawner.Spawn("PlayerHit", transform.position);
+        if (playerAnimation != null) playerAnimation.PlayHurtAnimation();
+
+        return true;
     }
 }
