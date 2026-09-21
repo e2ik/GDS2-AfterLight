@@ -10,11 +10,12 @@ GameObject:
   m_Component:
   - component: {fileID: 4316455170185187936}
   - component: {fileID: 8693093788784538462}
+  - component: {fileID: 6386047616409704819}
   - component: {fileID: 3298077801974218179}
   - component: {fileID: 3220038651252769823}
   - component: {fileID: 5093768403510703696}
   m_Layer: 0
-  m_Name: H_wheelbed
+  m_Name: H_drip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -84,16 +85,33 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: cb020917eb0509e45bfcc558d94247dc, type: 3}
+  m_Sprite: {fileID: -1800523123206879648, guid: b724385e274e60946874c7860f447560, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 4, y: 2}
+  m_Size: {x: 2, y: 4}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &6386047616409704819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7305345415907601681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08a26ee8dfa995a42ab7cbb0e570e169, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HDripSprite
+  spriteRenderer: {fileID: 8693093788784538462}
+  leftSprite: {fileID: 377250877, guid: b724385e274e60946874c7860f447560, type: 3}
+  rightSprite: {fileID: -1778220627, guid: b724385e274e60946874c7860f447560, type: 3}
+  idleSprite: {fileID: -1800523123206879648, guid: b724385e274e60946874c7860f447560, type: 3}
+  minSpeed: 0.01
 --- !u!61 &3298077801974218179
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -128,17 +146,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.16644406, y: -0.04437661}
+  m_Offset: {x: 0.019671202, y: -0.19888723}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 4, y: 2}
-    newSize: {x: 4, y: 2}
+    oldSize: {x: 2, y: 4}
+    newSize: {x: 2, y: 4}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.6527839, y: 1.683023}
+  m_Size: {x: 0.88995695, y: 3.2702696}
   m_EdgeRadius: 0
 --- !u!50 &3220038651252769823
 Rigidbody2D:
@@ -218,6 +236,6 @@ MonoBehaviour:
   maxDropHeight: 0.15
   minGroundNormalY: 0.6
   edgeInset: 0.1
-  groundOffset: 0.2
+  groundOffset: 0.25
   heightSmoothing: 20
   initialSnapDistance: 10

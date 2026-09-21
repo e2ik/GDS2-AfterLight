@@ -107,7 +107,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HDoorScript
   animator: {fileID: 1458589010954450671}
-  playerTag: Player
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 2568
   invertSides: 1
   openLeftState: OpenLeft
   openRightState: OpenRight
