@@ -8,10 +8,10 @@ public class GreenModifierGemTemplate : SecondaryGemBehaviourDefinition
 
     private RarityRange chargeAmountByRarity = new RarityRange
     {
-        Common = new Vector2(0.01f, 0.05f),
-        Rare = new Vector2(0.06f, 0.1f),
-        Epic = new Vector2(0.11f, 0.15f),
-        Legendary = new Vector2(0.16f, 0.2f)
+        Common = new Vector2(0.05f, 0.08f),
+        Rare = new Vector2(0.09f, 0.12f),
+        Epic = new Vector2(0.13f, 0.16f),
+        Legendary = new Vector2(0.17f, 0.2f)
     };
     
     public override SecondaryGemInstance CreateInstance(ERarity rarity)

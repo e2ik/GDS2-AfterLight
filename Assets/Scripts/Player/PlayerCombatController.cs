@@ -43,6 +43,9 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float attackCoolDown = 0.2f;
     [SerializeField] private float attackBufferTime = 0.15f;
     [SerializeField] private float counterAttackWindow = 0.5f;
+    [SerializeField] private float passiveEnergyCooldown = 4f;
+    [SerializeField] private float passiveEnergyRegenMult = 0.2f; // 1f = 1 sec for full bar, .25f = 4 secs etc.
+    private float passiveEnergyRecoveryTimer;
 
     [Header("Combo Settings")]
     [SerializeField] private int maxComboCount = 3;
@@ -255,6 +258,7 @@ public class PlayerCombatController : MonoBehaviour
         jumpAttackBlockTimer = Tick(jumpAttackBlockTimer, Time.deltaTime);
         plungeGraceTimer = Tick(plungeGraceTimer, Time.deltaTime);
         plungeRecoveryTimer = Tick(plungeRecoveryTimer, Time.deltaTime);
+        passiveEnergyRecoveryTimer = Tick(passiveEnergyRecoveryTimer, Time.deltaTime);
 
         attackTimer = HoldOrTick(isAttacking, attackCoolDown, attackTimer, Time.deltaTime);
         skillTimer = HoldOrTick(isSkilling, skillCoolDown, skillTimer, Time.deltaTime);
@@ -288,6 +292,11 @@ public class PlayerCombatController : MonoBehaviour
                 movement.FreezeMovement(false);
             }
         }
+
+        if (isAttacking || isSkilling || player.Controller.IsDashing)
+            ResetPassiveEnergyTimer();
+        if(passiveEnergyRecoveryTimer <= 0f)
+            ChargeSkillMeter(Time.deltaTime * passiveEnergyRegenMult);
     }
 
     private bool CanActBase()
@@ -681,6 +690,11 @@ public class PlayerCombatController : MonoBehaviour
     {
         SkillMeter = Mathf.Clamp01(SkillMeter + amount);
         RaiseEnergyChanged();
+    }
+
+    public void ResetPassiveEnergyTimer()
+    {
+        passiveEnergyRecoveryTimer = passiveEnergyCooldown;
     }
 
     private void ExecuteSkill()
