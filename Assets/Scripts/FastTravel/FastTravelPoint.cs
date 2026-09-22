@@ -15,6 +15,8 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     [SerializeField] private string fastTravelVFXKey = "FastTravel";
     [SerializeField] private Transform vfxSpawnPoint;
 
+    [SerializeField] private SpriteOutlineToggle outlineToggle;
+
     private static readonly int IsDiscoveredHash = Animator.StringToHash("isDiscovered");
     private static readonly int IsIdleHash = Animator.StringToHash("isIdle");
     private static readonly int IsInteractedHash = Animator.StringToHash("isInteracted");
@@ -26,6 +28,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     private void Awake()
     {
         anim = GetComponent<Animator>();
+        if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
     }
 
     private void OnEnable()
@@ -78,6 +81,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
         : $"Unlock {nodeData.displayName}";
 
     public bool ShouldStopPlayerMovement => true;
+    public SpriteOutlineToggle OutlineToggle => outlineToggle;
 
     public void Interact(Player player)
     {

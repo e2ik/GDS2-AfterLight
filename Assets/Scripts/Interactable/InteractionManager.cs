@@ -30,7 +30,6 @@ public class InteractionManager : MonoBehaviour
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
         interactAction = playerInput.actions["Interact"];
-
     }
 
     private void Update()
@@ -49,7 +48,6 @@ public class InteractionManager : MonoBehaviour
         {
             if (currentInteractable.ShouldStopPlayerMovement)
             {
-                // Freeze movement using your built-in counter system
                 playerController.FreezeMovement(true);
             }
 
@@ -87,23 +85,21 @@ public class InteractionManager : MonoBehaviour
 
         if (hitInteractable != currentInteractable)
         {
-            // 1. Turn off outline on previous object (if any)
             if (currentOutlineToggle != null)
             {
-                currentOutlineToggle.SetOutline(false);
+                currentOutlineToggle.EndHighlight();
                 currentOutlineToggle = null;
             }
 
             currentInteractable = hitInteractable;
             currentInteractableTransform = hitTransform;
 
-            // 2. Fetch and turn on outline on newly focused object
-            if (currentInteractableTransform != null)
+            if (currentInteractable != null)
             {
-                currentOutlineToggle = currentInteractableTransform.GetComponent<SpriteOutlineToggle>();
+                currentOutlineToggle = currentInteractable.OutlineToggle;
                 if (currentOutlineToggle != null)
                 {
-                    currentOutlineToggle.SetOutline(true);
+                    currentOutlineToggle.BeginHighlight();
                 }
             }
 
@@ -115,7 +111,7 @@ public class InteractionManager : MonoBehaviour
     {
         if (currentOutlineToggle != null)
         {
-            currentOutlineToggle.SetOutline(false);
+            currentOutlineToggle.EndHighlight();
             currentOutlineToggle = null;
         }
 

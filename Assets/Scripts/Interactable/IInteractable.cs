@@ -4,4 +4,5 @@ public interface IInteractable
     string InteractionPrompt { get; }
     bool CanInteract { get; }
     bool ShouldStopPlayerMovement { get; }
+    SpriteOutlineToggle OutlineToggle { get; }
 }

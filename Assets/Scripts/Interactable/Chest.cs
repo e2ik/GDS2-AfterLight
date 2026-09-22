@@ -16,6 +16,8 @@ public class Chest : MonoBehaviour, IInteractable
     [SerializeField] private float minHorizontalAngle = -0.4f;
     [SerializeField] private float maxHorizontalAngle = 0.4f;
 
+    [SerializeField] private SpriteOutlineToggle outlineToggle;
+
     private static readonly int IsOpenedHash = Animator.StringToHash("isOpened");
     private static readonly int IsInteractedHash = Animator.StringToHash("isInteracted");
 
@@ -24,11 +26,13 @@ public class Chest : MonoBehaviour, IInteractable
     public string InteractionPrompt => "Open Chest";
     public bool CanInteract => !isOpened;
     public bool ShouldStopPlayerMovement => false;
+    public SpriteOutlineToggle OutlineToggle => outlineToggle;
 
     private void Awake()
     {
         chestID = GetHierarchyPath(transform);
         anim = GetComponent<Animator>();
+        if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
     }
 
     private string GetHierarchyPath(Transform current)

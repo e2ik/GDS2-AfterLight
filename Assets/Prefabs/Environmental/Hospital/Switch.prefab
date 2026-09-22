@@ -58,7 +58,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: 1432090257196980004}
   - component: {fileID: 9021052882680208716}
   - component: {fileID: 8173113614869835193}
+  - component: {fileID: 1311010349019242457}
   m_Layer: 0
   m_Name: Switch
   m_TagString: Untagged
@@ -203,6 +204,26 @@ MonoBehaviour:
   switchOnSprite: {fileID: -6420524450845888813, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
   switchOffSprite: {fileID: 1521430853, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
   switchInBetweenSprite: {fileID: 179256778, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
+--- !u!114 &1311010349019242457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7118127237672951736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1188833748a44a946825f148e641e29a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteOutlineToggle
+  outlineColor: {r: 0, g: 1, b: 0.99045587, a: 1}
+  outlineThickness: 0.5
+  pulseOnHighlight: 1
+  highlightPulseSpeed: 20
+  highlightMinAlpha: 0.2
+  highlightMaxAlpha: 1
+  flashCount: 3
+  flashInterval: 0.15
 --- !u!1 &8017091560003346005
 GameObject:
   m_ObjectHideFlags: 0
@@ -261,7 +282,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: b0d90b5219f95224ba6ffe30774f0e19, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

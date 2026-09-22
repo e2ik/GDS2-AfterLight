@@ -14,6 +14,7 @@ public class Switch : MonoBehaviour, IInteractable
     [SerializeField] private bool startOn = false;
     [SerializeField] private string onPrompt = "Turn off";
     [SerializeField] private string offPrompt = "Turn on";
+    [SerializeField] private SpriteOutlineToggle outlineToggle;
 
     [Header("Access")]
     [SerializeField] private SwitchMode switchMode = SwitchMode.Normal;
@@ -45,9 +46,12 @@ public class Switch : MonoBehaviour, IInteractable
     public bool CanInteract => true;
     public bool ShouldStopPlayerMovement => false;
     public IReadOnlyList<IOnOff> Targets => targets;
+    public SpriteOutlineToggle OutlineToggle => outlineToggle;
 
     private void Awake()
     {
+        if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
+
         foreach (var obj in targetObjects)
         {
             if (obj == null)

@@ -6,9 +6,11 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     [SerializeField] private string interactionPrompt = "Enter";
     [SerializeField] private bool canInteract = true;
     [SerializeField] private bool shouldStopPlayer = true;
+    [SerializeField] private SpriteOutlineToggle outlineToggle;
     public string InteractionPrompt => interactionPrompt;
     public bool CanInteract => canInteract;
     public bool ShouldStopPlayerMovement => shouldStopPlayer;
+    public SpriteOutlineToggle OutlineToggle => outlineToggle;
 
     [SerializeField] private SceneAreaState sceneAreaState;
     [SerializeField] private float fadeDuration = 0.5f;
@@ -18,6 +20,11 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     [SerializeField] private string openTriggerName = "Open";
 
     private Coroutine currentTransition;
+
+    private void Awake()
+    {
+        if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
+    }
 
     public void Interact(Player player)
     {
