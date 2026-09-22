@@ -1,3 +1,4 @@
+using FMODUnity;
 using UnityEngine;
 
 public class Chest : MonoBehaviour, IInteractable
@@ -24,6 +25,7 @@ public class Chest : MonoBehaviour, IInteractable
     public string InteractionPrompt => "Open Chest";
     public bool CanInteract => !isOpened;
     public bool ShouldStopPlayerMovement => false;
+    [SerializeField] private EventReference chestOpen;
 
     private void Awake()
     {
@@ -89,6 +91,8 @@ public class Chest : MonoBehaviour, IInteractable
 
         float randomX = Random.Range(minHorizontalAngle, maxHorizontalAngle);
         Vector2 popDirection = new Vector2(randomX, 1.0f).normalized;
+
+        AudioManager.PlaySFX(chestOpen,transform.position);
 
         droppedItem.PopOut(popDirection, popForce);
     }

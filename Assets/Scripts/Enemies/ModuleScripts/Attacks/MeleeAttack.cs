@@ -1,3 +1,4 @@
+using FMODUnity;
 using UnityEngine;
 
 namespace Enemies.ModuleScripts.Attacks
@@ -8,6 +9,7 @@ namespace Enemies.ModuleScripts.Attacks
         [SerializeField] private AnimationClip clip;
         [SerializeField] private int damage = 1;
         [SerializeField] private AttackForce attackForce = AttackForce.Light;
+        [SerializeField] private EventReference executeAttackEvent;
 
         [SerializeField] private string placeholderClipName = "AttackPlaceholder";
         [SerializeField] private string attackStateName = "Attack";
@@ -21,7 +23,7 @@ namespace Enemies.ModuleScripts.Attacks
             events.CurrentDamage = damage;
             events.CurrentParryDirection = CombatUtility.GetAttackDirection(ctx.Self.position, ctx.TargetPosition);
             events.CurrentAttackForce = attackForce;
-            
+            //AudioManager.PlaySFX(executeAttackEvent);
             ctx.Animator.Play(attackStateName, 0, 0f);
             ctx.Animator.Update(0f);
 

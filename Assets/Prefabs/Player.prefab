@@ -390,6 +390,27 @@ MonoBehaviour:
   groundCheckNormalThreshold: 0.6
   wallCheckDistance: 0.2
   edgeMargin: 0.05
+  jumpEvent:
+    Guid:
+      Data1: -562251247
+      Data2: 1157184374
+      Data3: 1251657147
+      Data4: -2075996345
+    Path: event:/PlayerMovementSFX Events/Jump
+  dashEvent:
+    Guid:
+      Data1: 592182341
+      Data2: 1095649977
+      Data3: 1368063420
+      Data4: -1604961005
+    Path: event:/PlayerMovementSFX Events/Dash
+  landEvent:
+    Guid:
+      Data1: 248199923
+      Data2: 1276170494
+      Data3: -1474062147
+      Data4: -220968971
+    Path: event:/PlayerMovementSFX Events/Land
 --- !u!114 &3547647608137716798
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -714,6 +735,14 @@ MonoBehaviour:
         Data3: -1042859878
         Data4: 1282016863
       Path: event:/CombatSFXEvents/PlayerAttackEvent
+  - id: StepEvent
+    sfxEvent:
+      Guid:
+        Data1: -361243762
+        Data2: 1145655618
+        Data3: 1926001838
+        Data4: 449639858
+      Path: event:/PlayerMovementSFX Events/Footstep
 --- !u!1 &8844592283841214288
 GameObject:
   m_ObjectHideFlags: 0

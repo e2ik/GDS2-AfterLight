@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using FMODUnity;
 
 public class TransitionDoor : MonoBehaviour, IInteractable
 {
@@ -18,6 +19,9 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     [SerializeField] private Animator doorAnimator;
     [SerializeField] private string openTriggerName = "Open";
 
+    [Header("Door SFX")]
+    [SerializeField] private EventReference doorOpenEvent;
+
     private Coroutine currentTransition;
 
     public void Interact(Player player)
@@ -33,6 +37,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
         if (doorAnimator != null)
         {
             doorAnimator.SetTrigger(openTriggerName);
+            AudioManager.PlaySFX(doorOpenEvent,transform.position);
         }
 
         if (player.Controller != null)
