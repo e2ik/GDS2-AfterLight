@@ -2,7 +2,6 @@ using System.Collections;
 using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -36,12 +35,18 @@ public class PlayerController : MonoBehaviour
 
     [Header("Wall Settings")]
     [SerializeField] private float wallSlideSpeed = 2f;
+    [SerializeField] private float wallSlideGracePeriod = 0.5f;
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     [SerializeField] private float wallCheckNormalThreshold = 0.5f;
     [SerializeField] private Vector2 wallJumpForce = new(8f, 16f);
     [SerializeField] private float wallJumpDuration = 0.4f;
     [SerializeField] private float wallJumpBufferTime = 0.2f;
+
+    [Header("Step Up Settings")]
+    [SerializeField] private float maxStepHeight = 0.3f;
+    [SerializeField] private float stepCheckDistance = 0.15f;
+    [SerializeField] private float stepSmoothSpeed = 6f;
 
     [Header("Dash Settings")]
     [SerializeField] private float dashVelocity = 20f;
@@ -72,7 +77,7 @@ public class PlayerController : MonoBehaviour
     private bool isChargingSkillPhysics, isSkillGravityZeroed, isParryGravityActive, inventoryPressed;
     private const float InputDeadzone = 0.1f;
 
-    private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer;
+    private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer, wallContactTimer;
     private float dashTimer, dashDirection, wallJumpDirection;
     private bool wasWallSliding;
     private int movementFreezeCount;
@@ -152,6 +157,7 @@ public class PlayerController : MonoBehaviour
         GroundCheckUpdate();
         WallCheckUpdate();
 
+        HandleStepUp();
         HandleMovement();
         HandleWallSlide();
         HandleJump();
@@ -268,6 +274,26 @@ public class PlayerController : MonoBehaviour
             float f = Mathf.Min(Mathf.Abs(rb.linearVelocityX), friction) * Mathf.Sign(rb.linearVelocityX);
             rb.AddForce(Vector2.right * -f, ForceMode2D.Impulse);
         }
+    }
+
+    private void HandleStepUp()
+    {
+        if (!isGrounded) return;
+        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered || isWallSliding || isDashing) return;
+        if (Mathf.Abs(horizontalInput) < InputDeadzone) return;
+
+        Bounds bounds = cachedBounds;
+        float dir = Mathf.Sign(horizontalInput);
+
+        Vector2 lowOrigin = new(bounds.center.x + dir * bounds.extents.x, bounds.min.y + 0.05f);
+        RaycastHit2D lowHit = Physics2D.Raycast(lowOrigin, Vector2.right * dir, stepCheckDistance, groundLayer);
+        if (lowHit.collider == null) return;
+
+        Vector2 highOrigin = new(lowOrigin.x, bounds.min.y + maxStepHeight);
+        RaycastHit2D highHit = Physics2D.Raycast(highOrigin, Vector2.right * dir, stepCheckDistance, groundLayer);
+        if (highHit.collider != null) return;
+
+        rb.position += new Vector2(0f, stepSmoothSpeed * Time.fixedDeltaTime);
     }
 
     private void HandleJump()
@@ -758,7 +784,7 @@ public class PlayerController : MonoBehaviour
         if (CheckWallRay(chest, dir, rayLen)) hits++;
         if (CheckWallRay(waist, dir, rayLen)) hits++;
 
-        if (hits >= 2) onWall = true;
+        if (hits >= 3) onWall = true;
     }
 
     private bool CheckWallRay(Vector2 origin, float dir, float len)

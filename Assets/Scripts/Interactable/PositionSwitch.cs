@@ -26,7 +26,7 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
     private Vector3 offPosition;
     private bool offPositionCaptured;
     private Coroutine moveRoutine;
-    private int isMovingParamHash;
+    private int? isMovingParamHash;
 
     public bool IsOn { get; private set; }
     public bool IsMoving => moveRoutine != null;
@@ -35,7 +35,7 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
     {
         if (doorCollider == null) doorCollider = GetComponentInChildren<Collider2D>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
-        isMovingParamHash = Animator.StringToHash(isMovingParameter);
+        isMovingParamHash ??= Animator.StringToHash(isMovingParameter);
 
         if (moverRigidbody == null) moverRigidbody = Mover().GetComponent<Rigidbody2D>();
 
@@ -122,7 +122,10 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
 
     private void SetAnimatorMoving(bool moving)
     {
-        if (animator != null) animator.SetBool(isMovingParamHash, moving);
+        if (animator == null) return;
+
+        isMovingParamHash ??= Animator.StringToHash(isMovingParameter);
+        animator.SetBool(isMovingParamHash.Value, moving);
     }
 
     private void OnDrawGizmos()

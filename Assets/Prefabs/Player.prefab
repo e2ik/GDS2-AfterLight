@@ -360,12 +360,16 @@ MonoBehaviour:
   plungeGravity: 10
   coyoteTime: 0.1
   wallSlideSpeed: 2
+  wallSlideGracePeriod: 0.75
   wallJumpCounterStrength: 0.1
   wallSlideUpwardDampening: 0.9
   wallCheckNormalThreshold: 0.5
   wallJumpForce: {x: 8, y: 16}
   wallJumpDuration: 0.4
   wallJumpBufferTime: 0.2
+  maxStepHeight: 0.3
+  stepCheckDistance: 0.15
+  stepSmoothSpeed: 6
   dashVelocity: 15
   backDashMultiplier: 0.5
   dashDuration: 0.2
@@ -390,6 +394,7 @@ MonoBehaviour:
   groundCheckNormalThreshold: 0.6
   wallCheckDistance: 0.2
   edgeMargin: 0.05
+  fadeDuration: 0.2
 --- !u!114 &3547647608137716798
 MonoBehaviour:
   m_ObjectHideFlags: 0
