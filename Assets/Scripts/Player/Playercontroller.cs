@@ -2,6 +2,7 @@ using System.Collections;
 using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -84,6 +85,7 @@ public class PlayerController : MonoBehaviour
     private Coroutine hitStaggerRoutine;
     private Coroutine bounceRoutine;
     private Bounds cachedBounds;
+    private Vector2 LastGroundedPos { get; set; }
 
     public bool InputEnabled { get; set; } = true;
     public int FacingDirection { get; private set; } = 1;
@@ -135,10 +137,14 @@ public class PlayerController : MonoBehaviour
         lastFacingDirection = FacingDirection;
     }
 
+    private float lastGroundPosTimer;
     private void Update()
     {
         if (!IsUILocked && CanMove()) Flip();
         if (InputEnabled && !IsMovementFrozen) PerformInventoryAction();
+        
+        if (physicsSuspended) return;
+        lastGroundPosTimer += Time.deltaTime;
     }
 
     private void FixedUpdate()
@@ -503,6 +509,11 @@ public class PlayerController : MonoBehaviour
             };
     }
 
+    public void ResetPosition()
+    {
+        transform.position = LastGroundedPos;
+    }
+
     #endregion
 
     #region Damage & Stagger
@@ -700,6 +711,12 @@ public class PlayerController : MonoBehaviour
         else
         {
             isGrounded = false;
+        }
+
+        if (isGrounded && lastGroundPosTimer > 0.8f)
+        {
+            lastGroundPosTimer = 0f;
+            LastGroundedPos = transform.position;
         }
     }
 

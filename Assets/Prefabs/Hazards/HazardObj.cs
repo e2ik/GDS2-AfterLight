@@ -6,6 +6,7 @@ public class HazardObj : MonoBehaviour
 
     [SerializeField] private Collider2D hazardCollider;
     [SerializeField] private bool damagesPlayer = true;
+    [SerializeField] private bool resetsPlayer = false;
     [SerializeField, Min(0f)] private float damage = 10f;
     [SerializeField, Min(0f)] private float knockbackForce = 12f;
     [SerializeField, Min(0f)] private float staggerDuration = 0.3f;
@@ -73,7 +74,7 @@ public class HazardObj : MonoBehaviour
             return;
         }
 
-        bool hit = hurtBox.TakeHazardHit(damage, contactPoint, knockbackForce, staggerDuration, direction, damagesPlayer);
+        bool hit = hurtBox.TakeHazardHit(damage, contactPoint, knockbackForce, staggerDuration, direction, damagesPlayer, resetsPlayer);
         if (hit)
             Log($"hit: damages {damagesPlayer} (damage {damage}), force {knockbackForce}, stagger {staggerDuration}, direction {direction}");
     }
