@@ -4,10 +4,24 @@ using UnityEngine;
 
 public class Switch : MonoBehaviour, IInteractable
 {
+    public enum SwitchMode
+    {
+        Normal,
+        RequireKey
+    }
+
     [SerializeField] private List<GameObject> targetObjects = new();
     [SerializeField] private bool startOn = false;
     [SerializeField] private string onPrompt = "Turn off";
     [SerializeField] private string offPrompt = "Turn on";
+
+    [Header("Access")]
+    [SerializeField] private SwitchMode switchMode = SwitchMode.Normal;
+    [Tooltip("Only used when Switch Mode is Require Key. The player must have a matching key in their inventory to interact.")]
+    [SerializeField] private KeyDefinition requiredKey;
+    [SerializeField] private string missingKeyMessage = "I don't have the key...";
+    [SerializeField, Min(0f)] private float missingKeyMessageDuration = 2f;
+    [SerializeField] private DialogueEffect missingKeyMessageEffect = DialogueEffect.Default;
 
     [Header("Indicator")]
     [SerializeField] private SpriteRenderer indicatorRenderer;
@@ -65,7 +79,29 @@ public class Switch : MonoBehaviour, IInteractable
 
     public void Interact(Player player)
     {
+        if (switchMode == SwitchMode.RequireKey && !PlayerHasRequiredKey(player))
+        {
+            if (player != null)
+                Tutorial.TutorialSpeechBubblePool.Instance?.Show(missingKeyMessage, player.transform, missingKeyMessageDuration, missingKeyMessageEffect);
+
+            return;
+        }
+
         Apply(!IsOn);
+    }
+
+    private bool PlayerHasRequiredKey(Player player)
+    {
+        if (requiredKey == null)
+        {
+            Debug.LogWarning($"{name}: Switch Mode is Require Key but no Required Key is assigned — allowing interaction.", this);
+            return true;
+        }
+
+        PlayerInventorySO inv = player != null && player.Inventory != null ? player.Inventory.currentInventory : null;
+        if (inv == null) return false;
+
+        return inv.KeyInstances != null && inv.KeyInstances.Exists(k => k.InstItemID == requiredKey.ItemID);
     }
 
     public void SetOn(bool on)

@@ -24,6 +24,7 @@ namespace Tutorial
         [TextArea(2, 4)]
         [SerializeField] private string speechBubbleText;
         [SerializeField] private float speechBubbleDuration = 3f;
+        [SerializeField] private DialogueEffect speechBubbleEffect = DialogueEffect.Default;
 
         private bool sequenceActiveFromThisVolume;
 
@@ -131,7 +132,7 @@ namespace Tutorial
                         ? GameManager.Instance.Player.transform
                         : other.transform;
 
-                    TutorialSpeechBubblePool.Instance.Show(speechBubbleText, followTarget, speechBubbleDuration);
+                    TutorialSpeechBubblePool.Instance.Show(speechBubbleText, followTarget, speechBubbleDuration, speechBubbleEffect);
 
                     if (uiMode == TutorialTriggerUIMode.SpeechBubble && !string.IsNullOrEmpty(gateID))
                         TutorialDirector.Instance?.MarkCompleted(gateID);
