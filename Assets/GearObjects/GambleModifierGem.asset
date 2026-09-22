@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7264a4ffde87ecac7a9da3fe33a1e9ee, type: 3}
+  m_Name: GambleModifierGem
+  m_EditorClassIdentifier: Assembly-CSharp::GambleModifierGemTemplate
+  ItemID: 
+  UIName: 
+  UISprite: {fileID: 0}
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
+  TemplateID: 
+  GemType: 2
+  DamageByRarity:
+    Common: {x: 1, y: 3}
+    Rare: {x: 3, y: 5}
+    Epic: {x: 5, y: 10}
+    Legendary: {x: 15, y: 20}
+  CritByRarity:
+    Common: {x: 0.03, y: 0.05}
+    Rare: {x: 0.05, y: 0.1}
+    Epic: {x: 0.1, y: 0.15}
+    Legendary: {x: 0.15, y: 0.2}
+  maxDamageMultByRarity:
+    Common: {x: 1, y: 3}
+    Rare: {x: 3, y: 5}
+    Epic: {x: 5, y: 10}
+    Legendary: {x: 15, y: 20}

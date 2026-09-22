@@ -19,7 +19,8 @@ public enum PassiveType
 {
     Energy,
     Reflect,
-    DoT
+    DoT,
+    DamageMod
 }
 
 [CreateAssetMenu(fileName = "SecondaryGemBehaviourDefintion", menuName = "ScriptableObjects/SecondaryGemBehaviourDefinition")]
