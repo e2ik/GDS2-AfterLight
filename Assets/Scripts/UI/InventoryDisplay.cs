@@ -11,7 +11,8 @@ public class InventoryDisplay : GameUI.UIWindow
         All,
         GearAndWeapons,
         Primary,
-        Secondary
+        Secondary,
+        Keys
     }
 
     [System.Serializable]
@@ -119,6 +120,7 @@ public class InventoryDisplay : GameUI.UIWindow
     public void ShowGearAndWeapons() => SetFilter(InventoryFilter.GearAndWeapons);
     public void ShowPrimary() => SetFilter(InventoryFilter.Primary);
     public void ShowSecondary() => SetFilter(InventoryFilter.Secondary);
+    public void ShowKeys() => SetFilter(InventoryFilter.Keys);
 
     public void SetFilter(InventoryFilter filter)
     {
@@ -459,6 +461,8 @@ public class InventoryDisplay : GameUI.UIWindow
             case GearInstance gear: slot.SetupSlot(gear); break;
             case PrimaryGemInstance primaryGem: slot.SetupSlot(primaryGem); break;
             case WeaponInstance weapon: slot.SetupSlot(weapon); break;
+            case KeyInstance key: slot.SetupSlot(key); break;
+            case LoreItemInstance loreItem: slot.SetupSlot(loreItem); break;
         }
     }
 
@@ -484,11 +488,14 @@ public class InventoryDisplay : GameUI.UIWindow
         bool showGearAndWeapons = currentFilter is InventoryFilter.All or InventoryFilter.GearAndWeapons;
         bool showPrimary = currentFilter is InventoryFilter.All or InventoryFilter.Primary;
         bool showSecondary = currentFilter is InventoryFilter.All or InventoryFilter.Secondary;
+        bool showKeys = currentFilter is InventoryFilter.All or InventoryFilter.Keys;
 
         if (showSecondary) { AddItems(activeInventory.SecondaryGems, g => g.PickupOrder, displayItems); }
         if (showGearAndWeapons) { AddItems(activeInventory.GearInstances, g => g.PickupOrder, displayItems); }
         if (showPrimary) { AddItems(activeInventory.PrimaryGems, g => g.PickupOrder, displayItems); }
         if (showGearAndWeapons) { AddItems(activeInventory.Weapons, w => w.PickupOrder, displayItems); }
+        if (showKeys) { AddItems(activeInventory.KeyInstances, k => k.PickupOrder, displayItems); }
+        if (showKeys) { AddItems(activeInventory.LoreItemInstances, l => l.PickupOrder, displayItems); }
 
         displayItems.Sort((a, b) => a.PickupOrder.CompareTo(b.PickupOrder));
 

@@ -234,6 +234,11 @@ Transform:
   - {fileID: 1171901680}
   m_Father: {fileID: 1085938262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &128385970 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 974589747543542167, guid: ef9d426e40430d54f9a08dcb91aef5e4, type: 3}
+  m_PrefabInstance: {fileID: 1525059487560724912}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &176899094
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5260,6 +5265,11 @@ Transform:
   - {fileID: 380235838}
   m_Father: {fileID: 124264256}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1306008488 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5877666842181612945, guid: 919090331c2fd984598b24f8e3981d53, type: 3}
+  m_PrefabInstance: {fileID: 6659931927085888737}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1331404706
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5617,7 +5627,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8360889048582650651, guid: ef9d426e40430d54f9a08dcb91aef5e4, type: 3}
   m_PrefabInstance: {fileID: 1525059487560724912}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 128385970}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ea792fd401d257428e42cdf63979be2, type: 3}
@@ -7086,12 +7096,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8173113614869835193, guid: 3a01ee4230e22324a88828151c78d20c, type: 3}
       propertyPath: targetObjects.Array.size
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8173113614869835193, guid: 3a01ee4230e22324a88828151c78d20c, type: 3}
       propertyPath: 'targetObjects.Array.data[0]'
       value: 
       objectReference: {fileID: 352517246}
+    - target: {fileID: 8173113614869835193, guid: 3a01ee4230e22324a88828151c78d20c, type: 3}
+      propertyPath: 'targetObjects.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1306008488}
+    - target: {fileID: 8173113614869835193, guid: 3a01ee4230e22324a88828151c78d20c, type: 3}
+      propertyPath: 'targetObjects.Array.data[2]'
+      value: 
+      objectReference: {fileID: 128385970}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

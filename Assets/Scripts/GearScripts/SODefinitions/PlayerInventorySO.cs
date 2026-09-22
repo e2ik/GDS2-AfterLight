@@ -8,4 +8,6 @@ public class PlayerInventorySO : ScriptableObject
     public List<SecondaryGemInstance> SecondaryGems;
     public List<GearInstance> GearInstances;
     public List<WeaponInstance> Weapons;
+    public List<KeyInstance> KeyInstances;
+    public List<LoreItemInstance> LoreItemInstances;
 }

@@ -118,6 +118,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void SetupSlot(GearInstance gear) => SetCurrentItem(gear);
     public void SetupSlot(PrimaryGemInstance gem) => SetCurrentItem(gem);
     public void SetupSlot(WeaponInstance weapon) => SetCurrentItem(weapon);
+    public void SetupSlot(KeyInstance key) => SetCurrentItem(key);
+    public void SetupSlot(LoreItemInstance loreItem) => SetCurrentItem(loreItem);
 
     private void SetCurrentItem(object item)
     {
@@ -220,6 +222,24 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                 return new SlotContext(def.UISprite, def.UIName, () => ItemTooltipTextBuilder.BuildWeaponTooltip(weapon, equippedWeaponForCompare), isEquipped, toggle, weapon.Rarity);
             }
 
+            case KeyInstance key when !string.IsNullOrEmpty(key.InstItemID):
+            {
+                var def = GameDatabase.GetKeyTemplateFromID(key.InstItemID);
+                if (def == null) return null;
+
+                // Keys aren't equippable: no toggle action, never shown as equipped, no rarity border.
+                return new SlotContext(def.UISprite, def.UIName, () => def.Description, false, null, null);
+            }
+
+            case LoreItemInstance loreItem when !string.IsNullOrEmpty(loreItem.InstItemID):
+            {
+                var def = GameDatabase.GetLoreItemTemplateFromID(loreItem.InstItemID);
+                if (def == null) return null;
+
+                // Same as keys: not equippable, no rarity.
+                return new SlotContext(def.UISprite, def.UIName, () => def.Description, false, null, null);
+            }
+
             default:
                 return null;
         }
@@ -245,9 +265,13 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         if (borderImage == null) return;
 
-        borderImage.color = rarity.HasValue && GameManager.Instance != null
-            ? GameManager.Instance.GetRarityColor(rarity.Value)
-            : noRarityBorderColor;
+        borderImage.color = currentItem switch
+        {
+            KeyInstance when GameManager.Instance != null => GameManager.Instance.KeyItemColor,
+            LoreItemInstance when GameManager.Instance != null => GameManager.Instance.LoreItemColor,
+            _ when rarity.HasValue && GameManager.Instance != null => GameManager.Instance.GetRarityColor(rarity.Value),
+            _ => noRarityBorderColor
+        };
     }
 
     private void ApplySelectionVisual()

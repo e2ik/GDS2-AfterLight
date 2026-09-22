@@ -7,8 +7,16 @@ using TMPro;
 [RequireComponent(typeof(Rigidbody2D))]
 public class WorldItem : MonoBehaviour
 {
+    public enum WorldItemBehaviour
+    {
+        Normal,
+        Unique
+    }
+
     [Header("Item Data")]
     [SerializeField] private InventoryItemBase itemDefinition;
+    [SerializeField] private WorldItemBehaviour behaviour = WorldItemBehaviour.Normal;
+    // unique checks this item against the player's inventory
 
     [Header("Visual References")]
     [SerializeField] private SpriteRenderer itemSpriteRenderer;
@@ -17,21 +25,60 @@ public class WorldItem : MonoBehaviour
     private Collider2D itemCollider;
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
+    private bool markedForDestruction = false;
 
     private void Awake()
     {
         EnsureComponentsCached();
+        CheckUniqueOwnership();
     }
 
     private void Start()
     {
+        if (markedForDestruction) return;
         InitializeVisuals();
     }
 
     public void Initialize(InventoryItemBase newItem)
     {
         itemDefinition = newItem;
+        CheckUniqueOwnership();
+        if (markedForDestruction) return;
+
         InitializeVisuals();
+    }
+
+    private void CheckUniqueOwnership()
+    {
+        if (markedForDestruction) return;
+        if (behaviour != WorldItemBehaviour.Unique) return;
+        if (!PlayerAlreadyOwnsItem()) return;
+
+        markedForDestruction = true;
+        hasBeenPickedUp = true;
+        Destroy(gameObject);
+    }
+
+    private bool PlayerAlreadyOwnsItem()
+    {
+        if (itemDefinition == null) return false;
+
+        Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+        PlayerInventorySO inv = player != null && player.Inventory != null ? player.Inventory.currentInventory : null;
+        if (inv == null) return false;
+
+        switch (itemDefinition)
+        {
+            case KeyDefinition keyDef:
+                return inv.KeyInstances != null && inv.KeyInstances.Exists(k => k.InstItemID == keyDef.ItemID);
+
+            case LoreItemDefinition loreDef:
+                return inv.LoreItemInstances != null && inv.LoreItemInstances.Exists(l => l.InstItemID == loreDef.ItemID);
+
+            default:
+                Debug.LogWarning($"[WorldItem] Unique behaviour isn't implemented for item type '{itemDefinition.GetType().Name}'; treating as Normal.");
+                return false;
+        }
     }
 
     private void EnsureComponentsCached()
@@ -172,6 +219,30 @@ public class WorldItem : MonoBehaviour
                     gearLoot);
 
                 Debug.Log($"Picked up Gear: {gearDef.UIName} ({gearRarity})");
+                break;
+
+            case KeyDefinition keyDef:
+                KeyInstance keyLoot = keyDef.CreateInstance();
+                player.Inventory.AddItemToInventory(keyLoot);
+
+                LootPickupDisplay.Instance?.AddPickup(
+                    keyDef.UISprite, keyDef.UIName, null,
+                    keyDef.Description,
+                    keyLoot);
+
+                Debug.Log($"Picked up Key: {keyDef.UIName} ({keyDef.Clearance})");
+                break;
+
+            case LoreItemDefinition loreDef:
+                LoreItemInstance loreLoot = loreDef.CreateInstance();
+                player.Inventory.AddItemToInventory(loreLoot);
+
+                LootPickupDisplay.Instance?.AddPickup(
+                    loreDef.UISprite, loreDef.UIName, null,
+                    loreDef.Description,
+                    loreLoot);
+
+                Debug.Log($"Picked up Lore Item: {loreDef.UIName}");
                 break;
 
             default:

@@ -62,4 +62,6 @@ public class InventorySaveData
     public List<PrimaryGemInstance> primaryGems = new List<PrimaryGemInstance>();
     public List<WeaponInstance> weapons = new List<WeaponInstance>();
     public int equippedSecondaryGemIndex = -1;
+    public List<KeyInstance> keyInstances = new List<KeyInstance>();
+    public List<LoreItemInstance> loreItemInstances = new List<LoreItemInstance>();
 }

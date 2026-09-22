@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 280d69ebfcaeb664c905fc4dc8d6692d, type: 3}
+  m_Name: LoreTest
+  m_EditorClassIdentifier: Assembly-CSharp::LoreItemDefinition
+  ItemID: lore1
+  UIName: Lore 1
+  UISprite: {fileID: 0}
+  Deletable: 1
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
+  FullImage: {fileID: 0}
+  Description: This shows up on tooltip
+  ItemText: 'This is the full text block you can call with your UI
+
+    note: There''s
+    a Full Image option if you want to add the items actual larger image when you
+    design the UI '

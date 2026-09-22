@@ -7,11 +7,15 @@ public class GameDatabase : MonoBehaviour
     [SerializeField] private GearTemplateDB gearTemplateDB;
     [SerializeField] private PrimaryGemTemplateDB primaryGemTemplateDB;
     [SerializeField] private WeaponTemplateDB weaponTemplateDB;
+    [SerializeField] private KeyTemplateDB keyTemplateDB;
+    [SerializeField] private LoreItemTemplateDB loreItemTemplateDB;
 
     public static SecondaryGemTemplateDB SecondaryGemTemplateDB{get; private set;}
     public static GearTemplateDB GearTemplateDB{get; private set;}
     public static PrimaryGemTemplateDB PrimaryGemTemplateDB{get; private set;}
     public static WeaponTemplateDB WeaponTemplateDB{get; private set;}
+    public static KeyTemplateDB KeyTemplateDB{get; private set;}
+    public static LoreItemTemplateDB LoreItemTemplateDB{get; private set;}
 
     void Awake()
     {
@@ -19,6 +23,8 @@ public class GameDatabase : MonoBehaviour
         GearTemplateDB = gearTemplateDB;
         PrimaryGemTemplateDB = primaryGemTemplateDB;
         WeaponTemplateDB = weaponTemplateDB;
+        KeyTemplateDB = keyTemplateDB;
+        LoreItemTemplateDB = loreItemTemplateDB;
     }
 
     private static T FindByID<T>(IEnumerable<T> templates, string id) where T : class
@@ -60,4 +66,10 @@ public class GameDatabase : MonoBehaviour
 
     public static WeaponDefinition GetWeaponTemplateFromID(string itemID) =>
         FindByID(WeaponTemplateDB?.weaponTemplates, itemID);
+
+    public static KeyDefinition GetKeyTemplateFromID(string itemID) =>
+        FindByID(KeyTemplateDB?.keyTemplates, itemID);
+
+    public static LoreItemDefinition GetLoreItemTemplateFromID(string templateID) =>
+        FindByID(LoreItemTemplateDB?.loreItemTemplates, templateID);
 }

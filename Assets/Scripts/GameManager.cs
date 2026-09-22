@@ -37,12 +37,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private WorldMapStateSO worldMapState;
     [SerializeField] private SaveManager saveManager;
 
-    [Header("Rarity Colors")]
+    [Header("Item Colors")]
     [SerializeField] private Color commonColor = new Color(0.69f, 0.69f, 0.69f);
     [SerializeField] private Color rareColor = new Color(0.56f, 0.76f, 1.0f);
     [SerializeField] private Color epicColor = new Color(0.78f, 0.61f, 1.0f);
     [SerializeField] private Color legendaryColor = new Color(1.0f, 0.71f, 0.44f);
     [SerializeField] private Color defaultRarityColor = Color.white;
+    [SerializeField] private Color keyItemColor = Color.yellow;
+    [SerializeField] private Color loreItemColor = Color.cyan;
 
     private GameObject _playerInstance;
     private Player player;
@@ -516,6 +518,9 @@ public class GameManager : MonoBehaviour
             default: return defaultRarityColor;
         }
     }
+
+    public Color KeyItemColor => keyItemColor;
+    public Color LoreItemColor => loreItemColor;
 
     // temp code for background
     [Header("Temp Background (REMOVE LATER)")]

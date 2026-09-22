@@ -59,6 +59,12 @@ public class PlayerInventoryManager : MonoBehaviour
     public void AddItemToInventory(WeaponInstance item) =>
         AddToList(ref currentInventory.Weapons, item, (i, order) => i.PickupOrder = order);
 
+    public void AddItemToInventory(KeyInstance item) =>
+        AddToList(ref currentInventory.KeyInstances, item, (i, order) => i.PickupOrder = order);
+
+    public void AddItemToInventory(LoreItemInstance item) =>
+        AddToList(ref currentInventory.LoreItemInstances, item, (i, order) => i.PickupOrder = order);
+
     public bool RemoveItem(object item)
     {
         if (item == null || currentInventory == null) return false;
@@ -77,6 +83,12 @@ public class PlayerInventoryManager : MonoBehaviour
                 break;
             case WeaponInstance weapon:
                 removed = RemoveFrom(currentInventory.Weapons, weapon, w => w.InstanceGUID);
+                break;
+            case KeyInstance key:
+                removed = RemoveFrom(currentInventory.KeyInstances, key, k => k.InstanceGUID);
+                break;
+            case LoreItemInstance lore:
+                removed = RemoveFrom(currentInventory.LoreItemInstances, lore, l => l.InstanceGUID);
                 break;
             default:
                 removed = false;
@@ -119,6 +131,8 @@ public class PlayerInventoryManager : MonoBehaviour
             CopyIfPresent(currentInventory.GearInstances, data.gearInstances);
             CopyIfPresent(currentInventory.PrimaryGems, data.primaryGems);
             CopyIfPresent(currentInventory.Weapons, data.weapons);
+            CopyIfPresent(currentInventory.KeyInstances, data.keyInstances);
+            CopyIfPresent(currentInventory.LoreItemInstances, data.loreItemInstances);
         }
         return data;
     }
@@ -131,6 +145,8 @@ public class PlayerInventoryManager : MonoBehaviour
         currentInventory.GearInstances?.Clear();
         currentInventory.PrimaryGems?.Clear();
         currentInventory.Weapons?.Clear();
+        currentInventory.KeyInstances?.Clear();
+        currentInventory.LoreItemInstances?.Clear();
 
         if (data == null)
         {
@@ -142,12 +158,16 @@ public class PlayerInventoryManager : MonoBehaviour
         CopyIfPresent(data.gearInstances, currentInventory.GearInstances);
         CopyIfPresent(data.primaryGems, currentInventory.PrimaryGems);
         CopyIfPresent(data.weapons, currentInventory.Weapons);
+        CopyIfPresent(data.keyInstances, currentInventory.KeyInstances);
+        CopyIfPresent(data.loreItemInstances, currentInventory.LoreItemInstances);
 
         int highestLoadedOrder = -1;
         highestLoadedOrder = Mathf.Max(highestLoadedOrder, HighestOrder(currentInventory.SecondaryGems, g => g.PickupOrder));
         highestLoadedOrder = Mathf.Max(highestLoadedOrder, HighestOrder(currentInventory.GearInstances, g => g.PickupOrder));
         highestLoadedOrder = Mathf.Max(highestLoadedOrder, HighestOrder(currentInventory.PrimaryGems, g => g.PickupOrder));
         highestLoadedOrder = Mathf.Max(highestLoadedOrder, HighestOrder(currentInventory.Weapons, w => w.PickupOrder));
+        highestLoadedOrder = Mathf.Max(highestLoadedOrder, HighestOrder(currentInventory.KeyInstances, k => k.PickupOrder));
+        highestLoadedOrder = Mathf.Max(highestLoadedOrder, HighestOrder(currentInventory.LoreItemInstances, l => l.PickupOrder));
 
         nextPickupOrder = highestLoadedOrder + 1;
 

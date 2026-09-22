@@ -40,8 +40,14 @@ public static class ItemTooltipTextBuilder
         }
     }
 
-    public static string BuildLootLineText(string itemName, ERarity? rarity)
+    public static string BuildLootLineText(string itemName, ERarity? rarity, Color? overrideColor = null)
     {
+        if (overrideColor.HasValue)
+        {
+            string colored = $"<color=#{ColorUtility.ToHtmlStringRGB(overrideColor.Value)}>{itemName}</color>";
+            return $"You looted [{colored}]";
+        }
+
         if (!rarity.HasValue)
         {
             return $"You looted [{itemName}]";

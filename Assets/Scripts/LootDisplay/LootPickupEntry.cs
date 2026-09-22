@@ -76,7 +76,14 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (nameText != null)
         {
-            nameText.text = ItemTooltipTextBuilder.BuildLootLineText(itemName, rarity);
+            Color? overrideColor = item switch
+            {
+                KeyInstance when GameManager.Instance != null => GameManager.Instance.KeyItemColor,
+                LoreItemInstance when GameManager.Instance != null => GameManager.Instance.LoreItemColor,
+                _ => (Color?)null
+            };
+
+            nameText.text = ItemTooltipTextBuilder.BuildLootLineText(itemName, rarity, overrideColor);
         }
 
         SetBorderColor(rarity);
@@ -116,9 +123,13 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (borderImage == null) return;
 
-        borderImage.color = rarity.HasValue && GameManager.Instance != null
-            ? GameManager.Instance.GetRarityColor(rarity.Value)
-            : noRarityBorderColor;
+        borderImage.color = item switch
+        {
+            KeyInstance when GameManager.Instance != null => GameManager.Instance.KeyItemColor,
+            LoreItemInstance when GameManager.Instance != null => GameManager.Instance.LoreItemColor,
+            _ when rarity.HasValue && GameManager.Instance != null => GameManager.Instance.GetRarityColor(rarity.Value),
+            _ => noRarityBorderColor
+        };
     }
 
     public void OnPointerEnter(PointerEventData eventData)
