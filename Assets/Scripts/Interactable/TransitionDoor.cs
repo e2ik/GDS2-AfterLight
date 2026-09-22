@@ -19,8 +19,6 @@ public class TransitionDoor : MonoBehaviour, IInteractable
 
     private Coroutine currentTransition;
 
-    private CanvasGroup FadeCanvas => FadeCanvasController.Instance != null ? FadeCanvasController.Instance.Group : null;
-
     public void Interact(Player player)
     {
         if (!canInteract || currentTransition != null) return;
@@ -41,7 +39,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
             player.Controller.InputEnabled = false;
         }
 
-        yield return Fade(0f, 1f);
+        yield return FadeOut();
 
         if (sceneAreaState != null)
         {
@@ -56,7 +54,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
             }
         }
 
-        yield return Fade(1f, 0f);
+        yield return FadeIn();
 
         if (player.Controller != null)
         {
@@ -68,26 +66,25 @@ public class TransitionDoor : MonoBehaviour, IInteractable
         currentTransition = null;
     }
 
-    private IEnumerator Fade(float from, float to)
+    private IEnumerator FadeOut()
     {
-        CanvasGroup fadeCanvas = FadeCanvas;
-
-        if (fadeCanvas == null)
+        if (FadeCanvasController.Instance == null)
         {
-            Debug.LogError($"[TransitionDoor] No Fade Canvas found — is the master scene loaded, and does it have a FadeCanvasController?", this);
+            Debug.LogError($"[TransitionDoor] No FadeCanvasController found — is the master scene loaded?", this);
             yield break;
         }
 
-        float t = 0f;
-        fadeCanvas.alpha = from;
+        yield return FadeCanvasController.Instance.FadeOut(fadeDuration);
+    }
 
-        while (t < fadeDuration)
+    private IEnumerator FadeIn()
+    {
+        if (FadeCanvasController.Instance == null)
         {
-            t += Time.unscaledDeltaTime;
-            fadeCanvas.alpha = Mathf.Lerp(from, to, t / fadeDuration);
-            yield return null;
+            Debug.LogError($"[TransitionDoor] No FadeCanvasController found — is the master scene loaded?", this);
+            yield break;
         }
 
-        fadeCanvas.alpha = to;
+        yield return FadeCanvasController.Instance.FadeIn(fadeDuration);
     }
 }
