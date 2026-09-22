@@ -136,15 +136,11 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale = normGravity;
         lastFacingDirection = FacingDirection;
     }
-
-    private float lastGroundPosTimer;
+    
     private void Update()
     {
         if (!IsUILocked && CanMove()) Flip();
         if (InputEnabled && !IsMovementFrozen) PerformInventoryAction();
-        
-        if (physicsSuspended) return;
-        lastGroundPosTimer += Time.deltaTime;
     }
 
     private void FixedUpdate()
@@ -696,26 +692,36 @@ public class PlayerController : MonoBehaviour
         Vector2 rightFoot = new(bounds.max.x - edgeMargin, bounds.min.y + 0.02f);
         float dist = groundCheckDistance + 0.04f;
 
+        bool rightGrounded = false;
+        bool leftGrounded = false;
+
         if (RaycastGroundAt(leftFoot, dist, out RaycastHit2D leftHit))
         {
             isGrounded = true;
             currentSurfaceNormal = leftHit.normal;
             lastHitPoint = leftHit.point;
+            
+            leftGrounded = true;
+            if (RaycastGroundAt(rightFoot, dist, out RaycastHit2D hit))
+                rightGrounded = true;
         }
         else if (RaycastGroundAt(rightFoot, dist, out RaycastHit2D rightHit))
         {
             isGrounded = true;
             currentSurfaceNormal = rightHit.normal;
             lastHitPoint = rightHit.point;
+            
+            rightGrounded = true;
+            if (RaycastGroundAt(leftFoot, dist, out RaycastHit2D hit))
+                leftGrounded = true;
         }
         else
         {
             isGrounded = false;
         }
 
-        if (isGrounded && lastGroundPosTimer > 0.8f)
+        if (isGrounded && leftGrounded && rightGrounded)
         {
-            lastGroundPosTimer = 0f;
             LastGroundedPos = transform.position;
         }
     }
