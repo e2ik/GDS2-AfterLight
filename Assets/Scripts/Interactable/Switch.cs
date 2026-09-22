@@ -7,7 +7,8 @@ public class Switch : MonoBehaviour, IInteractable
     public enum SwitchMode
     {
         Normal,
-        RequireKey
+        RequireKey,
+        Broken
     }
 
     [SerializeField] private List<GameObject> targetObjects = new();
@@ -25,12 +26,19 @@ public class Switch : MonoBehaviour, IInteractable
     [SerializeField, Min(0f)] private float missingKeyMessageDuration = 2f;
     [SerializeField] private DialogueEffect missingKeyMessageEffect = DialogueEffect.Default;
 
+    [Tooltip("Only used when Switch Mode is Broken. Interacting shows this message and never toggles anything.")]
+    [SerializeField] private string brokenMessage = "This switch doesn't seem to work...";
+    [SerializeField, Min(0f)] private float brokenMessageDuration = 2f;
+    [SerializeField] private DialogueEffect brokenMessageEffect = DialogueEffect.Default;
+
     [Header("Indicator")]
     [SerializeField] private SpriteRenderer indicatorRenderer;
     [SerializeField] private Color onColor = Color.green;
     [SerializeField] private Color offColor = Color.red;
     [SerializeField] private Color inBetweenColor = Color.yellow;
     [SerializeField, Min(0f)] private float inBetweenDuration = 0.2f;
+    [Tooltip("If on, the indicator/sprite shows the On look for as long as any wired target reports IsMoving (an IMovementIndicator, e.g. PositionSwitch), and the Off look otherwise — instead of the usual on/off + in-between transition.")]
+    [SerializeField] private bool useMovementIndicator = false;
 
     [Header("Switch Sprite")]
     [SerializeField] private SpriteRenderer switchRenderer;
@@ -43,7 +51,7 @@ public class Switch : MonoBehaviour, IInteractable
 
     public bool IsOn { get; private set; }
     public string InteractionPrompt => IsOn ? onPrompt : offPrompt;
-    public bool CanInteract => true;
+    public bool CanInteract => !IsAnyTargetMoving();
     public bool ShouldStopPlayerMovement => false;
     public IReadOnlyList<IOnOff> Targets => targets;
     public SpriteOutlineToggle OutlineToggle => outlineToggle;
@@ -84,6 +92,16 @@ public class Switch : MonoBehaviour, IInteractable
 
     public void Interact(Player player)
     {
+        if (!CanInteract) return;
+
+        if (switchMode == SwitchMode.Broken)
+        {
+            if (player != null)
+                Tutorial.TutorialSpeechBubblePool.Instance?.Show(brokenMessage, player.transform, brokenMessageDuration, brokenMessageEffect);
+
+            return;
+        }
+
         if (switchMode == SwitchMode.RequireKey && !PlayerHasRequiredKey(player))
         {
             if (player != null)
@@ -149,11 +167,31 @@ public class Switch : MonoBehaviour, IInteractable
             target.SetOn(on);
         }
 
+        if (useMovementIndicator) return;
+
         if (visualRoutine != null) StopCoroutine(visualRoutine);
         visualRoutine = isActiveAndEnabled ? StartCoroutine(TransitionVisual(on)) : null;
 
         if (visualRoutine == null)
             SetVisual(on ? onColor : offColor, on ? switchOnSprite : switchOffSprite);
+    }
+
+    private bool IsAnyTargetMoving()
+    {
+        foreach (var target in targets)
+        {
+            if (target is IMovementIndicator movable && movable.IsMoving) return true;
+        }
+
+        return false;
+    }
+
+    private void Update()
+    {
+        if (!useMovementIndicator) return;
+
+        bool anyMoving = IsAnyTargetMoving();
+        SetVisual(anyMoving ? onColor : offColor, anyMoving ? switchOnSprite : switchOffSprite);
     }
 
     private IEnumerator TransitionVisual(bool on)

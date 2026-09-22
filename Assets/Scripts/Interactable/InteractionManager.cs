@@ -22,11 +22,13 @@ public class InteractionManager : MonoBehaviour
     private Player player;
     private PlayerController playerController;
     private InputAction interactAction;
+    private Transform ownRoot;
 
     private void Awake()
     {
         player = GetComponent<Player>();
         playerController = GetComponent<PlayerController>();
+        ownRoot = transform.root;
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
         interactAction = playerInput.actions["Interact"];
@@ -73,7 +75,7 @@ public class InteractionManager : MonoBehaviour
 
         foreach (RaycastHit2D hit in hits)
         {
-            if (hit.collider.transform.root == transform.root) continue;
+            if (hit.collider.transform.root == ownRoot) continue;
 
             IInteractable candidate = hit.collider.GetComponent<IInteractable>();
             if (candidate == null || !candidate.CanInteract) continue;
