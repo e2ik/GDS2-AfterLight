@@ -21,6 +21,8 @@ public class GameManager : MonoBehaviour
     [Header("Area State")]
     [SerializeField] private AreaSide currentAreaSide = AreaSide.Exterior;
     public AreaSide CurrentAreaSide => currentAreaSide;
+    [SerializeField] private CanvasGroup fadeCanvas;
+    public CanvasGroup FadeCanvas => fadeCanvas;
 
     public event System.Action<AreaSide> OnAreaSideChanged;
 

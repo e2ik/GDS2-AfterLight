@@ -11,7 +11,6 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     public bool ShouldStopPlayerMovement => shouldStopPlayer;
 
     [SerializeField] private SceneAreaState sceneAreaState;
-    [SerializeField] private CanvasGroup fadeCanvas;
     [SerializeField] private float fadeDuration = 0.5f;
 
     [Header("Door Animation")]
@@ -19,6 +18,8 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     [SerializeField] private string openTriggerName = "Open";
 
     private Coroutine currentTransition;
+
+    private CanvasGroup FadeCanvas => FadeCanvasController.Instance != null ? FadeCanvasController.Instance.Group : null;
 
     public void Interact(Player player)
     {
@@ -69,9 +70,11 @@ public class TransitionDoor : MonoBehaviour, IInteractable
 
     private IEnumerator Fade(float from, float to)
     {
+        CanvasGroup fadeCanvas = FadeCanvas;
+
         if (fadeCanvas == null)
         {
-            Debug.LogError($"[TransitionDoor] Fade Canvas is missing on {gameObject.name}!");
+            Debug.LogError($"[TransitionDoor] No Fade Canvas found — is the master scene loaded, and does it have a FadeCanvasController?", this);
             yield break;
         }
 
