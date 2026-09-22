@@ -19,7 +19,8 @@ public class Switch : MonoBehaviour, IInteractable
     [SerializeField] private SwitchMode switchMode = SwitchMode.Normal;
     [Tooltip("Only used when Switch Mode is Require Key. The player must have a matching key in their inventory to interact.")]
     [SerializeField] private KeyDefinition requiredKey;
-    [SerializeField] private string missingKeyMessage = "I don't have the key...";
+    [Tooltip("{0} is replaced with the required key's name, colored to match its inventory color, e.g. \"I need the [{0}]...\" -> \"I need the [Hospital Key]...\"")]
+    [SerializeField] private string missingKeyMessage = "I need the [{0}]...";
     [SerializeField, Min(0f)] private float missingKeyMessageDuration = 2f;
     [SerializeField] private DialogueEffect missingKeyMessageEffect = DialogueEffect.Default;
 
@@ -82,7 +83,20 @@ public class Switch : MonoBehaviour, IInteractable
         if (switchMode == SwitchMode.RequireKey && !PlayerHasRequiredKey(player))
         {
             if (player != null)
-                Tutorial.TutorialSpeechBubblePool.Instance?.Show(missingKeyMessage, player.transform, missingKeyMessageDuration, missingKeyMessageEffect);
+            {
+                string message = missingKeyMessage;
+
+                if (requiredKey != null)
+                {
+                    string coloredName = GameManager.Instance != null
+                        ? $"<color=#{ColorUtility.ToHtmlStringRGB(GameManager.Instance.KeyItemColor)}>{requiredKey.UIName}</color>"
+                        : requiredKey.UIName;
+
+                    message = string.Format(missingKeyMessage, coloredName);
+                }
+
+                Tutorial.TutorialSpeechBubblePool.Instance?.Show(message, player.transform, missingKeyMessageDuration, missingKeyMessageEffect);
+            }
 
             return;
         }

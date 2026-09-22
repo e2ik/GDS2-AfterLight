@@ -189,6 +189,11 @@ MonoBehaviour:
   startOn: 1
   onPrompt: Turn off
   offPrompt: Turn on
+  switchMode: 0
+  requiredKey: {fileID: 0}
+  missingKeyMessage: '"I need the {0}..."'
+  missingKeyMessageDuration: 2
+  missingKeyMessageEffect: 0
   indicatorRenderer: {fileID: 9033387349567991063}
   onColor: {r: 0.4433961, g: 1, b: 0.4433961, a: 1}
   offColor: {r: 1, g: 0.46855342, b: 0.62186986, a: 1}
