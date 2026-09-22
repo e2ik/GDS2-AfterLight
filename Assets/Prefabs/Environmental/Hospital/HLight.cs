@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class HLight : MonoBehaviour
+public class HLight : MonoBehaviour, IOnOff
 {
     public enum LightMode { On, Off, Flicker }
 
@@ -22,6 +22,8 @@ public class HLight : MonoBehaviour
 
     [Header("Mode")]
     [SerializeField] private LightMode mode = LightMode.On;
+    [Tooltip("Which mode SetOn(true) switches to. Set to Flicker to have a switch turn this into a flickering light rather than a steady one.")]
+    [SerializeField] private LightMode onSwitchMode = LightMode.On;
 
     [Header("States")]
     [SerializeField] private LightState onState = new()
@@ -49,6 +51,7 @@ public class HLight : MonoBehaviour
     private Coroutine flickerRoutine;
 
     public LightMode Mode => mode;
+    public bool IsOn => mode != LightMode.Off;
 
     private void OnEnable()
     {
@@ -79,6 +82,11 @@ public class HLight : MonoBehaviour
                 flickerRoutine = StartCoroutine(FlickerRoutine());
                 break;
         }
+    }
+
+    public void SetOn(bool on)
+    {
+        SetMode(on ? onSwitchMode : LightMode.Off);
     }
 
     private IEnumerator FlickerRoutine()
