@@ -507,7 +507,21 @@ public class PlayerController : MonoBehaviour
 
     public void ResetPosition()
     {
+        if(FadeCanvasController.Instance != null)
+            StartCoroutine(ResetPosCoroutine());
+        else
+            transform.position = LastGroundedPos;
+    }
+
+    [SerializeField] private float fadeDuration = 0.2f;
+    private IEnumerator ResetPosCoroutine()
+    {
+        FreezeMovement(true);
+        FadeCanvasController.Instance.FadeIn(fadeDuration);
+        yield return new WaitForSeconds(fadeDuration);
         transform.position = LastGroundedPos;
+        FadeCanvasController.Instance.FadeOut(fadeDuration);
+        FreezeMovement(false);
     }
 
     #endregion
