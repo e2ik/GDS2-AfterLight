@@ -107,7 +107,7 @@ public class PlayerStats : MonoBehaviour
         }
 
         OnStatsRecalculated?.Invoke();
-        Debug.Log($"[PlayerStats] Stats Recalculated -> Atk: {TotalAttack} (gear:{gearAttackBonus:+#;-#;0}, gem:{gemAttackBonus:+#;-#;0}), Def: {TotalDefense}, Humanity: {TotalHumanity}, Crit: {TotalCrit:P1}");
+        // Debug.Log($"[PlayerStats] Stats Recalculated -> Atk: {TotalAttack} (gear:{gearAttackBonus:+#;-#;0}, gem:{gemAttackBonus:+#;-#;0}), Def: {TotalDefense}, Humanity: {TotalHumanity}, Crit: {TotalCrit:P1}");
     }
 
     public void TakeDamage(float rawDamage)

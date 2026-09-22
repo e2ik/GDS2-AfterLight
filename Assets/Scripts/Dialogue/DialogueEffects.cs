@@ -131,7 +131,7 @@ public class DialogueEffects : MonoBehaviour
         }
     }
 
-     private IEnumerator WiggleCharacters()
+    private IEnumerator WiggleCharacters()
     {
         while (currentEffect == DialogueEffect.Unstable)
         {

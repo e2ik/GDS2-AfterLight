@@ -45,20 +45,20 @@ namespace Tutorial
             return bubble;
         }
 
-        public TutorialSpeechBubbleUI Show(string text, Transform target, float duration = 0f)
+        public TutorialSpeechBubbleUI Show(string text, Transform target, float duration = 0f, DialogueEffect effect = DialogueEffect.Default)
         {
             if (target == null || bubblePrefab == null) return null;
 
             if (activeByTarget.TryGetValue(target, out var existing))
             {
-                existing.Show(text, target, duration);
+                existing.Show(text, target, duration, effect);
                 return existing;
             }
 
             TutorialSpeechBubbleUI bubble = inactivePool.Count > 0 ? inactivePool.Pop() : CreateBubble();
             bubble.gameObject.SetActive(true);
             activeByTarget[target] = bubble;
-            bubble.Show(text, target, duration);
+            bubble.Show(text, target, duration, effect);
             return bubble;
         }
 
