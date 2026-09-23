@@ -172,9 +172,9 @@ MonoBehaviour:
   currentAreaSide: 0
   fadeCanvas: {fileID: 0}
   masterSceneName: WorldMaster
-  defaultStartSceneName: Tutorial
+  defaultStartSceneName: HospitalZone
   defaultSpawnAnchorID: start
-  titleSceneName: Bootstrap
+  titleSceneName: GameSetup
   playerPrefab: {fileID: 6310612592100663882, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
   worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
   saveManager: {fileID: 78526259}
@@ -278,6 +278,12 @@ MonoBehaviour:
     initialPoolSize: 1
   - key: Aggro
     prefab: {fileID: 5497425098577746589, guid: 7661e10a0781fa84197669d5e61189a3, type: 3}
+    initialPoolSize: 1
+  - key: wallspark
+    prefab: {fileID: 7942674913948366880, guid: 9c28599bc54ffe841922d29602112228, type: 3}
+    initialPoolSize: 1
+  - key: splash
+    prefab: {fileID: 2359786052023973350, guid: f301e48b1d0f7e94b9ed01a2ba2525a8, type: 3}
     initialPoolSize: 1
 --- !u!114 &78526262
 MonoBehaviour:

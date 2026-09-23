@@ -188,10 +188,25 @@ public class Switch : MonoBehaviour, IInteractable
 
     private void Update()
     {
+        SyncWithTargets();
+
         if (!useMovementIndicator) return;
 
         bool anyMoving = IsAnyTargetMoving();
         SetVisual(anyMoving ? onColor : offColor, anyMoving ? switchOnSprite : switchOffSprite);
+    }
+
+    private void SyncWithTargets()
+    {
+        if (targets.Count == 0) return;
+
+        bool targetsOn = targets[0].IsOn;
+        if (targetsOn == IsOn) return;
+
+        IsOn = targetsOn;
+
+        if (!useMovementIndicator)
+            SetVisual(IsOn ? onColor : offColor, IsOn ? switchOnSprite : switchOffSprite);
     }
 
     private IEnumerator TransitionVisual(bool on)

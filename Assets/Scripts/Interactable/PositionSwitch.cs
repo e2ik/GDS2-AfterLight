@@ -41,6 +41,15 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
 
     private bool HasSecondary => secondaryMovingPart != null;
 
+    private void OnDisable()
+    {
+        if (moveRoutine != null)
+        {
+            moveRoutine = null;
+            SetAnimatorMoving(false);
+        }
+    }
+
     private void Awake()
     {
         if (doorCollider == null) doorCollider = GetComponentInChildren<Collider2D>();

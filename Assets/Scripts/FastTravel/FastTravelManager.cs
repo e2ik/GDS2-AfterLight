@@ -48,10 +48,9 @@ public class FastTravelManager : MonoBehaviour
     {
         if (node == null) return;
 
-        AreaSide sideAtInteract = GameManager.Instance != null ? GameManager.Instance.CurrentAreaSide : AreaSide.Exterior;
         SetLastInteractedNode(node);
 
-        StartCoroutine(FastTravelRoutine(node, sideAtInteract));
+        StartCoroutine(FastTravelRoutine(node));
     }
 
     public void RespawnAtLastFastTravel()
@@ -73,7 +72,7 @@ public class FastTravelManager : MonoBehaviour
         GameManager.Instance.ForceReloadAndRespawn(lastVisitedNode, lastVisitedSide, () => OnFastTravelComplete?.Invoke());
     }
 
-    private IEnumerator FastTravelRoutine(FastTravelNodeSO destination, AreaSide sideAtInteract)
+    private IEnumerator FastTravelRoutine(FastTravelNodeSO destination)
     {
         string targetScene = destination.targetSceneName;
 
@@ -118,7 +117,7 @@ public class FastTravelManager : MonoBehaviour
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null)
         {
-            GameManager.Instance?.ApplyAreaSide(sideAtInteract);
+            GameManager.Instance?.ApplyAreaSide(destination.destinationAreaSide);
 
             Transform anchorTransform = FindAnchorTransform(destination.spawnAnchorID);
 
@@ -129,7 +128,7 @@ public class FastTravelManager : MonoBehaviour
                 CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
                 cam?.SnapToTarget();
 
-                SaveManager.Instance?.SaveProgressAtLocation(targetScene, destination.spawnAnchorID, sideAtInteract);
+                SaveManager.Instance?.SaveProgressAtLocation(targetScene, destination.spawnAnchorID, destination.destinationAreaSide);
             }
             else
             {

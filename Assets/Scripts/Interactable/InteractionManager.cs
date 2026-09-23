@@ -73,8 +73,16 @@ public class InteractionManager : MonoBehaviour
         RaycastHit2D[] hits = Physics2D.RaycastAll(origin, direction, interactionRange, interactableLayers);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
+        if (hits.Length == 0)
+        {
+            Debug.Log($"[InteractionManager] raycast hit nothing (origin={origin}, dir={direction}, range={interactionRange})");
+        }
+
         foreach (RaycastHit2D hit in hits)
         {
+            IInteractable probe = hit.collider.GetComponent<IInteractable>();
+            Debug.Log($"[InteractionManager] hit '{hit.collider.name}' (layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}, trigger={hit.collider.isTrigger}, root=={hit.collider.transform.root == ownRoot}, IInteractable={(probe != null)}, CanInteract={(probe != null ? probe.CanInteract.ToString() : "n/a")})");
+
             if (hit.collider.transform.root == ownRoot) continue;
 
             IInteractable candidate = hit.collider.GetComponent<IInteractable>();
