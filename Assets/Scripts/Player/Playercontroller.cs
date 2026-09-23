@@ -56,7 +56,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashSkillEnergyCost = 0.1f;
 
     [Header("Knockback Settings")]
-    [SerializeField] private LayerMask hazardousLayers;
+    [SerializeField] private bool enemyBodyCollisionKnockback = true;
+    [SerializeField] private AttackForce enemyBodyCollisionForce = AttackForce.Light;
     [SerializeField] private float hazardousKnockbackForce = 12f;
     [SerializeField] private float hazardousStaggerDuration = 0.3f;
     [SerializeField] private float bounceDuration = 0.2f;
@@ -566,12 +567,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce, bool applyStagger = true)
+    public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce, bool applyStagger = true, bool playHurtAnimation = true)
     {
         if (physicsSuspended) return;
 
         combat.ForceCancelAttack();
-        if (applyStagger) playerAnimation.PlayHurtAnimation();
+        if (applyStagger && playHurtAnimation) playerAnimation.PlayHurtAnimation();
 
         KnockbackData data = attackForce switch
         {
@@ -861,25 +862,23 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D col) => HandleHazardousCollision(col);
-    private void OnCollisionStay2D(Collision2D col) => HandleHazardousCollision(col);
-
-    private void HandleHazardousCollision(Collision2D col)
-    {
-        if (((1 << col.gameObject.layer) & hazardousLayers) == 0) return;
-
-        bool isEnemyLayer = ((1 << col.gameObject.layer) & combat.enemyLayer) != 0;
-        if (isEnemyLayer && !col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
-
-        ApplyHazardKnockback(col.GetContact(0).point);
-    }
-
     public void ApplyHazardKnockback(Vector2 contactPoint) =>
         ApplyHazardKnockback(contactPoint, hazardousKnockbackForce, hazardousStaggerDuration);
 
+    private void OnCollisionEnter2D(Collision2D col) => HandleEnemyBodyCollision(col);
+
+    private void HandleEnemyBodyCollision(Collision2D col)
+    {
+        if (!enemyBodyCollisionKnockback) return;
+        if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
+        if (!col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
+
+        ApplyKnockback(col.transform.position, enemyBodyCollisionForce, applyStagger: true, playHurtAnimation: false);
+    }
+
     public bool ApplyHazardKnockback(Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null)
     {
-        if (physicsSuspended || isStaggered || isBouncing || IsSkillActive || combat.IsPlunging) return false;
+        if (physicsSuspended || isStaggered || isBouncing || IsSkillActive) return false;
 
         bool wasPlunging = combat.WasRecentlyPlunging;
 

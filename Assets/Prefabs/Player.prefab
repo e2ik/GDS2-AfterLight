@@ -375,9 +375,8 @@ MonoBehaviour:
   dashDuration: 0.2
   dashCoolDown: 0.2
   dashSkillEnergyCost: 0.1
-  hazardousLayers:
-    serializedVersion: 2
-    m_Bits: 4096
+  enemyBodyCollisionKnockback: 1
+  enemyBodyCollisionForce: 2
   hazardousKnockbackForce: 8
   hazardousStaggerDuration: 0.3
   bounceDuration: 0.25
