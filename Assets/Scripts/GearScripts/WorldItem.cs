@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using TMPro;
+using FMODUnity;
 
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(Collider2D))]
@@ -25,6 +26,7 @@ public class WorldItem : MonoBehaviour
     private Collider2D itemCollider;
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
+    [SerializeField] private EventReference primaryPickupEvent;
     private bool markedForDestruction = false;
 
     private void Awake()
@@ -175,6 +177,7 @@ public class WorldItem : MonoBehaviour
             case PrimaryGemBehaviourDefinition primaryDef:
                 PrimaryGemInstance primaryLoot = primaryDef.CreateInstance();
                 player.Inventory.AddItemToInventory(primaryLoot);
+                AudioManager.PlaySFX(primaryPickupEvent,transform.position);
 
                 if (player.Equipment.IsSpecialAttackSlotEmpty())
                     player.Equipment.EquipSpecialAttack(primaryDef);

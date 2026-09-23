@@ -360,23 +360,20 @@ MonoBehaviour:
   plungeGravity: 10
   coyoteTime: 0.1
   wallSlideSpeed: 2
-  wallSlideGracePeriod: 0.75
   wallJumpCounterStrength: 0.1
   wallSlideUpwardDampening: 0.9
   wallCheckNormalThreshold: 0.5
   wallJumpForce: {x: 8, y: 16}
   wallJumpDuration: 0.4
   wallJumpBufferTime: 0.2
-  maxStepHeight: 0.3
-  stepCheckDistance: 0.15
-  stepSmoothSpeed: 6
   dashVelocity: 15
   backDashMultiplier: 0.5
   dashDuration: 0.2
   dashCoolDown: 0.2
   dashSkillEnergyCost: 0.1
-  enemyBodyCollisionKnockback: 1
-  enemyBodyCollisionForce: 2
+  hazardousLayers:
+    serializedVersion: 2
+    m_Bits: 4096
   hazardousKnockbackForce: 8
   hazardousStaggerDuration: 0.3
   bounceDuration: 0.25
@@ -393,7 +390,27 @@ MonoBehaviour:
   groundCheckNormalThreshold: 0.6
   wallCheckDistance: 0.2
   edgeMargin: 0.05
-  fadeDuration: 0.2
+  jumpEvent:
+    Guid:
+      Data1: -562251247
+      Data2: 1157184374
+      Data3: 1251657147
+      Data4: -2075996345
+    Path: event:/PlayerMovementSFX Events/Jump
+  dashEvent:
+    Guid:
+      Data1: 592182341
+      Data2: 1095649977
+      Data3: 1368063420
+      Data4: -1604961005
+    Path: event:/PlayerMovementSFX Events/Dash
+  landEvent:
+    Guid:
+      Data1: 248199923
+      Data2: 1276170494
+      Data3: -1474062147
+      Data4: -220968971
+    Path: event:/PlayerMovementSFX Events/Land
 --- !u!114 &3547647608137716798
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -718,6 +735,14 @@ MonoBehaviour:
         Data3: -1042859878
         Data4: 1282016863
       Path: event:/CombatSFXEvents/PlayerAttackEvent
+  - id: StepEvent
+    sfxEvent:
+      Guid:
+        Data1: -361243762
+        Data2: 1145655618
+        Data3: 1926001838
+        Data4: 449639858
+      Path: event:/PlayerMovementSFX Events/Footstep
 --- !u!1 &8844592283841214288
 GameObject:
   m_ObjectHideFlags: 0

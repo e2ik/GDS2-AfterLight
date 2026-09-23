@@ -1,5 +1,6 @@
 using System.Collections;
 using Enemies;
+using FMODUnity;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -72,6 +73,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundCheckNormalThreshold = 0.6f;
     [SerializeField] private float wallCheckDistance = 0.05f;
     [SerializeField] private float edgeMargin = 0.05f;
+
+    [Header("MovementSFX")]
+    [SerializeField] private EventReference jumpEvent;
+    [SerializeField] private EventReference dashEvent;
+    [SerializeField] private EventReference landEvent;
 
     private bool jumpPressed, jumpReleased, isGrounded, onWall, isWallSliding, isWallJumping;
     private bool dashPressed, dashReleased, isDashing, isStaggered, isBouncing;
@@ -330,6 +336,7 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
 
             playerAnimation.TriggerJumpEffect(false);
+            AudioManager.PlaySFX(jumpEvent);
 
             ConsumeJumpInput();
             coyoteTimeCounter = 0f;
@@ -401,6 +408,7 @@ public class PlayerController : MonoBehaviour
             currentSurfaceNormal = new Vector2(-wallJumpDirection, 0f);
 
             playerAnimation.TriggerJumpEffect(true, wallJumpDirection);
+            AudioManager.PlaySFX(jumpEvent);
 
             wallJumpTimer = 0f;
             ConsumeJumpInput();
@@ -463,7 +471,7 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
 
             playerAnimation.TriggerDashEffect();
-
+            AudioManager.PlaySFX(dashEvent);
             ConsumeDashInput();
 
             CancelInvoke(nameof(StopDashing));
@@ -738,6 +746,10 @@ public class PlayerController : MonoBehaviour
 
         if (RaycastGroundAt(leftFoot, dist, out RaycastHit2D leftHit))
         {
+            if (!isGrounded)
+            {
+                AudioManager.PlaySFX(landEvent);
+            }
             isGrounded = true;
             currentSurfaceNormal = leftHit.normal;
             lastHitPoint = leftHit.point;
@@ -748,6 +760,10 @@ public class PlayerController : MonoBehaviour
         }
         else if (RaycastGroundAt(rightFoot, dist, out RaycastHit2D rightHit))
         {
+            if (!isGrounded)
+            {
+                AudioManager.PlaySFX(landEvent);
+            }
             isGrounded = true;
             currentSurfaceNormal = rightHit.normal;
             lastHitPoint = rightHit.point;

@@ -28,6 +28,7 @@ namespace Enemies
 
         [Header("FMOD Events")] 
         [SerializeField] private EventReference hitEvent;
+        [SerializeField] private EventReference attackEvent;
     
         [Header("Damage Flash")]
         [SerializeField] private SpriteRenderer spriteRenderer;
