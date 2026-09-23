@@ -4279,6 +4279,14 @@ PrefabInstance:
       propertyPath: side
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3371042772739207634, guid: 7b1adcd417b504f41875e4647b9c98bb, type: 3}
+      propertyPath: anchorID
+      value: GameStart
+      objectReference: {fileID: 0}
+    - target: {fileID: 3659004850841219853, guid: 7b1adcd417b504f41875e4647b9c98bb, type: 3}
+      propertyPath: nodeData
+      value: 
+      objectReference: {fileID: 11400000, guid: 96db5b81ea24031408e5a8878ac90a9c, type: 2}
     - target: {fileID: 4061237539069818470, guid: 7b1adcd417b504f41875e4647b9c98bb, type: 3}
       propertyPath: m_Name
       value: FastTravel
@@ -4540,7 +4548,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8173113614869835193, guid: 3a01ee4230e22324a88828151c78d20c, type: 3}
       propertyPath: startOn
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8173113614869835193, guid: 3a01ee4230e22324a88828151c78d20c, type: 3}
       propertyPath: onColor.b
