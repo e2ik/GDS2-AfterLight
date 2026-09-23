@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 306c95eaaffa8f741a0f9c7ac862bc56, type: 3}
   m_Name: CHLightCombo
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.ComboMeleeAttack
-  range: 1
+  range: 0.5
   cooldownDuration: 3
   steps:
   - clip: {fileID: 7400000, guid: f19c0c54fdef13542abc27014ba3607d, type: 2}

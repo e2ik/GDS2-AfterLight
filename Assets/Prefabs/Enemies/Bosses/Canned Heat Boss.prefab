@@ -214,7 +214,7 @@ Transform:
   m_GameObject: {fileID: 4998036943446194957}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 19.90488, y: 6.05121, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -256,7 +256,7 @@ MonoBehaviour:
   behaviorAgent: {fileID: 7603609893098896341}
   animator: {fileID: 1943101255374262222}
   rb2D: {fileID: 2968184197812120870}
-  attackCooldown: 0.25
+  attackCooldown: 1.25
   placeholderClipName: EmptyAttack
   isStaggerImmune: 0
   staggerImmunityDuration: 4
@@ -367,8 +367,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -2.0043077, y: -0.3818034}
-  m_Size: {x: 0.862936, y: 2.6539395}
+  m_Offset: {x: 0.0317955, y: -0.38180315}
+  m_Size: {x: 0.8710966, y: 2.6582978}
   m_Direction: 0
 --- !u!1 &5835482462216775301
 GameObject:
@@ -399,7 +399,7 @@ Transform:
   m_GameObject: {fileID: 5835482462216775301}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 2.03, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -552,7 +552,7 @@ Transform:
   m_GameObject: {fileID: 6608810097252315666}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -2, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
