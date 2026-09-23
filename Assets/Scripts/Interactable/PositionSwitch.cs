@@ -23,6 +23,10 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
     [SerializeField] private Animator[] animators;
     [SerializeField] private string isMovingParameter = "IsMoving";
 
+    [Header("Audio")]
+    [Tooltip("Set the event on this to a looping sound (e.g. a motor hum). Played while moving, stopped the instant motion ends — not a one-shot.")]
+    [SerializeField] private FMODUnity.StudioEventEmitter movementLoopEmitter;
+
     [Header("Debug")]
     [SerializeField] private Collider2D doorCollider;
     [SerializeField] private bool drawGizmos = true;
@@ -46,7 +50,7 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
         if (moveRoutine != null)
         {
             moveRoutine = null;
-            SetAnimatorMoving(false);
+            NotifyMovingStateChanged(false);
         }
     }
 
@@ -118,11 +122,11 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
             SetMoverPosition(target.Value);
             if (secondaryTarget.HasValue) secondaryMovingPart.position = secondaryTarget.Value;
             moveRoutine = null;
-            SetAnimatorMoving(false);
+            NotifyMovingStateChanged(false);
             return;
         }
 
-        SetAnimatorMoving(true);
+        NotifyMovingStateChanged(true);
         moveRoutine = StartCoroutine(MoveRoutine(target.Value, secondaryTarget));
     }
 
@@ -149,7 +153,7 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
         if (secondaryTargetPosition.HasValue) secondaryMovingPart.position = secondaryTargetPosition.Value;
 
         moveRoutine = null;
-        SetAnimatorMoving(false);
+        NotifyMovingStateChanged(false);
     }
 
     private void SetMoverPosition(Vector3 position)
@@ -160,7 +164,7 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
             Mover().position = position;
     }
 
-    private void SetAnimatorMoving(bool moving)
+    private void NotifyMovingStateChanged(bool moving)
     {
         isMovingParamHash ??= Animator.StringToHash(isMovingParameter);
 
@@ -173,6 +177,12 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
         }
 
         if (HasSecondary && secondaryAnimator != null) secondaryAnimator.SetBool(isMovingParamHash.Value, moving);
+
+        if (movementLoopEmitter != null)
+        {
+            if (moving) movementLoopEmitter.Play();
+            else movementLoopEmitter.Stop();
+        }
     }
 
     private void OnDrawGizmos()

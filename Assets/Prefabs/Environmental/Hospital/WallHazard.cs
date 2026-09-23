@@ -25,6 +25,7 @@ public class WallHazard : MonoBehaviour, IOnOff
     [SerializeField] private Transform particleSpawnPoint;
     [SerializeField] private Vector2 particleIntervalRange = new(0.5f, 3f);
     [SerializeField] private bool particlesOnlyWhenOn = true;
+    [SerializeField] private FMODUnity.EventReference sparkEvent;
 
     [Header("Hazard Collider (optional)")]
     [SerializeField] private Collider2D hazardCollider;
@@ -111,6 +112,7 @@ public class WallHazard : MonoBehaviour, IOnOff
 
             Vector3 position = particleSpawnPoint != null ? particleSpawnPoint.position : transform.position;
             ParticleSystem ps = PSpawner.Spawn(particleKey, position);
+            AudioManager.PlaySFX(sparkEvent, position);
 
             if (ps != null)
             {

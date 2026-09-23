@@ -658,6 +658,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5220959354047479627}
   - component: {fileID: 5379406740163488867}
+  - component: {fileID: 7823901998103055901}
   m_Layer: 6
   m_Name: ElevatorBottom
   m_TagString: Untagged
@@ -726,6 +727,37 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &7823901998103055901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3184149569059720495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FMODUnity::FMODUnity.StudioEventEmitter
+  CollisionTag: 
+  EventReference:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  Event: 
+  EventPlayTrigger: 0
+  EventStopTrigger: 0
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  NonRigidbodyVelocity: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: 1
+  OverrideMaxDistance: 20
 --- !u!1 &4889113693063726017
 GameObject:
   m_ObjectHideFlags: 0
@@ -1170,6 +1202,7 @@ MonoBehaviour:
   moverRigidbody: {fileID: 5594884262698844579}
   animators: []
   isMovingParameter: IsMoving
+  movementLoopEmitter: {fileID: 7823901998103055901}
   doorCollider: {fileID: 0}
   drawGizmos: 1
   onGizmoColor: {r: 0, g: 1, b: 0, a: 1}
@@ -1383,6 +1416,20 @@ MonoBehaviour:
   switchOnSprite: {fileID: 21300000, guid: aebb828b69c295643951f6a639f9853e, type: 3}
   switchOffSprite: {fileID: 21300000, guid: aebb828b69c295643951f6a639f9853e, type: 3}
   switchInBetweenSprite: {fileID: 21300000, guid: aebb828b69c295643951f6a639f9853e, type: 3}
+  onClickEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  offClickEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
 --- !u!114 &6956037067544977643
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -81,7 +81,7 @@ public class InteractionManager : MonoBehaviour
         foreach (RaycastHit2D hit in hits)
         {
             IInteractable probe = hit.collider.GetComponent<IInteractable>();
-            Debug.Log($"[InteractionManager] hit '{hit.collider.name}' (layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}, trigger={hit.collider.isTrigger}, root=={hit.collider.transform.root == ownRoot}, IInteractable={(probe != null)}, CanInteract={(probe != null ? probe.CanInteract.ToString() : "n/a")})");
+            // Debug.Log($"[InteractionManager] hit '{hit.collider.name}' (layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}, trigger={hit.collider.isTrigger}, root=={hit.collider.transform.root == ownRoot}, IInteractable={(probe != null)}, CanInteract={(probe != null ? probe.CanInteract.ToString() : "n/a")})");
 
             if (hit.collider.transform.root == ownRoot) continue;
 

@@ -190,20 +190,39 @@ MonoBehaviour:
   startOn: 1
   onPrompt: Turn off
   offPrompt: Turn on
+  outlineToggle: {fileID: 0}
   switchMode: 0
   requiredKey: {fileID: 0}
   missingKeyMessage: '"I need the {0}..."'
   missingKeyMessageDuration: 2
   missingKeyMessageEffect: 0
+  brokenMessage: This switch doesn't seem to work...
+  brokenMessageDuration: 2
+  brokenMessageEffect: 0
   indicatorRenderer: {fileID: 9033387349567991063}
   onColor: {r: 0.4433961, g: 1, b: 0.4433961, a: 1}
   offColor: {r: 1, g: 0.46855342, b: 0.62186986, a: 1}
   inBetweenColor: {r: 1, g: 0.6919608, b: 0.015686274, a: 1}
   inBetweenDuration: 0.05
+  useMovementIndicator: 0
   switchRenderer: {fileID: 1991203149724889889}
   switchOnSprite: {fileID: -6420524450845888813, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
   switchOffSprite: {fileID: 1521430853, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
   switchInBetweenSprite: {fileID: 179256778, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
+  onClickEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  offClickEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
 --- !u!114 &1311010349019242457
 MonoBehaviour:
   m_ObjectHideFlags: 0

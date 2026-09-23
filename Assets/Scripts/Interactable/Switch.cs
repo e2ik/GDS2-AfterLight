@@ -46,8 +46,15 @@ public class Switch : MonoBehaviour, IInteractable
     [SerializeField] private Sprite switchOffSprite;
     [SerializeField] private Sprite switchInBetweenSprite;
 
+    [Header("Audio")]
+    [Tooltip("In Normal indicator mode, plays the moment the switch is pressed on/off. In Use Movement Indicator mode, plays when movement actually starts/stops instead.")]
+    [SerializeField] private FMODUnity.EventReference onClickEvent;
+    [SerializeField] private FMODUnity.EventReference offClickEvent;
+
     private readonly List<IOnOff> targets = new();
     private Coroutine visualRoutine;
+    private bool lastAnyMoving;
+    private bool isInitiator;
 
     public bool IsOn { get; private set; }
     public string InteractionPrompt => IsOn ? onPrompt : offPrompt;
@@ -161,6 +168,7 @@ public class Switch : MonoBehaviour, IInteractable
     private void Apply(bool on)
     {
         IsOn = on;
+        isInitiator = true;
 
         foreach (var target in targets)
         {
@@ -168,6 +176,8 @@ public class Switch : MonoBehaviour, IInteractable
         }
 
         if (useMovementIndicator) return;
+
+        AudioManager.PlaySFX(on ? onClickEvent : offClickEvent, transform.position, this);
 
         if (visualRoutine != null) StopCoroutine(visualRoutine);
         visualRoutine = isActiveAndEnabled ? StartCoroutine(TransitionVisual(on)) : null;
@@ -193,6 +203,17 @@ public class Switch : MonoBehaviour, IInteractable
         if (!useMovementIndicator) return;
 
         bool anyMoving = IsAnyTargetMoving();
+
+        if (anyMoving != lastAnyMoving)
+        {
+            if (isInitiator)
+                AudioManager.PlaySFX(anyMoving ? onClickEvent : offClickEvent, transform.position, this);
+
+            lastAnyMoving = anyMoving;
+
+            if (!anyMoving) isInitiator = false;
+        }
+
         SetVisual(anyMoving ? onColor : offColor, anyMoving ? switchOnSprite : switchOffSprite);
     }
 
