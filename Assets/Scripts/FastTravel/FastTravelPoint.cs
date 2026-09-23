@@ -16,6 +16,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     [SerializeField] private Transform vfxSpawnPoint;
 
     [SerializeField] private SpriteOutlineToggle outlineToggle;
+    [SerializeField] private Collider2D promptCollider;
 
     private static readonly int IsDiscoveredHash = Animator.StringToHash("isDiscovered");
     private static readonly int IsIdleHash = Animator.StringToHash("isIdle");
@@ -29,6 +30,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     {
         anim = GetComponent<Animator>();
         if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
+        if (promptCollider == null) promptCollider = GetComponent<Collider2D>();
     }
 
     private void OnEnable()
@@ -82,6 +84,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
     public bool ShouldStopPlayerMovement => true;
     public SpriteOutlineToggle OutlineToggle => outlineToggle;
+    public Collider2D PromptCollider => promptCollider;
 
     public void Interact(Player player)
     {

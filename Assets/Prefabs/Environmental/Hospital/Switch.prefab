@@ -161,7 +161,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.028040111, y: 0.09112978}
+  m_Offset: {x: 0.028040111, y: -0.35267174}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -171,7 +171,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.8131582, y: 2.640336}
+  m_Size: {x: 1.8131582, y: 1.752733}
   m_EdgeRadius: 0
 --- !u!114 &8173113614869835193
 MonoBehaviour:
@@ -191,6 +191,7 @@ MonoBehaviour:
   onPrompt: Turn off
   offPrompt: Turn on
   outlineToggle: {fileID: 0}
+  promptCollider: {fileID: 9021052882680208716}
   switchMode: 0
   requiredKey: {fileID: 0}
   missingKeyMessage: '"I need the {0}..."'

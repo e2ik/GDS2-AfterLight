@@ -17,7 +17,7 @@ public class InteractionManager : MonoBehaviour
     private Transform currentInteractableTransform;
     private SpriteOutlineToggle currentOutlineToggle;
 
-    public event System.Action<Transform> OnInteractionTargetChanged;
+    public event System.Action<Transform, Collider2D> OnInteractionTargetChanged;
 
     private Player player;
     private PlayerController playerController;
@@ -81,7 +81,7 @@ public class InteractionManager : MonoBehaviour
         foreach (RaycastHit2D hit in hits)
         {
             IInteractable probe = hit.collider.GetComponent<IInteractable>();
-            // Debug.Log($"[InteractionManager] hit '{hit.collider.name}' (layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}, trigger={hit.collider.isTrigger}, root=={hit.collider.transform.root == ownRoot}, IInteractable={(probe != null)}, CanInteract={(probe != null ? probe.CanInteract.ToString() : "n/a")})");
+            Debug.Log($"[InteractionManager] hit '{hit.collider.name}' (layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}, trigger={hit.collider.isTrigger}, root=={hit.collider.transform.root == ownRoot}, IInteractable={(probe != null)}, CanInteract={(probe != null ? probe.CanInteract.ToString() : "n/a")})");
 
             if (hit.collider.transform.root == ownRoot) continue;
 
@@ -113,7 +113,7 @@ public class InteractionManager : MonoBehaviour
                 }
             }
 
-            OnInteractionTargetChanged?.Invoke(currentInteractableTransform);
+            OnInteractionTargetChanged?.Invoke(currentInteractableTransform, currentInteractable?.PromptCollider);
         }
     }
 
@@ -128,7 +128,7 @@ public class InteractionManager : MonoBehaviour
         currentInteractable = null;
         currentInteractableTransform = null;
 
-        OnInteractionTargetChanged?.Invoke(null);
+        OnInteractionTargetChanged?.Invoke(null, null);
     }
 
     private void OnDrawGizmosSelected()

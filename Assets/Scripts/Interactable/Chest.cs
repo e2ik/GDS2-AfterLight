@@ -18,6 +18,7 @@ public class Chest : MonoBehaviour, IInteractable
     [SerializeField] private float maxHorizontalAngle = 0.4f;
 
     [SerializeField] private SpriteOutlineToggle outlineToggle;
+    [SerializeField] private Collider2D promptCollider;
 
     private static readonly int IsOpenedHash = Animator.StringToHash("isOpened");
     private static readonly int IsInteractedHash = Animator.StringToHash("isInteracted");
@@ -29,12 +30,14 @@ public class Chest : MonoBehaviour, IInteractable
     public bool ShouldStopPlayerMovement => false;
     [SerializeField] private EventReference chestOpen;
     public SpriteOutlineToggle OutlineToggle => outlineToggle;
+    public Collider2D PromptCollider => promptCollider;
 
     private void Awake()
     {
         chestID = GetHierarchyPath(transform);
         anim = GetComponent<Animator>();
         if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
+        if (promptCollider == null) promptCollider = GetComponent<Collider2D>();
     }
 
     private string GetHierarchyPath(Transform current)
