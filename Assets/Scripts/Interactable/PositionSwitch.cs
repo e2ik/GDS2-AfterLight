@@ -7,6 +7,12 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
     [SerializeField] private Transform movingPart;
     [SerializeField] private Transform onPosition;
 
+    [Header("Secondary Moving Part (optional)")]
+    [Tooltip("Optional second object that moves alongside the main one, using the same timing/curve. Never uses a Rigidbody2D — always moves via plain Transform. Leave empty to disable entirely.")]
+    [SerializeField] private Transform secondaryMovingPart;
+    [SerializeField] private Transform secondaryOnPosition;
+    [SerializeField] private Animator secondaryAnimator;
+
     [Header("Movement")]
     [SerializeField, Min(0f)] private float moveDuration = 0.3f;
     [SerializeField] private AnimationCurve moveCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -14,7 +20,7 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
     [SerializeField] private Rigidbody2D moverRigidbody;
 
     [Header("Animation")]
-    [SerializeField] private Animator animator;
+    [SerializeField] private Animator[] animators;
     [SerializeField] private string isMovingParameter = "IsMoving";
 
     [Header("Debug")]
@@ -25,16 +31,21 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
 
     private Vector3 offPosition;
     private bool offPositionCaptured;
+    private Vector3 secondaryOffPosition;
+    private bool secondaryOffPositionCaptured;
     private Coroutine moveRoutine;
     private int? isMovingParamHash;
 
     public bool IsOn { get; private set; }
     public bool IsMoving => moveRoutine != null;
 
+    private bool HasSecondary => secondaryMovingPart != null;
+
     private void Awake()
     {
         if (doorCollider == null) doorCollider = GetComponentInChildren<Collider2D>();
-        if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (animators == null || animators.Length == 0) animators = GetComponentsInChildren<Animator>();
+        if (HasSecondary && secondaryAnimator == null) secondaryAnimator = secondaryMovingPart.GetComponentInChildren<Animator>();
         isMovingParamHash ??= Animator.StringToHash(isMovingParameter);
 
         if (moverRigidbody == null) moverRigidbody = Mover().GetComponent<Rigidbody2D>();
@@ -63,10 +74,17 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
 
     private void CaptureOffPosition()
     {
-        if (offPositionCaptured) return;
+        if (!offPositionCaptured)
+        {
+            offPosition = Mover().position;
+            offPositionCaptured = true;
+        }
 
-        offPosition = Mover().position;
-        offPositionCaptured = true;
+        if (HasSecondary && !secondaryOffPositionCaptured)
+        {
+            secondaryOffPosition = secondaryMovingPart.position;
+            secondaryOffPositionCaptured = true;
+        }
     }
 
     private Transform Mover() => movingPart != null ? movingPart : transform;
@@ -80,34 +98,47 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
         Vector3? target = on ? (onPosition != null ? onPosition.position : (Vector3?)null) : offPosition;
         if (target == null) return;
 
+        Vector3? secondaryTarget = HasSecondary
+            ? (on ? (secondaryOnPosition != null ? secondaryOnPosition.position : (Vector3?)null) : secondaryOffPosition)
+            : null;
+
         if (moveRoutine != null) StopCoroutine(moveRoutine);
 
         if (moveDuration <= 0f || !isActiveAndEnabled)
         {
             SetMoverPosition(target.Value);
+            if (secondaryTarget.HasValue) secondaryMovingPart.position = secondaryTarget.Value;
             moveRoutine = null;
             SetAnimatorMoving(false);
             return;
         }
 
         SetAnimatorMoving(true);
-        moveRoutine = StartCoroutine(MoveRoutine(target.Value));
+        moveRoutine = StartCoroutine(MoveRoutine(target.Value, secondaryTarget));
     }
 
-    private IEnumerator MoveRoutine(Vector3 targetPosition)
+    private IEnumerator MoveRoutine(Vector3 targetPosition, Vector3? secondaryTargetPosition)
     {
         Vector3 start = Mover().position;
+        Vector3 secondaryStart = secondaryTargetPosition.HasValue ? secondaryMovingPart.position : default;
         float t = 0f;
 
         while (t < 1f)
         {
             t += Time.fixedDeltaTime / moveDuration;
             float eased = Mathf.Clamp01(moveCurve.Evaluate(Mathf.Clamp01(t)));
+
             SetMoverPosition(Vector3.LerpUnclamped(start, targetPosition, eased));
+
+            if (secondaryTargetPosition.HasValue)
+                secondaryMovingPart.position = Vector3.LerpUnclamped(secondaryStart, secondaryTargetPosition.Value, eased);
+
             yield return new WaitForFixedUpdate();
         }
 
         SetMoverPosition(targetPosition);
+        if (secondaryTargetPosition.HasValue) secondaryMovingPart.position = secondaryTargetPosition.Value;
+
         moveRoutine = null;
         SetAnimatorMoving(false);
     }
@@ -122,10 +153,17 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
 
     private void SetAnimatorMoving(bool moving)
     {
-        if (animator == null) return;
-
         isMovingParamHash ??= Animator.StringToHash(isMovingParameter);
-        animator.SetBool(isMovingParamHash.Value, moving);
+
+        if (animators != null)
+        {
+            foreach (var anim in animators)
+            {
+                if (anim != null) anim.SetBool(isMovingParamHash.Value, moving);
+            }
+        }
+
+        if (HasSecondary && secondaryAnimator != null) secondaryAnimator.SetBool(isMovingParamHash.Value, moving);
     }
 
     private void OnDrawGizmos()
@@ -144,6 +182,19 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
 
         if (onPosition != null)
             DrawColliderPreview(onPosition.position, localOffset, size, onGizmoColor);
+
+        if (HasSecondary)
+        {
+            Vector3 secondaryOffPreview = secondaryOffPositionCaptured ? secondaryOffPosition : secondaryMovingPart.position;
+            Gizmos.color = offGizmoColor;
+            Gizmos.DrawWireSphere(secondaryOffPreview, 0.05f);
+
+            if (secondaryOnPosition != null)
+            {
+                Gizmos.color = onGizmoColor;
+                Gizmos.DrawWireSphere(secondaryOnPosition.position, 0.05f);
+            }
+        }
     }
 
     private static void DrawColliderPreview(Vector3 position, Vector3 localOffset, Vector3 size, Color color)
