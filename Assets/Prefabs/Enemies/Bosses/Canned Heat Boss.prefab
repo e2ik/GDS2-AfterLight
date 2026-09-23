@@ -249,9 +249,9 @@ MonoBehaviour:
   observationSO: {fileID: 11400000, guid: 507f599106ab90f40a26514267cdd09a, type: 2}
   attacks:
   - Attack: {fileID: 11400000, guid: c5d6043f22bf2e04ab0cd5336e72fca9, type: 2}
-    Weight: 0
+    Weight: 100
     leashMultiplier: 1.2
-    maxDuration: 3
+    maxDuration: 5
   lootTable: {fileID: 11400000, guid: 6252f6ee048300646a7a55bd5c7f22d6, type: 2}
   behaviorAgent: {fileID: 7603609893098896341}
   animator: {fileID: 1943101255374262222}
@@ -289,7 +289,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0038c16c34866b4f9e25c9c0dc0f7e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Behavior::Unity.Behavior.BehaviorGraphAgent
-  m_Graph: {fileID: 4179997528926895500, guid: bc54622a94ee35845ae0e010d8dd287d, type: 2}
+  m_Graph: {fileID: 4179997528926895500, guid: d40ace6caeef20b42b896d70b5937b57, type: 2}
   m_BlackboardVariableOverridesList:
   - rid: 1460187202314567867
   m_OriginalGraph: {fileID: 0}
@@ -525,6 +525,14 @@ MonoBehaviour:
         Data3: -1733081435
         Data4: -1406247420
       Path: event:/CombatSFXEvents/WhipAttackEvent
+  - id: HeavyAttack
+    sfxEvent:
+      Guid:
+        Data1: 873030172
+        Data2: 1164482081
+        Data3: -2010547302
+        Data4: 1697953371
+      Path: event:/CombatSFXEvents/EnemyMeleeAttackEvent
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0

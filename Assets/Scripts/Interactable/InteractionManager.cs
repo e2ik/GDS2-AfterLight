@@ -9,6 +9,7 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private float interactionRange = 1.5f;
     [SerializeField] private LayerMask interactableLayers = ~0;
     [SerializeField] private Vector2 raycastOriginOffset = Vector2.zero;
+    [SerializeField] private bool DebugOn = false;
 
     private int interactionDisableCount;
     public bool InteractionEnabled => interactionDisableCount <= 0;
@@ -81,7 +82,9 @@ public class InteractionManager : MonoBehaviour
         foreach (RaycastHit2D hit in hits)
         {
             IInteractable probe = hit.collider.GetComponent<IInteractable>();
-            Debug.Log($"[InteractionManager] hit '{hit.collider.name}' (layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}, trigger={hit.collider.isTrigger}, root=={hit.collider.transform.root == ownRoot}, IInteractable={(probe != null)}, CanInteract={(probe != null ? probe.CanInteract.ToString() : "n/a")})");
+            
+            if (DebugOn)
+                Debug.Log($"[InteractionManager] hit '{hit.collider.name}' (layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}, trigger={hit.collider.isTrigger}, root=={hit.collider.transform.root == ownRoot}, IInteractable={(probe != null)}, CanInteract={(probe != null ? probe.CanInteract.ToString() : "n/a")})");
 
             if (hit.collider.transform.root == ownRoot) continue;
 
