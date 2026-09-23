@@ -4341,57 +4341,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4464314063223907065, guid: 7b1adcd417b504f41875e4647b9c98bb, type: 3}
   m_PrefabInstance: {fileID: 458538601}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &567742964
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 567742966}
-  - component: {fileID: 567742965}
-  m_Layer: 0
-  m_Name: Spawner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &567742965
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 567742964}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5dca45967bcf9004699e206ce29e0e70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PSpawner
-  database:
-  - key: splash
-    prefab: {fileID: 2359786052023973350, guid: f301e48b1d0f7e94b9ed01a2ba2525a8, type: 3}
-    initialPoolSize: 1
-  - key: wallspark
-    prefab: {fileID: 7942674913948366880, guid: 9c28599bc54ffe841922d29602112228, type: 3}
-    initialPoolSize: 1
---- !u!4 &567742966
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 567742964}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.46439, y: 0.60244, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &613341069
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11336,5 +11285,4 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 567742966}
   - {fileID: 1085938262}

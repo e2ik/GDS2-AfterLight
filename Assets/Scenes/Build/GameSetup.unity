@@ -188,11 +188,13 @@ MonoBehaviour:
   unlockAllFastTravelAction: {fileID: 7163206889840615523, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   tempBackgroundPrefab: {fileID: 8412158347902167548, guid: f6bdba2aea3bb1741a687ba8d5d96a43, type: 3}
   backgroundNormalColor: {r: 1, g: 1, b: 1, a: 1}
-  backgroundDarkenedColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
+  backgroundDarkenedColor: {r: 0, g: 0, b: 0, a: 1}
   horizontalParallaxFactor: 0.1
   verticalParallaxFactor: 0.05
   tileGridSize: 3
   tileOverlap: 0.02
+  exteriorCameraColor: {r: 1, g: 1, b: 1, a: 1}
+  interiorCameraColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!4 &78526258
 Transform:
   m_ObjectHideFlags: 0

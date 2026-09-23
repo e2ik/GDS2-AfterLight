@@ -7,6 +7,8 @@ public class FastTravelManager : MonoBehaviour
 {
     public static FastTravelManager Instance { get; private set; }
 
+    [SerializeField] private float fadeDuration = 0.5f;
+
     private FastTravelNodeSO lastVisitedNode;
     private AreaSide lastVisitedSide;
 
@@ -74,6 +76,9 @@ public class FastTravelManager : MonoBehaviour
 
     private IEnumerator FastTravelRoutine(FastTravelNodeSO destination)
     {
+        if (FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeOut(fadeDuration);
+
         string targetScene = destination.targetSceneName;
 
         Scene masterScene = SceneManager.GetSceneByName("WorldMaster");
@@ -117,6 +122,7 @@ public class FastTravelManager : MonoBehaviour
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null)
         {
+            GameManager.Instance?.SetAreaSide(destination.destinationAreaSide);
             GameManager.Instance?.ApplyAreaSide(destination.destinationAreaSide);
 
             Transform anchorTransform = FindAnchorTransform(destination.spawnAnchorID);
@@ -124,6 +130,7 @@ public class FastTravelManager : MonoBehaviour
             if (anchorTransform != null)
             {
                 player.transform.position = anchorTransform.position;
+                GameManager.Instance?.ResetBackgroundParallax();
 
                 CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
                 cam?.SnapToTarget();
@@ -139,6 +146,9 @@ public class FastTravelManager : MonoBehaviour
         {
             Debug.LogWarning("[FastTravelManager] No GameObject tagged 'Player' found — cannot reposition on respawn.");
         }
+
+        if (FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeIn(fadeDuration);
 
         OnFastTravelComplete?.Invoke();
     }

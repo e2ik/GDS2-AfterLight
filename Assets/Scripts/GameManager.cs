@@ -108,6 +108,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void ResetBackgroundParallax()
+    {
+        hasInitializedParallax = false;
+    }
+
     #endregion
 
     #region Dev Tools
@@ -463,6 +468,7 @@ public class GameManager : MonoBehaviour
         if (anchor != null)
         {
             _playerInstance.transform.position = anchor.position;
+            ResetBackgroundParallax();
 
             CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
             cam?.SnapToTarget();
@@ -669,6 +675,7 @@ public class GameManager : MonoBehaviour
     private void UpdateTempBackgroundTint(AreaSide side)
     {
         if (tempBackgroundTiles == null) return;
+
         Color target = side == AreaSide.Interior ? backgroundDarkenedColor : backgroundNormalColor;
         foreach (var tile in tempBackgroundTiles)
         {
