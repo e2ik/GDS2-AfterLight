@@ -35,5 +35,8 @@ namespace Enemies
         public float TimeSinceTargetSeen;
         public Vector2 LastKnownTargetPosition;
         public float AttackElapsed;
+
+        public AttackEvents AttackEvents;
+        public int ComboStepIndex;
     }
 }

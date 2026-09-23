@@ -1287,6 +1287,68 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1001 &653319021
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 963611805}
+    m_Modifications:
+    - target: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.8225818
+      objectReference: {fileID: 0}
+    - target: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.736659
+      objectReference: {fileID: 0}
+    - target: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4998036943446194957, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+      propertyPath: m_Name
+      value: Canned Heat Boss
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+--- !u!4 &653319022 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3813132406114893413, guid: cfd1916f6b6101d47b9e8dbc3130c9a6, type: 3}
+  m_PrefabInstance: {fileID: 653319021}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &671825107
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -36666,6 +36728,7 @@ Transform:
   m_Children:
   - {fileID: 155510395}
   - {fileID: 1314229426}
+  - {fileID: 653319022}
   - {fileID: 1201760485}
   - {fileID: 1380072458}
   - {fileID: 771565658}
