@@ -8,10 +8,12 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     [SerializeField] private bool canInteract = true;
     [SerializeField] private bool shouldStopPlayer = true;
     [SerializeField] private SpriteOutlineToggle outlineToggle;
+    [SerializeField] private Collider2D promptCollider;
     public string InteractionPrompt => interactionPrompt;
     public bool CanInteract => canInteract;
     public bool ShouldStopPlayerMovement => shouldStopPlayer;
     public SpriteOutlineToggle OutlineToggle => outlineToggle;
+    public Collider2D PromptCollider => promptCollider;
 
     [SerializeField] private SceneAreaState sceneAreaState;
     [SerializeField] private float fadeDuration = 0.5f;
@@ -28,6 +30,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     private void Awake()
     {
         if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
+        if (promptCollider == null) promptCollider = GetComponent<Collider2D>();
     }
 
     public void Interact(Player player)

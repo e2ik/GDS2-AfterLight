@@ -161,7 +161,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.028040111, y: 0.09112978}
+  m_Offset: {x: 0.028040111, y: -0.35267174}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -171,7 +171,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.8131582, y: 2.640336}
+  m_Size: {x: 1.8131582, y: 1.752733}
   m_EdgeRadius: 0
 --- !u!114 &8173113614869835193
 MonoBehaviour:
@@ -190,20 +190,40 @@ MonoBehaviour:
   startOn: 1
   onPrompt: Turn off
   offPrompt: Turn on
+  outlineToggle: {fileID: 0}
+  promptCollider: {fileID: 9021052882680208716}
   switchMode: 0
   requiredKey: {fileID: 0}
   missingKeyMessage: '"I need the {0}..."'
   missingKeyMessageDuration: 2
   missingKeyMessageEffect: 0
+  brokenMessage: This switch doesn't seem to work...
+  brokenMessageDuration: 2
+  brokenMessageEffect: 0
   indicatorRenderer: {fileID: 9033387349567991063}
   onColor: {r: 0.4433961, g: 1, b: 0.4433961, a: 1}
   offColor: {r: 1, g: 0.46855342, b: 0.62186986, a: 1}
   inBetweenColor: {r: 1, g: 0.6919608, b: 0.015686274, a: 1}
   inBetweenDuration: 0.05
+  useMovementIndicator: 0
   switchRenderer: {fileID: 1991203149724889889}
   switchOnSprite: {fileID: -6420524450845888813, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
   switchOffSprite: {fileID: 1521430853, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
   switchInBetweenSprite: {fileID: 179256778, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
+  onClickEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  offClickEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
 --- !u!114 &1311010349019242457
 MonoBehaviour:
   m_ObjectHideFlags: 0

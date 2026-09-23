@@ -156,6 +156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38bc156dc0bf0f841bd2641f95da1c7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FastTravelManager
+  fadeDuration: 0.5
 --- !u!114 &78526257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -193,8 +194,6 @@ MonoBehaviour:
   verticalParallaxFactor: 0.05
   tileGridSize: 3
   tileOverlap: 0.02
-  exteriorCameraColor: {r: 1, g: 1, b: 1, a: 1}
-  interiorCameraColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!4 &78526258
 Transform:
   m_ObjectHideFlags: 0

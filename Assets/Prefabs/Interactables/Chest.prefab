@@ -109,6 +109,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpriteOutlineToggle
   outlineColor: {r: 0.95360184, g: 1, b: 0, a: 1}
   outlineThickness: 1
+  pulseOnHighlight: 1
+  highlightPulseSpeed: 3
+  highlightMinAlpha: 0.2
+  highlightMaxAlpha: 1
+  flashCount: 3
+  flashInterval: 0.15
 --- !u!114 &4348363927236017147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,6 +132,8 @@ MonoBehaviour:
   popForce: 5
   minHorizontalAngle: -0.4
   maxHorizontalAngle: 0.4
+  outlineToggle: {fileID: 0}
+  promptCollider: {fileID: 4521098625128912410}
   chestOpen:
     Guid:
       Data1: 416931504

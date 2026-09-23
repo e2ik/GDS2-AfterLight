@@ -10,6 +10,7 @@ namespace GameUI
         private InteractionManager interactionManager;
         private GameObject iconInstance;
         private Transform currentTarget;
+        private Collider2D currentPromptCollider;
 
         private void Awake()
         {
@@ -24,7 +25,7 @@ namespace GameUI
         {
             if (iconInstance == null || currentTarget == null) return;
 
-            Vector3 anchor = GetTopCenter(currentTarget);
+            Vector3 anchor = GetAnchor(currentTarget, currentPromptCollider);
             iconInstance.transform.position = (Vector2)anchor + iconOffset;
         }
 
@@ -47,14 +48,21 @@ namespace GameUI
             if (iconInstance != null) Destroy(iconInstance);
         }
 
-        private void HandleTargetChanged(Transform target)
+        private void HandleTargetChanged(Transform target, Collider2D promptCollider)
         {
             currentTarget = target;
+            currentPromptCollider = promptCollider;
             if (iconInstance != null) iconInstance.SetActive(target != null);
         }
 
-        private static Vector3 GetTopCenter(Transform target)
+        private static Vector3 GetAnchor(Transform target, Collider2D promptCollider)
         {
+            if (promptCollider != null)
+            {
+                Bounds colliderBounds = promptCollider.bounds;
+                return new Vector3(colliderBounds.center.x, colliderBounds.max.y, target.position.z);
+            }
+
             if (TryGetBounds(target, out Bounds bounds))
                 return new Vector3(bounds.center.x, bounds.max.y, target.position.z);
 

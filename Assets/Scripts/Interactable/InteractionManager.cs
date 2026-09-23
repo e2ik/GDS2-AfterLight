@@ -17,7 +17,7 @@ public class InteractionManager : MonoBehaviour
     private Transform currentInteractableTransform;
     private SpriteOutlineToggle currentOutlineToggle;
 
-    public event System.Action<Transform> OnInteractionTargetChanged;
+    public event System.Action<Transform, Collider2D> OnInteractionTargetChanged;
 
     private Player player;
     private PlayerController playerController;
@@ -113,7 +113,7 @@ public class InteractionManager : MonoBehaviour
                 }
             }
 
-            OnInteractionTargetChanged?.Invoke(currentInteractableTransform);
+            OnInteractionTargetChanged?.Invoke(currentInteractableTransform, currentInteractable?.PromptCollider);
         }
     }
 
@@ -128,7 +128,7 @@ public class InteractionManager : MonoBehaviour
         currentInteractable = null;
         currentInteractableTransform = null;
 
-        OnInteractionTargetChanged?.Invoke(null);
+        OnInteractionTargetChanged?.Invoke(null, null);
     }
 
     private void OnDrawGizmosSelected()
