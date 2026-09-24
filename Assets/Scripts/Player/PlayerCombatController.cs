@@ -895,7 +895,8 @@ public class PlayerCombatController : MonoBehaviour
             };
 
             behaviourDefinition.Modify(ref context, player.Equipment.SecondaryGem);
-            enemyHealth.ApplyHit((int)context.BaseAttackDamage, context);
+            int reflectDmg = (int)Mathf.Max(1, context.BaseAttackDamage);
+            enemyHealth.ApplyHit(reflectDmg, context);
         }
         else
         {
