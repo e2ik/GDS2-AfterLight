@@ -8750,6 +8750,13 @@ MonoBehaviour:
   upperThreshold: 0.7
   lowerThreshold: 0.3
   verticalSmoothTime: 0.1
+  lookAheadDistance: 2
+  lookAheadSmoothTime: 1
+  lookAheadMoveThreshold: 0.5
+  velocityNoiseSmoothTime: 0.1
+  revealTransitionDuration: 0.75
+  revealZoomPadding: 1.1
+  returnHandoffFraction: 0.5
 --- !u!114 &1374221811
 MonoBehaviour:
   m_ObjectHideFlags: 0

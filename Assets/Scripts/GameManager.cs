@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private WorldMapStateSO worldMapState;
     [SerializeField] private SaveManager saveManager;
+    [SerializeField] private float startupFadeDuration = 0.5f;
 
     [Header("Item Colors")]
     [SerializeField] private Color commonColor = new Color(0.69f, 0.69f, 0.69f);
@@ -90,6 +91,8 @@ public class GameManager : MonoBehaviour
         currentAreaSide = side;
         OnAreaSideChanged?.Invoke(side);
 
+        SaveManager.Instance?.UpdateCurrentAreaSide(side);
+
         UpdateTempBackgroundTint(side); // temporary
     }
 
@@ -111,6 +114,16 @@ public class GameManager : MonoBehaviour
     public void ResetBackgroundParallax()
     {
         hasInitializedParallax = false;
+    }
+
+    #endregion
+
+    #region Camera
+
+    public void ReturnCameraToNormal(System.Action onReturnComplete = null)
+    {
+        CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
+        cam?.ReturnToNormalFollow(onReturnComplete);
     }
 
     #endregion
@@ -199,6 +212,8 @@ public class GameManager : MonoBehaviour
     {
         yield return LoadMasterSceneSingle();
 
+        FadeCanvasController.Instance?.FadeTo(1f, 0f);
+
         SpawnPlayer();
 
         ClearPlayerInventory();
@@ -217,6 +232,8 @@ public class GameManager : MonoBehaviour
             worldMapState.ResetState();
         }
 
+        CameraRevealTrigger.ClearSessionTriggers();
+
         yield return LoadSceneAdditive(defaultStartSceneName);
         yield return null;
 
@@ -225,11 +242,15 @@ public class GameManager : MonoBehaviour
 
         PlacePlayerAtAnchor(defaultSpawnAnchorID);
         SetState(GameState.Game);
+
+        yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
     }
 
     private IEnumerator LoadGameRoutine()
     {
         yield return LoadMasterSceneSingle();
+
+        FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
         SpawnPlayer();
 
@@ -247,6 +268,8 @@ public class GameManager : MonoBehaviour
             PlacePlayerAtAnchor(defaultSpawnAnchorID);
 
             SetState(GameState.Game);
+
+            yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
             yield break;
         }
 
@@ -293,6 +316,8 @@ public class GameManager : MonoBehaviour
 
         PlacePlayerAtAnchor(anchorToUse);
         SetState(GameState.Game);
+
+        yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
     }
 
     private IEnumerator ReturnToTitleRoutine()
