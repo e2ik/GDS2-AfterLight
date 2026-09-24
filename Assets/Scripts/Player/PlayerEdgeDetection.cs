@@ -12,7 +12,7 @@ public class PlayerEdgeDetection : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(isActive);
+        Debug.Log("edge detection is active: " + isActive);
         pController.onEdge = isActive ? Physics2D.OverlapCircle(transform.position, radius, groundLayer) : false;
     }
 
