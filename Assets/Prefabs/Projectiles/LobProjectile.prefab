@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4151367156301090719}
   - component: {fileID: 5186317559378152056}
   - component: {fileID: 6208654720218976255}
+  - component: {fileID: 287847599752517}
   m_Layer: 13
   m_Name: LobProjectile
   m_TagString: Untagged
@@ -87,12 +88,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 20
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.7075472, g: 0.1848007, b: 0, a: 1}
+  m_Sprite: {fileID: 1520756748, guid: 96ff7ad3f1e3c4631bb78f3ba7d921a4, type: 3}
+  m_Color: {r: 0.7735849, g: 0.14217365, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 2.6666667, y: 2.6666667}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -126,6 +127,7 @@ MonoBehaviour:
       Data3: 520570047
       Data4: -807845951
     Path: event:/CombatSFXEvents/Projectile Explosion Event
+  hitAnimationDuration: 0.3
 --- !u!50 &8360659817371356284
 Rigidbody2D:
   serializedVersion: 5
@@ -217,6 +219,28 @@ MonoBehaviour:
   hitbox: {fileID: 5186317559378152056}
   hurtbox: {fileID: 0}
   vfxBox: {fileID: 0}
+--- !u!95 &287847599752517
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2052626741653218015}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 00706e338b88144e48a6c069b105eedb, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &4107188041399619664
 GameObject:
   m_ObjectHideFlags: 0

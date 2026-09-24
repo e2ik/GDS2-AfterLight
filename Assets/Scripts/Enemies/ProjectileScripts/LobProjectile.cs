@@ -10,6 +10,9 @@ namespace Enemies.ProjectileScripts
         [SerializeField] private LayerMask playerMask;
         [SerializeField] private LayerMask collideWithMask;
         [SerializeField] private EventReference explodeEvent;
+        
+        [SerializeField] private float hitAnimationDuration = 0.3f;
+        private Animator animator;
 
         // guard against multiple hits (player has more than 1 collider)
         private bool hasTriggered = false;
@@ -17,6 +20,8 @@ namespace Enemies.ProjectileScripts
         protected override void OnLaunch(Vector2 initialVelocity)
         {
             hasTriggered = false;
+            animator = GetComponent<Animator>();
+            
             Rb.gravityScale = gravityScale;
             Rb.linearVelocity = initialVelocity;
         }
@@ -36,14 +41,16 @@ namespace Enemies.ProjectileScripts
 
                 hasTriggered = true;
                 TryExplodeOrParry(hurtBox);
-                return true; 
+                PlayHitAnimation();
+                return false; 
             }
 
             if ((collideWithMask.value & (1 << other.gameObject.layer)) != 0)
             {
                 hasTriggered = true;
                 Explode(); 
-                return true; 
+                PlayHitAnimation();
+                return false; 
             }
 
             return false;
@@ -95,6 +102,17 @@ namespace Enemies.ProjectileScripts
         {
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(transform.position, explosionRadius);
+        }
+
+        private void PlayHitAnimation()
+        {
+            Rb.linearVelocity = Vector2.zero;
+            Rb.gravityScale = 0f;
+            HitBox.Disable();
+
+            animator.SetTrigger("Hit");
+
+            Invoke(nameof(ReturnToPool), hitAnimationDuration);
         }
     }
 }
