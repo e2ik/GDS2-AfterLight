@@ -156,6 +156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38bc156dc0bf0f841bd2641f95da1c7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FastTravelManager
+  fadeDuration: 0.5
 --- !u!114 &78526257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -170,6 +171,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   currentState: 0
   currentAreaSide: 0
+  fadeCanvas: {fileID: 0}
   masterSceneName: WorldMaster
   defaultStartSceneName: Tutorial
   defaultSpawnAnchorID: start
@@ -182,9 +184,12 @@ MonoBehaviour:
   epicColor: {r: 0.78, g: 0.61, b: 1, a: 1}
   legendaryColor: {r: 1, g: 0.71, b: 0.44, a: 1}
   defaultRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  keyItemColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  loreItemColor: {r: 0, g: 1, b: 1, a: 1}
+  unlockAllFastTravelAction: {fileID: 7163206889840615523, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   tempBackgroundPrefab: {fileID: 8412158347902167548, guid: f6bdba2aea3bb1741a687ba8d5d96a43, type: 3}
   backgroundNormalColor: {r: 1, g: 1, b: 1, a: 1}
-  backgroundDarkenedColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
+  backgroundDarkenedColor: {r: 0, g: 0, b: 0, a: 1}
   horizontalParallaxFactor: 0.1
   verticalParallaxFactor: 0.05
   tileGridSize: 3

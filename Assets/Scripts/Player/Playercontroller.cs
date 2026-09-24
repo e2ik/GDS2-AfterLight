@@ -2,7 +2,6 @@ using System.Collections;
 using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -36,12 +35,18 @@ public class PlayerController : MonoBehaviour
 
     [Header("Wall Settings")]
     [SerializeField] private float wallSlideSpeed = 2f;
+    [SerializeField] private float wallSlideGracePeriod = 0.5f;
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     [SerializeField] private float wallCheckNormalThreshold = 0.5f;
     [SerializeField] private Vector2 wallJumpForce = new(8f, 16f);
     [SerializeField] private float wallJumpDuration = 0.4f;
     [SerializeField] private float wallJumpBufferTime = 0.2f;
+
+    [Header("Step Up Settings")]
+    [SerializeField] private float maxStepHeight = 0.3f;
+    [SerializeField] private float stepCheckDistance = 0.15f;
+    [SerializeField] private float stepSmoothSpeed = 6f;
 
     [Header("Dash Settings")]
     [SerializeField] private float dashVelocity = 20f;
@@ -51,7 +56,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashSkillEnergyCost = 0.1f;
 
     [Header("Knockback Settings")]
-    [SerializeField] private LayerMask hazardousLayers;
+    [SerializeField] private bool enemyBodyCollisionKnockback = true;
+    [SerializeField] private AttackForce enemyBodyCollisionForce = AttackForce.Light;
     [SerializeField] private float hazardousKnockbackForce = 12f;
     [SerializeField] private float hazardousStaggerDuration = 0.3f;
     [SerializeField] private float bounceDuration = 0.2f;
@@ -82,7 +88,7 @@ public class PlayerController : MonoBehaviour
     private bool isChargingSkillPhysics, isSkillGravityZeroed, isParryGravityActive, inventoryPressed;
     private const float InputDeadzone = 0.1f;
 
-    private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer;
+    private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer, wallContactTimer;
     private float dashTimer, dashDirection, wallJumpDirection;
     private bool wasWallSliding;
     private int movementFreezeCount;
@@ -164,6 +170,7 @@ public class PlayerController : MonoBehaviour
         WallCheckUpdate();
         
         HandleEdgeClimb();
+        HandleStepUp();
         HandleMovement();
         HandleWallSlide();
         HandleJump();
@@ -283,6 +290,26 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void HandleStepUp()
+    {
+        if (!isGrounded) return;
+        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered || isWallSliding || isDashing || isClimbing) return;
+        if (Mathf.Abs(horizontalInput) < InputDeadzone) return;
+
+        Bounds bounds = cachedBounds;
+        float dir = Mathf.Sign(horizontalInput);
+
+        Vector2 lowOrigin = new(bounds.center.x + dir * bounds.extents.x, bounds.min.y + 0.05f);
+        RaycastHit2D lowHit = Physics2D.Raycast(lowOrigin, Vector2.right * dir, stepCheckDistance, groundLayer);
+        if (lowHit.collider == null) return;
+
+        Vector2 highOrigin = new(lowOrigin.x, bounds.min.y + maxStepHeight);
+        RaycastHit2D highHit = Physics2D.Raycast(highOrigin, Vector2.right * dir, stepCheckDistance, groundLayer);
+        if (highHit.collider != null) return;
+
+        rb.position += new Vector2(0f, stepSmoothSpeed * Time.fixedDeltaTime);
+    }
+
     private void HandleJump()
     {
         bool canJump = InputEnabled 
@@ -335,12 +362,16 @@ public class PlayerController : MonoBehaviour
         if (IsFrozenOrSkillLocked || combat.IsAttacking || isClimbing)
         {
             isWallSliding = false;
+            wallContactTimer = 0f;
             return;
         }
 
         wallCoyoteTimer = (onWall && !isGrounded && Mathf.Abs(horizontalInput) > InputDeadzone) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
 
-        if (onWall && !isGrounded && wallCoyoteTimer > 0f)
+        bool touchingWall = onWall && !isGrounded && wallCoyoteTimer > 0f;
+        wallContactTimer = touchingWall ? wallContactTimer + Time.fixedDeltaTime : 0f;
+
+        if (touchingWall && wallContactTimer >= wallSlideGracePeriod)
         {
             if (!isWallSliding)
             {
@@ -588,12 +619,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce, bool applyStagger = true)
+    public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce, bool applyStagger = true, bool playHurtAnimation = true)
     {
         if (physicsSuspended) return;
 
         combat.ForceCancelAttack();
-        if (applyStagger) playerAnimation.PlayHurtAnimation();
+        if (applyStagger && playHurtAnimation) playerAnimation.PlayHurtAnimation();
 
         KnockbackData data = attackForce switch
         {
@@ -791,7 +822,6 @@ public class PlayerController : MonoBehaviour
     private void WallCheckUpdate()
     {
         onWall = false;
-
         if (isGrounded || IsMovementLockedBySkill || Mathf.Abs(horizontalInput) < InputDeadzone) return;
 
         Bounds bounds = cachedBounds;
@@ -807,7 +837,7 @@ public class PlayerController : MonoBehaviour
         if (CheckWallRay(chest, dir, rayLen)) hits++;
         if (CheckWallRay(waist, dir, rayLen)) hits++;
 
-        if (hits >= 2) onWall = true;
+        if (hits >= 3) onWall = true;
     }
 
     private bool CheckWallRay(Vector2 origin, float dir, float len)
@@ -885,25 +915,23 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D col) => HandleHazardousCollision(col);
-    private void OnCollisionStay2D(Collision2D col) => HandleHazardousCollision(col);
-
-    private void HandleHazardousCollision(Collision2D col)
-    {
-        if (((1 << col.gameObject.layer) & hazardousLayers) == 0) return;
-
-        bool isEnemyLayer = ((1 << col.gameObject.layer) & combat.enemyLayer) != 0;
-        if (isEnemyLayer && !col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
-
-        ApplyHazardKnockback(col.GetContact(0).point);
-    }
-
     public void ApplyHazardKnockback(Vector2 contactPoint) =>
         ApplyHazardKnockback(contactPoint, hazardousKnockbackForce, hazardousStaggerDuration);
 
+    private void OnCollisionEnter2D(Collision2D col) => HandleEnemyBodyCollision(col);
+
+    private void HandleEnemyBodyCollision(Collision2D col)
+    {
+        if (!enemyBodyCollisionKnockback) return;
+        if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
+        if (!col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
+
+        ApplyKnockback(col.transform.position, enemyBodyCollisionForce, applyStagger: true, playHurtAnimation: false);
+    }
+
     public bool ApplyHazardKnockback(Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null)
     {
-        if (physicsSuspended || isStaggered || isBouncing || IsSkillActive || combat.IsPlunging) return false;
+        if (physicsSuspended || isStaggered || isBouncing || IsSkillActive) return false;
 
         bool wasPlunging = combat.WasRecentlyPlunging;
 

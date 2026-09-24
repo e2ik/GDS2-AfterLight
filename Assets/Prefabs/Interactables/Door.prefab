@@ -109,11 +109,19 @@ MonoBehaviour:
   interactionPrompt: Enter
   canInteract: 1
   shouldStopPlayer: 1
+  outlineToggle: {fileID: 0}
+  promptCollider: {fileID: 2766027008674284887}
   sceneAreaState: {fileID: 0}
-  fadeCanvas: {fileID: 0}
   fadeDuration: 0.25
   doorAnimator: {fileID: 3977532196199449150}
   openTriggerName: Open
+  doorOpenEvent:
+    Guid:
+      Data1: -1586503252
+      Data2: 1089793558
+      Data3: 34380203
+      Data4: -2005710956
+    Path: event:/WorldSFX Events/DoorOpenEvent
 --- !u!61 &2766027008674284887
 BoxCollider2D:
   m_ObjectHideFlags: 0

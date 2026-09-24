@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Tutorial;
 
@@ -38,6 +39,7 @@ public class GameManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private WorldMapStateSO worldMapState;
     [SerializeField] private SaveManager saveManager;
+    [SerializeField] private float startupFadeDuration = 0.5f;
 
     [Header("Item Colors")]
     [SerializeField] private Color commonColor = new Color(0.69f, 0.69f, 0.69f);
@@ -52,6 +54,9 @@ public class GameManager : MonoBehaviour
     private Player player;
     public Player Player { get => player; }
 
+    [Header("Dev Tools")]
+    [SerializeField] private InputActionReference unlockAllFastTravelAction;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) 
@@ -62,6 +67,12 @@ public class GameManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        if (unlockAllFastTravelAction != null)
+        {
+            unlockAllFastTravelAction.action.Enable();
+            unlockAllFastTravelAction.action.performed += ctx => UnlockAllFastTravelNodes();
+        }
 
         SpawnTempBackground(); // temp
     }
@@ -80,6 +91,8 @@ public class GameManager : MonoBehaviour
         currentAreaSide = side;
         OnAreaSideChanged?.Invoke(side);
 
+        SaveManager.Instance?.UpdateCurrentAreaSide(side);
+
         UpdateTempBackgroundTint(side); // temporary
     }
 
@@ -96,6 +109,48 @@ public class GameManager : MonoBehaviour
         {
             areaState.SetSide(side);
         }
+    }
+
+    public void ResetBackgroundParallax()
+    {
+        hasInitializedParallax = false;
+    }
+
+    #endregion
+
+    #region Camera
+
+    public void ReturnCameraToNormal(System.Action onReturnComplete = null)
+    {
+        CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
+        cam?.ReturnToNormalFollow(onReturnComplete);
+    }
+
+    #endregion
+
+    #region Dev Tools
+
+    public void UnlockAllFastTravelNodes()
+    {
+        if (worldMapState == null)
+        {
+            Debug.LogWarning("[GameManager] No WorldMapState assigned — can't unlock fast travel nodes.");
+            return;
+        }
+
+        IReadOnlyList<FastTravelNodeSO> allNodes = FastTravelNodeResolver.GetAllNodes();
+        if (allNodes == null || allNodes.Count == 0)
+        {
+            Debug.LogWarning("[GameManager] FastTravelNodeResolver returned no nodes to unlock.");
+            return;
+        }
+
+        foreach (var node in allNodes)
+        {
+            worldMapState.UnlockNode(node);
+        }
+
+        Debug.Log($"[GameManager] Dev tool: unlocked all {allNodes.Count} fast travel nodes.");
     }
 
     #endregion
@@ -157,12 +212,13 @@ public class GameManager : MonoBehaviour
     {
         yield return LoadMasterSceneSingle();
 
+        FadeCanvasController.Instance?.FadeTo(1f, 0f);
+
         SpawnPlayer();
 
         ClearPlayerInventory();
         ClearPlayerEquipment();
 
-        // whatever we assign in inspector gets cached here
         player.Equipment.RegisterInspectorAssignedStartingGear();
 
         SaveManager targetSaveManager = GetSaveManager();
@@ -176,6 +232,8 @@ public class GameManager : MonoBehaviour
             worldMapState.ResetState();
         }
 
+        CameraRevealTrigger.ClearSessionTriggers();
+
         yield return LoadSceneAdditive(defaultStartSceneName);
         yield return null;
 
@@ -184,11 +242,15 @@ public class GameManager : MonoBehaviour
 
         PlacePlayerAtAnchor(defaultSpawnAnchorID);
         SetState(GameState.Game);
+
+        yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
     }
 
     private IEnumerator LoadGameRoutine()
     {
         yield return LoadMasterSceneSingle();
+
+        FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
         SpawnPlayer();
 
@@ -206,6 +268,8 @@ public class GameManager : MonoBehaviour
             PlacePlayerAtAnchor(defaultSpawnAnchorID);
 
             SetState(GameState.Game);
+
+            yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
             yield break;
         }
 
@@ -252,6 +316,8 @@ public class GameManager : MonoBehaviour
 
         PlacePlayerAtAnchor(anchorToUse);
         SetState(GameState.Game);
+
+        yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
     }
 
     private IEnumerator ReturnToTitleRoutine()
@@ -313,7 +379,6 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Also clear out any other loaded area scenes so we return to a single, clean scene state
         List<Scene> scenesToUnload = new List<Scene>();
         for (int i = 0; i < SceneManager.sceneCount; i++)
         {
@@ -428,6 +493,7 @@ public class GameManager : MonoBehaviour
         if (anchor != null)
         {
             _playerInstance.transform.position = anchor.position;
+            ResetBackgroundParallax();
 
             CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
             cam?.SnapToTarget();
@@ -504,7 +570,6 @@ public class GameManager : MonoBehaviour
         p.Equipment.ClearAllGear();
         p.Equipment.ClearSecondaryGem();
         p.Equipment.ClearWeapon();
-        // p.Equipment.ClearSpecialAttack(); <-- not yet implemented do not clear
     }
 
     #endregion
@@ -524,7 +589,6 @@ public class GameManager : MonoBehaviour
     public Color KeyItemColor => keyItemColor;
     public Color LoreItemColor => loreItemColor;
 
-    // temp code for background
     [Header("Temp Background (REMOVE LATER)")]
     [SerializeField] private GameObject tempBackgroundPrefab;
     [SerializeField] private Color backgroundNormalColor = Color.white;
@@ -558,7 +622,7 @@ public class GameManager : MonoBehaviour
             ? Vector2.Scale(prefabSr.sprite.bounds.size, tempBackgroundPrefab.transform.localScale)
             : Vector2.one;
 
-        Vector2 spacing = new Vector2(tileSize.x - tileOverlap, tileSize.y - tileOverlap); // ADDED
+        Vector2 spacing = new Vector2(tileSize.x - tileOverlap, tileSize.y - tileOverlap);
 
         int half = tileGridSize / 2;
         int index = 0;
@@ -568,7 +632,7 @@ public class GameManager : MonoBehaviour
             for (int y = -half; y <= half; y++)
             {
                 GameObject tile = Instantiate(tempBackgroundPrefab, backgroundRoot);
-                tile.transform.localPosition = new Vector3(x * spacing.x, y * spacing.y, 0f); // CHANGED — uses spacing instead of tileSize
+                tile.transform.localPosition = new Vector3(x * spacing.x, y * spacing.y, 0f);
                 tempBackgroundTiles[index] = tile.GetComponentInChildren<SpriteRenderer>();
                 index++;
             }
@@ -636,6 +700,7 @@ public class GameManager : MonoBehaviour
     private void UpdateTempBackgroundTint(AreaSide side)
     {
         if (tempBackgroundTiles == null) return;
+
         Color target = side == AreaSide.Interior ? backgroundDarkenedColor : backgroundNormalColor;
         foreach (var tile in tempBackgroundTiles)
         {

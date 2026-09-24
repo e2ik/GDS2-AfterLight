@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using TMPro;
+using FMODUnity;
 
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(Collider2D))]
@@ -25,6 +26,7 @@ public class WorldItem : MonoBehaviour
     private Collider2D itemCollider;
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
+    [SerializeField] private EventReference primaryPickupEvent;
     private bool markedForDestruction = false;
 
     private void Awake()
@@ -169,12 +171,13 @@ public class WorldItem : MonoBehaviour
                     ItemTooltipTextBuilder.BuildSecondaryGemTooltip(gemLoot, previouslyEquippedGem),
                     gemLoot);
 
-                Debug.Log($"Picked up Secondary Gem: {secondaryDef.UIName} ({secondaryRarity})");
+                // Debug.Log($"Picked up Secondary Gem: {secondaryDef.UIName} ({secondaryRarity})");
                 break;
 
             case PrimaryGemBehaviourDefinition primaryDef:
                 PrimaryGemInstance primaryLoot = primaryDef.CreateInstance();
                 player.Inventory.AddItemToInventory(primaryLoot);
+                AudioManager.PlaySFX(primaryPickupEvent,transform.position);
 
                 if (player.Equipment.IsSpecialAttackSlotEmpty())
                     player.Equipment.EquipSpecialAttack(primaryDef);
@@ -184,7 +187,7 @@ public class WorldItem : MonoBehaviour
                     ItemTooltipTextBuilder.BuildPrimaryGemTooltip(primaryDef),
                     primaryLoot);
 
-                Debug.Log($"Picked up Primary Gem: {primaryDef.UIName}");
+                // Debug.Log($"Picked up Primary Gem: {primaryDef.UIName}");
                 break;
 
             case WeaponDefinition weaponDef:
@@ -201,7 +204,7 @@ public class WorldItem : MonoBehaviour
                     ItemTooltipTextBuilder.BuildWeaponTooltip(weaponLoot, previouslyEquippedWeapon),
                     weaponLoot);
 
-                Debug.Log($"Picked up Weapon: {weaponDef.UIName} ({weaponRarity})");
+                // Debug.Log($"Picked up Weapon: {weaponDef.UIName} ({weaponRarity})");
                 break;
 
             case GearDefinition gearDef:
@@ -218,7 +221,7 @@ public class WorldItem : MonoBehaviour
                     ItemTooltipTextBuilder.BuildGearTooltip(gearLoot, gearDef.Slot.ToString(), previouslyEquippedGear),
                     gearLoot);
 
-                Debug.Log($"Picked up Gear: {gearDef.UIName} ({gearRarity})");
+                // Debug.Log($"Picked up Gear: {gearDef.UIName} ({gearRarity})");
                 break;
 
             case KeyDefinition keyDef:
@@ -230,7 +233,7 @@ public class WorldItem : MonoBehaviour
                     keyDef.Description,
                     keyLoot);
 
-                Debug.Log($"Picked up Key: {keyDef.UIName} ({keyDef.Clearance})");
+                // Debug.Log($"Picked up Key: {keyDef.UIName} ({keyDef.Clearance})");
                 break;
 
             case LoreItemDefinition loreDef:
@@ -242,7 +245,7 @@ public class WorldItem : MonoBehaviour
                     loreDef.Description,
                     loreLoot);
 
-                Debug.Log($"Picked up Lore Item: {loreDef.UIName}");
+                // Debug.Log($"Picked up Lore Item: {loreDef.UIName}");
                 break;
 
             default:

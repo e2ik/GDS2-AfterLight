@@ -10,6 +10,7 @@ public class Puddle : MonoBehaviour
     [SerializeField, Min(0f)] private float splashCooldown = 0.35f;
     [SerializeField] private float splashHeight = 0f;
     [SerializeField, Min(0f)] private float minMoveSpeed = 0.5f;
+    [SerializeField] private FMODUnity.EventReference splashEvent;
 
     private readonly HashSet<Collider2D> occupants = new HashSet<Collider2D>();
     private float nextSplashTime;
@@ -55,7 +56,9 @@ public class Puddle : MonoBehaviour
 
         nextSplashTime = Time.time + splashCooldown;
 
-        PSpawner.Spawn(particleKey, GetSplashPosition(other));
+        Vector2 position = GetSplashPosition(other);
+        PSpawner.Spawn(particleKey, position);
+        AudioManager.PlaySFX(splashEvent, position);
     }
 
     private bool IsMoving(Collider2D other)

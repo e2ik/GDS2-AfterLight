@@ -15,9 +15,13 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     [SerializeField] private string fastTravelVFXKey = "FastTravel";
     [SerializeField] private Transform vfxSpawnPoint;
 
+    [SerializeField] private SpriteOutlineToggle outlineToggle;
+    [SerializeField] private Collider2D promptCollider;
+
     private static readonly int IsDiscoveredHash = Animator.StringToHash("isDiscovered");
     private static readonly int IsIdleHash = Animator.StringToHash("isIdle");
     private static readonly int IsInteractedHash = Animator.StringToHash("isInteracted");
+    private static readonly int IsInteractableHash = Animator.StringToHash("isInteractable");
 
     private Animator anim;
     private bool isInteracting = false;
@@ -26,6 +30,8 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     private void Awake()
     {
         anim = GetComponent<Animator>();
+        if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
+        if (promptCollider == null) promptCollider = GetComponent<Collider2D>();
     }
 
     private void OnEnable()
@@ -78,6 +84,8 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
         : $"Unlock {nodeData.displayName}";
 
     public bool ShouldStopPlayerMovement => true;
+    public SpriteOutlineToggle OutlineToggle => outlineToggle;
+    public Collider2D PromptCollider => promptCollider;
 
     public void Interact(Player player)
     {
@@ -144,7 +152,11 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
     public void UpdateVisualState()
     {
-        if (anim == null || worldMapState == null || nodeData == null) return;
+        if (anim == null) return;
+
+        anim.SetBool(IsInteractableHash, canBeInteractedWith);
+
+        if (worldMapState == null || nodeData == null) return;
 
         bool isUnlocked = worldMapState.IsUnlocked(nodeData);
 

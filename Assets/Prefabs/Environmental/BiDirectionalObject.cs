@@ -19,6 +19,10 @@ public class BiDirectionalObject : MonoBehaviour
     [SerializeField] private string closeLeftState = "CloseLeft";
     [SerializeField] private string closeRightState = "CloseRight";
 
+    [Header("Audio")]
+    [SerializeField] private FMODUnity.EventReference openEvent;
+    [SerializeField] private FMODUnity.EventReference closeEvent;
+
     private BoxCollider2D box;
     private Side openedFromSide = Side.None;
     private readonly HashSet<Collider2D> occupants = new HashSet<Collider2D>();
@@ -48,6 +52,7 @@ public class BiDirectionalObject : MonoBehaviour
 
         openedFromSide = GetSide(other.transform.position);
         Play(openedFromSide == Side.Left ? openLeftState : openRightState);
+        AudioManager.PlaySFX(openEvent, transform.position);
     }
 
     private void OnTriggerExit2D(Collider2D other)
@@ -58,6 +63,7 @@ public class BiDirectionalObject : MonoBehaviour
         if (openedFromSide == Side.None) return;
 
         Play(openedFromSide == Side.Left ? closeLeftState : closeRightState);
+        AudioManager.PlaySFX(closeEvent, transform.position);
         openedFromSide = Side.None;
     }
 

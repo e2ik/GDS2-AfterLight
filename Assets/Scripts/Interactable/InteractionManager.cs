@@ -17,20 +17,21 @@ public class InteractionManager : MonoBehaviour
     private Transform currentInteractableTransform;
     private SpriteOutlineToggle currentOutlineToggle;
 
-    public event System.Action<Transform> OnInteractionTargetChanged;
+    public event System.Action<Transform, Collider2D> OnInteractionTargetChanged;
 
     private Player player;
     private PlayerController playerController;
     private InputAction interactAction;
+    private Transform ownRoot;
 
     private void Awake()
     {
         player = GetComponent<Player>();
         playerController = GetComponent<PlayerController>();
+        ownRoot = transform.root;
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
         interactAction = playerInput.actions["Interact"];
-
     }
 
     private void Update()
@@ -49,7 +50,6 @@ public class InteractionManager : MonoBehaviour
         {
             if (currentInteractable.ShouldStopPlayerMovement)
             {
-                // Freeze movement using your built-in counter system
                 playerController.FreezeMovement(true);
             }
 
@@ -73,9 +73,17 @@ public class InteractionManager : MonoBehaviour
         RaycastHit2D[] hits = Physics2D.RaycastAll(origin, direction, interactionRange, interactableLayers);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
+        if (hits.Length == 0)
+        {
+            Debug.Log($"[InteractionManager] raycast hit nothing (origin={origin}, dir={direction}, range={interactionRange})");
+        }
+
         foreach (RaycastHit2D hit in hits)
         {
-            if (hit.collider.transform.root == transform.root) continue;
+            IInteractable probe = hit.collider.GetComponent<IInteractable>();
+            // Debug.Log($"[InteractionManager] hit '{hit.collider.name}' (layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}, trigger={hit.collider.isTrigger}, root=={hit.collider.transform.root == ownRoot}, IInteractable={(probe != null)}, CanInteract={(probe != null ? probe.CanInteract.ToString() : "n/a")})");
+
+            if (hit.collider.transform.root == ownRoot) continue;
 
             IInteractable candidate = hit.collider.GetComponent<IInteractable>();
             if (candidate == null || !candidate.CanInteract) continue;
@@ -87,27 +95,25 @@ public class InteractionManager : MonoBehaviour
 
         if (hitInteractable != currentInteractable)
         {
-            // 1. Turn off outline on previous object (if any)
             if (currentOutlineToggle != null)
             {
-                currentOutlineToggle.SetOutline(false);
+                currentOutlineToggle.EndHighlight();
                 currentOutlineToggle = null;
             }
 
             currentInteractable = hitInteractable;
             currentInteractableTransform = hitTransform;
 
-            // 2. Fetch and turn on outline on newly focused object
-            if (currentInteractableTransform != null)
+            if (currentInteractable != null)
             {
-                currentOutlineToggle = currentInteractableTransform.GetComponent<SpriteOutlineToggle>();
+                currentOutlineToggle = currentInteractable.OutlineToggle;
                 if (currentOutlineToggle != null)
                 {
-                    currentOutlineToggle.SetOutline(true);
+                    currentOutlineToggle.BeginHighlight();
                 }
             }
 
-            OnInteractionTargetChanged?.Invoke(currentInteractableTransform);
+            OnInteractionTargetChanged?.Invoke(currentInteractableTransform, currentInteractable?.PromptCollider);
         }
     }
 
@@ -115,14 +121,14 @@ public class InteractionManager : MonoBehaviour
     {
         if (currentOutlineToggle != null)
         {
-            currentOutlineToggle.SetOutline(false);
+            currentOutlineToggle.EndHighlight();
             currentOutlineToggle = null;
         }
 
         currentInteractable = null;
         currentInteractableTransform = null;
 
-        OnInteractionTargetChanged?.Invoke(null);
+        OnInteractionTargetChanged?.Invoke(null, null);
     }
 
     private void OnDrawGizmosSelected()

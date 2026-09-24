@@ -1,3 +1,4 @@
+using FMODUnity;
 using UnityEngine;
 
 public class Chest : MonoBehaviour, IInteractable
@@ -16,6 +17,9 @@ public class Chest : MonoBehaviour, IInteractable
     [SerializeField] private float minHorizontalAngle = -0.4f;
     [SerializeField] private float maxHorizontalAngle = 0.4f;
 
+    [SerializeField] private SpriteOutlineToggle outlineToggle;
+    [SerializeField] private Collider2D promptCollider;
+
     private static readonly int IsOpenedHash = Animator.StringToHash("isOpened");
     private static readonly int IsInteractedHash = Animator.StringToHash("isInteracted");
 
@@ -24,11 +28,16 @@ public class Chest : MonoBehaviour, IInteractable
     public string InteractionPrompt => "Open Chest";
     public bool CanInteract => !isOpened;
     public bool ShouldStopPlayerMovement => false;
+    [SerializeField] private EventReference chestOpen;
+    public SpriteOutlineToggle OutlineToggle => outlineToggle;
+    public Collider2D PromptCollider => promptCollider;
 
     private void Awake()
     {
         chestID = GetHierarchyPath(transform);
         anim = GetComponent<Animator>();
+        if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
+        if (promptCollider == null) promptCollider = GetComponent<Collider2D>();
     }
 
     private string GetHierarchyPath(Transform current)
@@ -89,6 +98,8 @@ public class Chest : MonoBehaviour, IInteractable
 
         float randomX = Random.Range(minHorizontalAngle, maxHorizontalAngle);
         Vector2 popDirection = new Vector2(randomX, 1.0f).normalized;
+
+        AudioManager.PlaySFX(chestOpen,transform.position);
 
         droppedItem.PopOut(popDirection, popForce);
     }

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace Tutorial
@@ -12,6 +13,14 @@ namespace Tutorial
     [RequireComponent(typeof(Collider2D))]
     public class TutorialTriggerVolume : MonoBehaviour
     {
+        [System.Serializable]
+        private struct SpeechLine
+        {
+            [TextArea(2, 4)]
+            public string text;
+            public DialogueEffect effect;
+        }
+
         [SerializeField] private TutorialTriggerUIMode uiMode = TutorialTriggerUIMode.TutorialUI;
 
         [SerializeField] private string triggerID;
@@ -25,6 +34,9 @@ namespace Tutorial
         [SerializeField] private string speechBubbleText;
         [SerializeField] private float speechBubbleDuration = 3f;
         [SerializeField] private DialogueEffect speechBubbleEffect = DialogueEffect.Default;
+
+        [Tooltip("SpeechBubble mode only. If any lines are set here, they play one after another (each shown for Speech Bubble Duration, each with its own effect) instead of the single Speech Bubble Text above. Leave empty to just use the single line as before.")]
+        [SerializeField] private SpeechLine[] speechBubbleLines;
 
         private bool sequenceActiveFromThisVolume;
 
@@ -126,17 +138,41 @@ namespace Tutorial
 
             if (uiMode == TutorialTriggerUIMode.SpeechBubble || uiMode == TutorialTriggerUIMode.Both)
             {
-                if (TutorialSpeechBubblePool.Instance != null && !string.IsNullOrEmpty(speechBubbleText))
+                if (TutorialSpeechBubblePool.Instance != null)
                 {
                     Transform followTarget = GameManager.Instance != null && GameManager.Instance.Player != null
                         ? GameManager.Instance.Player.transform
                         : other.transform;
 
-                    TutorialSpeechBubblePool.Instance.Show(speechBubbleText, followTarget, speechBubbleDuration, speechBubbleEffect);
+                    bool useMultipleLines = uiMode == TutorialTriggerUIMode.SpeechBubble
+                        && speechBubbleLines != null && speechBubbleLines.Length > 0;
 
-                    if (uiMode == TutorialTriggerUIMode.SpeechBubble && !string.IsNullOrEmpty(gateID))
-                        TutorialDirector.Instance?.MarkCompleted(gateID);
+                    if (useMultipleLines)
+                    {
+                        StartCoroutine(PlaySpeechLinesRoutine(speechBubbleLines, followTarget));
+
+                        if (!string.IsNullOrEmpty(gateID))
+                            TutorialDirector.Instance?.MarkCompleted(gateID);
+                    }
+                    else if (!string.IsNullOrEmpty(speechBubbleText))
+                    {
+                        TutorialSpeechBubblePool.Instance.Show(speechBubbleText, followTarget, speechBubbleDuration, speechBubbleEffect);
+
+                        if ((uiMode == TutorialTriggerUIMode.SpeechBubble || uiMode == TutorialTriggerUIMode.Both) && !string.IsNullOrEmpty(gateID))
+                            TutorialDirector.Instance?.MarkCompleted(gateID);
+                    }
                 }
+            }
+        }
+
+        private IEnumerator PlaySpeechLinesRoutine(SpeechLine[] lines, Transform target)
+        {
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrEmpty(line.text)) continue;
+
+                TutorialSpeechBubblePool.Instance.Show(line.text, target, speechBubbleDuration, line.effect);
+                yield return new WaitForSeconds(speechBubbleDuration);
             }
         }
     }

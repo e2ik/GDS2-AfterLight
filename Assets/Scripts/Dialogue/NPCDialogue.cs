@@ -8,6 +8,8 @@ public class NPCDialogue : MonoBehaviour, IInteractable
     [Header("Interaction")]
     [SerializeField] private string interactionPrompt = "Talk";
     [SerializeField] private bool repeatLastConversation = true; // enable interaction to show last dialogue. cannot interact with npc if disabled
+    [SerializeField] private SpriteOutlineToggle outlineToggle;
+    [SerializeField] private Collider2D promptCollider;
 
     private int conversationIndex = 0;
     private bool finishedAllConversations = false;
@@ -15,6 +17,8 @@ public class NPCDialogue : MonoBehaviour, IInteractable
     public string InteractionPrompt => interactionPrompt;
 
     public bool ShouldStopPlayerMovement => false;
+    public SpriteOutlineToggle OutlineToggle => outlineToggle;
+    public Collider2D PromptCollider => promptCollider;
 
     public bool CanInteract
     {
@@ -34,6 +38,12 @@ public class NPCDialogue : MonoBehaviour, IInteractable
 
             return true;
         }
+    }
+
+    private void Awake()
+    {
+        if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
+        if (promptCollider == null) promptCollider = GetComponent<Collider2D>();
     }
 
     public void Interact(Player player)
