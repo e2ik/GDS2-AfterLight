@@ -13,7 +13,6 @@ public class PlayerEdgeDetection : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log("edge detection is active: " + isActive);
         if (!isActive)
         {
             pController.onEdge = false;
@@ -26,7 +25,8 @@ public class PlayerEdgeDetection : MonoBehaviour
     private bool IsClimbableWall(Collider2D col)
     {
         if (col == null) return false;
-        return !col.TryGetComponent(out AirOnlyCollisionPlatform thing);
+        if (col.TryGetComponent(out AirOnlyCollisionPlatform thing)) return false;
+        return true;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
