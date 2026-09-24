@@ -499,9 +499,6 @@ MonoBehaviour:
       Data3: -68974450
       Data4: 1774878665
     Path: event:/CombatSFXEvents/PlayerHitEvent
-  crushLayers:
-    serializedVersion: 2
-    m_Bits: 64
   crushPenetrationThreshold: 0.15
   descendingCrushThreshold: 0.02
 --- !u!114 &7383012226346758473
@@ -529,7 +526,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d69c1ebb0b4de742b4ad2e3aa587433, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerEquipmentManager
-  startingWeapon: {fileID: 11400000, guid: 14cafacdf5f57eed19576977769f0367, type: 2}
+  startingWeapon: {fileID: 11400000, guid: a1f73d0efc878d442b3013a481dcbb93, type: 2}
   startingWeaponRarity: 0
   startingSecondaryGem: {fileID: 0}
   equippedWeapon:

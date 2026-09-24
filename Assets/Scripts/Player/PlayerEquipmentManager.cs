@@ -193,7 +193,7 @@ public class PlayerEquipmentManager : MonoBehaviour
         equippedGear[gearType] = newGear;
         UpdateDebugView();
         OnEquipmentChanged?.Invoke();
-        Debug.Log($"[EquipmentManager] Equipped {gearType}: {newGear?.InstTemplateID ?? "None"}");
+        // Debug.Log($"[EquipmentManager] Equipped {gearType}: {newGear?.InstTemplateID ?? "None"}");
     }
 
     public void ClearGear(EGearSlot gearType)
