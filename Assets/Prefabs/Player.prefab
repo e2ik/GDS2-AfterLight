@@ -499,6 +499,11 @@ MonoBehaviour:
       Data3: -68974450
       Data4: 1774878665
     Path: event:/CombatSFXEvents/PlayerHitEvent
+  crushLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  crushPenetrationThreshold: 0.15
+  descendingCrushThreshold: 0.02
 --- !u!114 &7383012226346758473
 MonoBehaviour:
   m_ObjectHideFlags: 0

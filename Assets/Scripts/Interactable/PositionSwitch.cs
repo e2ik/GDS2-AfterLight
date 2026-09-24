@@ -8,7 +8,6 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
     [SerializeField] private Transform onPosition;
 
     [Header("Secondary Moving Part (optional)")]
-    [Tooltip("Optional second object that moves alongside the main one, using the same timing/curve. Never uses a Rigidbody2D — always moves via plain Transform. Leave empty to disable entirely.")]
     [SerializeField] private Transform secondaryMovingPart;
     [SerializeField] private Transform secondaryOnPosition;
     [SerializeField] private Animator secondaryAnimator;
@@ -16,7 +15,7 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
     [Header("Movement")]
     [SerializeField, Min(0f)] private float moveDuration = 0.3f;
     [SerializeField] private AnimationCurve moveCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-    [Tooltip("Must be on the SAME object as Moving Part (or its own object, if Moving Part is left empty). A Rigidbody2D only governs colliders on its own object or descendants — never an ancestor — so it can't live deeper in the hierarchy than the thing it needs to move.")]
+    [Tooltip("Must be on the SAME object as Moving Part.")]
     [SerializeField] private Rigidbody2D moverRigidbody;
 
     [Header("Animation")]
@@ -26,6 +25,11 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
     [Header("Audio")]
     [Tooltip("Set the event on this to a looping sound (e.g. a motor hum). Played while moving, stopped the instant motion ends — not a one-shot.")]
     [SerializeField] private FMODUnity.StudioEventEmitter movementLoopEmitter;
+
+    [Header("Crush")]
+    [Tooltip("The specific collider on this platform that can crush the player, leave empty if it cannot crush")]
+    [SerializeField] private Collider2D crushCollider;
+    public Collider2D CrushCollider => crushCollider;
 
     [Header("Debug")]
     [SerializeField] private Collider2D doorCollider;
@@ -39,9 +43,12 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
     private bool secondaryOffPositionCaptured;
     private Coroutine moveRoutine;
     private int? isMovingParamHash;
+    private float currentVerticalDirection;
 
     public bool IsOn { get; private set; }
     public bool IsMoving => moveRoutine != null;
+
+    public float CurrentVerticalDirection => IsMoving ? currentVerticalDirection : 0f;
 
     private bool HasSecondary => secondaryMovingPart != null;
 
@@ -117,7 +124,10 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
 
         if (moveRoutine != null) StopCoroutine(moveRoutine);
 
-        if (moveDuration <= 0f || !isActiveAndEnabled)
+        bool alreadyAtTarget = Vector3.Distance(Mover().position, target.Value) < 0.001f
+            && (!secondaryTarget.HasValue || Vector3.Distance(secondaryMovingPart.position, secondaryTarget.Value) < 0.001f);
+
+        if (alreadyAtTarget || moveDuration <= 0f || !isActiveAndEnabled)
         {
             SetMoverPosition(target.Value);
             if (secondaryTarget.HasValue) secondaryMovingPart.position = secondaryTarget.Value;
@@ -141,7 +151,12 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
             t += Time.fixedDeltaTime / moveDuration;
             float eased = Mathf.Clamp01(moveCurve.Evaluate(Mathf.Clamp01(t)));
 
-            SetMoverPosition(Vector3.LerpUnclamped(start, targetPosition, eased));
+            Vector3 previousPos = Mover().position;
+            Vector3 newPos = Vector3.LerpUnclamped(start, targetPosition, eased);
+            float deltaY = newPos.y - previousPos.y;
+            if (Mathf.Abs(deltaY) > 0.0001f) currentVerticalDirection = Mathf.Sign(deltaY);
+
+            SetMoverPosition(newPos);
 
             if (secondaryTargetPosition.HasValue)
                 secondaryMovingPart.position = Vector3.LerpUnclamped(secondaryStart, secondaryTargetPosition.Value, eased);
@@ -153,6 +168,7 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
         if (secondaryTargetPosition.HasValue) secondaryMovingPart.position = secondaryTargetPosition.Value;
 
         moveRoutine = null;
+        currentVerticalDirection = 0f;
         NotifyMovingStateChanged(false);
     }
 
