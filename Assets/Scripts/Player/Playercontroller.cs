@@ -1,6 +1,5 @@
 using System.Collections;
 using Enemies;
-using FMODUnity;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -66,6 +65,16 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float lightForce = 8f, lightStaggerDuration = 0.1f;
     [SerializeField] private float mediumForce = 10f, mediumStaggerDuration = 0.2f;
     [SerializeField] private float heavyForce = 14f, heavyStaggerDuration = 0.4f;
+    
+    
+    private Vector2 climbStartPos;
+    private Vector2 climbEndPos;
+    [Header("Edge Climb Settings")]
+    [SerializeField] private Vector2 climbStartOffset;
+    [SerializeField] private Vector2 climbEndOffset;
+    private bool canClimbEdge = true;
+    private bool isClimbing;
+    [HideInInspector] public bool onEdge;
 
     [Header("Detection Settings")]
     public LayerMask groundLayer;
@@ -73,11 +82,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundCheckNormalThreshold = 0.6f;
     [SerializeField] private float wallCheckDistance = 0.05f;
     [SerializeField] private float edgeMargin = 0.05f;
-
-    [Header("MovementSFX")]
-    [SerializeField] private EventReference jumpEvent;
-    [SerializeField] private EventReference dashEvent;
-    [SerializeField] private EventReference landEvent;
 
     private bool jumpPressed, jumpReleased, isGrounded, onWall, isWallSliding, isWallJumping;
     private bool dashPressed, dashReleased, isDashing, isStaggered, isBouncing;
@@ -115,6 +119,7 @@ public class PlayerController : MonoBehaviour
     public bool IsBouncing => isBouncing;
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
     public bool IsInvulnerable => IsNeutralDash;
+    public bool IsClimbing => isClimbing;
     private bool IsSkillBaseLocked =>
         isChargingSkillPhysics
         || isSkillGravityZeroed
@@ -163,7 +168,8 @@ public class PlayerController : MonoBehaviour
 
         GroundCheckUpdate();
         WallCheckUpdate();
-
+        
+        HandleEdgeClimb();
         HandleStepUp();
         HandleMovement();
         HandleWallSlide();
@@ -212,7 +218,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private bool IsGravityZeroed => isParryGravityActive || isChargingSkillPhysics || isSkillGravityZeroed;
+    private bool IsGravityZeroed => isParryGravityActive || isChargingSkillPhysics || isSkillGravityZeroed || isClimbing;
 
     private void ApplyGravityZeroLock()
     {
@@ -255,13 +261,14 @@ public class PlayerController : MonoBehaviour
                              && !isStaggered
                              && !isWallSliding
                              && !IsMovementLockedBySkill
-                             && !combat.IsPlunging;
+                             && !combat.IsPlunging
+                             && !isClimbing;
 
     #region Movement Handlers
 
     private void HandleMovement()
     {
-        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered) return;
+        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered || isClimbing) return;
 
         bool duringWallJump = isWallJumping && Mathf.Abs(horizontalInput) > InputDeadzone;
         if (!CanMove() && !duringWallJump) return;
@@ -286,7 +293,7 @@ public class PlayerController : MonoBehaviour
     private void HandleStepUp()
     {
         if (!isGrounded) return;
-        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered || isWallSliding || isDashing) return;
+        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered || isWallSliding || isDashing || isClimbing) return;
         if (Mathf.Abs(horizontalInput) < InputDeadzone) return;
 
         Bounds bounds = cachedBounds;
@@ -305,12 +312,13 @@ public class PlayerController : MonoBehaviour
 
     private void HandleJump()
     {
-        bool canJump = InputEnabled
-            && !isWallJumping
-            && !isStaggered
-            && !isWallSliding
-            && !IsMovementLockedBySkill
-            && !combat.IsPlunging;
+        bool canJump = InputEnabled 
+                       && !isWallJumping
+                       && !isStaggered 
+                       && !isWallSliding 
+                       && !IsMovementLockedBySkill 
+                       && !combat.IsPlunging 
+                       && !isClimbing;
         if (!canJump) return;
 
         coyoteTimeCounter = isGrounded ? coyoteTime : coyoteTimeCounter - Time.fixedDeltaTime;
@@ -336,7 +344,6 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
 
             playerAnimation.TriggerJumpEffect(false);
-            AudioManager.PlaySFX(jumpEvent);
 
             ConsumeJumpInput();
             coyoteTimeCounter = 0f;
@@ -352,15 +359,19 @@ public class PlayerController : MonoBehaviour
 
     private void HandleWallSlide()
     {
-        if (IsFrozenOrSkillLocked || combat.IsAttacking)
+        if (IsFrozenOrSkillLocked || combat.IsAttacking || isClimbing)
         {
             isWallSliding = false;
+            wallContactTimer = 0f;
             return;
         }
 
         wallCoyoteTimer = (onWall && !isGrounded && Mathf.Abs(horizontalInput) > InputDeadzone) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
 
-        if (onWall && !isGrounded && wallCoyoteTimer > 0f)
+        bool touchingWall = onWall && !isGrounded && wallCoyoteTimer > 0f;
+        wallContactTimer = touchingWall ? wallContactTimer + Time.fixedDeltaTime : 0f;
+
+        if (touchingWall && wallContactTimer >= wallSlideGracePeriod)
         {
             if (!isWallSliding)
             {
@@ -382,7 +393,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleWallJump()
     {
-        if (IsFrozenOrSkillLocked) return;
+        if (IsFrozenOrSkillLocked || isClimbing) return;
 
         if (isWallSliding)
         {
@@ -408,7 +419,6 @@ public class PlayerController : MonoBehaviour
             currentSurfaceNormal = new Vector2(-wallJumpDirection, 0f);
 
             playerAnimation.TriggerJumpEffect(true, wallJumpDirection);
-            AudioManager.PlaySFX(jumpEvent);
 
             wallJumpTimer = 0f;
             ConsumeJumpInput();
@@ -430,6 +440,7 @@ public class PlayerController : MonoBehaviour
 
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
+            if (isClimbing) return;
             if (combat.IsPlunging) return;
             if (isBouncing) return;
             if (combat.IsChargeInputHeld) return;
@@ -471,7 +482,7 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
 
             playerAnimation.TriggerDashEffect();
-            AudioManager.PlaySFX(dashEvent);
+
             ConsumeDashInput();
 
             CancelInvoke(nameof(StopDashing));
@@ -518,10 +529,43 @@ public class PlayerController : MonoBehaviour
 
     private void HandlePlunge()
     {
-        if (!combat.IsPlunging || isBouncing || isStaggered) return;
+        if (!combat.IsPlunging || isBouncing || isStaggered || isClimbing) return;
         if (rb.linearVelocityY > 0.1f) rb.linearVelocityY = 0f;
         rb.linearVelocityX = 0;
     }
+
+    private void HandleEdgeClimb()
+    {
+        if (!isClimbing)
+        {
+            if (!onEdge || !canClimbEdge)
+                return;
+            
+            canClimbEdge = false;
+            
+            Vector2 edgePosition = GetComponentInChildren<PlayerEdgeDetection>().transform.position;
+            climbStartPos = edgePosition + new Vector2(climbStartOffset.x * FacingDirection, climbStartOffset.y);
+            climbEndPos = edgePosition + new Vector2(climbEndOffset.x * FacingDirection, climbEndOffset.y);
+            
+            isClimbing = true;
+            
+            rb.linearVelocity = Vector2.zero;
+            rb.gravityScale = 0f;
+
+            transform.position = climbStartPos;
+            return;
+        }
+        rb.gravityScale = 0f;
+    }
+
+    private void Climb() //triggered in animation events
+    {
+        isClimbing = false;
+        transform.position = climbEndPos;
+        Invoke("AllowClimb", 0.1f);
+    }
+
+    private void AllowClimb() => canClimbEdge = true;
 
     private void UpdateGravity()
     {
@@ -746,10 +790,6 @@ public class PlayerController : MonoBehaviour
 
         if (RaycastGroundAt(leftFoot, dist, out RaycastHit2D leftHit))
         {
-            if (!isGrounded)
-            {
-                AudioManager.PlaySFX(landEvent);
-            }
             isGrounded = true;
             currentSurfaceNormal = leftHit.normal;
             lastHitPoint = leftHit.point;
@@ -760,10 +800,6 @@ public class PlayerController : MonoBehaviour
         }
         else if (RaycastGroundAt(rightFoot, dist, out RaycastHit2D rightHit))
         {
-            if (!isGrounded)
-            {
-                AudioManager.PlaySFX(landEvent);
-            }
             isGrounded = true;
             currentSurfaceNormal = rightHit.normal;
             lastHitPoint = rightHit.point;
@@ -795,7 +831,7 @@ public class PlayerController : MonoBehaviour
         Vector2 head = new(bounds.center.x, bounds.max.y - (bounds.size.y * 0.1f));
         Vector2 chest = new(bounds.center.x, bounds.center.y + (bounds.extents.y * 0.2f));
         Vector2 waist = new(bounds.center.x, bounds.min.y + (bounds.size.y * 0.3f));
-
+        
         int hits = 0;
         if (CheckWallRay(head, dir, rayLen)) hits++;
         if (CheckWallRay(chest, dir, rayLen)) hits++;
@@ -840,7 +876,8 @@ public class PlayerController : MonoBehaviour
         if (playerColliders == null || playerColliders.Length == 0) return new Bounds(transform.position, Vector3.one);
 
         Bounds b = playerColliders[0].bounds;
-        for (int i = 1; i < playerColliders.Length; i++) b.Encapsulate(playerColliders[i].bounds);
+        //for (int i = 1; i < playerColliders.Length; i++) b.Encapsulate(playerColliders[i].bounds);
+        //this messes with detection colliders, should only need the collider on the player object
         return b;
     }
 

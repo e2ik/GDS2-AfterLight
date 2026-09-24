@@ -123,7 +123,7 @@ public class SaveManager : MonoBehaviour
     {
         _currentSaveData.progress.lastVisitedSceneName = sceneName;
         _currentSaveData.progress.lastSpawnAnchorID = anchorID;
-        _currentSaveData.progress.lastAreaSide = side; // <--- Set explicit side
+        _currentSaveData.progress.lastAreaSide = side;
 
         if (worldMapState != null)
         {
@@ -151,6 +151,12 @@ public class SaveManager : MonoBehaviour
     {
         AreaSide currentSide = GameManager.Instance != null ? GameManager.Instance.CurrentAreaSide : AreaSide.Exterior;
         SaveProgressAtLocation(sceneName, anchorID, currentSide);
+    }
+
+    public void UpdateCurrentAreaSide(AreaSide side)
+    {
+        if (_currentSaveData?.progress == null) return;
+        _currentSaveData.progress.lastAreaSide = side;
     }
 
     public bool IsChestOpened(string chestID)

@@ -246,6 +246,10 @@ PrefabInstance:
       propertyPath: m_CollectObjects
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6502403106020412924, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_HideEditorLogs
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6982217606253455579, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
       propertyPath: m_LocalScale.x
       value: 100
@@ -8744,8 +8748,15 @@ MonoBehaviour:
   horizontalOffset: 0
   restingViewportY: 0.2
   upperThreshold: 0.7
-  lowerThreshold: 0.15
-  verticalSmoothTime: 0.12
+  lowerThreshold: 0.3
+  verticalSmoothTime: 0.1
+  lookAheadDistance: 2
+  lookAheadSmoothTime: 1
+  lookAheadMoveThreshold: 0.5
+  velocityNoiseSmoothTime: 0.1
+  revealTransitionDuration: 0.75
+  revealZoomPadding: 1.1
+  returnHandoffFraction: 0.5
 --- !u!114 &1374221811
 MonoBehaviour:
   m_ObjectHideFlags: 0

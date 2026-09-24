@@ -57,7 +57,7 @@ public class GearDefinition : InventoryItemBase
             InstBonusCrit = Random.Range(critRange.x, critRange.y),
         };
 
-        Debug.Log($"Created Gear Instance: {UIName} [{rarity}]");
+        // Debug.Log($"Created Gear Instance: {UIName} [{rarity}]");
         return newInstance;
     }
 }

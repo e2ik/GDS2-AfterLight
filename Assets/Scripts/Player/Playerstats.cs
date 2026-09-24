@@ -25,6 +25,12 @@ public class PlayerStats : MonoBehaviour
     [Header("FMOD Events")]
     [SerializeField] private EventReference hitEvent;
 
+    [Header("Crush Death")]
+    [Tooltip("General overlap threshold (world units) for any contact with a PositionSwitch's designated crush collider.")]
+    [SerializeField] private float crushPenetrationThreshold = 0.15f;
+    [Tooltip("Used specifically when a PositionSwitch platform is moving DOWN.")]
+    [SerializeField] private float descendingCrushThreshold = 0.02f;
+
     private Player player;
     private GameUI.DeathWindow deathWindow;
 
@@ -134,6 +140,40 @@ public class PlayerStats : MonoBehaviour
 
         currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
+    }
+
+    public void Crush()
+    {
+        if (IsDead) return;
+
+        currentHealth = 0f;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        Die();
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (IsDead) return;
+
+        Collider2D hitCollider = collision.collider;
+
+        PositionSwitch platform = hitCollider.GetComponentInParent<PositionSwitch>();
+        if (platform == null || platform.CrushCollider == null) return;
+        if (hitCollider != platform.CrushCollider) return;
+
+        int contactCount = collision.contactCount;
+        for (int i = 0; i < contactCount; i++)
+        {
+            ContactPoint2D contact = collision.GetContact(i);
+            bool descendingOntoPlayer = platform.CurrentVerticalDirection < -0.01f && contact.normal.y < -0.5f;
+            float threshold = descendingOntoPlayer ? descendingCrushThreshold : crushPenetrationThreshold;
+
+            if (contact.separation <= -threshold)
+            {
+                Crush();
+                return;
+            }
+        }
     }
 
     public void ReviveFull()
