@@ -592,15 +592,16 @@ public class PlayerController : MonoBehaviour
             transform.position = LastGroundedPos;
     }
 
-    [SerializeField] private float fadeDuration = 0.2f;
+    [SerializeField] private float fadeDuration = 0.1f;
     private IEnumerator ResetPosCoroutine()
     {
         FreezeMovement(true);
-        FadeCanvasController.Instance.FadeIn(fadeDuration);
-        yield return new WaitForSeconds(fadeDuration);
-        transform.position = LastGroundedPos;
         FadeCanvasController.Instance.FadeOut(fadeDuration);
+        yield return new WaitForSeconds(fadeDuration * 4);
+        transform.position = LastGroundedPos;
         FreezeMovement(false);
+        yield return new WaitForSeconds(fadeDuration);
+        FadeCanvasController.Instance.FadeIn(fadeDuration);
     }
 
     #endregion
