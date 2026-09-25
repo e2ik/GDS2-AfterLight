@@ -538,8 +538,8 @@ public class PlayerController : MonoBehaviour
     {
         if (!isClimbing)
         {
-            if (!onEdge || !canClimbEdge)
-                return;
+            if (!onEdge || !canClimbEdge) return;
+            if (horizontalInput * FacingDirection <= 0.1f) return;
             
             canClimbEdge = false;
             
