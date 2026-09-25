@@ -438,6 +438,12 @@ public class PlayerController : MonoBehaviour
     {
         dashTimer = isDashing ? dashCoolDown : dashTimer - Time.fixedDeltaTime;
 
+        if (!InputEnabled)
+        {
+            ConsumeDashInput();
+            return;
+        }
+
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
             if (isClimbing) return;
