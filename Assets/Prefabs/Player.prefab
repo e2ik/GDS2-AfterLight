@@ -387,7 +387,7 @@ MonoBehaviour:
   mediumStaggerDuration: 0.2
   heavyForce: 8
   heavyStaggerDuration: 0.4
-  climbStartOffset: {x: -1, y: -0.4}
+  climbStartOffset: {x: -1, y: -1.1}
   climbEndOffset: {x: 0, y: 1}
   onEdge: 0
   groundLayer:
@@ -777,6 +777,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74eda1ac4de37cc40b2bea57b660a904, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  enabled: 0
   radius: 0.2
   groundLayer:
     serializedVersion: 2

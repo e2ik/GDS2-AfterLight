@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class PlayerEdgeDetection : MonoBehaviour
 {
+    [SerializeField] private bool enabled;
+    
     [SerializeField] private float radius;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private PlayerController pController;
@@ -13,7 +15,7 @@ public class PlayerEdgeDetection : MonoBehaviour
 
     private void Update()
     {
-        if (!isActive)
+        if (!enabled || !isActive)
         {
             pController.onEdge = false;
             return;
@@ -26,6 +28,7 @@ public class PlayerEdgeDetection : MonoBehaviour
     {
         if (col == null) return false;
         if (col.TryGetComponent(out AirOnlyCollisionPlatform thing)) return false;
+        if (col.TryGetComponent(out DropThroughPlatform thing2)) return false;
         return true;
     }
 
