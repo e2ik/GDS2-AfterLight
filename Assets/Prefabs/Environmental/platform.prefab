@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2404170043240358847}
   - component: {fileID: 2657020197330587152}
   - component: {fileID: 8458982914884664044}
+  - component: {fileID: -8064475730910366220}
   m_Layer: 6
   m_Name: platform
   m_TagString: Untagged
@@ -158,3 +159,15 @@ PlatformEffector2D:
   m_UseSideFriction: 0
   m_UseSideBounce: 0
   m_SideArc: 1
+--- !u!114 &-8064475730910366220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6093222960619646082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
