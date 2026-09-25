@@ -83485,10 +83485,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0
-    y: 0.121673
-    width: 1
-    height: 0.7549905
+    x: 0.6479339
+    y: 0
+    width: 1.4241812
+    height: 1.3834443
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -83566,6 +83566,12 @@ MonoBehaviour:
   upperThreshold: 0.7
   lowerThreshold: 0.15
   verticalSmoothTime: 0.12
+  lookAheadDistance: 2
+  lookAheadSmoothTime: 0.3
+  lookAheadMoveThreshold: 0.5
+  velocityNoiseSmoothTime: 0.1
+  revealTransitionDuration: 0.75
+  revealZoomPadding: 1.1
 --- !u!114 &1595006679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83807,6 +83813,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 6310612592100663882, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
   worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
   saveManager: {fileID: 1634439994}
+  startupFadeDuration: 0.5
   commonColor: {r: 0.69, g: 0.69, b: 0.69, a: 1}
   rareColor: {r: 0.56, g: 0.76, b: 1, a: 1}
   epicColor: {r: 0.78, g: 0.61, b: 1, a: 1}
@@ -85927,6 +85934,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2428442732725413585, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.3650001
+      objectReference: {fileID: 0}
     - target: {fileID: 4000684074867719090, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
       propertyPath: m_Name
       value: DialogueCanvas
