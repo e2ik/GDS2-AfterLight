@@ -74,7 +74,7 @@ public class GameManager : MonoBehaviour
             unlockAllFastTravelAction.action.performed += ctx => UnlockAllFastTravelNodes();
         }
 
-        SpawnTempBackground(); // temp
+        SpawnTempBackground();
     }
 
     private SaveManager GetSaveManager()
@@ -93,7 +93,7 @@ public class GameManager : MonoBehaviour
 
         SaveManager.Instance?.UpdateCurrentAreaSide(side);
 
-        UpdateTempBackgroundTint(side); // temporary
+        UpdateTempBackgroundTint(side);
     }
 
     public void ApplyAreaSide(AreaSide side)
@@ -157,14 +157,12 @@ public class GameManager : MonoBehaviour
 
     #region State Machine Logic
 
-
     private void SetState(GameState newState)
     {
         if (currentState == newState) return;
 
         currentState = newState;
 
-        // temporary
         if (backgroundRoot != null)
         {
             bool shouldBeVisible = newState == GameState.Game;
@@ -353,13 +351,16 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        StartCoroutine(ForceReloadAndRespawnRoutine(node, side, onComplete));
+        StartCoroutine(ForceReloadAndRespawnAtRoutine(node.targetSceneName, node.spawnAnchorID, side, onComplete));
     }
 
-    private IEnumerator ForceReloadAndRespawnRoutine(FastTravelNodeSO node, AreaSide side, System.Action onComplete)
+    public void ForceReloadAndRespawnAtStart(System.Action onComplete)
     {
-        string targetScene = node.targetSceneName;
+        StartCoroutine(ForceReloadAndRespawnAtRoutine(defaultStartSceneName, defaultSpawnAnchorID, AreaSide.Interior, onComplete));
+    }
 
+    private IEnumerator ForceReloadAndRespawnAtRoutine(string targetScene, string anchorID, AreaSide side, System.Action onComplete)
+    {
         Scene masterScene = SceneManager.GetSceneByName(masterSceneName);
         if (masterScene.isLoaded)
         {
@@ -407,9 +408,9 @@ public class GameManager : MonoBehaviour
         SetAreaSide(side);
         ApplyAreaSide(side);
 
-        PlacePlayerAtAnchor(node.spawnAnchorID);
+        PlacePlayerAtAnchor(anchorID);
 
-        SaveManager.Instance?.SaveProgressAtLocation(targetScene, node.spawnAnchorID, side);
+        SaveManager.Instance?.SaveProgressAtLocation(targetScene, anchorID, side);
 
         onComplete?.Invoke();
     }

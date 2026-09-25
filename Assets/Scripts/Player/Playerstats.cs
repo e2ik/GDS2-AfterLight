@@ -9,10 +9,10 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float currentHealth;
 
     [Header("Base Stats")]
-    [SerializeField] private float baseAttack = 10f; //using weapon base attack, not sure if this is needed since you will always have a weapon
+    [SerializeField] private float baseAttack = 10f;
     [SerializeField] private float baseDefense = 5f;
     [SerializeField] private float baseHumanity = 10f;
-    [SerializeField, Range(0f, 1f)] private float defenseMitigationPerPoint = 0.05f; // multiplicative damage reduction per point of Defense
+    [SerializeField, Range(0f, 1f)] private float defenseMitigationPerPoint = 0.05f;
 
     [Header("Gear Stats")]
     [SerializeField] private float gearAttackBonus = 0f;
@@ -113,7 +113,6 @@ public class PlayerStats : MonoBehaviour
         }
 
         OnStatsRecalculated?.Invoke();
-        // Debug.Log($"[PlayerStats] Stats Recalculated -> Atk: {TotalAttack} (gear:{gearAttackBonus:+#;-#;0}, gem:{gemAttackBonus:+#;-#;0}), Def: {TotalDefense}, Humanity: {TotalHumanity}, Crit: {TotalCrit:P1}");
     }
 
     public void TakeDamage(float rawDamage)
@@ -223,9 +222,20 @@ public class PlayerStats : MonoBehaviour
         {
             FastTravelManager.Instance.RespawnAtLastFastTravel();
         }
+        else if (GameManager.Instance != null)
+        {
+            Debug.LogWarning("[PlayerStats] No fast travel point visited this session — respawning at the starting anchor instead.");
+
+            GameManager.Instance.ForceReloadAndRespawnAtStart(() =>
+            {
+                ReviveFull();
+                SetInputLocked(false);
+                if (player != null) player.Controller.SetPhysicsSuspended(false);
+            });
+        }
         else
         {
-            Debug.LogWarning("[PlayerStats] No fast travel point visited this session; can't respawn.");
+            Debug.LogWarning("[PlayerStats] No fast travel point visited and no GameManager found; reviving in place.");
             ReviveFull();
             SetInputLocked(false);
             if (player != null) player.Controller.SetPhysicsSuspended(false);
