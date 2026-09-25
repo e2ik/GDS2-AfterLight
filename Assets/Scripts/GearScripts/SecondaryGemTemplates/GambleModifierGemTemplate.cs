@@ -4,6 +4,7 @@ using UnityEngine;
 public class GambleModifierGemTemplate : SecondaryGemBehaviourDefinition
 {
 
+    [Header(" Max Damage Mult by Rarity")]
     [SerializeField] private RarityRange maxDamageMultByRarity = new RarityRange();
     
     public override PassiveType GetPassiveType(SecondaryGemInstance instance)
