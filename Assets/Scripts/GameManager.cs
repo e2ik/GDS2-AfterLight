@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private WorldMapStateSO worldMapState;
     [SerializeField] private SaveManager saveManager;
+    [SerializeField] private float startupFadeDuration = 0.5f;
 
     [Header("Item Colors")]
     [SerializeField] private Color commonColor = new Color(0.69f, 0.69f, 0.69f);
@@ -73,7 +74,7 @@ public class GameManager : MonoBehaviour
             unlockAllFastTravelAction.action.performed += ctx => UnlockAllFastTravelNodes();
         }
 
-        SpawnTempBackground(); // temp
+        SpawnTempBackground();
     }
 
     private SaveManager GetSaveManager()
@@ -90,7 +91,9 @@ public class GameManager : MonoBehaviour
         currentAreaSide = side;
         OnAreaSideChanged?.Invoke(side);
 
-        UpdateTempBackgroundTint(side); // temporary
+        SaveManager.Instance?.UpdateCurrentAreaSide(side);
+
+        UpdateTempBackgroundTint(side);
     }
 
     public void ApplyAreaSide(AreaSide side)
@@ -111,6 +114,16 @@ public class GameManager : MonoBehaviour
     public void ResetBackgroundParallax()
     {
         hasInitializedParallax = false;
+    }
+
+    #endregion
+
+    #region Camera
+
+    public void ReturnCameraToNormal(System.Action onReturnComplete = null)
+    {
+        CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
+        cam?.ReturnToNormalFollow(onReturnComplete);
     }
 
     #endregion
@@ -144,14 +157,12 @@ public class GameManager : MonoBehaviour
 
     #region State Machine Logic
 
-
     private void SetState(GameState newState)
     {
         if (currentState == newState) return;
 
         currentState = newState;
 
-        // temporary
         if (backgroundRoot != null)
         {
             bool shouldBeVisible = newState == GameState.Game;
@@ -199,6 +210,8 @@ public class GameManager : MonoBehaviour
     {
         yield return LoadMasterSceneSingle();
 
+        FadeCanvasController.Instance?.FadeTo(1f, 0f);
+
         SpawnPlayer();
 
         ClearPlayerInventory();
@@ -217,6 +230,8 @@ public class GameManager : MonoBehaviour
             worldMapState.ResetState();
         }
 
+        CameraRevealTrigger.ClearSessionTriggers();
+
         yield return LoadSceneAdditive(defaultStartSceneName);
         yield return null;
 
@@ -225,11 +240,15 @@ public class GameManager : MonoBehaviour
 
         PlacePlayerAtAnchor(defaultSpawnAnchorID);
         SetState(GameState.Game);
+
+        yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
     }
 
     private IEnumerator LoadGameRoutine()
     {
         yield return LoadMasterSceneSingle();
+
+        FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
         SpawnPlayer();
 
@@ -247,6 +266,8 @@ public class GameManager : MonoBehaviour
             PlacePlayerAtAnchor(defaultSpawnAnchorID);
 
             SetState(GameState.Game);
+
+            yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
             yield break;
         }
 
@@ -293,6 +314,8 @@ public class GameManager : MonoBehaviour
 
         PlacePlayerAtAnchor(anchorToUse);
         SetState(GameState.Game);
+
+        yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
     }
 
     private IEnumerator ReturnToTitleRoutine()
@@ -328,13 +351,16 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        StartCoroutine(ForceReloadAndRespawnRoutine(node, side, onComplete));
+        StartCoroutine(ForceReloadAndRespawnAtRoutine(node.targetSceneName, node.spawnAnchorID, side, onComplete));
     }
 
-    private IEnumerator ForceReloadAndRespawnRoutine(FastTravelNodeSO node, AreaSide side, System.Action onComplete)
+    public void ForceReloadAndRespawnAtStart(System.Action onComplete)
     {
-        string targetScene = node.targetSceneName;
+        StartCoroutine(ForceReloadAndRespawnAtRoutine(defaultStartSceneName, defaultSpawnAnchorID, AreaSide.Interior, onComplete));
+    }
 
+    private IEnumerator ForceReloadAndRespawnAtRoutine(string targetScene, string anchorID, AreaSide side, System.Action onComplete)
+    {
         Scene masterScene = SceneManager.GetSceneByName(masterSceneName);
         if (masterScene.isLoaded)
         {
@@ -382,9 +408,9 @@ public class GameManager : MonoBehaviour
         SetAreaSide(side);
         ApplyAreaSide(side);
 
-        PlacePlayerAtAnchor(node.spawnAnchorID);
+        PlacePlayerAtAnchor(anchorID);
 
-        SaveManager.Instance?.SaveProgressAtLocation(targetScene, node.spawnAnchorID, side);
+        SaveManager.Instance?.SaveProgressAtLocation(targetScene, anchorID, side);
 
         onComplete?.Invoke();
     }

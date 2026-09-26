@@ -8,9 +8,9 @@ public class Puddle : MonoBehaviour
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private string particleKey = "WaterSplash";
     [SerializeField, Min(0f)] private float splashCooldown = 0.35f;
+    [Tooltip("Offset from the puddle's own collider top")]
     [SerializeField] private float splashHeight = 0f;
     [SerializeField, Min(0f)] private float minMoveSpeed = 0.5f;
-    [SerializeField] private FMODUnity.EventReference splashEvent;
 
     private readonly HashSet<Collider2D> occupants = new HashSet<Collider2D>();
     private float nextSplashTime;
@@ -56,9 +56,7 @@ public class Puddle : MonoBehaviour
 
         nextSplashTime = Time.time + splashCooldown;
 
-        Vector2 position = GetSplashPosition(other);
-        PSpawner.Spawn(particleKey, position);
-        AudioManager.PlaySFX(splashEvent, position);
+        PSpawner.Spawn(particleKey, GetSplashPosition(other));
     }
 
     private bool IsMoving(Collider2D other)
@@ -74,7 +72,9 @@ public class Puddle : MonoBehaviour
             ? puddleCollider.ClosestPoint(playerCenter)
             : playerCenter;
 
-        return new Vector2(contactPoint.x, splashHeight);
+        float baseY = puddleCollider != null ? puddleCollider.bounds.max.y : transform.position.y;
+
+        return new Vector2(contactPoint.x, baseY + splashHeight);
     }
 
     private bool IsOnPlayerLayer(Collider2D other)

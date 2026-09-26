@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 25030739}
   - component: {fileID: 25030738}
   - component: {fileID: 25030737}
+  - component: {fileID: 25030740}
   m_Layer: 6
   m_Name: platform (2)
   m_TagString: Untagged
@@ -277,6 +278,18 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &25030740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 25030735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
 --- !u!1 &49600981
 GameObject:
   m_ObjectHideFlags: 0
@@ -788,6 +801,7 @@ GameObject:
   - component: {fileID: 196325546}
   - component: {fileID: 196325545}
   - component: {fileID: 196325547}
+  - component: {fileID: 196325548}
   m_Layer: 6
   m_Name: platform
   m_TagString: Untagged
@@ -934,6 +948,18 @@ PlatformEffector2D:
   m_UseSideFriction: 0
   m_UseSideBounce: 0
   m_SideArc: 1
+--- !u!114 &196325548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 196325543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
 --- !u!1 &223651040
 GameObject:
   m_ObjectHideFlags: 0
@@ -2230,6 +2256,7 @@ MonoBehaviour:
   speechBubbleText: Where am I....
   speechBubbleDuration: 3
   speechBubbleEffect: 0
+  speechBubbleLines: []
 --- !u!212 &250873779
 SpriteRenderer:
   serializedVersion: 2
@@ -2631,6 +2658,7 @@ GameObject:
   - component: {fileID: 335793782}
   - component: {fileID: 335793781}
   - component: {fileID: 335793780}
+  - component: {fileID: 335793783}
   m_Layer: 6
   m_Name: platform (4)
   m_TagString: Untagged
@@ -2777,6 +2805,18 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &335793783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335793778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
 --- !u!1001 &392785047
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14607,6 +14647,7 @@ MonoBehaviour:
   speechBubbleText: 
   speechBubbleDuration: 3
   speechBubbleEffect: 0
+  speechBubbleLines: []
 --- !u!212 &731070165
 SpriteRenderer:
   serializedVersion: 2
@@ -40660,6 +40701,7 @@ GameObject:
   - component: {fileID: 811262244}
   - component: {fileID: 811262243}
   - component: {fileID: 811262242}
+  - component: {fileID: 811262245}
   m_Layer: 6
   m_Name: platform (5)
   m_TagString: Untagged
@@ -40806,6 +40848,18 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &811262245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 811262240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
 --- !u!1001 &813622551
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41016,6 +41070,7 @@ GameObject:
   - component: {fileID: 866086602}
   - component: {fileID: 866086601}
   - component: {fileID: 866086600}
+  - component: {fileID: 866086603}
   m_Layer: 6
   m_Name: platform (1)
   m_TagString: Untagged
@@ -41162,6 +41217,18 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &866086603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866086598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
 --- !u!4 &968808873 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 722239228623532784, guid: 16fa915773ac7fe44942dec77e5fab9c, type: 3}
@@ -41257,6 +41324,7 @@ GameObject:
   - component: {fileID: 1010161064}
   - component: {fileID: 1010161063}
   - component: {fileID: 1010161062}
+  - component: {fileID: 1010161065}
   m_Layer: 6
   m_Name: platform (1)
   m_TagString: Untagged
@@ -41403,6 +41471,18 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &1010161065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1010161060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
 --- !u!1 &1025450865
 GameObject:
   m_ObjectHideFlags: 0
@@ -81833,6 +81913,7 @@ GameObject:
   - component: {fileID: 1651965480}
   - component: {fileID: 1651965479}
   - component: {fileID: 1651965478}
+  - component: {fileID: 1651965481}
   m_Layer: 6
   m_Name: platform (3)
   m_TagString: Untagged
@@ -81979,6 +82060,18 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &1651965481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651965476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
 --- !u!1 &1682425301
 GameObject:
   m_ObjectHideFlags: 0
@@ -82845,6 +82938,7 @@ GameObject:
   - component: {fileID: 1913367570}
   - component: {fileID: 1913367569}
   - component: {fileID: 1913367568}
+  - component: {fileID: 1913367571}
   m_Layer: 6
   m_Name: platform (3)
   m_TagString: Untagged
@@ -82991,6 +83085,18 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &1913367571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1913367566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
 --- !u!1001 &1913474015
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -83068,6 +83174,7 @@ GameObject:
   - component: {fileID: 1928525889}
   - component: {fileID: 1928525888}
   - component: {fileID: 1928525887}
+  - component: {fileID: 1928525890}
   m_Layer: 6
   m_Name: platform (2)
   m_TagString: Untagged
@@ -83214,6 +83321,18 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &1928525890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1928525885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
 --- !u!1 &1970177561
 GameObject:
   m_ObjectHideFlags: 0

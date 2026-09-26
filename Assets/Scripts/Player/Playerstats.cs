@@ -9,10 +9,10 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float currentHealth;
 
     [Header("Base Stats")]
-    [SerializeField] private float baseAttack = 10f; //using weapon base attack, not sure if this is needed since you will always have a weapon
+    [SerializeField] private float baseAttack = 10f;
     [SerializeField] private float baseDefense = 5f;
     [SerializeField] private float baseHumanity = 10f;
-    [SerializeField, Range(0f, 1f)] private float defenseMitigationPerPoint = 0.05f; // multiplicative damage reduction per point of Defense
+    [SerializeField, Range(0f, 1f)] private float defenseMitigationPerPoint = 0.05f;
 
     [Header("Gear Stats")]
     [SerializeField] private float gearAttackBonus = 0f;
@@ -24,6 +24,12 @@ public class PlayerStats : MonoBehaviour
 
     [Header("FMOD Events")]
     [SerializeField] private EventReference hitEvent;
+
+    [Header("Crush Death")]
+    [Tooltip("General overlap threshold (world units) for any contact with a PositionSwitch's designated crush collider.")]
+    [SerializeField] private float crushPenetrationThreshold = 0.15f;
+    [Tooltip("Used specifically when a PositionSwitch platform is moving DOWN.")]
+    [SerializeField] private float descendingCrushThreshold = 0.02f;
 
     private Player player;
     private GameUI.DeathWindow deathWindow;
@@ -107,7 +113,6 @@ public class PlayerStats : MonoBehaviour
         }
 
         OnStatsRecalculated?.Invoke();
-        // Debug.Log($"[PlayerStats] Stats Recalculated -> Atk: {TotalAttack} (gear:{gearAttackBonus:+#;-#;0}, gem:{gemAttackBonus:+#;-#;0}), Def: {TotalDefense}, Humanity: {TotalHumanity}, Crit: {TotalCrit:P1}");
     }
 
     public void TakeDamage(float rawDamage)
@@ -134,6 +139,40 @@ public class PlayerStats : MonoBehaviour
 
         currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
+    }
+
+    public void Crush()
+    {
+        if (IsDead) return;
+
+        currentHealth = 0f;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        Die();
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (IsDead) return;
+
+        Collider2D hitCollider = collision.collider;
+
+        PositionSwitch platform = hitCollider.GetComponentInParent<PositionSwitch>();
+        if (platform == null || platform.CrushCollider == null) return;
+        if (hitCollider != platform.CrushCollider) return;
+
+        int contactCount = collision.contactCount;
+        for (int i = 0; i < contactCount; i++)
+        {
+            ContactPoint2D contact = collision.GetContact(i);
+            bool descendingOntoPlayer = platform.CurrentVerticalDirection < -0.01f && contact.normal.y < -0.5f;
+            float threshold = descendingOntoPlayer ? descendingCrushThreshold : crushPenetrationThreshold;
+
+            if (contact.separation <= -threshold)
+            {
+                Crush();
+                return;
+            }
+        }
     }
 
     public void ReviveFull()
@@ -183,9 +222,20 @@ public class PlayerStats : MonoBehaviour
         {
             FastTravelManager.Instance.RespawnAtLastFastTravel();
         }
+        else if (GameManager.Instance != null)
+        {
+            Debug.LogWarning("[PlayerStats] No fast travel point visited this session — respawning at the starting anchor instead.");
+
+            GameManager.Instance.ForceReloadAndRespawnAtStart(() =>
+            {
+                ReviveFull();
+                SetInputLocked(false);
+                if (player != null) player.Controller.SetPhysicsSuspended(false);
+            });
+        }
         else
         {
-            Debug.LogWarning("[PlayerStats] No fast travel point visited this session; can't respawn.");
+            Debug.LogWarning("[PlayerStats] No fast travel point visited and no GameManager found; reviving in place.");
             ReviveFull();
             SetInputLocked(false);
             if (player != null) player.Controller.SetPhysicsSuspended(false);

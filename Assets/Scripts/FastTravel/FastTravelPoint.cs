@@ -21,6 +21,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     private static readonly int IsDiscoveredHash = Animator.StringToHash("isDiscovered");
     private static readonly int IsIdleHash = Animator.StringToHash("isIdle");
     private static readonly int IsInteractedHash = Animator.StringToHash("isInteracted");
+    private static readonly int IsInteractableHash = Animator.StringToHash("isInteractable");
 
     private Animator anim;
     private bool isInteracting = false;
@@ -151,7 +152,11 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
     public void UpdateVisualState()
     {
-        if (anim == null || worldMapState == null || nodeData == null) return;
+        if (anim == null) return;
+
+        anim.SetBool(IsInteractableHash, canBeInteractedWith);
+
+        if (worldMapState == null || nodeData == null) return;
 
         bool isUnlocked = worldMapState.IsUnlocked(nodeData);
 

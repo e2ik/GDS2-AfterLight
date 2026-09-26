@@ -305,15 +305,16 @@ public class PlayerCombatController : MonoBehaviour
             && !movement.IsWallSliding
             && !isParryInRecovery
             && !isSkilling
-            && !isPlunging;
+            && !isPlunging
+            && !movement.IsClimbing;
     }
 
     private bool CanAct()
     {
         return CanActBase()
-            && !movement.IsChargingSkill
-            && !isChargingSkill
-            && !movement.IsNeutralDash;
+               && !movement.IsChargingSkill
+               && !isChargingSkill
+               && !movement.IsNeutralDash;
     }
 
     private bool CanReleaseSkill()
@@ -895,7 +896,8 @@ public class PlayerCombatController : MonoBehaviour
             };
 
             behaviourDefinition.Modify(ref context, player.Equipment.SecondaryGem);
-            enemyHealth.ApplyHit((int)context.BaseAttackDamage, context);
+            int reflectDmg = (int)Mathf.Max(1, context.BaseAttackDamage);
+            enemyHealth.ApplyHit(reflectDmg, context);
         }
         else
         {
@@ -909,7 +911,7 @@ public class PlayerCombatController : MonoBehaviour
 
     public void OnParry()
     {
-        if (isPlunging || movement.IsUILocked) return;
+        if (isPlunging || movement.IsUILocked ) return;
         parryBufferTimer = parryBufferTime;
     }
 

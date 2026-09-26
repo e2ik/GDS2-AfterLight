@@ -4063,11 +4063,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8579385553579684227, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.45
+      value: -0.95
       objectReference: {fileID: 0}
     - target: {fileID: 8579385553579684227, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.21
+      value: 3.16
       objectReference: {fileID: 0}
     - target: {fileID: 8579385553579684227, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5109,6 +5109,12 @@ MonoBehaviour:
   upperThreshold: 0.7
   lowerThreshold: 0.15
   verticalSmoothTime: 0.12
+  lookAheadDistance: 2
+  lookAheadSmoothTime: 0.3
+  lookAheadMoveThreshold: 0.5
+  velocityNoiseSmoothTime: 0.1
+  revealTransitionDuration: 0.75
+  revealZoomPadding: 1.1
 --- !u!114 &731353410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5196,7 +5202,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 10
+  orthographic size: 11.111111
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -10342,7 +10348,7 @@ MonoBehaviour:
   outlineColor: {r: 0, g: 1, b: 0.99045587, a: 1}
   outlineThickness: 0.5
   pulseOnHighlight: 1
-  highlightPulseSpeed: 20
+  highlightPulseSpeed: 3
   highlightMinAlpha: 0.2
   highlightMaxAlpha: 1
   flashCount: 3
@@ -10828,6 +10834,7 @@ MonoBehaviour:
   onPrompt: Turn off
   offPrompt: Turn on
   outlineToggle: {fileID: 0}
+  promptCollider: {fileID: 0}
   switchMode: 0
   requiredKey: {fileID: 0}
   missingKeyMessage: '"I need the {0}..."'
@@ -10846,6 +10853,20 @@ MonoBehaviour:
   switchOnSprite: {fileID: -6420524450845888813, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
   switchOffSprite: {fileID: 1521430853, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
   switchInBetweenSprite: {fileID: 179256778, guid: 5e1204d04aedefd47b038a8e1901310a, type: 3}
+  onClickEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  offClickEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
 --- !u!1001 &6659931927085888737
 PrefabInstance:
   m_ObjectHideFlags: 0

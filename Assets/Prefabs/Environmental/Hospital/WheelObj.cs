@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,6 +24,10 @@ public class WheelObj : MonoBehaviour
     [SerializeField] private float groundOffset = 0f;
     [SerializeField, Min(0f)] private float heightSmoothing = 20f;
     [SerializeField, Min(0f)] private float initialSnapDistance = 5f;
+    [Tooltip("How many FixedUpdate steps to keep retrying the initial ground snap for, in case ground geometry (e.g. from an additively-loaded scene) isn't in its final position yet on the very first frame.")]
+    [SerializeField, Min(1)] private int initialSnapMaxAttempts = 30;
+    [Tooltip("A very small automatic nudge applied on Awake and OnEnable, just to trigger the same continuous ground-correction FixedUpdate already uses when pushed — helps it settle even if the initial snap doesn't land exactly.")]
+    [SerializeField, Min(0.001f)] private float settleNudgeDistance = 0.05f;
 
     private const float GroundSampleSpacing = 0.1f;
     private const float WallGap = 0.02f;
@@ -76,13 +81,44 @@ public class WheelObj : MonoBehaviour
 
         if (groundLayer.value == 0)
             Debug.LogWarning($"{name}: Ground Layer isn't set on WheelBed, so it won't find any ground.", this);
+
+        NudgeInternal(1f, settleNudgeDistance);
+    }
+
+    private void OnEnable()
+    {
+        // Also nudge on every re-enable, not just the first Awake — e.g. if the object
+        // is streamed out and back in, or its ground changes while disabled, this makes
+        // sure it re-checks rather than trusting whatever position it was left at.
+        if (rb != null) NudgeInternal(1f, settleNudgeDistance);
     }
 
     private void Start()
     {
-        Vector2 pos = rb.position;
-        if (TryGetTargetY(pos.x, pos.y, out float y, initialSnapDistance))
-            rb.position = new Vector2(pos.x, y);
+        StartCoroutine(InitialSnapRoutine());
+    }
+
+    // A single attempt at Start() can miss if the ground it needs hasn't settled into
+    // its final position yet (e.g. an additively-loaded scene still being aligned).
+    // settled defaults to true, and FixedUpdate's own continuous correction only ever
+    // runs again once something calls Nudge() — so a single missed attempt here would
+    // otherwise leave the object stuck at its raw editor-placed position forever,
+    // with the only working fix being the player nudging it once. Retry instead.
+    private IEnumerator InitialSnapRoutine()
+    {
+        for (int attempt = 0; attempt < initialSnapMaxAttempts; attempt++)
+        {
+            Vector2 pos = rb.position;
+            if (TryGetTargetY(pos.x, pos.y, out float y, initialSnapDistance))
+            {
+                rb.position = new Vector2(pos.x, y);
+                yield break;
+            }
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        Debug.LogWarning($"{name}: could not find ground to snap to after {initialSnapMaxAttempts} attempts at startup.", this);
     }
 
     private void OnDisable()
@@ -150,20 +186,29 @@ public class WheelObj : MonoBehaviour
         occupants.Remove(other);
     }
 
-    public void Nudge(float direction)
+    public void Nudge(float direction) => NudgeInternal(direction, nudgeDistance);
+
+    private void NudgeInternal(float direction, float distance)
     {
         if (isNudging) return;
 
         float dir = direction >= 0f ? 1f : -1f;
-        float safeDistance = FindSafeDistance(dir, nudgeDistance);
-        if (safeDistance < 0.01f) return;
+        float safeDistance = FindSafeDistance(dir, distance);
+        if (safeDistance < 0.01f)
+        {
+            // Couldn't slide sideways at all (e.g. boxed in) — still let the continuous
+            // height correction run, since the goal here is settling onto the ground,
+            // not necessarily moving horizontally.
+            settled = false;
+            return;
+        }
 
         nudgeDirection = dir;
         nudgeSafeDistance = safeDistance;
         nudgeStartX = rb.position.x;
         nudgeElapsed = 0f;
 
-        nudgeTime = Mathf.Max(0.05f, nudgeDuration * (safeDistance / nudgeDistance));
+        nudgeTime = Mathf.Max(0.05f, nudgeDuration * (safeDistance / distance));
 
         isNudging = true;
         settled = false;
