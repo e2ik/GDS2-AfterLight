@@ -33,11 +33,11 @@ public class PlayerInventoryManager : MonoBehaviour
         }
     }
 
-    private bool AddToList<T>(ref List<T> list, T item, System.Action<T, int> setPickupOrder, int currentCombinedCount, int cap) where T : class
+    private bool AddToList<T>(ref List<T> list, T item, System.Action<T, int> setPickupOrder, int currentCombinedCount, int cap, bool bypassCap = false) where T : class
     {
         if (item == null || currentInventory == null) return false;
 
-        if (currentCombinedCount >= cap) return false;
+        if (!bypassCap && currentCombinedCount >= cap) return false;
 
         if (list == null)
             list = new List<T>();
@@ -70,15 +70,40 @@ public class PlayerInventoryManager : MonoBehaviour
         AddToList(ref currentInventory.KeyInstances, item, (i, order) => i.PickupOrder = order,
             GetSpecialCount(), currentInventory.MaxSpecial);
 
-    public bool AddItemToInventory(LoreItemInstance item) =>
-        AddToList(ref currentInventory.LoreItemInstances, item, (i, order) => i.PickupOrder = order,
-            GetSpecialCount(), currentInventory.MaxSpecial);
+    public bool AddItemToInventory(LoreItemInstance item)
+    {
+        if (item == null || currentInventory == null) return false;
+
+        string setID = GetLoreSetID(item);
+        bool alreadyOwnsSet = OwnsAnyPieceOfSet(setID);
+
+        return AddToList(ref currentInventory.LoreItemInstances, item, (i, order) => i.PickupOrder = order,
+            GetSpecialCount(), currentInventory.MaxSpecial, bypassCap: alreadyOwnsSet);
+    }
 
     private int GetWeaponsAndGearCount() =>
         (currentInventory.GearInstances?.Count ?? 0) + (currentInventory.Weapons?.Count ?? 0);
 
+    private string GetLoreSetID(LoreItemInstance instance)
+    {
+        LoreItemDefinition def = GameDatabase.GetLoreItemTemplateFromID(instance.InstItemID);
+        return def != null ? def.EffectiveSetID : instance.InstItemID;
+    }
+
+    private bool OwnsAnyPieceOfSet(string setID)
+    {
+        if (currentInventory.LoreItemInstances == null || string.IsNullOrEmpty(setID)) return false;
+        return currentInventory.LoreItemInstances.Any(i => GetLoreSetID(i) == setID);
+    }
+
+    private int GetDistinctLoreSetCount()
+    {
+        if (currentInventory.LoreItemInstances == null) return 0;
+        return currentInventory.LoreItemInstances.Select(GetLoreSetID).Distinct().Count();
+    }
+
     private int GetSpecialCount() =>
-        (currentInventory.KeyInstances?.Count ?? 0) + (currentInventory.LoreItemInstances?.Count ?? 0);
+        (currentInventory.KeyInstances?.Count ?? 0) + GetDistinctLoreSetCount();
 
     public bool RemoveItem(object item)
     {
