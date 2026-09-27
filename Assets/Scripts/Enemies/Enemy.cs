@@ -233,6 +233,15 @@ namespace Enemies
             spriteRenderer.color = baseColor;
             flashRoutine = null;
         }
+        
+        public void TriggerLockOn(Transform target)
+        {
+            Context.Target = target;
+            Context.TargetVisible = true;
+            Context.TargetPosition = target.position;
+            Context.LastKnownTargetPosition = target.position;
+            Context.TimeSinceTargetSeen = 0f;
+        }
 
 #if UNITY_EDITOR
         private void OnValidate()
