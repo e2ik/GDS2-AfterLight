@@ -32,6 +32,9 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [Header("New Item Badge")]
     [SerializeField] private GameObject newBadge;
 
+    [Header("Lore Set Progress")]
+    [SerializeField] private TextMeshProUGUI progressText;
+
     private object currentItem;
     private InventoryDisplay cachedInventoryDisplay;
     private UIWindowAnimator windowAnimator;
@@ -77,6 +80,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (iconImage != null) iconImage.raycastTarget = false;
         if (nameText != null) nameText.raycastTarget = false;
         if (selectionGraphic != null) selectionGraphic.raycastTarget = false;
+        if (progressText != null) progressText.raycastTarget = false;
 
         if (actionButton != null)
         {
@@ -125,6 +129,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void SetupSlot(KeyInstance key) => SetCurrentItem(key);
     public void SetupSlot(LoreItemInstance loreItem) => SetCurrentItem(loreItem);
 
+    public void SetupSlot(LoreSetDisplayInfo loreSet) => SetCurrentItem(loreSet);
+
     private void SetCurrentItem(object item)
     {
         currentItem = item;
@@ -140,6 +146,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         SetBorderColor(ctx.Value.Rarity);
         UpdateEquippedVisuals(ctx.Value.IsEquipped);
         SetNewBadgeVisible(GetIsNew(currentItem));
+        UpdateProgressText();
     }
 
     public void SetTextVisibility(bool visible)
@@ -245,6 +252,18 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                 return new SlotContext(def.UISprite, def.UIName, () => def.Description, false, null, null);
             }
 
+            case LoreSetDisplayInfo loreSet when loreSet.RepresentativeInstance != null:
+                {
+                    var def = GameDatabase.GetLoreItemTemplateFromID(loreSet.RepresentativeInstance.InstItemID);
+                    if (def == null) return null;
+
+                    string tooltip = loreSet.IsComplete
+                        ? def.Description
+                        : $"{def.Description}\n\n({loreSet.OwnedCount}/{loreSet.TotalPieces} pages found)";
+
+                    return new SlotContext(def.UISprite, def.UIName, () => tooltip, false, null, null);
+                }
+
             default:
                 return null;
         }
@@ -260,6 +279,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             WeaponInstance weapon => weapon.IsNew,
             KeyInstance key => key.IsNew,
             LoreItemInstance lore => lore.IsNew,
+            LoreSetDisplayInfo loreSet => loreSet.OwnedInstances.Exists(i => i.IsNew),
             _ => false
         };
     }
@@ -274,6 +294,15 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             case WeaponInstance weapon when weapon.IsNew: weapon.IsNew = false; return true;
             case KeyInstance key when key.IsNew: key.IsNew = false; return true;
             case LoreItemInstance lore when lore.IsNew: lore.IsNew = false; return true;
+            case LoreSetDisplayInfo loreSet:
+                {
+                    bool anyCleared = false;
+                    foreach (LoreItemInstance piece in loreSet.OwnedInstances)
+                    {
+                        if (piece.IsNew) { piece.IsNew = false; anyCleared = true; }
+                    }
+                    return anyCleared;
+                }
             default: return false;
         }
     }
@@ -283,6 +312,20 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (newBadge != null) newBadge.SetActive(visible);
     }
 
+    private void UpdateProgressText()
+    {
+        if (progressText == null) return;
+
+        if (currentItem is LoreSetDisplayInfo loreSet && !loreSet.IsComplete)
+        {
+            progressText.gameObject.SetActive(true);
+            progressText.text = $"{loreSet.OwnedCount}/{loreSet.TotalPieces}";
+        }
+        else
+        {
+            progressText.gameObject.SetActive(false);
+        }
+    }
     private void UpdateNewBadgeIfLookedAt()
     {
         bool lookedAt = InputModeTracker.IsUsingMouse ? isPointerOver : isSelected;
@@ -318,6 +361,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         {
             KeyInstance when GameManager.Instance != null => GameManager.Instance.KeyItemColor,
             LoreItemInstance when GameManager.Instance != null => GameManager.Instance.LoreItemColor,
+            LoreSetDisplayInfo when GameManager.Instance != null => GameManager.Instance.LoreItemColor,
             _ when rarity.HasValue && GameManager.Instance != null => GameManager.Instance.GetRarityColor(rarity.Value),
             _ => noRarityBorderColor
         };
@@ -354,10 +398,19 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private void OnSlotClicked()
     {
+        InventoryDisplay display = Display;
+
+        if (currentItem is LoreSetDisplayInfo loreSet)
+        {
+            display?.OnLoreSlotClicked(loreSet);
+            return;
+        }
+
+        display?.CloseLorePanel();
+
         SlotContext? ctx = BuildContext();
         ctx?.ToggleEquip?.Invoke();
 
-        InventoryDisplay display = Display;
         if (display != null) display.RefreshUI();
     }
 

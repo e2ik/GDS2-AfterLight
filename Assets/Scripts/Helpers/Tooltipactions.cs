@@ -130,6 +130,12 @@ public static class ItemActionFactory
             case WeaponInstance weapon:
                 return GameDatabase.GetWeaponTemplateFromID(weapon.InstTemplateID);
 
+            case KeyInstance key:
+                return GameDatabase.GetKeyTemplateFromID(key.InstItemID);
+
+            case LoreItemInstance loreItem:
+                return GameDatabase.GetLoreItemTemplateFromID(loreItem.InstItemID);
+
             default:
                 return null;
         }

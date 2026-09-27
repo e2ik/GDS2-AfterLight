@@ -56,6 +56,10 @@ public class InventoryDisplay : GameUI.UIWindow
     [Header("Empty State")]
     [SerializeField] private TextMeshProUGUI emptyStateText;
 
+    [Header("Lore Panel")]
+    [SerializeField] private LorePanel lorePanel;
+    [SerializeField] private GameObject statsAndGearPanel;
+
     public RectTransform TooltipDock => tooltipDock;
     public TooltipAnchorSettings TooltipAnchor => tooltipAnchor;
 
@@ -64,6 +68,7 @@ public class InventoryDisplay : GameUI.UIWindow
     private InventoryFilter currentFilter = InventoryFilter.All;
     private int rememberedSlotIndex;
     private int lastObservedSlotIndex = -1;
+    private string openLoreSetID;
 
     private bool isScrolling;
     private float scrollTarget;
@@ -219,12 +224,38 @@ public class InventoryDisplay : GameUI.UIWindow
         lastObservedSlotIndex = -1;
         isScrolling = false;
 
+        CloseLorePanel();
+
         EventSystem.current?.SetSelectedGameObject(null);
 
         if (ItemTooltip.Instance != null)
         {
             ItemTooltip.Instance.HideTooltip();
         }
+    }
+
+    public void OnLoreSlotClicked(LoreSetDisplayInfo loreSet)
+    {
+        if (lorePanel == null) return;
+
+        if (openLoreSetID == loreSet.SetID)
+        {
+            CloseLorePanel();
+            return;
+        }
+
+        openLoreSetID = loreSet.SetID;
+        if (statsAndGearPanel != null) statsAndGearPanel.SetActive(false);
+        lorePanel.Show(loreSet);
+    }
+
+    public void CloseLorePanel()
+    {
+        if (openLoreSetID == null) return;
+
+        openLoreSetID = null;
+        if (lorePanel != null) lorePanel.Hide();
+        if (statsAndGearPanel != null) statsAndGearPanel.SetActive(true);
     }
 
     protected override Selectable GetInitialSelectable()
@@ -475,6 +506,51 @@ public class InventoryDisplay : GameUI.UIWindow
         }
     }
 
+    private void CollectLoreDisplayItems(List<LoreItemInstance> items, bool include, List<DisplayItem> into)
+    {
+        if (!include || items == null) return;
+
+        Dictionary<string, LoreSetDisplayInfo> sets = new Dictionary<string, LoreSetDisplayInfo>();
+
+        foreach (LoreItemInstance instance in items)
+        {
+            if (instance == null) continue;
+
+            LoreItemDefinition def = GameDatabase.GetLoreItemTemplateFromID(instance.InstItemID);
+            string setID = def != null ? def.EffectiveSetID : instance.InstItemID;
+
+            if (!sets.TryGetValue(setID, out LoreSetDisplayInfo info))
+            {
+                info = new LoreSetDisplayInfo { SetID = setID, TotalPieces = def != null ? Mathf.Max(1, def.TotalPieces) : 1 };
+                sets[setID] = info;
+            }
+
+            info.OwnedInstances.Add(instance);
+
+            LoreItemDefinition repDef = info.RepresentativeInstance != null
+                ? GameDatabase.GetLoreItemTemplateFromID(info.RepresentativeInstance.InstItemID)
+                : null;
+
+            if (info.RepresentativeInstance == null || def == null || (repDef != null && def.PieceIndex < repDef.PieceIndex))
+            {
+                info.RepresentativeInstance = instance;
+            }
+        }
+
+        foreach (LoreSetDisplayInfo info in sets.Values)
+        {
+            LoreItemDefinition repDef = GameDatabase.GetLoreItemTemplateFromID(info.RepresentativeInstance.InstItemID);
+
+            int earliestPickupOrder = info.OwnedInstances[0].PickupOrder;
+            foreach (LoreItemInstance owned in info.OwnedInstances)
+            {
+                if (owned.PickupOrder < earliestPickupOrder) earliestPickupOrder = owned.PickupOrder;
+            }
+
+            into.Add(new DisplayItem(info, earliestPickupOrder, "Lore", repDef != null ? repDef.SortOrder : 0, -1, false));
+        }
+    }
+
     private DisplayItem BuildDisplayItem(object item, int pickupOrder)
     {
         switch (item)
@@ -581,6 +657,7 @@ public class InventoryDisplay : GameUI.UIWindow
             case WeaponInstance weapon: slot.SetupSlot(weapon); break;
             case KeyInstance key: slot.SetupSlot(key); break;
             case LoreItemInstance loreItem: slot.SetupSlot(loreItem); break;
+            case LoreSetDisplayInfo loreSet: slot.SetupSlot(loreSet); break;
         }
     }
 
@@ -613,7 +690,7 @@ public class InventoryDisplay : GameUI.UIWindow
         CollectDisplayItems(activeInventory.PrimaryGems, g => g.PickupOrder, showPrimary, displayItems);
         CollectDisplayItems(activeInventory.Weapons, w => w.PickupOrder, showGearAndWeapons, displayItems);
         CollectDisplayItems(activeInventory.KeyInstances, k => k.PickupOrder, showSpecial, displayItems);
-        CollectDisplayItems(activeInventory.LoreItemInstances, l => l.PickupOrder, showSpecial, displayItems);
+        CollectLoreDisplayItems(activeInventory.LoreItemInstances, showSpecial, displayItems);
 
         SortDisplayItems(displayItems);
 
