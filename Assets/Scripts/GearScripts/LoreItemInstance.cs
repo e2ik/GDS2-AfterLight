@@ -7,4 +7,5 @@ public class LoreItemInstance
     public string InstItemID;
 
     public int PickupOrder;
+    public bool IsNew = true;
 }

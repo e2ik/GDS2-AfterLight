@@ -29,6 +29,9 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [Header("Tooltip")]
     [SerializeField, Min(0f)] private float controllerTooltipDelay = 0.5f;
 
+    [Header("New Item Badge")]
+    [SerializeField] private GameObject newBadge;
+
     private object currentItem;
     private InventoryDisplay cachedInventoryDisplay;
     private UIWindowAnimator windowAnimator;
@@ -96,6 +99,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
 
         UpdateTooltipState();
+        UpdateNewBadgeIfLookedAt();
     }
 
     private void OnDestroy()
@@ -135,6 +139,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         SetSlotDisplay(ctx.Value.Sprite, ctx.Value.Name);
         SetBorderColor(ctx.Value.Rarity);
         UpdateEquippedVisuals(ctx.Value.IsEquipped);
+        SetNewBadgeVisible(GetIsNew(currentItem));
     }
 
     public void SetTextVisibility(bool visible)
@@ -245,6 +250,50 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
     }
 
+    private static bool GetIsNew(object item)
+    {
+        return item switch
+        {
+            SecondaryGemInstance gem => gem.IsNew,
+            GearInstance gear => gear.IsNew,
+            PrimaryGemInstance primary => primary.IsNew,
+            WeaponInstance weapon => weapon.IsNew,
+            KeyInstance key => key.IsNew,
+            LoreItemInstance lore => lore.IsNew,
+            _ => false
+        };
+    }
+
+    private static bool ClearIsNew(object item)
+    {
+        switch (item)
+        {
+            case SecondaryGemInstance gem when gem.IsNew: gem.IsNew = false; return true;
+            case GearInstance gear when gear.IsNew: gear.IsNew = false; return true;
+            case PrimaryGemInstance primary when primary.IsNew: primary.IsNew = false; return true;
+            case WeaponInstance weapon when weapon.IsNew: weapon.IsNew = false; return true;
+            case KeyInstance key when key.IsNew: key.IsNew = false; return true;
+            case LoreItemInstance lore when lore.IsNew: lore.IsNew = false; return true;
+            default: return false;
+        }
+    }
+
+    private void SetNewBadgeVisible(bool visible)
+    {
+        if (newBadge != null) newBadge.SetActive(visible);
+    }
+
+    private void UpdateNewBadgeIfLookedAt()
+    {
+        bool lookedAt = InputModeTracker.IsUsingMouse ? isPointerOver : isSelected;
+        if (!lookedAt) return;
+
+        if (ClearIsNew(currentItem))
+        {
+            SetNewBadgeVisible(false);
+        }
+    }
+
     private void SetSlotDisplay(Sprite sprite, string title)
     {
         if (iconImage != null)
@@ -299,6 +348,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         {
             borderImage.color = noRarityBorderColor;
         }
+
+        SetNewBadgeVisible(false);
     }
 
     private void OnSlotClicked()
@@ -329,6 +380,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         isPointerOver = true;
         UpdateTooltipState();
+        UpdateNewBadgeIfLookedAt();
     }
 
     public void OnPointerExit(PointerEventData eventData)

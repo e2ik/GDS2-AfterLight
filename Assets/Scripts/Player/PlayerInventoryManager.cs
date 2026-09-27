@@ -33,9 +33,11 @@ public class PlayerInventoryManager : MonoBehaviour
         }
     }
 
-    private void AddToList<T>(ref List<T> list, T item, System.Action<T, int> setPickupOrder) where T : class
+    private bool AddToList<T>(ref List<T> list, T item, System.Action<T, int> setPickupOrder, int currentCombinedCount, int cap) where T : class
     {
-        if (item == null || currentInventory == null) return;
+        if (item == null || currentInventory == null) return false;
+
+        if (currentCombinedCount >= cap) return false;
 
         if (list == null)
             list = new List<T>();
@@ -45,25 +47,38 @@ public class PlayerInventoryManager : MonoBehaviour
         SaveManager.Instance?.SaveInventory(ToSaveData());
 
         OnInventoryChanged?.Invoke();
+        return true;
     }
 
-    public void AddItemToInventory(SecondaryGemInstance item) =>
-        AddToList(ref currentInventory.SecondaryGems, item, (i, order) => i.PickupOrder = order);
+    public bool AddItemToInventory(SecondaryGemInstance item) =>
+        AddToList(ref currentInventory.SecondaryGems, item, (i, order) => i.PickupOrder = order,
+            currentInventory.SecondaryGems?.Count ?? 0, currentInventory.MaxSecondaryGems);
 
-    public void AddItemToInventory(GearInstance item) =>
-        AddToList(ref currentInventory.GearInstances, item, (i, order) => i.PickupOrder = order);
+    public bool AddItemToInventory(GearInstance item) =>
+        AddToList(ref currentInventory.GearInstances, item, (i, order) => i.PickupOrder = order,
+            GetWeaponsAndGearCount(), currentInventory.MaxWeaponsAndGear);
 
-    public void AddItemToInventory(PrimaryGemInstance item) =>
-        AddToList(ref currentInventory.PrimaryGems, item, (i, order) => i.PickupOrder = order);
+    public bool AddItemToInventory(PrimaryGemInstance item) =>
+        AddToList(ref currentInventory.PrimaryGems, item, (i, order) => i.PickupOrder = order,
+            currentInventory.PrimaryGems?.Count ?? 0, currentInventory.MaxPrimaryGems);
 
-    public void AddItemToInventory(WeaponInstance item) =>
-        AddToList(ref currentInventory.Weapons, item, (i, order) => i.PickupOrder = order);
+    public bool AddItemToInventory(WeaponInstance item) =>
+        AddToList(ref currentInventory.Weapons, item, (i, order) => i.PickupOrder = order,
+            GetWeaponsAndGearCount(), currentInventory.MaxWeaponsAndGear);
 
-    public void AddItemToInventory(KeyInstance item) =>
-        AddToList(ref currentInventory.KeyInstances, item, (i, order) => i.PickupOrder = order);
+    public bool AddItemToInventory(KeyInstance item) =>
+        AddToList(ref currentInventory.KeyInstances, item, (i, order) => i.PickupOrder = order,
+            GetSpecialCount(), currentInventory.MaxSpecial);
 
-    public void AddItemToInventory(LoreItemInstance item) =>
-        AddToList(ref currentInventory.LoreItemInstances, item, (i, order) => i.PickupOrder = order);
+    public bool AddItemToInventory(LoreItemInstance item) =>
+        AddToList(ref currentInventory.LoreItemInstances, item, (i, order) => i.PickupOrder = order,
+            GetSpecialCount(), currentInventory.MaxSpecial);
+
+    private int GetWeaponsAndGearCount() =>
+        (currentInventory.GearInstances?.Count ?? 0) + (currentInventory.Weapons?.Count ?? 0);
+
+    private int GetSpecialCount() =>
+        (currentInventory.KeyInstances?.Count ?? 0) + (currentInventory.LoreItemInstances?.Count ?? 0);
 
     public bool RemoveItem(object item)
     {

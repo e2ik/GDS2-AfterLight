@@ -7,4 +7,5 @@ public class KeyInstance
     public string InstItemID;
 
     public int PickupOrder;
+    public bool IsNew = true;
 }
