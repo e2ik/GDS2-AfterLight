@@ -153,107 +153,165 @@ public class WorldItem : MonoBehaviour
 
     private void CollectItem(Player player)
     {
-        hasBeenPickedUp = true;
+        bool pickedUp = true;
 
         switch (itemDefinition)
         {
             case SecondaryGemBehaviourDefinition secondaryDef:
-                ERarity secondaryRarity = GetWeightedRarity();
-                SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(secondaryRarity); // need to be able to check type
-                SecondaryGemInstance previouslyEquippedGem = !player.Equipment.IsSecondaryGemSlotEmpty() ? player.Equipment.SecondaryGem : null;
-                player.Inventory.AddItemToInventory(gemLoot);
+                {
+                    ERarity secondaryRarity = GetWeightedRarity();
+                    SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(secondaryRarity);
+                    SecondaryGemInstance previouslyEquippedGem = !player.Equipment.IsSecondaryGemSlotEmpty() ? player.Equipment.SecondaryGem : null;
 
-                if (player.Equipment.IsSecondaryGemSlotEmpty())
-                    player.Equipment.EquipSecondaryGem(gemLoot);
+                    if (!player.Inventory.AddItemToInventory(gemLoot))
+                    {
+                        pickedUp = false;
+                        ShowInventoryFullMessage(secondaryDef);
+                        break;
+                    }
 
-                LootPickupDisplay.Instance?.AddPickup(
-                    secondaryDef.UISprite, secondaryDef.UIName, secondaryRarity,
-                    ItemTooltipTextBuilder.BuildSecondaryGemTooltip(gemLoot, previouslyEquippedGem),
-                    gemLoot);
+                    if (player.Equipment.IsSecondaryGemSlotEmpty())
+                        player.Equipment.EquipSecondaryGem(gemLoot);
 
-                // Debug.Log($"Picked up Secondary Gem: {secondaryDef.UIName} ({secondaryRarity})");
-                break;
+                    LootPickupDisplay.Instance?.AddPickup(
+                        secondaryDef.UISprite, secondaryDef.UIName, secondaryRarity,
+                        ItemTooltipTextBuilder.BuildSecondaryGemTooltip(gemLoot, previouslyEquippedGem),
+                        gemLoot);
+
+                    break;
+                }
 
             case PrimaryGemBehaviourDefinition primaryDef:
-                PrimaryGemInstance primaryLoot = primaryDef.CreateInstance();
-                player.Inventory.AddItemToInventory(primaryLoot);
-                AudioManager.PlaySFX(primaryPickupEvent,transform.position);
+                {
+                    PrimaryGemInstance primaryLoot = primaryDef.CreateInstance();
 
-                if (player.Equipment.IsSpecialAttackSlotEmpty())
-                    player.Equipment.EquipSpecialAttack(primaryDef);
+                    if (!player.Inventory.AddItemToInventory(primaryLoot))
+                    {
+                        pickedUp = false;
+                        ShowInventoryFullMessage(primaryDef);
+                        break;
+                    }
 
-                LootPickupDisplay.Instance?.AddPickup(
-                    primaryDef.UISprite, primaryDef.UIName, null,
-                    ItemTooltipTextBuilder.BuildPrimaryGemTooltip(primaryDef),
-                    primaryLoot);
+                    AudioManager.PlaySFX(primaryPickupEvent, transform.position);
 
-                // Debug.Log($"Picked up Primary Gem: {primaryDef.UIName}");
-                break;
+                    if (player.Equipment.IsSpecialAttackSlotEmpty())
+                        player.Equipment.EquipSpecialAttack(primaryDef);
+
+                    LootPickupDisplay.Instance?.AddPickup(
+                        primaryDef.UISprite, primaryDef.UIName, null,
+                        ItemTooltipTextBuilder.BuildPrimaryGemTooltip(primaryDef),
+                        primaryLoot);
+
+                    break;
+                }
 
             case WeaponDefinition weaponDef:
-                ERarity weaponRarity = GetWeightedRarity();
-                WeaponInstance weaponLoot = weaponDef.CreateInstance(weaponRarity);
-                WeaponInstance previouslyEquippedWeapon = player.Equipment.EquippedWeapon;
-                player.Inventory.AddItemToInventory(weaponLoot);
+                {
+                    ERarity weaponRarity = GetWeightedRarity();
+                    WeaponInstance weaponLoot = weaponDef.CreateInstance(weaponRarity);
+                    WeaponInstance previouslyEquippedWeapon = player.Equipment.EquippedWeapon;
 
-                if (player.Equipment.IsWeaponSlotEmpty())
-                    player.Equipment.EquipWeapon(weaponLoot);
+                    if (!player.Inventory.AddItemToInventory(weaponLoot))
+                    {
+                        pickedUp = false;
+                        ShowInventoryFullMessage(weaponDef);
+                        break;
+                    }
 
-                LootPickupDisplay.Instance?.AddPickup(
-                    weaponDef.UISprite, weaponDef.UIName, weaponRarity,
-                    ItemTooltipTextBuilder.BuildWeaponTooltip(weaponLoot, previouslyEquippedWeapon),
-                    weaponLoot);
+                    if (player.Equipment.IsWeaponSlotEmpty())
+                        player.Equipment.EquipWeapon(weaponLoot);
 
-                // Debug.Log($"Picked up Weapon: {weaponDef.UIName} ({weaponRarity})");
-                break;
+                    LootPickupDisplay.Instance?.AddPickup(
+                        weaponDef.UISprite, weaponDef.UIName, weaponRarity,
+                        ItemTooltipTextBuilder.BuildWeaponTooltip(weaponLoot, previouslyEquippedWeapon),
+                        weaponLoot);
+
+                    break;
+                }
 
             case GearDefinition gearDef:
-                ERarity gearRarity = GetWeightedRarity();
-                GearInstance gearLoot = gearDef.CreateInstance(gearRarity);
-                GearInstance previouslyEquippedGear = player.Equipment.GetEquippedGear(gearDef.Slot);
-                player.Inventory.AddItemToInventory(gearLoot);
+                {
+                    ERarity gearRarity = GetWeightedRarity();
+                    GearInstance gearLoot = gearDef.CreateInstance(gearRarity);
+                    GearInstance previouslyEquippedGear = player.Equipment.GetEquippedGear(gearDef.Slot);
 
-                if (player.Equipment.IsGearSlotEmpty(gearDef.Slot))
-                    player.Equipment.EquipGear(gearDef.Slot, gearLoot);
+                    if (!player.Inventory.AddItemToInventory(gearLoot))
+                    {
+                        pickedUp = false;
+                        ShowInventoryFullMessage(gearDef);
+                        break;
+                    }
 
-                LootPickupDisplay.Instance?.AddPickup(
-                    gearDef.UISprite, gearDef.UIName, gearRarity,
-                    ItemTooltipTextBuilder.BuildGearTooltip(gearLoot, gearDef.Slot.ToString(), previouslyEquippedGear),
-                    gearLoot);
+                    if (player.Equipment.IsGearSlotEmpty(gearDef.Slot))
+                        player.Equipment.EquipGear(gearDef.Slot, gearLoot);
 
-                // Debug.Log($"Picked up Gear: {gearDef.UIName} ({gearRarity})");
-                break;
+                    LootPickupDisplay.Instance?.AddPickup(
+                        gearDef.UISprite, gearDef.UIName, gearRarity,
+                        ItemTooltipTextBuilder.BuildGearTooltip(gearLoot, gearDef.Slot.ToString(), previouslyEquippedGear),
+                        gearLoot);
+
+                    break;
+                }
 
             case KeyDefinition keyDef:
-                KeyInstance keyLoot = keyDef.CreateInstance();
-                player.Inventory.AddItemToInventory(keyLoot);
+                {
+                    KeyInstance keyLoot = keyDef.CreateInstance();
 
-                LootPickupDisplay.Instance?.AddPickup(
-                    keyDef.UISprite, keyDef.UIName, null,
-                    keyDef.Description,
-                    keyLoot);
+                    if (!player.Inventory.AddItemToInventory(keyLoot))
+                    {
+                        pickedUp = false;
+                        ShowInventoryFullMessage(keyDef);
+                        break;
+                    }
 
-                // Debug.Log($"Picked up Key: {keyDef.UIName} ({keyDef.Clearance})");
-                break;
+                    LootPickupDisplay.Instance?.AddPickup(
+                        keyDef.UISprite, keyDef.UIName, null,
+                        keyDef.Description,
+                        keyLoot);
+
+                    break;
+                }
 
             case LoreItemDefinition loreDef:
-                LoreItemInstance loreLoot = loreDef.CreateInstance();
-                player.Inventory.AddItemToInventory(loreLoot);
+                {
+                    LoreItemInstance loreLoot = loreDef.CreateInstance();
 
-                LootPickupDisplay.Instance?.AddPickup(
-                    loreDef.UISprite, loreDef.UIName, null,
-                    loreDef.Description,
-                    loreLoot);
+                    if (!player.Inventory.AddItemToInventory(loreLoot))
+                    {
+                        pickedUp = false;
+                        ShowInventoryFullMessage(loreDef);
+                        break;
+                    }
 
-                // Debug.Log($"Picked up Lore Item: {loreDef.UIName}");
-                break;
+                    LootPickupDisplay.Instance?.AddPickup(
+                        loreDef.UISprite, loreDef.UIName, null,
+                        loreDef.Description,
+                        loreLoot);
+
+                    break;
+                }
 
             default:
                 Debug.LogWarning($"[WorldItem] Item type '{itemDefinition.GetType().Name}' is not handled.");
                 break;
         }
 
-        Destroy(gameObject);
+        if (pickedUp)
+        {
+            hasBeenPickedUp = true;
+            Destroy(gameObject);
+        }
+        else
+        {
+            hasBeenPickedUp = false;
+        }
+    }
+
+    private void ShowInventoryFullMessage(InventoryItemBase def)
+    {
+        LootPickupDisplay.Instance?.AddPickup(
+            def.UISprite, "Inventory Full", null,
+            $"Not enough room for {def.UIName}.");
     }
 
     private ERarity GetRandomRarity()

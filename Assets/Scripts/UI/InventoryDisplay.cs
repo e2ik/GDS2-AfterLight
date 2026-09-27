@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -12,7 +13,7 @@ public class InventoryDisplay : GameUI.UIWindow
         GearAndWeapons,
         Primary,
         Secondary,
-        Keys
+        Special
     }
 
     [System.Serializable]
@@ -52,10 +53,14 @@ public class InventoryDisplay : GameUI.UIWindow
         offset = Vector2.zero
     };
 
+    [Header("Empty State")]
+    [SerializeField] private TextMeshProUGUI emptyStateText;
+
     public RectTransform TooltipDock => tooltipDock;
     public TooltipAnchorSettings TooltipAnchor => tooltipAnchor;
 
     private PlayerInventoryManager invManager;
+    private PlayerEquipmentManager equipManager;
     private InventoryFilter currentFilter = InventoryFilter.All;
     private int rememberedSlotIndex;
     private int lastObservedSlotIndex = -1;
@@ -78,11 +83,19 @@ public class InventoryDisplay : GameUI.UIWindow
     {
         public readonly object Item;
         public readonly int PickupOrder;
+        public readonly string GroupKey;
+        public readonly int GroupSortOrder;
+        public readonly int RarityRank;
+        public readonly bool IsEquipped;
 
-        public DisplayItem(object item, int pickupOrder)
+        public DisplayItem(object item, int pickupOrder, string groupKey, int groupSortOrder, int rarityRank, bool isEquipped)
         {
             Item = item;
             PickupOrder = pickupOrder;
+            GroupKey = groupKey;
+            GroupSortOrder = groupSortOrder;
+            RarityRank = rarityRank;
+            IsEquipped = isEquipped;
         }
     }
 
@@ -114,13 +127,18 @@ public class InventoryDisplay : GameUI.UIWindow
         {
             invManager.OnInventoryChanged -= RefreshUI;
         }
+
+        if (equipManager != null)
+        {
+            equipManager.OnEquipmentChanged -= RefreshUI;
+        }
     }
 
     public void ShowAll() => SetFilter(InventoryFilter.All);
     public void ShowGearAndWeapons() => SetFilter(InventoryFilter.GearAndWeapons);
     public void ShowPrimary() => SetFilter(InventoryFilter.Primary);
     public void ShowSecondary() => SetFilter(InventoryFilter.Secondary);
-    public void ShowKeys() => SetFilter(InventoryFilter.Keys);
+    public void ShowSpecial() => SetFilter(InventoryFilter.Special);
 
     public void SetFilter(InventoryFilter filter)
     {
@@ -148,16 +166,20 @@ public class InventoryDisplay : GameUI.UIWindow
             invManager.OnInventoryChanged -= RefreshUI;
         }
 
+        if (equipManager != null)
+        {
+            equipManager.OnEquipmentChanged -= RefreshUI;
+        }
+
         invManager = manager;
 
         if (invManager != null)
         {
             invManager.OnInventoryChanged += RefreshUI;
 
-            PlayerEquipmentManager equipManager = invManager.GetComponent<PlayerEquipmentManager>();
+            equipManager = invManager.GetComponent<PlayerEquipmentManager>();
             if (equipManager != null)
             {
-                equipManager.OnEquipmentChanged -= RefreshUI;
                 equipManager.OnEquipmentChanged += RefreshUI;
             }
 
@@ -443,14 +465,110 @@ public class InventoryDisplay : GameUI.UIWindow
         return best;
     }
 
-    private static void AddItems<T>(List<T> items, System.Func<T, int> pickupOrderSelector, List<DisplayItem> into) where T : class
+    private void CollectDisplayItems<T>(List<T> items, System.Func<T, int> pickupOrderSelector, bool include, List<DisplayItem> into) where T : class
     {
-        if (items == null) return;
+        if (!include || items == null) return;
 
         foreach (T item in items)
         {
-            if (item != null) into.Add(new DisplayItem(item, pickupOrderSelector(item)));
+            if (item != null) into.Add(BuildDisplayItem(item, pickupOrderSelector(item)));
         }
+    }
+
+    private DisplayItem BuildDisplayItem(object item, int pickupOrder)
+    {
+        switch (item)
+        {
+            case WeaponInstance weapon:
+                {
+                    WeaponDefinition def = GameDatabase.GetWeaponTemplateFromID(weapon.InstTemplateID);
+                    bool equipped = equipManager != null && equipManager.IsWeaponEquipped(weapon);
+                    return new DisplayItem(item, pickupOrder, "Weapon", def != null ? def.SortOrder : 0, (int)weapon.Rarity, equipped);
+                }
+            case GearInstance gear:
+                {
+                    GearDefinition def = GameDatabase.GetGearTemplateFromID(gear.InstTemplateID);
+                    bool equipped = equipManager != null && equipManager.IsGearEquipped(gear);
+                    string groupKey = def != null ? $"Slot:{def.Slot}" : "Slot:Unknown";
+                    return new DisplayItem(item, pickupOrder, groupKey, def != null ? def.SortOrder : 0, (int)gear.Rarity, equipped);
+                }
+            case PrimaryGemInstance primary:
+                {
+                    PrimaryGemBehaviourDefinition def = GameDatabase.GetPrimaryTemplateFromID(primary.InstTemplateID);
+                    bool equipped = equipManager != null && !string.IsNullOrEmpty(primary.InstTemplateID)
+                        && primary.InstTemplateID == equipManager.GetEquippedPrimaryGemID();
+                    string groupKey = $"Primary:{primary.InstTemplateID}";
+                    return new DisplayItem(item, pickupOrder, groupKey, def != null ? def.SortOrder : 0, -1, equipped);
+                }
+            case SecondaryGemInstance secondary:
+                {
+                    SecondaryGemBehaviourDefinition def = GameDatabase.GetSecondaryTemplateFromID(secondary.InstTemplateID);
+                    bool equipped = equipManager != null && equipManager.IsGemEquipped(secondary);
+                    string groupKey = $"Secondary:{secondary.InstTemplateID}";
+                    return new DisplayItem(item, pickupOrder, groupKey, def != null ? def.SortOrder : 0, (int)secondary.Rarity, equipped);
+                }
+            case KeyInstance key:
+                {
+                    KeyDefinition def = GameDatabase.GetKeyTemplateFromID(key.InstItemID);
+                    return new DisplayItem(item, pickupOrder, "Key", def != null ? def.SortOrder : 0, -1, false);
+                }
+            case LoreItemInstance lore:
+                {
+                    LoreItemDefinition def = GameDatabase.GetLoreItemTemplateFromID(lore.InstItemID);
+                    return new DisplayItem(item, pickupOrder, "Lore", def != null ? def.SortOrder : 0, -1, false);
+                }
+            default:
+                return new DisplayItem(item, pickupOrder, "Unknown", 0, -1, false);
+        }
+    }
+
+    private static void SortDisplayItems(List<DisplayItem> displayItems)
+    {
+        Dictionary<string, int> groupOrder = new Dictionary<string, int>();
+        foreach (DisplayItem entry in displayItems)
+        {
+            if (!groupOrder.TryGetValue(entry.GroupKey, out int existing) || entry.GroupSortOrder < existing)
+            {
+                groupOrder[entry.GroupKey] = entry.GroupSortOrder;
+            }
+        }
+
+        displayItems.Sort((a, b) =>
+        {
+            int equippedCompare = (b.IsEquipped ? 1 : 0).CompareTo(a.IsEquipped ? 1 : 0);
+            if (equippedCompare != 0) return equippedCompare;
+
+            int groupOrderCompare = groupOrder[a.GroupKey].CompareTo(groupOrder[b.GroupKey]);
+            if (groupOrderCompare != 0) return groupOrderCompare;
+
+            int groupKeyCompare = string.CompareOrdinal(a.GroupKey, b.GroupKey);
+            if (groupKeyCompare != 0) return groupKeyCompare;
+
+            int rarityCompare = b.RarityRank.CompareTo(a.RarityRank);
+            if (rarityCompare != 0) return rarityCompare;
+
+            return a.PickupOrder.CompareTo(b.PickupOrder);
+        });
+    }
+
+    private string GetEmptyStateMessage()
+    {
+        return currentFilter switch
+        {
+            InventoryFilter.GearAndWeapons => "No Weapons or Gear found yet.",
+            InventoryFilter.Primary => "No Primary Gems found yet.",
+            InventoryFilter.Secondary => "No Secondary Gems found yet.",
+            InventoryFilter.Special => "No Keys or Lore Fragments found yet.",
+            _ => "No items found yet."
+        };
+    }
+
+    private void UpdateEmptyState(bool isEmpty)
+    {
+        if (emptyStateText == null) return;
+
+        emptyStateText.gameObject.SetActive(isEmpty);
+        if (isEmpty) emptyStateText.text = GetEmptyStateMessage();
     }
 
     private static void ApplyToSlot(InventorySlot slot, object item)
@@ -488,16 +606,18 @@ public class InventoryDisplay : GameUI.UIWindow
         bool showGearAndWeapons = currentFilter is InventoryFilter.All or InventoryFilter.GearAndWeapons;
         bool showPrimary = currentFilter is InventoryFilter.All or InventoryFilter.Primary;
         bool showSecondary = currentFilter is InventoryFilter.All or InventoryFilter.Secondary;
-        bool showKeys = currentFilter is InventoryFilter.All or InventoryFilter.Keys;
+        bool showSpecial = currentFilter is InventoryFilter.All or InventoryFilter.Special;
 
-        if (showSecondary) { AddItems(activeInventory.SecondaryGems, g => g.PickupOrder, displayItems); }
-        if (showGearAndWeapons) { AddItems(activeInventory.GearInstances, g => g.PickupOrder, displayItems); }
-        if (showPrimary) { AddItems(activeInventory.PrimaryGems, g => g.PickupOrder, displayItems); }
-        if (showGearAndWeapons) { AddItems(activeInventory.Weapons, w => w.PickupOrder, displayItems); }
-        if (showKeys) { AddItems(activeInventory.KeyInstances, k => k.PickupOrder, displayItems); }
-        if (showKeys) { AddItems(activeInventory.LoreItemInstances, l => l.PickupOrder, displayItems); }
+        CollectDisplayItems(activeInventory.SecondaryGems, g => g.PickupOrder, showSecondary, displayItems);
+        CollectDisplayItems(activeInventory.GearInstances, g => g.PickupOrder, showGearAndWeapons, displayItems);
+        CollectDisplayItems(activeInventory.PrimaryGems, g => g.PickupOrder, showPrimary, displayItems);
+        CollectDisplayItems(activeInventory.Weapons, w => w.PickupOrder, showGearAndWeapons, displayItems);
+        CollectDisplayItems(activeInventory.KeyInstances, k => k.PickupOrder, showSpecial, displayItems);
+        CollectDisplayItems(activeInventory.LoreItemInstances, l => l.PickupOrder, showSpecial, displayItems);
 
-        displayItems.Sort((a, b) => a.PickupOrder.CompareTo(b.PickupOrder));
+        SortDisplayItems(displayItems);
+
+        UpdateEmptyState(displayItems.Count == 0);
 
         foreach (DisplayItem entry in displayItems)
         {
