@@ -60,10 +60,10 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) 
-        { 
-            Destroy(gameObject); 
-            return; 
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
         }
 
         Instance = this;
@@ -91,8 +91,6 @@ public class GameManager : MonoBehaviour
         if (currentAreaSide == side) return;
         currentAreaSide = side;
         OnAreaSideChanged?.Invoke(side);
-
-        SaveManager.Instance?.UpdateCurrentAreaSide(side);
 
         UpdateTempBackgroundTint(side);
     }
@@ -240,6 +238,10 @@ public class GameManager : MonoBehaviour
         ApplyAreaSide(AreaSide.Interior);
 
         PlacePlayerAtAnchor(defaultSpawnAnchorID);
+
+        if (targetSaveManager != null)
+            targetSaveManager.SaveProgressAtLocation(defaultStartSceneName, defaultSpawnAnchorID, AreaSide.Interior);
+
         SetState(GameState.Game);
 
         yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
@@ -262,7 +264,7 @@ public class GameManager : MonoBehaviour
             TutorialDirector.Instance?.ClearCompletedSequences();
             yield return LoadSceneAdditive(defaultStartSceneName);
             yield return null;
-            
+
             if (worldMapState != null) worldMapState.ResetState();
             PlacePlayerAtAnchor(defaultSpawnAnchorID);
 
@@ -559,7 +561,7 @@ public class GameManager : MonoBehaviour
         {
             p.Equipment.ClearWeapon();
         }
-        
+
         if (data.equippedPrimaryGemSaved)
         {
             p.Equipment.EquipSpecialAttackByID(data.equippedPrimaryGemID);

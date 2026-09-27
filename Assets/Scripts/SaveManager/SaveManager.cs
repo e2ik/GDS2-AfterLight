@@ -7,7 +7,7 @@ using Tutorial;
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance { get; private set; }
-    
+
     public bool HasSaveFile => File.Exists(SavePath);
     private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
     private string TempSavePath => Path.Combine(Application.persistentDataPath, "save.tmp");
@@ -40,8 +40,8 @@ public class SaveManager : MonoBehaviour
             chestData = new ChestSaveData(),
             inventoryData = new InventorySaveData()
         };
-        
-        CommitToDisk(); 
+
+        CommitToDisk();
     }
 
     private void WriteEquipmentToSaveData(PlayerEquipmentManager equipment)
@@ -62,7 +62,7 @@ public class SaveManager : MonoBehaviour
         {
             WriteEquipmentToSaveData(player.Equipment);
         }
-        
+
         if (TutorialDirector.Instance != null)
             _currentSaveData.progress.completedTutorialSequenceIDs = TutorialDirector.Instance.GetCompletedSequencesForSave();
 
@@ -111,10 +111,10 @@ public class SaveManager : MonoBehaviour
         if (_currentSaveData == null) _currentSaveData = new SaveData();
         if (_currentSaveData.progress == null) _currentSaveData.progress = new ProgressSaveData();
         if (_currentSaveData.chestData == null) _currentSaveData.chestData = new ChestSaveData();
-        if (_currentSaveData.chestData.openedChestIDs == null) 
+        if (_currentSaveData.chestData.openedChestIDs == null)
             _currentSaveData.chestData.openedChestIDs = new System.Collections.Generic.List<string>();
         if (_currentSaveData.inventoryData == null) _currentSaveData.inventoryData = new InventorySaveData();
-        if (_currentSaveData.equippedGear == null) 
+        if (_currentSaveData.equippedGear == null)
             _currentSaveData.equippedGear = new System.Collections.Generic.List<EquippedGearSaveData>();
         if (_currentSaveData.progress.completedTutorialSequenceIDs == null)
             _currentSaveData.progress.completedTutorialSequenceIDs = new System.Collections.Generic.List<string>();
@@ -154,12 +154,6 @@ public class SaveManager : MonoBehaviour
     {
         AreaSide currentSide = GameManager.Instance != null ? GameManager.Instance.CurrentAreaSide : AreaSide.Exterior;
         SaveProgressAtLocation(sceneName, anchorID, currentSide);
-    }
-
-    public void UpdateCurrentAreaSide(AreaSide side)
-    {
-        if (_currentSaveData?.progress == null) return;
-        _currentSaveData.progress.lastAreaSide = side;
     }
 
     public bool IsChestOpened(string chestID)
