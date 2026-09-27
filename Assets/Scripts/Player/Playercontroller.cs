@@ -65,8 +65,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float lightForce = 8f, lightStaggerDuration = 0.1f;
     [SerializeField] private float mediumForce = 10f, mediumStaggerDuration = 0.2f;
     [SerializeField] private float heavyForce = 14f, heavyStaggerDuration = 0.4f;
-    
-    
+
+
     private Vector2 climbStartPos;
     private Vector2 climbEndPos;
     [Header("Edge Climb Settings")]
@@ -87,6 +87,12 @@ public class PlayerController : MonoBehaviour
     private bool dashPressed, dashReleased, isDashing, isStaggered, isBouncing;
     private bool isChargingSkillPhysics, isSkillGravityZeroed, isParryGravityActive, inventoryPressed;
     private const float InputDeadzone = 0.1f;
+
+    // The one-way platform we're currently ignoring collision with while passing through it.
+    // Physics2D.IgnoreCollision only disables physical collision response - it does nothing to
+    // raycasts - so ground checks would otherwise still see this platform as valid ground for
+    // the split second we're falling through it. RaycastGroundAt excludes it explicitly.
+    private Collider2D currentPassThroughPlatform;
 
     private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer, wallContactTimer;
     private float dashTimer, dashDirection, wallJumpDirection;
@@ -153,7 +159,7 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale = normGravity;
         lastFacingDirection = FacingDirection;
     }
-    
+
     private void Update()
     {
         if (!IsUILocked && CanMove()) Flip();
@@ -168,7 +174,7 @@ public class PlayerController : MonoBehaviour
 
         GroundCheckUpdate();
         WallCheckUpdate();
-        
+
         HandleEdgeClimb();
         HandleStepUp();
         HandleMovement();
@@ -312,12 +318,12 @@ public class PlayerController : MonoBehaviour
 
     private void HandleJump()
     {
-        bool canJump = InputEnabled 
+        bool canJump = InputEnabled
                        && !isWallJumping
-                       && !isStaggered 
-                       && !isWallSliding 
-                       && !IsMovementLockedBySkill 
-                       && !combat.IsPlunging 
+                       && !isStaggered
+                       && !isWallSliding
+                       && !IsMovementLockedBySkill
+                       && !combat.IsPlunging
                        && !isClimbing;
         if (!canJump) return;
 
@@ -540,15 +546,15 @@ public class PlayerController : MonoBehaviour
         {
             if (!onEdge || !canClimbEdge) return;
             if (horizontalInput * FacingDirection <= 0.1f) return;
-            
+
             canClimbEdge = false;
-            
+
             Vector2 edgePosition = GetComponentInChildren<PlayerEdgeDetection>().transform.position;
             climbStartPos = edgePosition + new Vector2(climbStartOffset.x * FacingDirection, climbStartOffset.y);
             climbEndPos = edgePosition + new Vector2(climbEndOffset.x * FacingDirection, climbEndOffset.y);
-            
+
             isClimbing = true;
-            
+
             rb.linearVelocity = Vector2.zero;
             rb.gravityScale = 0f;
 
@@ -773,6 +779,14 @@ public class PlayerController : MonoBehaviour
     {
         hit = Physics2D.Raycast(origin, Vector2.down, distance, groundLayer);
         if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
+        if (hit.collider == currentPassThroughPlatform) return false;
+
+        // Jumping up into a one-way (effector) platform from below and passing through it
+        // shouldn't register as ground while we're still rising - only strictly positive
+        // velocity is excluded, so resting/falling on a platform (velocity <= 0) is unaffected.
+        if (rb.linearVelocityY > 0f && hit.collider.GetComponent<PlatformEffector2D>() != null)
+            return false;
+
         if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
             return false;
 
@@ -794,7 +808,7 @@ public class PlayerController : MonoBehaviour
             isGrounded = true;
             currentSurfaceNormal = leftHit.normal;
             lastHitPoint = leftHit.point;
-            
+
             leftGrounded = true;
             if (RaycastGroundAt(rightFoot, dist, out RaycastHit2D hit))
                 rightGrounded = true;
@@ -804,7 +818,7 @@ public class PlayerController : MonoBehaviour
             isGrounded = true;
             currentSurfaceNormal = rightHit.normal;
             lastHitPoint = rightHit.point;
-            
+
             rightGrounded = true;
             if (RaycastGroundAt(leftFoot, dist, out RaycastHit2D hit))
                 leftGrounded = true;
@@ -832,7 +846,7 @@ public class PlayerController : MonoBehaviour
         Vector2 head = new(bounds.center.x, bounds.max.y - (bounds.size.y * 0.1f));
         Vector2 chest = new(bounds.center.x, bounds.center.y + (bounds.extents.y * 0.2f));
         Vector2 waist = new(bounds.center.x, bounds.min.y + (bounds.size.y * 0.3f));
-        
+
         int hits = 0;
         if (CheckWallRay(head, dir, rayLen)) hits++;
         if (CheckWallRay(chest, dir, rayLen)) hits++;
@@ -897,9 +911,13 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator DisableCollisionRoutine(Collider2D platform)
     {
+        currentPassThroughPlatform = platform;
+
         foreach (var col in playerColliders) Physics2D.IgnoreCollision(col, platform, true);
         yield return new WaitForSeconds(passThroughPlatformDuration);
         foreach (var col in playerColliders) if (platform != null) Physics2D.IgnoreCollision(col, platform, false);
+
+        if (currentPassThroughPlatform == platform) currentPassThroughPlatform = null;
     }
 
     private void PerformInventoryAction()

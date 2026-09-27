@@ -28,6 +28,7 @@ public class ItemTooltip : MonoBehaviour
     [Header("Inventory Panel (Equip Hint + Delete)")]
     [SerializeField] private GameObject inventoryPanel;
     [SerializeField] private GameObject inventoryEquipPrompt;
+    [SerializeField] private TextMeshProUGUI inventoryEquipPromptLabel;
     [SerializeField] private GameObject deletePrompt;
     [SerializeField] private InputActionReference deleteAction;
     [SerializeField] private Image deleteProgressFill;
@@ -160,6 +161,11 @@ public class ItemTooltip : MonoBehaviour
         anchorTarget = target;
         anchorSettings = settings;
         currentActions = actions;
+
+        if (inventoryEquipPromptLabel != null && actions != null)
+        {
+            inventoryEquipPromptLabel.text = actions.EquipLabel;
+        }
 
         holdTimer = 0f;
         SetDeleteProgress(0f);

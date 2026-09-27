@@ -47,18 +47,14 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         public readonly Sprite Sprite;
         public readonly string Name;
-        public readonly System.Func<string> TooltipBody;
         public readonly bool IsEquipped;
-        public readonly System.Action ToggleEquip;
         public readonly ERarity? Rarity;
 
-        public SlotContext(Sprite sprite, string name, System.Func<string> tooltipBody, bool isEquipped, System.Action toggleEquip, ERarity? rarity)
+        public SlotContext(Sprite sprite, string name, bool isEquipped, ERarity? rarity)
         {
             Sprite = sprite;
             Name = name;
-            TooltipBody = tooltipBody;
             IsEquipped = isEquipped;
-            ToggleEquip = toggleEquip;
             Rarity = rarity;
         }
     }
@@ -122,16 +118,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         ApplySelectionVisual();
     }
 
-    public void SetupSlot(SecondaryGemInstance gem) => SetCurrentItem(gem);
-    public void SetupSlot(GearInstance gear) => SetCurrentItem(gear);
-    public void SetupSlot(PrimaryGemInstance gem) => SetCurrentItem(gem);
-    public void SetupSlot(WeaponInstance weapon) => SetCurrentItem(weapon);
-    public void SetupSlot(KeyInstance key) => SetCurrentItem(key);
-    public void SetupSlot(LoreItemInstance loreItem) => SetCurrentItem(loreItem);
-
-    public void SetupSlot(LoreSetDisplayInfo loreSet) => SetCurrentItem(loreSet);
-
-    private void SetCurrentItem(object item)
+    public void SetupSlot(object item)
     {
         currentItem = item;
 
@@ -155,118 +142,26 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (nameText != null) nameText.gameObject.SetActive(showText);
     }
 
-    private static PlayerEquipmentManager GetEquipment()
-    {
-        Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
-        return player != null ? player.Equipment : null;
-    }
-
     private SlotContext? BuildContext()
     {
-        PlayerEquipmentManager equip = GetEquipment();
+        InventoryItemBase def = ItemActionFactory.GetDefinition(currentItem);
+        if (def == null) return null;
 
-        switch (currentItem)
+        PlayerEquipmentManager equip = ItemActionFactory.GetEquipment();
+        bool isEquipped = ItemActionFactory.IsItemEquipped(currentItem, equip);
+
+        return new SlotContext(def.UISprite, def.UIName, isEquipped, GetRarity(currentItem));
+    }
+
+    private static ERarity? GetRarity(object item)
+    {
+        return item switch
         {
-            case SecondaryGemInstance gem when !string.IsNullOrEmpty(gem.InstTemplateID):
-            {
-                var def = GameDatabase.GetSecondaryTemplateFromID(gem.InstTemplateID);
-                if (def == null) return null;
-
-                bool isEquipped = equip != null && equip.IsGemEquipped(gem);
-                System.Action toggle = () =>
-                {
-                    if (equip == null) return;
-                    if (equip.IsGemEquipped(gem)) equip.ClearSecondaryGem();
-                    else equip.EquipSecondaryGem(gem);
-                };
-
-                SecondaryGemInstance equippedGemForCompare = ItemActionFactory.GetComparableGem(gem, equip);
-                return new SlotContext(def.UISprite, def.UIName, () => ItemTooltipTextBuilder.BuildSecondaryGemTooltip(gem, equippedGemForCompare), isEquipped, toggle, gem.Rarity);
-            }
-
-            case GearInstance gear when !string.IsNullOrEmpty(gear.InstTemplateID):
-            {
-                var def = GameDatabase.GetGearTemplateFromID(gear.InstTemplateID);
-                if (def == null) return null;
-
-                bool isEquipped = equip != null && equip.IsGearEquipped(gear);
-                System.Action toggle = () =>
-                {
-                    if (equip == null) return;
-                    if (equip.IsGearEquipped(gear)) equip.ClearGear(def.Slot);
-                    else equip.EquipGear(def.Slot, gear);
-                };
-
-                GearInstance equippedGearForCompare = (!isEquipped && equip != null) ? equip.GetEquippedGear(def.Slot) : null;
-                return new SlotContext(def.UISprite, def.UIName, () => ItemTooltipTextBuilder.BuildGearTooltip(gear, def.Slot.ToString(), equippedGearForCompare), isEquipped, toggle, gear.Rarity);
-            }
-
-            case PrimaryGemInstance primary when !string.IsNullOrEmpty(primary.InstTemplateID):
-            {
-                var def = GameDatabase.GetPrimaryTemplateFromID(primary.InstTemplateID);
-                if (def == null) return null;
-
-                bool isEquipped = equip != null && equip.SpecialAttackDef == def;
-                System.Action toggle = () =>
-                {
-                    if (equip == null) return;
-                    if (equip.SpecialAttackDef == def) equip.ClearSpecialAttack();
-                    else equip.EquipSpecialAttack(def);
-                };
-
-                return new SlotContext(def.UISprite, def.UIName, () => ItemTooltipTextBuilder.BuildPrimaryGemTooltip(def), isEquipped, toggle, null);
-            }
-
-            case WeaponInstance weapon when !string.IsNullOrEmpty(weapon.InstTemplateID):
-            {
-                var def = GameDatabase.GetWeaponTemplateFromID(weapon.InstTemplateID);
-                if (def == null) return null;
-
-                bool isEquipped = equip != null && equip.IsWeaponEquipped(weapon);
-
-                System.Action toggle = () =>
-                {
-                    if (equip == null) return;
-                    if (!equip.IsWeaponEquipped(weapon)) equip.EquipWeapon(weapon);
-                };
-
-                WeaponInstance equippedWeaponForCompare = (!isEquipped && equip != null) ? equip.EquippedWeapon : null;
-                return new SlotContext(def.UISprite, def.UIName, () => ItemTooltipTextBuilder.BuildWeaponTooltip(weapon, equippedWeaponForCompare), isEquipped, toggle, weapon.Rarity);
-            }
-
-            case KeyInstance key when !string.IsNullOrEmpty(key.InstItemID):
-            {
-                var def = GameDatabase.GetKeyTemplateFromID(key.InstItemID);
-                if (def == null) return null;
-
-                // Keys aren't equippable: no toggle action, never shown as equipped, no rarity border.
-                return new SlotContext(def.UISprite, def.UIName, () => def.Description, false, null, null);
-            }
-
-            case LoreItemInstance loreItem when !string.IsNullOrEmpty(loreItem.InstItemID):
-            {
-                var def = GameDatabase.GetLoreItemTemplateFromID(loreItem.InstItemID);
-                if (def == null) return null;
-
-                // Same as keys: not equippable, no rarity.
-                return new SlotContext(def.UISprite, def.UIName, () => def.Description, false, null, null);
-            }
-
-            case LoreSetDisplayInfo loreSet when loreSet.RepresentativeInstance != null:
-                {
-                    var def = GameDatabase.GetLoreItemTemplateFromID(loreSet.RepresentativeInstance.InstItemID);
-                    if (def == null) return null;
-
-                    string tooltip = loreSet.IsComplete
-                        ? def.Description
-                        : $"{def.Description}\n\n({loreSet.OwnedCount}/{loreSet.TotalPieces} pages found)";
-
-                    return new SlotContext(def.UISprite, def.UIName, () => tooltip, false, null, null);
-                }
-
-            default:
-                return null;
-        }
+            SecondaryGemInstance gem => (ERarity?)gem.Rarity,
+            GearInstance gear => (ERarity?)gear.Rarity,
+            WeaponInstance weapon => (ERarity?)weapon.Rarity,
+            _ => null
+        };
     }
 
     private static bool GetIsNew(object item)
@@ -326,6 +221,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             progressText.gameObject.SetActive(false);
         }
     }
+
     private void UpdateNewBadgeIfLookedAt()
     {
         bool lookedAt = InputModeTracker.IsUsingMouse ? isPointerOver : isSelected;
@@ -406,10 +302,15 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             return;
         }
 
+        if (currentItem is LoreItemInstance loreItem)
+        {
+            display?.OnLoreItemClicked(loreItem);
+            return;
+        }
+
         display?.CloseLorePanel();
 
-        SlotContext? ctx = BuildContext();
-        ctx?.ToggleEquip?.Invoke();
+        ItemActionFactory.ToggleEquip(currentItem, ItemActionFactory.GetEquipment());
 
         if (display != null) display.RefreshUI();
     }
@@ -471,8 +372,9 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         RectTransform dock = display != null ? display.TooltipDock : null;
         TooltipAnchorSettings settings = display != null ? display.TooltipAnchor : null;
         TooltipActions actions = ItemActionFactory.ForInventory(currentItem);
+        string body = ItemActionFactory.BuildTooltipBody(currentItem);
 
-        ItemTooltip.Instance.ShowTooltipAnchored(ctx.Value.Name, ctx.Value.TooltipBody(), rectTransform, settings, dock, actions);
+        ItemTooltip.Instance.ShowTooltipAnchored(ctx.Value.Name, body, rectTransform, settings, dock, actions);
     }
 
     #endregion

@@ -7899,6 +7899,7 @@ MonoBehaviour:
   quickEquipAction: {fileID: -1563650252272756999, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   inventoryPanel: {fileID: 1401327148}
   inventoryEquipPrompt: {fileID: 725271684}
+  inventoryEquipPromptLabel: {fileID: 725271686}
   deletePrompt: {fileID: 2146469027}
   deleteAction: {fileID: -7115757330271210733, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   deleteProgressFill: {fileID: 1774414573}
@@ -9060,10 +9061,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0.2541667
+    x: 0
     y: 0
-    width: 0.3101852
-    height: 0.3101852
+    width: 1
+    height: 1
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60

@@ -249,6 +249,24 @@ public class InventoryDisplay : GameUI.UIWindow
         lorePanel.Show(loreSet);
     }
 
+    public void OnLoreItemClicked(LoreItemInstance loreItem)
+    {
+        if (loreItem == null) return;
+
+        LoreItemDefinition def = GameDatabase.GetLoreItemTemplateFromID(loreItem.InstItemID);
+        string setID = def != null ? def.EffectiveSetID : loreItem.InstItemID;
+
+        LoreSetDisplayInfo wrapper = new LoreSetDisplayInfo
+        {
+            SetID = setID,
+            TotalPieces = 1,
+            RepresentativeInstance = loreItem
+        };
+        wrapper.OwnedInstances.Add(loreItem);
+
+        OnLoreSlotClicked(wrapper);
+    }
+
     public void CloseLorePanel()
     {
         if (openLoreSetID == null) return;
@@ -517,11 +535,18 @@ public class InventoryDisplay : GameUI.UIWindow
             if (instance == null) continue;
 
             LoreItemDefinition def = GameDatabase.GetLoreItemTemplateFromID(instance.InstItemID);
-            string setID = def != null ? def.EffectiveSetID : instance.InstItemID;
+
+            if (def == null || def.TotalPieces <= 1)
+            {
+                into.Add(BuildDisplayItem(instance, instance.PickupOrder));
+                continue;
+            }
+
+            string setID = def.EffectiveSetID;
 
             if (!sets.TryGetValue(setID, out LoreSetDisplayInfo info))
             {
-                info = new LoreSetDisplayInfo { SetID = setID, TotalPieces = def != null ? Mathf.Max(1, def.TotalPieces) : 1 };
+                info = new LoreSetDisplayInfo { SetID = setID, TotalPieces = Mathf.Max(1, def.TotalPieces) };
                 sets[setID] = info;
             }
 
@@ -531,7 +556,7 @@ public class InventoryDisplay : GameUI.UIWindow
                 ? GameDatabase.GetLoreItemTemplateFromID(info.RepresentativeInstance.InstItemID)
                 : null;
 
-            if (info.RepresentativeInstance == null || def == null || (repDef != null && def.PieceIndex < repDef.PieceIndex))
+            if (info.RepresentativeInstance == null || (repDef != null && def.PieceIndex < repDef.PieceIndex))
             {
                 info.RepresentativeInstance = instance;
             }
@@ -647,20 +672,6 @@ public class InventoryDisplay : GameUI.UIWindow
         if (isEmpty) emptyStateText.text = GetEmptyStateMessage();
     }
 
-    private static void ApplyToSlot(InventorySlot slot, object item)
-    {
-        switch (item)
-        {
-            case SecondaryGemInstance gem: slot.SetupSlot(gem); break;
-            case GearInstance gear: slot.SetupSlot(gear); break;
-            case PrimaryGemInstance primaryGem: slot.SetupSlot(primaryGem); break;
-            case WeaponInstance weapon: slot.SetupSlot(weapon); break;
-            case KeyInstance key: slot.SetupSlot(key); break;
-            case LoreItemInstance loreItem: slot.SetupSlot(loreItem); break;
-            case LoreSetDisplayInfo loreSet: slot.SetupSlot(loreSet); break;
-        }
-    }
-
     public void RefreshUI()
     {
         if (slotContainer == null || slotPrefab == null || invManager == null || invManager.currentInventory == null)
@@ -701,7 +712,7 @@ public class InventoryDisplay : GameUI.UIWindow
             GameObject newSlot = Instantiate(slotPrefab, slotContainer);
             if (newSlot.TryGetComponent(out InventorySlot slotScript))
             {
-                ApplyToSlot(slotScript, entry.Item);
+                slotScript.SetupSlot(entry.Item);
             }
         }
 
