@@ -10,7 +10,6 @@ public class FastTravelManager : MonoBehaviour
     [SerializeField] private float fadeDuration = 0.5f;
 
     private FastTravelNodeSO lastVisitedNode;
-    private AreaSide lastVisitedSide;
 
     public bool HasLastVisitedNode => lastVisitedNode != null;
     public event System.Action OnFastTravelComplete;
@@ -30,10 +29,7 @@ public class FastTravelManager : MonoBehaviour
     {
         if (node == null) return;
 
-        AreaSide sideAtInteract = GameManager.Instance != null ? GameManager.Instance.CurrentAreaSide : AreaSide.Exterior;
-
         lastVisitedNode = node;
-        lastVisitedSide = sideAtInteract;
 
         if (SaveManager.Instance != null)
         {
@@ -41,9 +37,13 @@ public class FastTravelManager : MonoBehaviour
             if (saveData?.progress != null)
             {
                 saveData.progress.lastInteractedFastTravelID = node.nodeID;
-                saveData.progress.lastAreaSide = sideAtInteract;
             }
         }
+    }
+
+    public void ClearLastVisitedNode()
+    {
+        lastVisitedNode = null;
     }
 
     public void TravelTo(FastTravelNodeSO node)
@@ -71,7 +71,7 @@ public class FastTravelManager : MonoBehaviour
             return;
         }
 
-        GameManager.Instance.ForceReloadAndRespawn(lastVisitedNode, lastVisitedSide, () => OnFastTravelComplete?.Invoke());
+        GameManager.Instance.ForceReloadAndRespawn(lastVisitedNode, lastVisitedNode.destinationAreaSide, () => OnFastTravelComplete?.Invoke());
     }
 
     private IEnumerator FastTravelRoutine(FastTravelNodeSO destination)

@@ -229,6 +229,8 @@ public class GameManager : MonoBehaviour
             worldMapState.ResetState();
         }
 
+        FastTravelManager.Instance?.ClearLastVisitedNode();
+
         CameraRevealTrigger.ClearSessionTriggers();
 
         yield return LoadSceneAdditive(defaultStartSceneName);
@@ -254,6 +256,8 @@ public class GameManager : MonoBehaviour
         FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
         SpawnPlayer();
+
+        FastTravelManager.Instance?.ClearLastVisitedNode();
 
         SaveManager targetSaveManager = GetSaveManager();
         SaveData data = targetSaveManager != null ? targetSaveManager.LoadGame() : null;

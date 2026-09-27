@@ -124,7 +124,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
         if (SaveManager.Instance != null)
         {
             string currentSceneName = gameObject.scene.name;
-            SaveManager.Instance.SaveProgressAtLocation(currentSceneName, nodeData.spawnAnchorID);
+            SaveManager.Instance.SaveProgressAtLocation(currentSceneName, nodeData.spawnAnchorID, nodeData.destinationAreaSide);
         }
 
         if (!isAlreadyUnlocked && mapOpenDelay > 0f)
