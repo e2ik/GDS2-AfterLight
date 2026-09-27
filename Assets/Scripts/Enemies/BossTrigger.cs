@@ -11,6 +11,7 @@ namespace Enemies
         [SerializeField] private PrefabSpawner bossSpawner;
         [SerializeField] private BossBounds arenaBounds;
         [SerializeField] private string playerTag = "Player";
+        [SerializeField] private string bossID = "boss_intro_unique_id";
 
         private bool hasTriggered;
 
@@ -21,6 +22,12 @@ namespace Enemies
 
             Player player = other.GetComponentInParent<Player>();
             if (player == null) return;
+            
+            if (SaveManager.Instance != null && SaveManager.Instance.HasStoryFlag(bossID))
+            {
+                TriggerBossFight(player);
+                return;
+            }
 
             if (DialogueManager.Instance == null)
             {
@@ -29,6 +36,8 @@ namespace Enemies
             }
 
             hasTriggered = true;
+            if(SaveManager.Instance != null)
+                SaveManager.Instance.SetStoryFlag(bossID);
 
             Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
             
@@ -47,6 +56,11 @@ namespace Enemies
         {
             yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
 
+            TriggerBossFight(player);
+        }
+
+        private void TriggerBossFight(Player player)
+        {
             Enemy bossEnemy = bossSpawner != null ? bossSpawner.SpawnedEnemy?.GetComponent<Enemy>() : null;
 
             if (bossEnemy != null)
