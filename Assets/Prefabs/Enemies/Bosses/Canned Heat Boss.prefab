@@ -249,7 +249,11 @@ MonoBehaviour:
   observationSO: {fileID: 11400000, guid: 507f599106ab90f40a26514267cdd09a, type: 2}
   attacks:
   - Attack: {fileID: 11400000, guid: c5d6043f22bf2e04ab0cd5336e72fca9, type: 2}
-    Weight: 100
+    Weight: 70
+    leashMultiplier: 1.2
+    maxDuration: 5
+  - Attack: {fileID: 11400000, guid: 0f75b721bbec5ef43b6f61278a419117, type: 2}
+    Weight: 30
     leashMultiplier: 1.2
     maxDuration: 5
   lootTable: {fileID: 11400000, guid: 6252f6ee048300646a7a55bd5c7f22d6, type: 2}

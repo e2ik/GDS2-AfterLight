@@ -38,5 +38,6 @@ namespace Enemies
 
         public AttackEvents AttackEvents;
         public int ComboStepIndex;
+        public bool ComboNextArmed;
     }
 }
