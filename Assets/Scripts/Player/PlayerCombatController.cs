@@ -322,6 +322,15 @@ public class PlayerCombatController : MonoBehaviour
         return CanActBase() && !isParrying;
     }
 
+    public void CancelAllActions()
+    {
+        CancelParry();
+        ForceCancelAttack();
+        CancelSkillStates();
+        skillBufferTimer = 0f;
+        skillPressed = false;
+    }
+
     #region Parry Logic
 
     private void HandleParry()
@@ -911,13 +920,13 @@ public class PlayerCombatController : MonoBehaviour
 
     public void OnParry()
     {
-        if (isPlunging || movement.IsUILocked ) return;
+        if (isPlunging || movement.IsUILocked || movement.IsClimbing) return;
         parryBufferTimer = parryBufferTime;
     }
 
     public void OnAttack()
     {
-        if (isChargingSkill || isPlunging || movement.IsUILocked) return;
+        if (isChargingSkill || isPlunging || movement.IsUILocked || movement.IsClimbing) return;
 
         if (IsParrying)
         {
@@ -948,7 +957,7 @@ public class PlayerCombatController : MonoBehaviour
 
         if (value.isPressed)
         {
-            if (isPlunging || movement.IsUILocked) return;
+            if (isPlunging || movement.IsUILocked || movement.IsClimbing) return;
             if (movement.IsWallSliding) return;
             if (specialDef == null) return;
             if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;
@@ -990,7 +999,7 @@ public class PlayerCombatController : MonoBehaviour
             isChargingSkill = false;
             StopChargingPhysics();
 
-            if (!skillFiredThisHold) TriggerSkillRelease();
+            if (!skillFiredThisHold && !movement.IsClimbing) TriggerSkillRelease();
         }
     }
 

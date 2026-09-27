@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -67,13 +68,20 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float heavyForce = 14f, heavyStaggerDuration = 0.4f;
 
 
-    private Vector2 climbStartPos;
-    private Vector2 climbEndPos;
     [Header("Edge Climb Settings")]
     [SerializeField] private Vector2 climbStartOffset;
     [SerializeField] private Vector2 climbEndOffset;
+    [SerializeField] private float climbTimeout = 1.5f;
+    [Tooltip("Delay after a climb ends or is cancelled before another climb can start.")]
+    [SerializeField] private float climbCooldown = 0.1f;
+
+    private PlayerEdgeDetection edgeDetection;
+    private Vector2 climbStartPos;
+    private Vector2 climbEndPos;
+    private float climbStartTime;
     private bool canClimbEdge = true;
     private bool isClimbing;
+
     [HideInInspector] public bool onEdge;
 
     [Header("Detection Settings")]
@@ -87,11 +95,6 @@ public class PlayerController : MonoBehaviour
     private bool dashPressed, dashReleased, isDashing, isStaggered, isBouncing;
     private bool isChargingSkillPhysics, isSkillGravityZeroed, isParryGravityActive, inventoryPressed;
     private const float InputDeadzone = 0.1f;
-
-    // The one-way platform we're currently ignoring collision with while passing through it.
-    // Physics2D.IgnoreCollision only disables physical collision response - it does nothing to
-    // raycasts - so ground checks would otherwise still see this platform as valid ground for
-    // the split second we're falling through it. RaycastGroundAt excludes it explicitly.
     private Collider2D currentPassThroughPlatform;
 
     private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer, wallContactTimer;
@@ -103,6 +106,7 @@ public class PlayerController : MonoBehaviour
     private PlayerCombatController combat;
     private Rigidbody2D rb;
     private Collider2D[] playerColliders;
+    private Collider2D[] boundsColliders;
     private InventoryDisplay inventoryDisplay;
     private Coroutine hitStaggerRoutine;
     private Coroutine bounceRoutine;
@@ -152,6 +156,8 @@ public class PlayerController : MonoBehaviour
         combat = player.CombatController;
         rb = GetComponent<Rigidbody2D>();
         playerColliders = GetComponentsInChildren<Collider2D>(true);
+        boundsColliders = BuildBoundsColliders();
+        edgeDetection = GetComponentInChildren<PlayerEdgeDetection>(true);
     }
 
     private void Start()
@@ -202,6 +208,7 @@ public class PlayerController : MonoBehaviour
 
         if (suspend)
         {
+            CancelClimb();
             preSuspendGravityScale = rb.gravityScale;
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
@@ -542,36 +549,77 @@ public class PlayerController : MonoBehaviour
 
     private void HandleEdgeClimb()
     {
-        if (!isClimbing)
+        if (isClimbing)
         {
-            if (!onEdge || !canClimbEdge) return;
-            if (horizontalInput * FacingDirection <= 0.1f) return;
-
-            canClimbEdge = false;
-
-            Vector2 edgePosition = GetComponentInChildren<PlayerEdgeDetection>().transform.position;
-            climbStartPos = edgePosition + new Vector2(climbStartOffset.x * FacingDirection, climbStartOffset.y);
-            climbEndPos = edgePosition + new Vector2(climbEndOffset.x * FacingDirection, climbEndOffset.y);
-
-            isClimbing = true;
-
             rb.linearVelocity = Vector2.zero;
-            rb.gravityScale = 0f;
-
-            transform.position = climbStartPos;
+            if (Time.time - climbStartTime >= climbTimeout) Climb();
             return;
         }
+
+        onEdge = false;
+        if (edgeDetection == null || !canClimbEdge) return;
+        if (!InputEnabled || IsFrozenOrSkillLocked || isStaggered || isBouncing || isDashing) return;
+
+        bool pressing = Mathf.Abs(horizontalInput) > InputDeadzone;
+        int dir = pressing ? (horizontalInput > 0f ? 1 : -1) : FacingDirection;
+
+        if (!edgeDetection.TryFindLedge(cachedBounds, dir, out Vector2 corner)) return;
+        onEdge = true;
+
+        if (pressing) StartClimb(corner, dir);
+    }
+
+    private void StartClimb(Vector2 corner, int dir)
+    {
+        canClimbEdge = false;
+        isClimbing = true;
+        climbStartTime = Time.time;
+
+        combat.CancelAllActions();
+
+        isWallJumping = false;
+        isWallSliding = false;
+        CancelInvoke(nameof(StopWallJumping));
+
+        if (FacingDirection != dir)
+        {
+            FacingDirection = dir;
+            transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
+        }
+
+        climbStartPos = corner + new Vector2(climbStartOffset.x * dir, climbStartOffset.y);
+        climbEndPos = corner + new Vector2(climbEndOffset.x * dir, climbEndOffset.y);
+
+        rb.linearVelocity = Vector2.zero;
         rb.gravityScale = 0f;
+        TeleportTo(climbStartPos);
     }
 
     private void Climb() //triggered in animation events
     {
+        if (!isClimbing) return;
+
         isClimbing = false;
-        transform.position = climbEndPos;
-        Invoke("AllowClimb", 0.1f);
+        TeleportTo(climbEndPos);
+        rb.linearVelocity = Vector2.zero;
+        Invoke(nameof(AllowClimb), climbCooldown);
+    }
+
+    public void CancelClimb()
+    {
+        if (!isClimbing) return;
+
+        isClimbing = false;
+        Invoke(nameof(AllowClimb), climbCooldown);
     }
 
     private void AllowClimb() => canClimbEdge = true;
+
+    private void TeleportTo(Vector2 position)
+    {
+        rb.position = position;
+        transform.position = position;
+    }
 
     private void UpdateGravity()
     {
@@ -630,6 +678,7 @@ public class PlayerController : MonoBehaviour
     {
         if (physicsSuspended) return;
 
+        CancelClimb();
         combat.ForceCancelAttack();
         if (applyStagger && playHurtAnimation) playerAnimation.PlayHurtAnimation();
 
@@ -666,6 +715,7 @@ public class PlayerController : MonoBehaviour
     {
         if (physicsSuspended) return;
 
+        CancelClimb();
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
         rb.linearVelocity = Vector2.zero;
         rb.AddForce(dir * force, ForceMode2D.Impulse);
@@ -675,6 +725,7 @@ public class PlayerController : MonoBehaviour
     {
         if (physicsSuspended) return;
 
+        CancelClimb();
         combat.ForceCancelAttack();
 
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
@@ -780,10 +831,6 @@ public class PlayerController : MonoBehaviour
         hit = Physics2D.Raycast(origin, Vector2.down, distance, groundLayer);
         if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
         if (hit.collider == currentPassThroughPlatform) return false;
-
-        // Jumping up into a one-way (effector) platform from below and passing through it
-        // shouldn't register as ground while we're still rising - only strictly positive
-        // velocity is excluded, so resting/falling on a platform (velocity <= 0) is unaffected.
         if (rb.linearVelocityY > 0f && hit.collider.GetComponent<PlatformEffector2D>() != null)
             return false;
 
@@ -885,14 +932,30 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
+    private Collider2D[] BuildBoundsColliders()
+    {
+        if (playerColliders == null || playerColliders.Length == 0)
+            playerColliders = GetComponentsInChildren<Collider2D>(true);
+
+        List<Collider2D> result = new List<Collider2D>();
+        foreach (Collider2D col in playerColliders)
+        {
+            if (col == null) continue;
+            if (col.GetComponentInParent<PlayerEdgeDetection>(true) != null) continue;
+            result.Add(col);
+        }
+
+        return result.ToArray();
+    }
+
     private Bounds ComputePlayerBounds()
     {
-        if (playerColliders == null || playerColliders.Length == 0) playerColliders = GetComponentsInChildren<Collider2D>(true);
-        if (playerColliders == null || playerColliders.Length == 0) return new Bounds(transform.position, Vector3.one);
+        if (boundsColliders == null || boundsColliders.Length == 0) boundsColliders = BuildBoundsColliders();
+        if (boundsColliders.Length == 0) return new Bounds(transform.position, Vector3.one);
 
-        Bounds b = playerColliders[0].bounds;
-        //for (int i = 1; i < playerColliders.Length; i++) b.Encapsulate(playerColliders[i].bounds);
-        //this messes with detection colliders, should only need the collider on the player object
+        //filtering out edge detection collider, I'm pretty sure I needed this for something else
+        Bounds b = boundsColliders[0].bounds;
+        for (int i = 1; i < boundsColliders.Length; i++) b.Encapsulate(boundsColliders[i].bounds);
         return b;
     }
 
@@ -954,6 +1017,7 @@ public class PlayerController : MonoBehaviour
 
         bool wasPlunging = combat.WasRecentlyPlunging;
 
+        CancelClimb();
         combat.ForceCancelAttack();
 
         rb.linearVelocity = Vector2.zero;

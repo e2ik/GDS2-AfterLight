@@ -119,6 +119,8 @@ public class PlayerStats : MonoBehaviour
     {
         if (IsDead || rawDamage <= 0f) return;
 
+        if (player != null) player.Controller.CancelClimb();
+
         float mitigationMultiplier = Mathf.Pow(1f - defenseMitigationPerPoint, TotalDefense);
         float effectiveDamage = Mathf.Max(1f, rawDamage * mitigationMultiplier);
 
@@ -188,6 +190,7 @@ public class PlayerStats : MonoBehaviour
 
         if (player != null)
         {
+            player.Controller.CancelClimb();
             player.CombatController.ForceCancelAttack();
             player.CombatController.CancelParry();
             player.CombatController.EndSkill();
