@@ -80,6 +80,8 @@ public class PlayerHurtBox : MonoBehaviour
             combatController.EndSkill();
             playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce);
         }
+        
+        hitbox.ConfirmHit();
 
         return true; // Successfully took the hit.
     }

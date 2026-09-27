@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using UnityEngine;
 using Tutorial;
@@ -117,6 +118,8 @@ public class SaveManager : MonoBehaviour
             _currentSaveData.equippedGear = new System.Collections.Generic.List<EquippedGearSaveData>();
         if (_currentSaveData.progress.completedTutorialSequenceIDs == null)
             _currentSaveData.progress.completedTutorialSequenceIDs = new System.Collections.Generic.List<string>();
+        if (_currentSaveData.progress.storyFlags == null)
+            _currentSaveData.progress.storyFlags = new System.Collections.Generic.List<string>();
     }
 
     public void SaveProgressAtLocation(string sceneName, string anchorID, AreaSide side)
@@ -172,6 +175,22 @@ public class SaveManager : MonoBehaviour
         if (!_currentSaveData.chestData.openedChestIDs.Contains(chestID))
         {
             _currentSaveData.chestData.openedChestIDs.Add(chestID);
+        }
+    }
+
+    public bool HasStoryFlag(string flag)
+    {
+        if (_currentSaveData?.progress?.storyFlags == null) return false;
+        return _currentSaveData.progress.storyFlags.Contains(flag);
+    }
+
+    public void SetStoryFlag(string flag)
+    {
+        if (_currentSaveData?.progress?.storyFlags == null) return;
+
+        if (!_currentSaveData.progress.storyFlags.Contains(flag))
+        {
+            _currentSaveData.progress.storyFlags.Add(flag);
         }
     }
 

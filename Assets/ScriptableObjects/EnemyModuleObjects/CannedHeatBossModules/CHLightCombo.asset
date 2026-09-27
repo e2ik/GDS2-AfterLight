@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306c95eaaffa8f741a0f9c7ac862bc56, type: 3}
+  m_Name: CHLightCombo
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.ComboMeleeAttack
+  range: 4
+  cooldownDuration: 1.3
+  steps:
+  - placeholderClip: {fileID: 7400000, guid: d66efa7785c333342abd93d7aad1f9b5, type: 2}
+    clip: {fileID: 7400000, guid: f19c0c54fdef13542abc27014ba3607d, type: 2}
+    damage: 10
+    attackForce: 1
+    attackStateName: Attack
+    requiresHitToContinue: 1
+  - placeholderClip: {fileID: 7400000, guid: 5a21eabbe1da2d04e8adff2cce4eb615, type: 2}
+    clip: {fileID: 7400000, guid: 063f0820e1375ee498915c7c785a8c87, type: 2}
+    damage: 10
+    attackForce: 1
+    attackStateName: Attack2
+    requiresHitToContinue: 0
+  comboBoolName: ComboContinue

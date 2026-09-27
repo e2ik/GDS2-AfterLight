@@ -37,6 +37,13 @@ namespace Enemies
         private Coroutine flashRoutine;
         private Color baseColor;
 
+        [Header("Boss stuff")] 
+        [SerializeField] private BossBounds bossBounds;
+        [SerializeField] private int attacksPerTeleport = 3;
+        [SerializeField] private float teleportMinCooldown = 8f;
+        private int attacksSinceLastTeleport;
+        private float teleportCooldownTimer;
+        
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
 
@@ -79,6 +86,8 @@ namespace Enemies
                 Animator = animator,
                 OverrideController = overrideController,
                 PlaceholderClip = placeholderClip,
+                BossBounds = bossBounds,
+                SpriteRenderer = spriteRenderer,
                 FacingRight = true
             };
 
@@ -121,6 +130,7 @@ namespace Enemies
 
             attackCooldownTimer = Mathf.Max(0, attackCooldownTimer - Time.deltaTime);
             staggerImmunityTimer = Mathf.Max(0, staggerImmunityTimer - Time.deltaTime);
+            teleportCooldownTimer = Mathf.Max(0, teleportCooldownTimer - Time.deltaTime);
 
             bool attackReady = IsAttacking;
 
@@ -134,10 +144,18 @@ namespace Enemies
             behaviorAgent.BlackboardReference.SetVariableValue("TargetVisible", Context.TargetVisible);
             behaviorAgent.BlackboardReference.SetVariableValue("TargetPosition", Context.TargetPosition);
             behaviorAgent.BlackboardReference.SetVariableValue("AttackReady", attackReady);
+            behaviorAgent.BlackboardReference.SetVariableValue("TeleportReady",
+                attacksSinceLastTeleport >= attacksPerTeleport && teleportCooldownTimer <= 0f);
             behaviorAgent.BlackboardReference.SetVariableValue("Self", gameObject);
         }
 
         public void RunMovement(EnemyMovementSO module, float dt) => module.Tick(Context, dt);
+
+        public void SetBossBounds(BossBounds bounds)
+        {
+            bossBounds = bounds;
+            Context.BossBounds = bounds;
+        }
 
         public bool TrySelectAttack(out AttackInstance selected)
         {
@@ -170,6 +188,7 @@ namespace Enemies
             IsAttacking = true;
             Context.IsAttacking = true;
             Context.Body.linearVelocity = Vector2.zero;
+            attacksSinceLastTeleport++;
         }
 
         public void MarkAttackEnded()
@@ -177,6 +196,12 @@ namespace Enemies
             IsAttacking = false;
             Context.IsAttacking = false;
             attackCooldownTimer = attackCooldown;
+        }
+
+        public void MarkTeleportUsed()
+        {
+            attacksSinceLastTeleport = 0;
+            teleportCooldownTimer = teleportMinCooldown;
         }
 
         private void OnDamaged(int amount, int currentHealth, bool isDot)
@@ -232,6 +257,15 @@ namespace Enemies
 
             spriteRenderer.color = baseColor;
             flashRoutine = null;
+        }
+        
+        public void TriggerLockOn(Transform target)
+        {
+            Context.Target = target;
+            Context.TargetVisible = true;
+            Context.TargetPosition = target.position;
+            Context.LastKnownTargetPosition = target.position;
+            Context.TimeSinceTargetSeen = 0f;
         }
 
 #if UNITY_EDITOR

@@ -39,7 +39,7 @@ public class ItemInstanceSaveData
 [System.Serializable]
 public class ProgressSaveData
 {
-    public List<string> storyFlags;
+    public List<string> storyFlags = new List<string>();
     public List<string> unlockedFastTravelIDs;
     public string lastVisitedSceneName;
     public string lastSpawnAnchorID;
