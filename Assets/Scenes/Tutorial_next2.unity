@@ -1287,6 +1287,52 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &457803888
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 457803889}
+  - component: {fileID: 457803890}
+  m_Layer: 0
+  m_Name: CHBossBounds
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &457803889
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 457803888}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 24.22, y: 5.05, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 963611805}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &457803890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 457803888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ea934b884c3a20499138e9078a01155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.BossBounds
+  size: {x: 19.8, y: 9.2}
+  gizmoColor: {r: 0.36080337, g: 0.5377358, b: 0, a: 1}
 --- !u!1001 &671825107
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -36783,6 +36829,7 @@ Transform:
   - {fileID: 33747696}
   - {fileID: 1345720209}
   - {fileID: 710893581}
+  - {fileID: 457803889}
   m_Father: {fileID: 1492869064}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &971360034
@@ -39946,6 +39993,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.BossTrigger
   introDialogue: {fileID: 11400000, guid: 82026368e70b5a245822b74f4b07e434, type: 2}
   bossSpawner: {fileID: 710893583}
+  arenaBounds: {fileID: 457803890}
   playerTag: Player
 --- !u!61 &1345720211
 BoxCollider2D:

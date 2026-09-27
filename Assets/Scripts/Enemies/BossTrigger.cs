@@ -9,6 +9,7 @@ namespace Enemies
     {
         [SerializeField] private DialogueData introDialogue;
         [SerializeField] private PrefabSpawner bossSpawner;
+        [SerializeField] private BossBounds arenaBounds;
         [SerializeField] private string playerTag = "Player";
 
         private bool hasTriggered;
@@ -47,9 +48,12 @@ namespace Enemies
             yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
 
             Enemy bossEnemy = bossSpawner != null ? bossSpawner.SpawnedEnemy?.GetComponent<Enemy>() : null;
-            
-            if(bossEnemy != null)
+
+            if (bossEnemy != null)
+            {
+                bossEnemy.SetBossBounds(arenaBounds);
                 bossEnemy.TriggerLockOn(player.transform);
+            }
             else
                 Debug.LogWarning("[BossTrigger] No spawned boss Enemy found to trigger lock-on");
         }
