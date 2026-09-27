@@ -40,6 +40,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private WorldMapStateSO worldMapState;
     [SerializeField] private SaveManager saveManager;
     [SerializeField] private float startupFadeDuration = 0.5f;
+    [SerializeField] private float respawnFadeDuration = 0.5f;
 
     [Header("Item Colors")]
     [SerializeField] private Color commonColor = new Color(0.69f, 0.69f, 0.69f);
@@ -361,6 +362,9 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator ForceReloadAndRespawnAtRoutine(string targetScene, string anchorID, AreaSide side, System.Action onComplete)
     {
+        if (FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeOut(respawnFadeDuration);
+
         Scene masterScene = SceneManager.GetSceneByName(masterSceneName);
         if (masterScene.isLoaded)
         {
@@ -413,6 +417,9 @@ public class GameManager : MonoBehaviour
         SaveManager.Instance?.SaveProgressAtLocation(targetScene, anchorID, side);
 
         onComplete?.Invoke();
+
+        if (FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeIn(respawnFadeDuration);
     }
 
     #endregion

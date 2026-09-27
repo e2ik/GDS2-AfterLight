@@ -216,8 +216,10 @@ MonoBehaviour:
     m_Bits: 32832
   maxStepHeight: 0.15
   maxDropHeight: 0.15
-  minGroundNormalY: 0.6
-  edgeInset: 0.1
-  groundOffset: 0.2
+  minGroundNormalY: 1
+  edgeInset: 0.2
+  groundOffset: 0.1
   heightSmoothing: 20
   initialSnapDistance: 10
+  initialSnapMaxAttempts: 30
+  settleNudgeDistance: 0.05
