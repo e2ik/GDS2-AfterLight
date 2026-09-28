@@ -55,6 +55,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashDuration = 0.2f;
     [SerializeField] private float dashCoolDown = 0.2f;
     [SerializeField] private float dashSkillEnergyCost = 0.1f;
+    [SerializeField] private float neutralDashInvulnExtension = 0.1f;
+    private float neutralDashInvulnTimer;
 
     [Header("Knockback Settings")]
     [SerializeField] private bool enemyBodyCollisionKnockback = true;
@@ -69,8 +71,11 @@ public class PlayerController : MonoBehaviour
 
 
     [Header("Edge Climb Settings")]
+    [Tooltip("Where the player is placed when the climb starts, relative to the ledge corner (x is mirrored by facing).")]
     [SerializeField] private Vector2 climbStartOffset;
+    [Tooltip("Where the player ends up when the climb finishes, relative to the ledge corner (x is mirrored by facing).")]
     [SerializeField] private Vector2 climbEndOffset;
+    [Tooltip("Safety net: finishes the climb if the Climb animation event hasn't fired after this long (e.g. the animation got interrupted). Set it a little above the climb clip's length.")]
     [SerializeField] private float climbTimeout = 1.5f;
     [Tooltip("Delay after a climb ends or is cancelled before another climb can start.")]
     [SerializeField] private float climbCooldown = 0.1f;
@@ -82,6 +87,8 @@ public class PlayerController : MonoBehaviour
     private bool canClimbEdge = true;
     private bool isClimbing;
 
+    // True while a climbable ledge is beside the player. Set by the controller each physics
+    // step; other scripts can read it but shouldn't write it.
     [HideInInspector] public bool onEdge;
 
     [Header("Detection Settings")]
@@ -128,7 +135,7 @@ public class PlayerController : MonoBehaviour
     public bool IsStaggered => isStaggered;
     public bool IsBouncing => isBouncing;
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
-    public bool IsInvulnerable => IsNeutralDash;
+    public bool IsInvulnerable => IsNeutralDash || neutralDashInvulnTimer > 0f;
     public bool IsClimbing => isClimbing;
     private bool IsSkillBaseLocked =>
         isChargingSkillPhysics
@@ -168,6 +175,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (neutralDashInvulnTimer > 0f) neutralDashInvulnTimer -= Time.deltaTime;
+
         if (!IsUILocked && CanMove()) Flip();
         if (InputEnabled && !IsMovementFrozen) PerformInventoryAction();
     }
@@ -451,12 +460,6 @@ public class PlayerController : MonoBehaviour
     {
         dashTimer = isDashing ? dashCoolDown : dashTimer - Time.fixedDeltaTime;
 
-        if (!InputEnabled)
-        {
-            ConsumeDashInput();
-            return;
-        }
-
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
             if (isClimbing) return;
@@ -542,6 +545,9 @@ public class PlayerController : MonoBehaviour
 
     private void StopDashing()
     {
+        if (isDashing && !IsDirectionalDash && !isDashLocked)
+            neutralDashInvulnTimer = neutralDashInvulnExtension;
+
         isDashing = false;
         isDashLocked = false;
     }
@@ -566,12 +572,16 @@ public class PlayerController : MonoBehaviour
         if (edgeDetection == null || !canClimbEdge) return;
         if (!InputEnabled || IsFrozenOrSkillLocked || isStaggered || isBouncing || isDashing) return;
 
+        // Look for a ledge on the side being pressed toward, not the side being faced.
+        // Turning is locked during a wall jump, so using facing made ledges on the other
+        // side undetectable until the wall jump ended.
         bool pressing = Mathf.Abs(horizontalInput) > InputDeadzone;
         int dir = pressing ? (horizontalInput > 0f ? 1 : -1) : FacingDirection;
 
         if (!edgeDetection.TryFindLedge(cachedBounds, dir, out Vector2 corner)) return;
         onEdge = true;
 
+        // Only climb while holding toward the ledge.
         if (pressing) StartClimb(corner, dir);
     }
 
@@ -583,6 +593,7 @@ public class PlayerController : MonoBehaviour
 
         combat.CancelAllActions();
 
+        // The climb takes over from a wall jump or wall slide.
         isWallJumping = false;
         isWallSliding = false;
         CancelInvoke(nameof(StopWallJumping));
@@ -603,6 +614,7 @@ public class PlayerController : MonoBehaviour
 
     private void Climb() //triggered in animation events
     {
+        // Ignore a late event from a climb that was already cancelled or finished.
         if (!isClimbing) return;
 
         isClimbing = false;
@@ -611,6 +623,7 @@ public class PlayerController : MonoBehaviour
         Invoke(nameof(AllowClimb), climbCooldown);
     }
 
+    // Stops a climb part-way (knockback, bounce, physics suspended) without moving the player.
     public void CancelClimb()
     {
         if (!isClimbing) return;
@@ -938,6 +951,9 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
+    // Every player collider except edge detection. The edge detection collider sits out in
+    // front of the body, so including it stretches the bounds and throws off the wall,
+    // ground and step-up checks. Built once, since the collider setup doesn't change.
     private Collider2D[] BuildBoundsColliders()
     {
         if (playerColliders == null || playerColliders.Length == 0)
