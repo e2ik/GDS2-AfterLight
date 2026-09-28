@@ -31,8 +31,13 @@ public class PlayerStats : MonoBehaviour
     [Tooltip("Used specifically when a PositionSwitch platform is moving DOWN.")]
     [SerializeField] private float descendingCrushThreshold = 0.02f;
 
+    [Header("Death")]
+    [SerializeField] private float deathLandingTimeout = 2f;
+
     private Player player;
     private GameUI.DeathWindow deathWindow;
+    private Coroutine landingSuspendRoutine;
+    private bool isRespawning;
 
     public float MaxHealth => maxHealth;
     public float CurrentHealth => currentHealth;
@@ -198,8 +203,9 @@ public class PlayerStats : MonoBehaviour
 
         SetInputLocked(true);
 
+        StopLandingWait();
         if (player != null)
-            StartCoroutine(WaitForLandingThenSuspend());
+            landingSuspendRoutine = StartCoroutine(WaitForLandingThenSuspend());
 
         GameUI.DeathWindow window = GetDeathWindow();
         if (window != null) GameUI.UIManager.Instance.Open(window);
@@ -207,19 +213,37 @@ public class PlayerStats : MonoBehaviour
 
     private IEnumerator WaitForLandingThenSuspend()
     {
-        while (player.Controller != null && !player.Controller.IsGrounded)
+        float timer = 0f;
+        while (player.Controller != null && !player.Controller.IsGrounded && timer < deathLandingTimeout)
         {
+            timer += Time.unscaledDeltaTime;
             yield return null;
         }
+
+        landingSuspendRoutine = null;
 
         if (player.Controller != null)
             player.Controller.SetPhysicsSuspended(true);
     }
 
+    private void StopLandingWait()
+    {
+        if (landingSuspendRoutine == null) return;
+
+        StopCoroutine(landingSuspendRoutine);
+        landingSuspendRoutine = null;
+    }
+
     public void OnRespawnButtonPressed()
     {
+        if (isRespawning) return;
+        isRespawning = true;
+
         GameUI.DeathWindow window = GetDeathWindow();
         if (window != null) GameUI.UIManager.Instance.Close(window);
+
+        StopLandingWait();
+        if (player != null) player.Controller.SetPhysicsSuspended(true);
 
         if (CanRespawn)
         {
@@ -229,24 +253,25 @@ public class PlayerStats : MonoBehaviour
         {
             Debug.LogWarning("[PlayerStats] No fast travel point visited this session — respawning at the starting anchor instead.");
 
-            GameManager.Instance.ForceReloadAndRespawnAtStart(() =>
-            {
-                ReviveFull();
-                SetInputLocked(false);
-                if (player != null) player.Controller.SetPhysicsSuspended(false);
-            });
+            GameManager.Instance.ForceReloadAndRespawnAtStart(FinishRespawn);
         }
         else
         {
             Debug.LogWarning("[PlayerStats] No fast travel point visited and no GameManager found; reviving in place.");
-            ReviveFull();
-            SetInputLocked(false);
-            if (player != null) player.Controller.SetPhysicsSuspended(false);
+            FinishRespawn();
         }
     }
 
     private void HandleRespawnComplete()
     {
+        FinishRespawn();
+    }
+
+    private void FinishRespawn()
+    {
+        StopLandingWait();
+        isRespawning = false;
+
         ReviveFull();
         SetInputLocked(false);
         if (player != null) player.Controller.SetPhysicsSuspended(false);

@@ -261,7 +261,14 @@ MonoBehaviour:
   animator: {fileID: 1943101255374262222}
   rb2D: {fileID: 2968184197812120870}
   attackCooldown: 0.25
+  attackFailsafeDuration: 4
   placeholderClipName: EmptyAttack
+  preventLedgeFalls: 1
+  ledgeGroundMask:
+    serializedVersion: 2
+    m_Bits: 64
+  ledgeCheckDistance: 0.5
+  ledgeCheckDepth: 1
   isStaggerImmune: 0
   staggerImmunityDuration: 4
   hitEvent:
@@ -271,9 +278,19 @@ MonoBehaviour:
       Data3: 1112032419
       Data4: -774162852
     Path: event:/CombatSFXEvents/EnemyHitEvent
+  attackEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
   spriteRenderer: {fileID: 5107996575365250629}
   flashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.15
+  bossBounds: {fileID: 0}
+  attacksPerTeleport: 3
+  teleportMinCooldown: 8
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -13,10 +13,20 @@ MonoBehaviour:
   m_Name: CHTeleportSO
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Movement.TeleportMovementSO
   changeY: 0
+  matchTargetY: 1
   minDistanceFromTarget: 3
   navMeshSampleDistance: 1
   maxRerollAttempts: 20
+  requireGround: 1
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 64
+  groundCheckDepth: 3
+  nearTargetMaxDistance: 6
+  toTargetMinDistance: 1
+  toTargetMaxDistance: 1.5
   teleportOutTrigger: TeleportOut
   teleportInTrigger: TeleportIn
-  teleportOutDuration: 0.5
-  teleportInDuration: 0.3
+  teleportOutStateName: TeleportOut
+  teleportInStateName: TeleportIn
+  hiddenDuration: 1.5

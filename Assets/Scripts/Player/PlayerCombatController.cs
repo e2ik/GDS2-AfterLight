@@ -45,6 +45,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float counterAttackWindow = 0.5f;
     [SerializeField] private float passiveEnergyCooldown = 4f;
     [SerializeField] private float passiveEnergyRegenMult = 0.2f; // 1f = 1 sec for full bar, .25f = 4 secs etc.
+    [SerializeField, Range(0f, 1f)] private float passiveEnergyCap = 0.5f;
     private float passiveEnergyRecoveryTimer;
 
     [Header("Combo Settings")]
@@ -295,8 +296,8 @@ public class PlayerCombatController : MonoBehaviour
 
         if (isAttacking || isSkilling || player.Controller.IsDashing)
             ResetPassiveEnergyTimer();
-        if(passiveEnergyRecoveryTimer <= 0f)
-            ChargeSkillMeter(Time.deltaTime * passiveEnergyRegenMult);
+        if (passiveEnergyRecoveryTimer <= 0f && SkillMeter < passiveEnergyCap)
+            ChargeSkillMeter(Mathf.Min(Time.deltaTime * passiveEnergyRegenMult, passiveEnergyCap - SkillMeter));
     }
 
     private bool CanActBase()

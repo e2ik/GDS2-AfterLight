@@ -1,12 +1,18 @@
 using System;
 using System.Collections.Specialized;
 using System.IO;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using Tutorial;
 
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance { get; private set; }
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+    [DllImport("__Internal")]
+    private static extern void SyncSaveFilesToIndexedDB();
+#endif
 
     public bool HasSaveFile => File.Exists(SavePath);
     private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
@@ -28,11 +34,17 @@ public class SaveManager : MonoBehaviour
         }
         else
         {
-            CreateNewSaveData();
+            InitializeNewSaveData();
         }
     }
 
     public void CreateNewSaveData()
+    {
+        InitializeNewSaveData();
+        CommitToDisk();
+    }
+
+    private void InitializeNewSaveData()
     {
         _currentSaveData = new SaveData
         {
@@ -40,8 +52,6 @@ public class SaveManager : MonoBehaviour
             chestData = new ChestSaveData(),
             inventoryData = new InventorySaveData()
         };
-
-        CommitToDisk();
     }
 
     private void WriteEquipmentToSaveData(PlayerEquipmentManager equipment)
@@ -74,6 +84,10 @@ public class SaveManager : MonoBehaviour
             File.Copy(TempSavePath, SavePath, overwrite: true);
             File.Delete(TempSavePath);
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+            SyncSaveFilesToIndexedDB();
+#endif
+
             Debug.Log($"Saved successfully to {SavePath}");
         }
         catch (Exception e)
@@ -87,7 +101,7 @@ public class SaveManager : MonoBehaviour
         if (!HasSaveFile)
         {
             Debug.LogWarning("No save file found. Initializing default data.");
-            CreateNewSaveData();
+            InitializeNewSaveData();
             return _currentSaveData;
         }
 

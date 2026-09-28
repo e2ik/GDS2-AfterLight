@@ -14,6 +14,7 @@ namespace GameUI
         private readonly Stack<UIWindow> openWindows = new Stack<UIWindow>();
         private readonly List<UIWindowAnimator> closingAnimators = new List<UIWindowAnimator>();
         private Coroutine releaseRoutine;
+        private InteractionManager blockedInteraction;
 
         public bool HasOpenWindows => openWindows.Count > 0;
         public bool IsInputLocked => HasOpenWindows || releaseRoutine != null;
@@ -53,7 +54,7 @@ namespace GameUI
             {
                 CancelRelease();
                 Time.timeScale = window.BlocksPlayerInput ? 0f : 1f;
-                GameManager.Instance?.Player?.InteractionManager?.SetInteractionBlocked(true);
+                BlockPlayerInteraction();
             }
         }
 
@@ -143,7 +144,7 @@ namespace GameUI
             releaseRoutine = null;
             closingAnimators.Clear();
             Time.timeScale = 1f;
-            GameManager.Instance?.Player?.InteractionManager?.SetInteractionBlocked(false);
+            UnblockPlayerInteraction();
         }
 
         private void CancelRelease()
@@ -152,6 +153,27 @@ namespace GameUI
             if (releaseRoutine == null) { return; }
             StopCoroutine(releaseRoutine);
             releaseRoutine = null;
+        }
+
+        private void BlockPlayerInteraction()
+        {
+            if (blockedInteraction != null) { return; }
+
+            Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+            if (player == null || player.InteractionManager == null) { return; }
+
+            blockedInteraction = player.InteractionManager;
+            blockedInteraction.SetInteractionBlocked(true);
+        }
+
+        private void UnblockPlayerInteraction()
+        {
+            if (blockedInteraction != null)
+            {
+                blockedInteraction.SetInteractionBlocked(false);
+            }
+
+            blockedInteraction = null;
         }
     }
 }

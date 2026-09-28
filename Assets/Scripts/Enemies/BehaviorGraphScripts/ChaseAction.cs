@@ -22,7 +22,7 @@ public partial class ChaseAction : Action
             Debug.LogError("ChaseAction: Agent is not linked on the Blackboard");
             return Status.Failure;
         }
-        
+
         if (ChaseModule == null || ChaseModule.Value == null)
         {
             Debug.LogError("ChaseAction: ChaseModule SO is not assigned on the node");
@@ -34,12 +34,29 @@ public partial class ChaseAction : Action
             Debug.LogError("Agent has no Enemy component");
             return Status.Failure;
         }
-        
+
         return Status.Running;
     }
 
     protected override Status OnUpdate()
     {
+        EnemyContext ctx = _enemy.Context;
+
+        if (!ctx.TargetVisible || ctx.Target == null)
+        {
+            ctx.Body.linearVelocity = new Vector2(0f, ctx.Body.linearVelocity.y);
+            return Status.Failure;
+        }
+
+        if (_enemy.AttackReady)
+            return Status.Success;
+
+        if (_enemy.TeleportReady)
+        {
+            ctx.Body.linearVelocity = new Vector2(0f, ctx.Body.linearVelocity.y);
+            return Status.Failure;
+        }
+
         _enemy.RunMovement(ChaseModule.Value, Time.deltaTime);
 
         return Status.Running;
@@ -49,4 +66,3 @@ public partial class ChaseAction : Action
     {
     }
 }
-

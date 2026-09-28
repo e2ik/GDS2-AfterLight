@@ -17,14 +17,14 @@ public partial class PatrolAction : Action
 
     protected override Status OnStart()
     {
-        if (Agent == null || Agent.Value == null) 
+        if (Agent == null || Agent.Value == null)
         {
             Debug.LogError("PatrolAction: Agent is not linked on the Blackboard.");
             return Status.Failure;
         }
-        
+
         if (PatrolModule == null || PatrolModule.Value == null)
-        { 
+        {
             Debug.LogError("PatrolAction: PatrolModule SO is not assigned on the node.");
             return Status.Failure;
         }
@@ -34,12 +34,15 @@ public partial class PatrolAction : Action
             Debug.LogError("Agent has no Enemy Component");
             return Status.Failure;
         }
-        
+
         return Status.Running;
     }
 
     protected override Status OnUpdate()
-    {   
+    {
+        if (_enemy.Context.TargetVisible)
+            return Status.Success;
+
         _enemy.RunMovement(PatrolModule.Value, Time.deltaTime);
         return Status.Running;
     }
@@ -48,4 +51,3 @@ public partial class PatrolAction : Action
     {
     }
 }
-

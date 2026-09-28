@@ -11,6 +11,7 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private Vector2 raycastOriginOffset = Vector2.zero;
 
     private int interactionDisableCount;
+    private int lastUnblockFrame = -1;
     public bool InteractionEnabled => interactionDisableCount <= 0;
 
     private IInteractable currentInteractable;
@@ -46,20 +47,36 @@ public class InteractionManager : MonoBehaviour
 
         DetectInteractable();
 
-        if (currentInteractable != null && interactAction.WasPressedThisFrame())
-        {
-            if (currentInteractable.ShouldStopPlayerMovement)
-            {
-                playerController.FreezeMovement(true);
-            }
+        if (currentInteractable == null || !interactAction.WasPressedThisFrame()) return;
+        if (!CanPlayerInteract()) return;
+        if (!currentInteractable.CanInteract) return;
 
-            currentInteractable.Interact(player);
+        if (currentInteractable.ShouldStopPlayerMovement)
+        {
+            playerController.FreezeMovement(true);
         }
+
+        currentInteractable.Interact(player);
+    }
+
+    private bool CanPlayerInteract()
+    {
+        return playerController.InputEnabled
+               && !playerController.IsUILocked
+               && !playerController.IsPhysicsSuspended
+               && Time.frameCount != lastUnblockFrame;
     }
 
     public void SetInteractionBlocked(bool blocked)
     {
-        interactionDisableCount = blocked ? interactionDisableCount + 1 : Mathf.Max(0, interactionDisableCount - 1);
+        if (blocked)
+        {
+            interactionDisableCount++;
+            return;
+        }
+
+        interactionDisableCount = Mathf.Max(0, interactionDisableCount - 1);
+        if (interactionDisableCount == 0) lastUnblockFrame = Time.frameCount;
     }
 
     private void DetectInteractable()
@@ -73,16 +90,8 @@ public class InteractionManager : MonoBehaviour
         RaycastHit2D[] hits = Physics2D.RaycastAll(origin, direction, interactionRange, interactableLayers);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
-        if (hits.Length == 0)
-        {
-            Debug.Log($"[InteractionManager] raycast hit nothing (origin={origin}, dir={direction}, range={interactionRange})");
-        }
-
         foreach (RaycastHit2D hit in hits)
         {
-            IInteractable probe = hit.collider.GetComponent<IInteractable>();
-            // Debug.Log($"[InteractionManager] hit '{hit.collider.name}' (layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}, trigger={hit.collider.isTrigger}, root=={hit.collider.transform.root == ownRoot}, IInteractable={(probe != null)}, CanInteract={(probe != null ? probe.CanInteract.ToString() : "n/a")})");
-
             if (hit.collider.transform.root == ownRoot) continue;
 
             IInteractable candidate = hit.collider.GetComponent<IInteractable>();

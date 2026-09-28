@@ -32,9 +32,12 @@ namespace Enemies.ModuleScripts.Attacks
         public override bool IsFinished(EnemyContext ctx)
         {
             AnimatorStateInfo state = ctx.Animator.GetCurrentAnimatorStateInfo(0);
-            
-            return state.normalizedTime >= 1f && !state.IsName(attackStateName);
-        } 
-        
+
+            if (!state.IsName(attackStateName))
+                return true;
+
+            return state.normalizedTime >= 1f;
+        }
+
     }
 }
