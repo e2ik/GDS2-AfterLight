@@ -31,6 +31,7 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
         PlayerCombatController pCombat = player.GetComponent<PlayerCombatController>();
         Vector2 center = player.transform.position;
         direction = player.GetComponent<Player>()?.Controller?.FacingDirection == 1 ? Vector2.right : Vector2.left;
+        AudioManager.PlaySFX(skillEvent);
         context.Runner.StartCoroutine(AttackRoutine(context, pCombat, baseDamage, chargeAmount));
     }
 

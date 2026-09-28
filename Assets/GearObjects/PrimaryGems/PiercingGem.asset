@@ -16,6 +16,7 @@ MonoBehaviour:
   UIName: Piercing Gem
   UISprite: {fileID: 21300000, guid: dea31ba0adb1d814bb75007955207865, type: 3}
   Deletable: 0
+  SortOrder: 0
   maxCommonValue: 0
   maxRareValue: 0
   maxEpicValue: 0
@@ -27,6 +28,13 @@ MonoBehaviour:
   SkillRange: 3.5
   SkillDamageModifier: 2
   SkillCost: 0.2
+  skillEvent:
+    Guid:
+      Data1: -1715908007
+      Data2: 1260953585
+      Data3: -1402643553
+      Data4: -905188115
+    Path: event:/CombatSFXEvents/PiercingSkillEvent
   MinimumHeldDuration: 0.25
   EnergyDrainTick: 0
   hitBoxWidth: 3
