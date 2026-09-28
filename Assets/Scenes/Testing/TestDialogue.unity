@@ -37512,6 +37512,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: TestNPC1 - test effect
       objectReference: {fileID: 0}
+    - target: {fileID: 1065373267661462909, guid: fa76becdb76b94e41b42e88d588172f2, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3046279202133083045, guid: fa76becdb76b94e41b42e88d588172f2, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4210531274950916825, guid: fa76becdb76b94e41b42e88d588172f2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 9.77
@@ -80315,6 +80323,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TestNPC2
       objectReference: {fileID: 0}
+    - target: {fileID: 1065373267661462909, guid: fa76becdb76b94e41b42e88d588172f2, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1595431102330681582, guid: fa76becdb76b94e41b42e88d588172f2, type: 3}
       propertyPath: m_Color.b
       value: 0
@@ -80325,6 +80337,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1595431102330681582, guid: fa76becdb76b94e41b42e88d588172f2, type: 3}
       propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3046279202133083045, guid: fa76becdb76b94e41b42e88d588172f2, type: 3}
+      propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4210531274950916825, guid: fa76becdb76b94e41b42e88d588172f2, type: 3}
@@ -83485,10 +83501,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0.6479339
+    x: 0
     y: 0
-    width: 1.4241812
-    height: 1.3834443
+    width: 1
+    height: 1
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -85935,8 +85951,8 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2428442732725413585, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1.3650001
+      propertyPath: m_AnchoredPosition.x
+      value: 544
       objectReference: {fileID: 0}
     - target: {fileID: 4000684074867719090, guid: 9dd86923ba4bc4c329385e78c5cb1fe9, type: 3}
       propertyPath: m_Name

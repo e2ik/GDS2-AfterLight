@@ -45,5 +45,5 @@ public enum DialogueEffect
     Default,
     Angry,
     Unstable,
-    Glitch
+    //Glitch
 }
