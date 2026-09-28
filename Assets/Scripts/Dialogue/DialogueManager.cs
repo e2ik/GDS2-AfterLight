@@ -41,6 +41,7 @@ public class DialogueManager : MonoBehaviour
     private Vector2 dialoguePanelRestPosition;
     private bool waitingForInitialInteractRelease;
     public bool IsDialogueActive { get; private set; }
+    public NPCDialogue CurrentNPC => currentNPC;
 
     private void Awake()
     {
