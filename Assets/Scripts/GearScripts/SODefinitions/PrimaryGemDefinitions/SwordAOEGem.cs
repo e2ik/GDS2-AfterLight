@@ -19,7 +19,7 @@ public class SwordAOEGem : PrimaryGemBehaviourDefinition
         Vector2 center = player.transform.position;
         Collider2D[] enemiesInRange = Physics2D.OverlapCircleAll(center, SkillRange, pCombat.enemyLayer);
 
-        float skillDamage = baseDamage * SkillDamageModifier;
+        float skillDamage = baseDamage * (SkillDamageModifier + context.SkillModifierBonus);
 
         bool hitEnemy = false;
         foreach (var col in enemiesInRange)

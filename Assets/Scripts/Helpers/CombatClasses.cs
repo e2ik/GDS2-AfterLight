@@ -28,14 +28,6 @@ public struct AttackContext
     public ERollTier RollTier;
 }
 
-public enum EDamageType
-{
-    Base,
-    Skill,
-    Dot,
-    Reflect
-}
-
 public enum ERollTier
 {
     None,
@@ -43,4 +35,12 @@ public enum ERollTier
     Normal,
     Nice,
     Jackpot
+}
+
+public enum EDamageType
+{
+    Base,
+    Skill,
+    Dot,
+    Reflect
 }

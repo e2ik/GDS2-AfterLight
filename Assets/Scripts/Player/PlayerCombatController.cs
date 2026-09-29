@@ -91,7 +91,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float skillHoldThreshold = 0.12f;
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
     [SerializeField] private float chargeSkillAmount = 0.2f;
-    [SerializeField] private float skillGemModifierBonus = 0.5f;
+    [SerializeField] private float skillGemModifierBonus = 1f;
 
     [Header("FMOD Events")]
     [SerializeField] private EventReference parryEvent;
@@ -819,8 +819,6 @@ public class PlayerCombatController : MonoBehaviour
             def.Execute(context, currentTickDamage, currentChargePercentage);
 
             yield return new WaitForSeconds(tick);
-
-            if (isHeld) chargingSkillTimer += tick;
         }
 
         EndSkill();
@@ -870,7 +868,7 @@ public class PlayerCombatController : MonoBehaviour
         bool hasSkillGem = gem != null && !string.IsNullOrEmpty(gem.InstTemplateID) && gem.Type == SGemType.Skill;
         return hasSkillGem ? skillGemModifierBonus : 0f;
     }
-    
+
     public void CheckEnergyChargePassive(bool isAttack, AttackContext context)
     {
         if ((player.Equipment.SecondaryGem.Type == SGemType.Attack && isAttack)

@@ -17,7 +17,7 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
     private GameObject testVisPrefab;
 
     private Vector2 direction;
-    
+
     public override void Execute(AttackContext context, float baseDamage, float chargeAmount = 0f)
     {
         Debug.Log("Pierce To Win");
