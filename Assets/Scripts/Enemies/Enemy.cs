@@ -81,13 +81,13 @@ namespace Enemies
 
         private void OnEnable()
         {
-            Context.Health.OnDamaged += OnDamaged;
+            Context.Health.OnDamageTaken += OnDamaged;
             Context.Health.OnDeath += OnDeath;
         }
 
         private void OnDisable()
         {
-            Context.Health.OnDamaged -= OnDamaged;
+            Context.Health.OnDamageTaken -= OnDamaged;
             Context.Health.OnDeath -= OnDeath;
             EnemyCombatTracker.EnemyStoppedTargeting(this);
 
@@ -413,9 +413,12 @@ namespace Enemies
             Context.ForceTeleportNearTarget = false;
         }
 
-        private void OnDamaged(int amount, int currentHealth, bool isDot)
+        private void OnDamaged(DamageInfo info)
         {
-            Debug.Log($"Enemy blud was damaged for {amount}. Current Health: {currentHealth}");
+            bool isDot = info.DamageType == EDamageType.Dot;
+            string crit = info.IsCrit ? " CRIT" : "";
+            string roll = info.HasRoll ? $" roll:{info.RollQuality:F2}" : "";
+            Debug.Log($"Enemy blud was damaged for {info.Amount} ({info.DamageType}{crit}{roll}). Current Health: {Context.Health.CurrentHealth}");
 
             AudioManager.PlaySFXAttached(hitEvent, gameObject);
 

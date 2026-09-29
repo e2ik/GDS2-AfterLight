@@ -4,22 +4,21 @@ using UnityEngine;
 public class GreenModifierGemTemplate : SecondaryGemBehaviourDefinition
 {
     // Skill Charge on hit or parry Gem
-    [SerializeField] private Vector2 chargeAmountRange = new(0.01f, 0.1f);
-
-    private RarityRange chargeAmountByRarity = new RarityRange
+    [Header("Energy Charge by Rarity (out of 100)")]
+    [SerializeField] private RarityRange chargeAmountByRarity = new RarityRange
     {
-        Common = new Vector2(0.05f, 0.08f),
-        Rare = new Vector2(0.09f, 0.12f),
-        Epic = new Vector2(0.13f, 0.16f),
-        Legendary = new Vector2(0.17f, 0.2f)
+        Common = new Vector2(5f, 8f),
+        Rare = new Vector2(9f, 12f),
+        Epic = new Vector2(13f, 16f),
+        Legendary = new Vector2(17f, 20f)
     };
-    
+
     public override SecondaryGemInstance CreateInstance(ERarity rarity)
     {
         SecondaryGemInstance instance = base.CreateInstance(rarity);
 
         Vector2 range = chargeAmountByRarity.GetRange(rarity);
-        instance.InstRolledChargeAmount = Random.Range(range.x, range.y);
+        instance.InstRolledChargeAmount = Random.Range(range.x, range.y) / 100f;
 
         return instance;
     }

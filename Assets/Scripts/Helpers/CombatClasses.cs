@@ -20,12 +20,25 @@ public struct AttackContext
 
     public bool ChargesSkillMeter;
     public float ChargeAmount;
+
+    public bool HasRoll;
+    public float RollQuality;
+    public ERollTier RollTier;
+}
+
+public enum ERollTier
+{
+    None,
+    Whiff,
+    Normal,
+    Nice,
+    Jackpot
 }
 
 public enum EDamageType
 {
     Base,
-    Fire,
-    Poison,
-    Kinetic
+    Skill,
+    Dot,
+    Reflect
 }

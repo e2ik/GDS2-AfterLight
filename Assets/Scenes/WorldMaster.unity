@@ -2061,6 +2061,8 @@ GameObject:
   - component: {fileID: 358202635}
   - component: {fileID: 358202636}
   - component: {fileID: 358202637}
+  - component: {fileID: 358202638}
+  - component: {fileID: 358202639}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -2158,6 +2160,39 @@ MonoBehaviour:
     targetPoint: {x: 0, y: 0}
     tooltipPivot: {x: 0, y: 0}
     offset: {x: 0, y: 0}
+--- !u!114 &358202638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358202631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20e31ec61dbf91e47a508d43cbaee82e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageNumberSpawner
+  damageNumberPrefab: {fileID: 8735089099477597206, guid: 9cf057f89076f1347801f4fb2d01c60c, type: 3}
+  spawnOffset: {x: 0, y: 1, z: 0}
+  randomSpawnRangeX: 0.5
+  showDodges: 1
+--- !u!114 &358202639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358202631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f116dbb627f96c746bb0eebae4880d56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PerfectDodgeSlowMotion
+  slowOnPerfectDodge: 1
+  slowTimeScale: 0.3
+  slowDuration: 0.5
+  easeOutDuration: 0.15
+  cooldown: 1
 --- !u!1 &374868297
 GameObject:
   m_ObjectHideFlags: 0
@@ -9170,6 +9205,7 @@ MonoBehaviour:
   conversationMinSize: 2.5
   conversationZoomSmoothTime: 0.35
   conversationFocusOffsetY: 0
+  canZoomDuringLock: 0
   lookAheadDistance: 2
   lookAheadSmoothTime: 1
   lookAheadMoveThreshold: 0.5

@@ -142,6 +142,8 @@ public class PlayerCombatController : MonoBehaviour
 
     public event Action<float, float> OnEnergyChanged;
     public event Action OnParrySuccess;
+    public event Action<float> OnGemEnergyGained;
+    public static event Action<PlayerCombatController, float> AnyGemEnergyGained;
 
     private void RaiseEnergyChanged() => OnEnergyChanged?.Invoke(SkillMeter, 1f);
 
@@ -641,7 +643,7 @@ public class PlayerCombatController : MonoBehaviour
                     bool isCrit = roll < context.BaseAttackCrit;
                     dmg *= (isCrit ? critDamageMultiplier : 1f);
 
-                    enemyHealth.ApplyHit((int)dmg, context);
+                    enemyHealth.ApplyHit((int)dmg, context, isCrit);
                 }
             }
         }
@@ -773,12 +775,14 @@ public class PlayerCombatController : MonoBehaviour
             RaiseEnergyChanged();
         }
         AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: false);
+        context.DamageType = EDamageType.Skill;
         def.Execute(context, context.BaseAttackDamage * multiplier, chargePercentage);
     }
 
     private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
     {
         var context = player.Equipment.GetModifiedAttackContext(isAttack: false);
+        context.DamageType = EDamageType.Skill;
         float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : DefaultEnergyDrainTick;
 
         bool isHeld = def.SkillExecutionType == SkillExecutionType.Held;
@@ -862,8 +866,17 @@ public class PlayerCombatController : MonoBehaviour
         if ((player.Equipment.SecondaryGem.Type == SGemType.Attack && isAttack)
             || player.Equipment.SecondaryGem.Type == SGemType.Skill && !isAttack)
         {
-            ChargeSkillMeter(context.ChargeAmount);
+            GainGemEnergy(context.ChargeAmount);
         }
+    }
+
+    private void GainGemEnergy(float amount)
+    {
+        if (amount <= 0f) return;
+
+        ChargeSkillMeter(amount);
+        OnGemEnergyGained?.Invoke(amount);
+        AnyGemEnergyGained?.Invoke(this, amount);
     }
 
     public void TryModifyParry(float incomingDamage, Collider2D col)
@@ -879,7 +892,7 @@ public class PlayerCombatController : MonoBehaviour
         switch (secondaryDef.GetPassiveType(secondaryGem))
         {
             case PassiveType.Energy:
-                ChargeSkillMeter(secondaryGem.InstRolledChargeAmount);
+                GainGemEnergy(secondaryGem.InstRolledChargeAmount);
                 break;
             case PassiveType.Reflect:
                 TryReflectDmg(secondaryDef, col, incomingDamage);
@@ -904,11 +917,12 @@ public class PlayerCombatController : MonoBehaviour
         {
             AttackContext context = new AttackContext
             {
-                BaseAttackDamage = incomingDamage
+                BaseAttackDamage = incomingDamage,
+                DamageType = EDamageType.Reflect
             };
 
             behaviourDefinition.Modify(ref context, player.Equipment.SecondaryGem);
-            int reflectDmg = (int)Mathf.Max(1, context.BaseAttackDamage);
+            int reflectDmg = Mathf.Max(1, Mathf.RoundToInt(context.BaseAttackDamage));
             enemyHealth.ApplyHit(reflectDmg, context);
         }
         else

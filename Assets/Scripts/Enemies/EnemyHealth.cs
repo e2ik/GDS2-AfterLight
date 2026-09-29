@@ -4,31 +4,66 @@ using System.Collections;
 
 namespace Enemies
 {
+    public struct DamageInfo
+    {
+        public int Amount;
+        public EDamageType DamageType;
+        public bool IsCrit;
+        public bool HasRoll;
+        public float RollQuality;
+        public ERollTier RollTier;
+        public Vector3 Position;
+    }
+
     public class EnemyHealth : MonoBehaviour
     {
         [SerializeField] private int maxHealth = 10;
         public int CurrentHealth { get; private set; }
 
         public event Action<int, int, bool> OnDamaged; // amount, currentHealth, isDot
+        public event Action<DamageInfo> OnDamageTaken;
         public event Action OnDeath;
+
+        public static event Action<EnemyHealth, DamageInfo> AnyEnemyDamaged;
 
         private void Awake() => CurrentHealth = maxHealth;
         private Coroutine dotRoutine;
 
         public void ApplyDamage(int amount, bool isDot = false)
         {
-            if (CurrentHealth <= 0) return;
-            CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
+            ApplyDamage(new DamageInfo
+            {
+                Amount = amount,
+                DamageType = isDot ? EDamageType.Dot : EDamageType.Base
+            });
+        }
 
-            OnDamaged?.Invoke(amount, CurrentHealth, isDot);
+        private void ApplyDamage(DamageInfo info)
+        {
+            if (CurrentHealth <= 0) return;
+            CurrentHealth = Mathf.Max(0, CurrentHealth - info.Amount);
+
+            info.Position = transform.position;
+
+            OnDamaged?.Invoke(info.Amount, CurrentHealth, info.DamageType == EDamageType.Dot);
+            OnDamageTaken?.Invoke(info);
+            AnyEnemyDamaged?.Invoke(this, info);
 
             if (CurrentHealth == 0)
                 OnDeath?.Invoke();
         }
 
-        public void ApplyHit(int damage, AttackContext context)
+        public void ApplyHit(int damage, AttackContext context, bool isCrit = false)
         {
-            ApplyDamage(damage);
+            ApplyDamage(new DamageInfo
+            {
+                Amount = damage,
+                DamageType = context.DamageType,
+                IsCrit = isCrit,
+                HasRoll = context.HasRoll,
+                RollQuality = context.RollQuality,
+                RollTier = context.RollTier
+            });
 
             if (CurrentHealth <= 0) return;
 
