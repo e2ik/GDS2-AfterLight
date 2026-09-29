@@ -18,6 +18,7 @@ public class SecondaryGemInstance
     public float InstRolledChargeAmount;
     public float InstRolledReflectPercent; // 0 - 1f
 
+    public float InstRolledMaxGambleMult;
     public bool IsNew = true;
 
     public EventReference pickupSound;
