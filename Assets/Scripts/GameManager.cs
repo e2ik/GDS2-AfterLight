@@ -31,6 +31,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private string masterSceneName = "WorldMaster";
     [SerializeField] private string defaultStartSceneName = "StartingArea";
     [SerializeField] private string defaultSpawnAnchorID = "DefaultSpawn";
+    [SerializeField] private AreaSide defaultStartAreaSide = AreaSide.Interior;
     [SerializeField] private string titleSceneName = "TitleScene";
 
     [Header("Player")]
@@ -236,13 +237,13 @@ public class GameManager : MonoBehaviour
         yield return LoadSceneAdditive(defaultStartSceneName);
         yield return null;
 
-        SetAreaSide(AreaSide.Interior);
-        ApplyAreaSide(AreaSide.Interior);
+        SetAreaSide(defaultStartAreaSide);
+        ApplyAreaSide(defaultStartAreaSide);
 
         PlacePlayerAtAnchor(defaultSpawnAnchorID);
 
         if (targetSaveManager != null)
-            targetSaveManager.SaveProgressAtLocation(defaultStartSceneName, defaultSpawnAnchorID, AreaSide.Interior);
+            targetSaveManager.SaveProgressAtLocation(defaultStartSceneName, defaultSpawnAnchorID, defaultStartAreaSide);
 
         SetState(GameState.Game);
 
@@ -269,6 +270,9 @@ public class GameManager : MonoBehaviour
             yield return LoadSceneAdditive(defaultStartSceneName);
             yield return null;
 
+            SetAreaSide(defaultStartAreaSide);
+            ApplyAreaSide(defaultStartAreaSide);
+
             if (worldMapState != null) worldMapState.ResetState();
             PlacePlayerAtAnchor(defaultSpawnAnchorID);
 
@@ -282,18 +286,17 @@ public class GameManager : MonoBehaviour
         LoadPlayerEquipment(data);
         TutorialDirector.Instance?.LoadCompletedSequences(data.progress?.completedTutorialSequenceIDs);
 
-        string sceneToLoad = (data.progress != null && !string.IsNullOrEmpty(data.progress.lastVisitedSceneName))
-            ? data.progress.lastVisitedSceneName
-            : defaultStartSceneName;
+        bool hasSavedLocation = data.progress != null
+            && !string.IsNullOrEmpty(data.progress.lastVisitedSceneName)
+            && !string.IsNullOrEmpty(data.progress.lastSpawnAnchorID);
 
-        string anchorToUse = (data.progress != null && !string.IsNullOrEmpty(data.progress.lastSpawnAnchorID))
-            ? data.progress.lastSpawnAnchorID
-            : defaultSpawnAnchorID;
+        string sceneToLoad = hasSavedLocation ? data.progress.lastVisitedSceneName : defaultStartSceneName;
+        string anchorToUse = hasSavedLocation ? data.progress.lastSpawnAnchorID : defaultSpawnAnchorID;
 
         yield return LoadSceneAdditive(sceneToLoad);
         yield return null;
 
-        AreaSide savedSide = (data.progress != null) ? data.progress.lastAreaSide : AreaSide.Exterior;
+        AreaSide savedSide = hasSavedLocation ? data.progress.lastAreaSide : defaultStartAreaSide;
         SetAreaSide(savedSide);
         ApplyAreaSide(savedSide);
 
@@ -363,7 +366,7 @@ public class GameManager : MonoBehaviour
 
     public void ForceReloadAndRespawnAtStart(System.Action onComplete)
     {
-        StartCoroutine(ForceReloadAndRespawnAtRoutine(defaultStartSceneName, defaultSpawnAnchorID, AreaSide.Interior, onComplete));
+        StartCoroutine(ForceReloadAndRespawnAtRoutine(defaultStartSceneName, defaultSpawnAnchorID, defaultStartAreaSide, onComplete));
     }
 
     private IEnumerator ForceReloadAndRespawnAtRoutine(string targetScene, string anchorID, AreaSide side, System.Action onComplete)

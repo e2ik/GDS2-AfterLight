@@ -13,3 +13,11 @@ MonoBehaviour:
   m_Name: ChaseTempEnemy
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.ChaseMovementSO
   moveSpeed: 3.5
+  facingDeadZone: 0.15
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 64
+  edgeCheckDistance: 0.5
+  groundCheckDepth: 1
+  wallCheckDistance: 0.3
+  wallCheckHeight: 0.1

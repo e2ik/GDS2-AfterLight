@@ -14,4 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.ChaseMovementSO
   moveSpeed: 4.7
   facingDeadZone: 0.15
-  stopBuffer: 0.1
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 64
+  edgeCheckDistance: 0.5
+  groundCheckDepth: 1
+  wallCheckDistance: 0.3
+  wallCheckHeight: 0.1

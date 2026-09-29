@@ -93,7 +93,7 @@ TextureImporter:
   spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 32
+  spritePixelsToUnits: 12
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -198,7 +198,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 64
+        y: 96
         width: 32
         height: 32
       alignment: 0
@@ -220,7 +220,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 32
-        y: 64
+        y: 96
         width: 32
         height: 32
       alignment: 0
@@ -242,7 +242,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 64
-        y: 64
+        y: 96
         width: 32
         height: 32
       alignment: 0
@@ -264,7 +264,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 96
-        y: 64
+        y: 96
         width: 32
         height: 32
       alignment: 0
@@ -285,7 +285,7 @@ TextureImporter:
       name: EnergyBall_4
       rect:
         serializedVersion: 2
-        x: 128
+        x: 0
         y: 64
         width: 32
         height: 32
@@ -307,8 +307,8 @@ TextureImporter:
       name: EnergyBall_5
       rect:
         serializedVersion: 2
-        x: 0
-        y: 32
+        x: 32
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -329,8 +329,8 @@ TextureImporter:
       name: EnergyBall_6
       rect:
         serializedVersion: 2
-        x: 32
-        y: 32
+        x: 64
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -351,8 +351,8 @@ TextureImporter:
       name: EnergyBall_7
       rect:
         serializedVersion: 2
-        x: 64
-        y: 32
+        x: 96
+        y: 64
         width: 32
         height: 32
       alignment: 0
@@ -373,7 +373,7 @@ TextureImporter:
       name: EnergyBall_8
       rect:
         serializedVersion: 2
-        x: 96
+        x: 0
         y: 32
         width: 32
         height: 32
@@ -395,7 +395,7 @@ TextureImporter:
       name: EnergyBall_9
       rect:
         serializedVersion: 2
-        x: 128
+        x: 32
         y: 32
         width: 32
         height: 32
@@ -417,8 +417,8 @@ TextureImporter:
       name: EnergyBall_10
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
+        x: 64
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -439,8 +439,8 @@ TextureImporter:
       name: EnergyBall_11
       rect:
         serializedVersion: 2
-        x: 32
-        y: 0
+        x: 96
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -461,7 +461,7 @@ TextureImporter:
       name: EnergyBall_12
       rect:
         serializedVersion: 2
-        x: 64
+        x: 0
         y: 0
         width: 32
         height: 32
@@ -483,7 +483,7 @@ TextureImporter:
       name: EnergyBall_13
       rect:
         serializedVersion: 2
-        x: 96
+        x: 32
         y: 0
         width: 32
         height: 32
@@ -505,7 +505,7 @@ TextureImporter:
       name: EnergyBall_14
       rect:
         serializedVersion: 2
-        x: 128
+        x: 64
         y: 0
         width: 32
         height: 32
@@ -519,6 +519,28 @@ TextureImporter:
       bones: []
       spriteID: 78948c3fc9ca74c19893245dd5f68fae
       internalID: -748564041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EnergyBall_15
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ba8534d8075c546a0901f79f10a8c227
+      internalID: -2020322458
       vertices: []
       indices: 
       edges: []
@@ -546,6 +568,7 @@ TextureImporter:
       EnergyBall_12: 980687738
       EnergyBall_13: -1529465587
       EnergyBall_14: -748564041
+      EnergyBall_15: -2020322458
       EnergyBall_2: 1520756748
       EnergyBall_3: -1811072834
       EnergyBall_4: -1669644030

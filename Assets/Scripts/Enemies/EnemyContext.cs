@@ -36,6 +36,8 @@ namespace Enemies
         public float TimeSinceTargetSeen;
         public Vector2 LastKnownTargetPosition;
         public float AttackElapsed;
+        public float LastChaseBlockedTime = float.NegativeInfinity;
+        public bool IgnoreTerrainChecks;
 
         public AttackEvents AttackEvents;
         public int ComboStepIndex;
@@ -45,6 +47,7 @@ namespace Enemies
         public TeleportPhase TeleportPhase;
         public float TeleportTimer;
         public Vector2 TeleportDestination;
+        public bool ForceTeleportNearTarget;
         public SpriteRenderer SpriteRenderer;
     }
 }

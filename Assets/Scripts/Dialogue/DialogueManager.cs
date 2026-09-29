@@ -41,6 +41,7 @@ public class DialogueManager : MonoBehaviour
     private Vector2 dialoguePanelRestPosition;
     private bool waitingForInitialInteractRelease;
     public bool IsDialogueActive { get; private set; }
+    public NPCDialogue CurrentNPC => currentNPC;
 
     private void Awake()
     {
@@ -66,6 +67,17 @@ public class DialogueManager : MonoBehaviour
         {
             dialoguePanel.SetActive(false);
         }
+    }
+
+    private void OnDisable()
+    {
+        if (!IsDialogueActive) return;
+
+        typingCoroutine = null;
+        slideCoroutine = null;
+        isTyping = false;
+
+        FinishDialogueState();
     }
 
     private void Update()
@@ -127,7 +139,7 @@ public class DialogueManager : MonoBehaviour
     }
 
     // startedByInteract = true to start dialogue by interact, false to trigger by an event
-    public void StartDialogue(DialogueData dialogue, Player player = null, NPCDialogue npc = null, bool startedByInteract = false) 
+    public void StartDialogue(DialogueData dialogue, Player player = null, NPCDialogue npc = null, bool startedByInteract = false)
     {
         if (IsDialogueActive)
             return;
@@ -145,7 +157,7 @@ public class DialogueManager : MonoBehaviour
 
         IsDialogueActive = true;
         inputLocked = true;
-        waitingForInitialInteractRelease = startedByInteract; 
+        waitingForInitialInteractRelease = startedByInteract;
 
         if (currentPlayer != null)
         {
@@ -372,6 +384,11 @@ public class DialogueManager : MonoBehaviour
         if (dialogueEffects != null) dialogueEffects.StopEffects(); // stop effects
         dialoguePanel.SetActive(false);
 
+        FinishDialogueState();
+    }
+
+    private void FinishDialogueState()
+    {
         if (currentPlayer != null)
         {
             currentPlayer.Controller.InputEnabled = true;

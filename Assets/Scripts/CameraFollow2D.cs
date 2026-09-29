@@ -12,25 +12,29 @@ public class CameraFollow2D : MonoBehaviour
     [SerializeField] private float horizontalOffset = 0f;
 
     [Header("Vertical Deadzone (viewport space, 0 = bottom, 1 = top)")]
-    [SerializeField] private float restingViewportY = 0.35f; // where player sits relative to view
-    [SerializeField] private float upperThreshold = 0.7f; // when camera shifts up
-    [SerializeField] private float lowerThreshold = 0.15f; // when camera shifts down
+    [SerializeField] private float restingViewportY = 0.35f;
+    [SerializeField] private float upperThreshold = 0.7f;
+    [SerializeField] private float lowerThreshold = 0.15f;
     [SerializeField] private float verticalSmoothTime = 0.12f;
 
+    [Header("Dialogue")]
+    [SerializeField] private bool centerDuringDialogue = true;
+    [SerializeField] private float dialogueViewportY = 0.5f;
+    [SerializeField] private bool zoomInOnConversation = true;
+    [SerializeField] private float conversationZoomPadding = 1.5f;
+    [SerializeField] private float conversationMinSize = 2.5f;
+    [SerializeField] private float conversationZoomSmoothTime = 0.35f;
+    [SerializeField] private float conversationFocusOffsetY = 0f;
+    [SerializeField] private bool canZoomDuringLock = false;
+
     [Header("Look Ahead")]
-    [Tooltip("How far (world units) the camera shifts toward the direction the target is moving.")]
     [SerializeField] private float lookAheadDistance = 2f;
-    [Tooltip("How smoothly the look-ahead offset eases in when moving and back to center when stopped.")]
     [SerializeField] private float lookAheadSmoothTime = 0.3f;
-    [Tooltip("Minimum horizontal speed (world units/sec) before look-ahead engages at all — filters out standing-still jitter.")]
     [SerializeField] private float lookAheadMoveThreshold = 0.5f;
-    [Tooltip("Smooths the raw frame-to-frame velocity estimate before it's compared against the threshold — filters out single-frame noise (e.g. physics friction jitter while standing still) that would otherwise briefly read as movement.")]
     [SerializeField] private float velocityNoiseSmoothTime = 0.1f;
 
     [Header("Reveal Zoom")]
-    [Tooltip("How long the zoom-out/zoom-back transitions take.")]
     [SerializeField] private float revealTransitionDuration = 0.75f;
-    [Tooltip("Extra breathing room around the revealed bounds — 1 = exact fit, 1.1 = 10% padding.")]
     [SerializeField] private float revealZoomPadding = 1.1f;
 
     private Camera _cam;
@@ -49,6 +53,15 @@ public class CameraFollow2D : MonoBehaviour
     private bool _isRevealing;
     private bool _justHandedOffFromReveal;
     private Coroutine _revealRoutine;
+    private bool _wasInDialogue;
+    private bool _conversationZoomActive;
+    private bool _returningFromConversationZoom;
+    private float _zoomVelocity;
+    private float _preConversationVerticalCamTarget;
+    private bool _isLocked;
+    private bool _returningToLock;
+    private Vector3 _lockedPosition;
+    private float _lockedSize;
 
     private void Awake()
     {
@@ -83,36 +96,24 @@ public class CameraFollow2D : MonoBehaviour
         _verticalTargetInitialized = true;
     }
 
-    // Zooms/pans out just far enough to fit `bounds` fully in view, holds for
-    // holdSeconds, then transitions back to normal zoom and resumes following target.
-    // Call this from a trigger volume, passing the bounds of whatever area (e.g. a
-    // second, separate collider) should be revealed. onRevealComplete, if given, fires
-    // once the whole sequence (both transitions + hold) has finished.
     public void RevealBounds(Bounds bounds, float holdSeconds, System.Action onRevealComplete = null)
     {
         if (_revealRoutine != null) StopCoroutine(_revealRoutine);
         _revealRoutine = StartCoroutine(RevealBoundsRoutine(bounds, holdSeconds, onRevealComplete));
     }
 
-    // Zooms/pans out to fit `bounds` and STAYS there indefinitely — no auto-return.
-    // Call ReturnToNormalFollow() later (e.g. from GameManager) whenever it's actually
-    // time to hand the camera back.
     public void LockToBounds(Bounds bounds)
     {
         if (_revealRoutine != null) StopCoroutine(_revealRoutine);
         _revealRoutine = StartCoroutine(LockToBoundsRoutine(bounds));
     }
 
-    // Releases a LockToBounds (or interrupts an in-progress RevealBounds) and returns
-    // to normal follow. onReturnComplete, if given, fires once fully back to normal.
     public void ReturnToNormalFollow(System.Action onReturnComplete = null)
     {
         if (_revealRoutine != null) StopCoroutine(_revealRoutine);
         _revealRoutine = StartCoroutine(ReturnToNormalFollowRoutine(onReturnComplete));
     }
 
-    // True while a reveal/lock (zoom-out) is in progress or holding — useful if other
-    // systems (UI, input) want to know the camera isn't in its normal follow state.
     public bool IsRevealing => _isRevealing;
 
     private IEnumerator RevealBoundsRoutine(Bounds bounds, float holdSeconds, System.Action onRevealComplete)
@@ -138,9 +139,11 @@ public class CameraFollow2D : MonoBehaviour
 
         yield return TransitionToBoundsInternal(bounds);
 
+        _lockedPosition = transform.position;
+        _lockedSize = _cam.orthographicSize;
+        _isLocked = true;
+
         _revealRoutine = null;
-        // Deliberately stops here — _isRevealing stays true, camera stays locked on
-        // bounds, until ReturnToNormalFollow() is called externally.
     }
 
     private IEnumerator ReturnToNormalFollowRoutine(System.Action onReturnComplete)
@@ -154,6 +157,11 @@ public class CameraFollow2D : MonoBehaviour
 
     private IEnumerator TransitionToBoundsInternal(Bounds bounds)
     {
+        _conversationZoomActive = false;
+        _returningFromConversationZoom = false;
+        _isLocked = false;
+        _returningToLock = false;
+
         float aspect = _cam.aspect;
         float requiredSize = Mathf.Max(bounds.extents.y, bounds.extents.x / aspect) * revealZoomPadding;
         Vector3 revealPos = new Vector3(bounds.center.x, bounds.center.y, transform.position.z);
@@ -161,10 +169,6 @@ public class CameraFollow2D : MonoBehaviour
         yield return TransitionCamera(transform.position, revealPos, _cam.orthographicSize, requiredSize, revealTransitionDuration);
     }
 
-    // No manual return-position transition — position is handed entirely to normal
-    // follow, which pans back to the player using its own existing logic. Zoom still
-    // needs its own transition here since normal follow never touches orthographic
-    // size, only position.
     private IEnumerator HandOffAndZoomBack()
     {
         _lastTargetPosX = target != null ? target.position.x : transform.position.x;
@@ -174,6 +178,11 @@ public class CameraFollow2D : MonoBehaviour
         _lookAheadVelocity = 0f;
         _velocity = Vector3.zero;
         _justHandedOffFromReveal = true;
+
+        _isLocked = false;
+        _returningToLock = false;
+        _conversationZoomActive = false;
+        _zoomVelocity = 0f;
 
         _isRevealing = false;
 
@@ -194,7 +203,7 @@ public class CameraFollow2D : MonoBehaviour
         {
             t += Time.deltaTime;
             float p = Mathf.Clamp01(t / duration);
-            float eased = p * p * (3f - 2f * p); // smoothstep
+            float eased = p * p * (3f - 2f * p);
             _cam.orthographicSize = Mathf.Lerp(fromSize, toSize, eased);
             yield return null;
         }
@@ -216,7 +225,7 @@ public class CameraFollow2D : MonoBehaviour
         {
             t += Time.deltaTime;
             float p = Mathf.Clamp01(t / duration);
-            float eased = p * p * (3f - 2f * p); // smoothstep
+            float eased = p * p * (3f - 2f * p);
 
             transform.position = Vector3.Lerp(fromPos, toPos, eased);
             _cam.orthographicSize = Mathf.Lerp(fromSize, toSize, eased);
@@ -230,7 +239,12 @@ public class CameraFollow2D : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (_isRevealing) return; // the reveal coroutine has full control of position/zoom right now
+        if (_isRevealing)
+        {
+            if (_isLocked && canZoomDuringLock && target != null)
+                UpdateLockedConversation();
+            return;
+        }
 
         if (target == null) return;
 
@@ -240,21 +254,41 @@ public class CameraFollow2D : MonoBehaviour
             return;
         }
 
+        Transform conversationTarget = GetConversationTarget();
+        if (conversationTarget != null)
+        {
+            UpdateConversationZoom(conversationTarget);
+            return;
+        }
+
+        if (_conversationZoomActive)
+        {
+            _conversationZoomActive = false;
+            _returningFromConversationZoom = true;
+            _verticalCamTarget = _preConversationVerticalCamTarget;
+            _velocity = Vector3.zero;
+            _zoomVelocity = 0f;
+            _wasInDialogue = false;
+        }
+
+        if (_returningFromConversationZoom)
+        {
+            _cam.orthographicSize = Mathf.SmoothDamp(_cam.orthographicSize, _baseOrthographicSize, ref _zoomVelocity, conversationZoomSmoothTime);
+            if (Mathf.Abs(_cam.orthographicSize - _baseOrthographicSize) < 0.01f)
+            {
+                _cam.orthographicSize = _baseOrthographicSize;
+                _zoomVelocity = 0f;
+                _returningFromConversationZoom = false;
+            }
+        }
+
         float rawX = target.position.x;
 
-        // Infer movement directly from the target's own position delta rather than
-        // referencing PlayerController — keeps this camera generic for any target.
         float rawVelocityX = Time.deltaTime > 0f ? (rawX - _lastTargetPosX) / Time.deltaTime : 0f;
         _lastTargetPosX = rawX;
 
-        // Smooth the estimate itself before checking it against the threshold — a raw
-        // single-frame delta is noisy enough (physics friction jitter, etc.) to briefly
-        // read as movement even while genuinely standing still.
         _smoothedVelocityX = Mathf.SmoothDamp(_smoothedVelocityX, rawVelocityX, ref _velocitySmoothingVelocity, velocityNoiseSmoothTime);
 
-        // No recentering: if not currently moving, the desired offset is just wherever
-        // it already is, so SmoothDamp holds it in place rather than pulling back to 0.
-        // It only actually changes target when there's genuine new movement.
         float desiredLookAhead = _currentLookAhead;
         if (Mathf.Abs(_smoothedVelocityX) > lookAheadMoveThreshold)
         {
@@ -266,27 +300,119 @@ public class CameraFollow2D : MonoBehaviour
         float targetX = rawX + horizontalOffset + _currentLookAhead;
         float currentViewportY = ViewportYOf(target.position.y);
 
-        if (_justHandedOffFromReveal)
+        bool inDialogue = centerDuringDialogue
+            && DialogueManager.Instance != null
+            && DialogueManager.Instance.IsDialogueActive;
+
+        if (inDialogue)
         {
-            // Restore exactly where the camera's vertical target legitimately was
-            // before the reveal interrupted it — not a freshly recomputed resting
-            // position, which could differ from wherever deadzone history had actually
-            // left it (e.g. from an earlier jump) and show up as a small correction.
+            _verticalCamTarget = WorldYForViewportY(target.position.y, dialogueViewportY);
+            _justHandedOffFromReveal = false;
+        }
+        else if (_wasInDialogue)
+        {
+            _verticalCamTarget = WorldYForViewportY(target.position.y, restingViewportY);
+        }
+        else if (_justHandedOffFromReveal)
+        {
             _verticalCamTarget = _preRevealVerticalCamTarget;
             _justHandedOffFromReveal = false;
         }
-        else if (currentViewportY > upperThreshold)
+        else if (!_returningFromConversationZoom && currentViewportY > upperThreshold)
         {
             _verticalCamTarget = WorldYForViewportY(target.position.y, upperThreshold);
         }
-        else if (currentViewportY < lowerThreshold)
+        else if (!_returningFromConversationZoom && currentViewportY < lowerThreshold)
         {
             _verticalCamTarget = WorldYForViewportY(target.position.y, lowerThreshold);
         }
 
+        _wasInDialogue = inDialogue;
+
+        float followSmoothTime = _returningFromConversationZoom
+            ? conversationZoomSmoothTime
+            : Mathf.Max(horizontalSmoothTime, verticalSmoothTime);
+
         Vector3 desiredPosition = new Vector3(targetX, _verticalCamTarget, transform.position.z);
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref _velocity,
-            Mathf.Max(horizontalSmoothTime, verticalSmoothTime));
+        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref _velocity, followSmoothTime);
+    }
+
+    private void UpdateLockedConversation()
+    {
+        Transform conversationTarget = GetConversationTarget();
+        if (conversationTarget != null)
+        {
+            _returningToLock = false;
+            UpdateConversationZoom(conversationTarget);
+            return;
+        }
+
+        if (_conversationZoomActive)
+        {
+            _conversationZoomActive = false;
+            _returningToLock = true;
+            _velocity = Vector3.zero;
+            _zoomVelocity = 0f;
+        }
+
+        if (!_returningToLock) return;
+
+        transform.position = Vector3.SmoothDamp(transform.position, _lockedPosition, ref _velocity, conversationZoomSmoothTime);
+        _cam.orthographicSize = Mathf.SmoothDamp(_cam.orthographicSize, _lockedSize, ref _zoomVelocity, conversationZoomSmoothTime);
+
+        if ((transform.position - _lockedPosition).sqrMagnitude < 0.0001f && Mathf.Abs(_cam.orthographicSize - _lockedSize) < 0.01f)
+        {
+            transform.position = _lockedPosition;
+            _cam.orthographicSize = _lockedSize;
+            _velocity = Vector3.zero;
+            _zoomVelocity = 0f;
+            _returningToLock = false;
+        }
+    }
+
+    private Transform GetConversationTarget()
+    {
+        if (!zoomInOnConversation || DialogueManager.Instance == null || !DialogueManager.Instance.IsDialogueActive)
+            return null;
+
+        NPCDialogue npc = DialogueManager.Instance.CurrentNPC;
+        return npc != null ? npc.transform : null;
+    }
+
+    private void UpdateConversationZoom(Transform other)
+    {
+        if (!_conversationZoomActive)
+        {
+            _preConversationVerticalCamTarget = _verticalCamTarget;
+            _velocity = Vector3.zero;
+            _zoomVelocity = 0f;
+        }
+
+        Bounds focus = GetFocusBounds(target);
+        focus.Encapsulate(GetFocusBounds(other));
+
+        float desiredSize = Mathf.Max(focus.extents.y, focus.extents.x / _cam.aspect) * conversationZoomPadding;
+        desiredSize = Mathf.Clamp(desiredSize, conversationMinSize, _baseOrthographicSize);
+
+        Vector3 desiredPosition = new Vector3(focus.center.x, focus.center.y + conversationFocusOffsetY, transform.position.z);
+
+        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref _velocity, conversationZoomSmoothTime);
+        _cam.orthographicSize = Mathf.SmoothDamp(_cam.orthographicSize, desiredSize, ref _zoomVelocity, conversationZoomSmoothTime);
+
+        _lastTargetPosX = target.position.x;
+        _smoothedVelocityX = 0f;
+        _velocitySmoothingVelocity = 0f;
+        _currentLookAhead = 0f;
+        _lookAheadVelocity = 0f;
+
+        _conversationZoomActive = true;
+        _returningFromConversationZoom = false;
+    }
+
+    private Bounds GetFocusBounds(Transform t)
+    {
+        SpriteRenderer sr = t.GetComponentInChildren<SpriteRenderer>();
+        return sr != null ? sr.bounds : new Bounds(t.position, Vector3.zero);
     }
 
     private float ViewportYOf(float worldY)
