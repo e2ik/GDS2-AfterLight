@@ -6954,6 +6954,7 @@ GameObject:
   - component: {fileID: 1134219615}
   - component: {fileID: 1134219614}
   - component: {fileID: 1134219613}
+  - component: {fileID: 1134219616}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -6974,8 +6975,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.UI.InputSystemUIInputModule
   m_SendPointerHoverToParent: 1
-  m_MoveRepeatDelay: 0.1
-  m_MoveRepeatRate: 0.05
+  m_MoveRepeatDelay: 0.25
+  m_MoveRepeatRate: 0.5
   m_XRTrackingOrigin: {fileID: 0}
   m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
   m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
@@ -7022,6 +7023,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1134219616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1134219612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18651b2a06d37394696630bcc78769be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UISelectionKeeper
+  onlyWhenMenuOpen: 1
+  stickThreshold: 0.5
 --- !u!1 &1151991946
 GameObject:
   m_ObjectHideFlags: 0
@@ -10444,7 +10459,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameUI.DeathWindow
   blocksPlayerInput: 0
-  firstSelected: {fileID: 0}
+  firstSelected: {fileID: 1074063451}
 --- !u!1 &1753194164
 GameObject:
   m_ObjectHideFlags: 0

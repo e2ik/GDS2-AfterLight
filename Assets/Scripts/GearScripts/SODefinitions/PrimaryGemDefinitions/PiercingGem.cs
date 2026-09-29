@@ -41,7 +41,7 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
         var testVis = Instantiate(testVisPrefab, context.OriginPoint, Quaternion.identity);
         FlipVisual(testVis, direction);
 
-        float skillDamage = baseDamage * SkillDamageModifier;
+        float skillDamage = baseDamage * (SkillDamageModifier + context.SkillModifierBonus);
         float skillRange = SkillRange + chargeRangeBonus * chargeAmount;
         while (distanceTravelled < skillRange)
         {

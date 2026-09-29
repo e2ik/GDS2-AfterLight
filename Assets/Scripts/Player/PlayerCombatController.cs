@@ -91,6 +91,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float skillHoldThreshold = 0.12f;
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
     [SerializeField] private float chargeSkillAmount = 0.2f;
+    [SerializeField] private float skillGemModifierBonus = 0.5f;
 
     [Header("FMOD Events")]
     [SerializeField] private EventReference parryEvent;
@@ -776,6 +777,7 @@ public class PlayerCombatController : MonoBehaviour
         }
         AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: false);
         context.DamageType = EDamageType.Skill;
+        context.SkillModifierBonus = GetSkillModifierBonus();
         def.Execute(context, context.BaseAttackDamage * multiplier, chargePercentage);
     }
 
@@ -783,6 +785,7 @@ public class PlayerCombatController : MonoBehaviour
     {
         var context = player.Equipment.GetModifiedAttackContext(isAttack: false);
         context.DamageType = EDamageType.Skill;
+        context.SkillModifierBonus = GetSkillModifierBonus();
         float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : DefaultEnergyDrainTick;
 
         bool isHeld = def.SkillExecutionType == SkillExecutionType.Held;
@@ -861,6 +864,13 @@ public class PlayerCombatController : MonoBehaviour
 
     #region SecondaryGem Logic
 
+    private float GetSkillModifierBonus()
+    {
+        SecondaryGemInstance gem = player.Equipment.SecondaryGem;
+        bool hasSkillGem = gem != null && !string.IsNullOrEmpty(gem.InstTemplateID) && gem.Type == SGemType.Skill;
+        return hasSkillGem ? skillGemModifierBonus : 0f;
+    }
+    
     public void CheckEnergyChargePassive(bool isAttack, AttackContext context)
     {
         if ((player.Equipment.SecondaryGem.Type == SGemType.Attack && isAttack)

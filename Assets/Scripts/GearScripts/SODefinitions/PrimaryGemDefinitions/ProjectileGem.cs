@@ -5,7 +5,6 @@ using UnityEngine;
 public class ProjectileGem : PrimaryGemBehaviourDefinition
 {
     [SerializeField] GameObject projectilePrefab;
-    [SerializeField] int damage;
     [SerializeField] float lifeTime;
     [SerializeField] float flySpeedMultiplier;
     [SerializeField] private float spawnDelay = 0f;
@@ -30,7 +29,7 @@ public class ProjectileGem : PrimaryGemBehaviourDefinition
         int facing = player.GetComponent<Player>()?.Controller?.FacingDirection ?? 1;
         Vector2 velocity = new Vector2(facing, 0f) * flySpeedMultiplier;
 
-        float skillDamage = (baseDamage + damage) * SkillDamageModifier;
+        float skillDamage = baseDamage * (SkillDamageModifier + context.SkillModifierBonus);
 
         GameObject projectile = Instantiate(
             projectilePrefab,
