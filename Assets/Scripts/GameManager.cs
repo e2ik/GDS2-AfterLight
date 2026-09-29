@@ -218,6 +218,9 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayer();
 
+        TutorialDirector.Instance?.AbortActiveSequence();
+        TutorialDirector.Instance?.ClearCompletedSequences();
+
         ClearPlayerInventory();
         ClearPlayerEquipment();
 
@@ -263,6 +266,8 @@ public class GameManager : MonoBehaviour
         SpawnPlayer();
 
         FastTravelManager.Instance?.ClearLastVisitedNode();
+
+        TutorialDirector.Instance?.AbortActiveSequence();
 
         SaveManager targetSaveManager = GetSaveManager();
         SaveData data = targetSaveManager != null ? targetSaveManager.LoadGame() : null;

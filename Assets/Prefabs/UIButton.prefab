@@ -59,7 +59,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -196,7 +196,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 5540406735973160907}
   - component: {fileID: 2311379646682679555}
   m_Layer: 5
-  m_Name: TextPromptRoot
+  m_Name: UIButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -272,7 +272,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InputActionPrompt
   action: {fileID: 0}
-  icons: {fileID: 0}
+  icons: {fileID: 11400000, guid: 402c7ad02a3389741bce4f23ee0ff7fa, type: 2}
   compositePart: 
   iconImage: {fileID: 1616517994544587287}
   iconRenderer: {fileID: 0}

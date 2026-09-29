@@ -48,6 +48,37 @@ public static class InputBindingUtility
             return true;
         }
 
+        if (wantPart)
+            return TryFindBinding(action, wantGamepad, null, out bindingIndex, out control, out isMouse);
+
+        return false;
+    }
+
+    public static bool TryFindResolvedControl(InputAction action, bool wantGamepad,
+        out string control, out bool isMouse, out string display)
+    {
+        control = null;
+        isMouse = false;
+        display = null;
+        if (action == null) return false;
+
+        foreach (InputControl inputControl in action.controls)
+        {
+            InputDevice device = inputControl.device;
+            bool deviceIsGamepad = device is Gamepad;
+            bool deviceIsMouse = device is Mouse;
+            bool deviceIsKeyboard = device is Keyboard;
+
+            if (wantGamepad ? !deviceIsGamepad : !(deviceIsKeyboard || deviceIsMouse)) continue;
+
+            string fullPath = inputControl.path;
+            string devicePath = device.path;
+            control = fullPath.Length > devicePath.Length + 1 ? fullPath.Substring(devicePath.Length + 1) : inputControl.name;
+            isMouse = deviceIsMouse;
+            display = inputControl.displayName;
+            return true;
+        }
+
         return false;
     }
 
