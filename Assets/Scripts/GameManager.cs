@@ -52,6 +52,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Color keyItemColor = Color.yellow;
     [SerializeField] private Color loreItemColor = Color.cyan;
 
+    [Header("Loot Rarity Odds")]
+    [SerializeField] private RarityWeights defaultRarityOdds = new RarityWeights();
+    public RarityWeights DefaultRarityOdds => defaultRarityOdds;
+
     private GameObject _playerInstance;
     private Player player;
     public Player Player { get => player; }

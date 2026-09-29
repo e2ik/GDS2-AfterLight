@@ -12,6 +12,12 @@ public class Chest : MonoBehaviour, IInteractable
     [SerializeField] private InventoryItemBase lootItem;
     [SerializeField] private WorldItem worldItemPrefab;
 
+    [Header("Rarity")]
+    [SerializeField] private bool useFixedRarity = false;
+    [SerializeField] private ERarity fixedRarity = ERarity.Rare;
+    [SerializeField] private bool overrideRarityOdds = false;
+    [SerializeField] private RarityWeights rarityOdds = new RarityWeights();
+
     [Header("Pop Physics Settings")]
     [SerializeField] private float popForce = 5f;
     [SerializeField] private float minHorizontalAngle = -0.4f;
@@ -94,7 +100,11 @@ public class Chest : MonoBehaviour, IInteractable
         Vector3 spawnPosition = transform.position + new Vector3(0f, 0.5f, 0f);
 
         WorldItem droppedItem = Instantiate(worldItemPrefab, spawnPosition, Quaternion.identity);
-        droppedItem.Initialize(lootItem);
+        ERarity? rarity = null;
+        if (RarityWeights.UsesRarity(lootItem))
+            rarity = useFixedRarity ? fixedRarity : RarityWeights.Roll(overrideRarityOdds, rarityOdds);
+
+        droppedItem.Initialize(lootItem, rarity);
 
         float randomX = Random.Range(minHorizontalAngle, maxHorizontalAngle);
         Vector2 popDirection = new Vector2(randomX, 1.0f).normalized;

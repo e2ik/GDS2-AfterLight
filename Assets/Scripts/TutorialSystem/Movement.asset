@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b126725b3c352c6458202a11e09a8e71, type: 3}
   m_Name: Movement
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialStepDefinition
-  promptText: Press "WASD" to Move!
+  promptText: Press {Move:up}{Move:left}{Move:down}{Move:right} to move
   minimumDisplayDuration: 3
   freezeMovement: 0
   disableInput: 0

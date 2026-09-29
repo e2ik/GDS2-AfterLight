@@ -40,16 +40,14 @@ namespace Tutorial
 
         private bool sequenceActiveFromThisVolume;
 
-        private string ResolvedGateID
-        {
-            get
-            {
-                if (uiMode == TutorialTriggerUIMode.SpeechBubble)
-                    return string.IsNullOrEmpty(triggerID) ? null : triggerID;
+        private bool UsesSequence => uiMode == TutorialTriggerUIMode.TutorialUI || uiMode == TutorialTriggerUIMode.Both;
+        private bool UsesBubble => uiMode == TutorialTriggerUIMode.SpeechBubble || uiMode == TutorialTriggerUIMode.Both;
 
-                return sequence != null ? sequence.SequenceID : null;
-            }
-        }
+        private bool IsCompleted(string id) =>
+            !string.IsNullOrEmpty(id) && TutorialDirector.Instance != null && TutorialDirector.Instance.IsSequenceCompleted(id);
+
+        private bool SequenceDone => sequence == null || IsCompleted(sequence.SequenceID);
+        private bool BubbleDone => string.IsNullOrEmpty(triggerID) ? false : IsCompleted(triggerID);
 
         private void Reset()
         {
@@ -63,7 +61,7 @@ namespace Tutorial
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (uiMode != TutorialTriggerUIMode.SpeechBubble || string.IsNullOrEmpty(triggerID)) return;
+            if (!UsesBubble || string.IsNullOrEmpty(triggerID)) return;
 
             var all = FindObjectsByType<TutorialTriggerVolume>(FindObjectsSortMode.None);
             foreach (var other in all)
@@ -123,46 +121,40 @@ namespace Tutorial
         {
             if (!other.CompareTag("Player")) return;
 
-            string gateID = ResolvedGateID;
-            if (!string.IsNullOrEmpty(gateID) && TutorialDirector.Instance != null && TutorialDirector.Instance.IsSequenceCompleted(gateID))
-                return;
-
-            if (uiMode == TutorialTriggerUIMode.TutorialUI || uiMode == TutorialTriggerUIMode.Both)
+            if (UsesSequence && !SequenceDone && TutorialDirector.Instance != null)
             {
-                if (TutorialDirector.Instance != null && sequence != null)
-                {
-                    bool started = TutorialDirector.Instance.BeginSequence(sequence);
-                    if (started) sequenceActiveFromThisVolume = true;
-                }
+                bool started = TutorialDirector.Instance.BeginSequence(sequence);
+                if (started) sequenceActiveFromThisVolume = true;
             }
 
-            if (uiMode == TutorialTriggerUIMode.SpeechBubble || uiMode == TutorialTriggerUIMode.Both)
+            if (UsesBubble && !BubbleDone)
+                ShowSpeechBubble(other.transform);
+        }
+
+        private void ShowSpeechBubble(Transform fallbackTarget)
+        {
+            if (TutorialSpeechBubblePool.Instance == null) return;
+
+            Transform followTarget = GameManager.Instance != null && GameManager.Instance.Player != null
+                ? GameManager.Instance.Player.transform
+                : fallbackTarget;
+
+            bool useMultipleLines = speechBubbleLines != null && speechBubbleLines.Length > 0;
+            bool shown = false;
+
+            if (useMultipleLines)
             {
-                if (TutorialSpeechBubblePool.Instance != null)
-                {
-                    Transform followTarget = GameManager.Instance != null && GameManager.Instance.Player != null
-                        ? GameManager.Instance.Player.transform
-                        : other.transform;
-
-                    bool useMultipleLines = uiMode == TutorialTriggerUIMode.SpeechBubble
-                        && speechBubbleLines != null && speechBubbleLines.Length > 0;
-
-                    if (useMultipleLines)
-                    {
-                        StartCoroutine(PlaySpeechLinesRoutine(speechBubbleLines, followTarget));
-
-                        if (!string.IsNullOrEmpty(gateID))
-                            TutorialDirector.Instance?.MarkCompleted(gateID);
-                    }
-                    else if (!string.IsNullOrEmpty(speechBubbleText))
-                    {
-                        TutorialSpeechBubblePool.Instance.Show(speechBubbleText, followTarget, speechBubbleDuration, speechBubbleEffect);
-
-                        if ((uiMode == TutorialTriggerUIMode.SpeechBubble || uiMode == TutorialTriggerUIMode.Both) && !string.IsNullOrEmpty(gateID))
-                            TutorialDirector.Instance?.MarkCompleted(gateID);
-                    }
-                }
+                StartCoroutine(PlaySpeechLinesRoutine(speechBubbleLines, followTarget));
+                shown = true;
             }
+            else if (!string.IsNullOrEmpty(speechBubbleText))
+            {
+                TutorialSpeechBubblePool.Instance.Show(speechBubbleText, followTarget, speechBubbleDuration, speechBubbleEffect);
+                shown = true;
+            }
+
+            if (shown && !string.IsNullOrEmpty(triggerID))
+                TutorialDirector.Instance?.MarkCompleted(triggerID);
         }
 
         private IEnumerator PlaySpeechLinesRoutine(SpeechLine[] lines, Transform target)

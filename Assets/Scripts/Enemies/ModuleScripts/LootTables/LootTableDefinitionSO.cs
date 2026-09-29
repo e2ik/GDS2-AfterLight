@@ -1,11 +1,5 @@
 using System.Collections.Generic;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using Enemies;
 using UnityEngine;
-using Quaternion = UnityEngine.Quaternion;
-using Vector2 = UnityEngine.Vector2;
-using Vector3 = UnityEngine.Vector3;
 
 [CreateAssetMenu(fileName = "LootTableDefinitionSO", menuName = "Enemies/LootTable")]
 public class LootTableDefinitionSO : ScriptableObject
@@ -17,64 +11,59 @@ public class LootTableDefinitionSO : ScriptableObject
         public WorldItem worldItem;
         [Min(0f)] public float weight = 1f;
     }
-    //List of Possible Drops
+
     public List<LootEntry> possibleDrops = new List<LootEntry>();
-    //Function to spawn the drop
+    [Min(0f)] public float nothingWeight = 0f;
+
+    [Header("Rarity Odds")]
+    public bool overrideRarityOdds = false;
+    public RarityWeights rarityOdds = new RarityWeights();
+
+    [Header("Pop")]
+    [SerializeField] private float popForce = 4f;
+    [SerializeField] private float popSpreadX = 0.1f;
+
     public void SpawnInstance(Vector3 spawn)
     {
-        LootEntry entry = GetItemToInstance();
-        if (entry == null)
+        LootEntry entry = PickEntry();
+        if (entry == null) return;
+
+        if (entry.lootItem == null || entry.worldItem == null)
         {
-            Debug.LogError($"Entry Not Assigned");
+            Debug.LogWarning($"[LootTable] '{name}' picked an entry with no loot item or world item assigned.");
             return;
         }
 
+        ERarity? rarity = RarityWeights.UsesRarity(entry.lootItem) ? RarityWeights.Roll(overrideRarityOdds, rarityOdds) : (ERarity?)null;
+
         Vector3 spawnPosition = spawn + new Vector3(0f, 0.5f, 0f);
-
         WorldItem droppedItem = Instantiate(entry.worldItem, spawnPosition, Quaternion.identity);
-        droppedItem.Initialize(entry.lootItem);
+        droppedItem.Initialize(entry.lootItem, rarity);
 
-        float randomX = Random.Range(-0.1f, 0.1f);
-        Vector2 popDirection = new Vector2(randomX, 1.0f).normalized;
-
-        droppedItem.PopOut(popDirection, 4f);
+        Vector2 popDirection = new Vector2(Random.Range(-popSpreadX, popSpreadX), 1f).normalized;
+        droppedItem.PopOut(popDirection, popForce);
     }
-    //Function to get an template of drop
 
-    private LootEntry GetItemToInstance()
+    private LootEntry PickEntry()
     {
-        float randF = Random.Range(0f,1f);
-
-        foreach(var item in possibleDrops)
+        float total = nothingWeight;
+        foreach (LootEntry entry in possibleDrops)
         {
-            if(randF <= item.weight)
-            {
-                return item;
-            }
+            if (entry != null) total += entry.weight;
         }
+
+        if (total <= 0f) return null;
+
+        float pick = Random.value * total;
+
+        foreach (LootEntry entry in possibleDrops)
+        {
+            if (entry == null || entry.weight <= 0f) continue;
+
+            pick -= entry.weight;
+            if (pick < 0f) return entry;
+        }
+
         return null;
-    }
-
-    //Function to get a rarity
-    private ERarity GetRarity()
-    {
-        float randF = Random.Range(0f,1f);
-
-        if(randF <= 0.5f)
-        {
-            return ERarity.Common;
-        }
-        else if(randF <= 0.85)
-        {
-            return ERarity.Rare;
-        }
-        else if(randF <= 0.95)
-        {
-            return ERarity.Epic;
-        }
-        else
-        {
-            return ERarity.Legendary;
-        }
     }
 }
