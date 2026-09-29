@@ -108,6 +108,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HazardObj
   hazardCollider: {fileID: 0}
   damagesPlayer: 1
+  resetsPlayer: 0
   damage: 10
   knockbackForce: 12
   staggerDuration: 0.3
@@ -141,6 +142,13 @@ MonoBehaviour:
   particleSpawnPoint: {fileID: 9057232781803509709}
   particleIntervalRange: {x: 0.5, y: 1.5}
   particlesOnlyWhenOn: 0
+  sparkEvent:
+    Guid:
+      Data1: -500597264
+      Data2: 1158196132
+      Data3: -377067090
+      Data4: 174082186
+    Path: event:/WorldSFX Events/HazardSparksEvent
   hazardCollider: {fileID: 4419299172659086321}
 --- !u!61 &4419299172659086321
 BoxCollider2D:

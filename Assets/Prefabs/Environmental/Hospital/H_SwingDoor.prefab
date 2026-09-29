@@ -115,6 +115,20 @@ MonoBehaviour:
   openRightState: OpenRight
   closeLeftState: CloseLeft
   closeRightState: CloseRight
+  openEvent:
+    Guid:
+      Data1: -531146322
+      Data2: 1188633155
+      Data3: 706808227
+      Data4: 638004311
+    Path: event:/WorldSFX Events/WoodenDoorOpenEvent
+  closeEvent:
+    Guid:
+      Data1: 862646820
+      Data2: 1327651800
+      Data3: 1653027773
+      Data4: 1966799234
+    Path: event:/WorldSFX Events/SwitchClickEvent
 --- !u!95 &1458589010954450671
 Animator:
   serializedVersion: 7

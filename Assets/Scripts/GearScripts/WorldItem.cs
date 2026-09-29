@@ -27,6 +27,7 @@ public class WorldItem : MonoBehaviour
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
     [SerializeField] private EventReference primaryPickupEvent;
+    [SerializeField] private EventReference secondaryPickupEvent;
     private bool markedForDestruction = false;
 
     private void Awake()
@@ -169,6 +170,7 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(secondaryDef);
                         break;
                     }
+                    AudioManager.PlaySFX(gemLoot.pickupSound, transform.position);
 
                     if (player.Equipment.IsSecondaryGemSlotEmpty())
                         player.Equipment.EquipSecondaryGem(gemLoot);

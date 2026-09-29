@@ -1,4 +1,5 @@
 using System;
+using FMODUnity;
 using UnityEngine;
 
 [Serializable]
@@ -18,4 +19,6 @@ public class SecondaryGemInstance
     public float InstRolledReflectPercent; // 0 - 1f
 
     public bool IsNew = true;
+
+    public EventReference pickupSound;
 }

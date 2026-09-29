@@ -23,16 +23,13 @@ MonoBehaviour:
   maxLegendaryValue: 20
   TemplateID: T0
   GemType: 1
-  DamageByRarity:
-    Common: {x: 1, y: 3}
-    Rare: {x: 3, y: 5}
-    Epic: {x: 5, y: 10}
-    Legendary: {x: 15, y: 20}
-  CritByRarity:
-    Common: {x: 0.03, y: 0.05}
-    Rare: {x: 0.05, y: 0.1}
-    Epic: {x: 0.1, y: 0.15}
-    Legendary: {x: 0.15, y: 0.2}
+  basicPickupSound:
+    Guid:
+      Data1: 622354256
+      Data2: 1210595945
+      Data3: 893189544
+      Data4: -714071588
+    Path: event:/WorldSFX Events/SecondaryGemPickupEvent
   dotTickInterval: 1
   dotDuration: 3
   dotPercentByRarity:
