@@ -15,6 +15,7 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private TMP_Text characterNameText;
     [SerializeField] private TMP_Text dialogueText;
     [SerializeField] private GameObject nextDialogueIndicator;
+    [SerializeField] private DialogueEffects dialogueEffects;
 
     [Header("Dialogue Box Animation")]
     [SerializeField] private RectTransform dialoguePanelRect;
@@ -40,6 +41,7 @@ public class DialogueManager : MonoBehaviour
     private Vector2 dialoguePanelRestPosition;
     private bool waitingForInitialInteractRelease;
     public bool IsDialogueActive { get; private set; }
+    public NPCDialogue CurrentNPC => currentNPC;
 
     private void Awake()
     {
@@ -67,6 +69,17 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
+    private void OnDisable()
+    {
+        if (!IsDialogueActive) return;
+
+        typingCoroutine = null;
+        slideCoroutine = null;
+        isTyping = false;
+
+        FinishDialogueState();
+    }
+
     private void Update()
     {
         if (!IsDialogueActive || inputLocked || currentPlayer == null)
@@ -77,7 +90,6 @@ public class DialogueManager : MonoBehaviour
         if (interactAction == null)
             return;
 
-        // Ignore the release from the button press that originally opened dialogue.
         if (waitingForInitialInteractRelease)
         {
             if (interactAction.WasReleasedThisFrame())
@@ -126,14 +138,15 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    public void StartDialogue(DialogueData dialogue, Player player = null, NPCDialogue npc = null)
+    // startedByInteract = true to start dialogue by interact, false to trigger by an event
+    public void StartDialogue(DialogueData dialogue, Player player = null, NPCDialogue npc = null, bool startedByInteract = false)
     {
         if (IsDialogueActive)
             return;
 
         if (dialogue == null || dialogue.Lines == null || dialogue.Lines.Length == 0)
         {
-            Debug.LogWarning("[DialogueManager] Cannot start empty dialogue.");
+            Debug.LogWarning("[DialogueManager] dialogue is empty");
             return;
         }
 
@@ -144,7 +157,7 @@ public class DialogueManager : MonoBehaviour
 
         IsDialogueActive = true;
         inputLocked = true;
-        waitingForInitialInteractRelease = true;
+        waitingForInitialInteractRelease = startedByInteract;
 
         if (currentPlayer != null)
         {
@@ -212,6 +225,8 @@ public class DialogueManager : MonoBehaviour
     {
         DialogueLine line = currentDialogue.Lines[currentLineIndex];
 
+        if (dialogueEffects != null) dialogueEffects.PlayEffect(line.Effect);
+
         if (line.Speaker != null)
         {
             characterNameText.text = line.Speaker.CharacterName;
@@ -256,7 +271,11 @@ public class DialogueManager : MonoBehaviour
 
             PlayTypingSound(line);
 
-            yield return new WaitForSeconds(line.TextSpeed);
+            float textSpeed = line.TextSpeed;
+
+            if (line.Effect == DialogueEffect.Angry) textSpeed *= 0.7f;
+
+            yield return new WaitForSecondsRealtime(textSpeed);
         }
 
         isTyping = false;
@@ -362,8 +381,14 @@ public class DialogueManager : MonoBehaviour
         inputLocked = true;
 
         ResetHoldSkip();
+        if (dialogueEffects != null) dialogueEffects.StopEffects(); // stop effects
         dialoguePanel.SetActive(false);
 
+        FinishDialogueState();
+    }
+
+    private void FinishDialogueState()
+    {
         if (currentPlayer != null)
         {
             currentPlayer.Controller.InputEnabled = true;

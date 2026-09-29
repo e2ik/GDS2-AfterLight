@@ -1,24 +1,37 @@
 using UnityEngine;
 using System.Collections;
+using FMODUnity;
 
 public class TransitionDoor : MonoBehaviour, IInteractable
 {
     [SerializeField] private string interactionPrompt = "Enter";
     [SerializeField] private bool canInteract = true;
     [SerializeField] private bool shouldStopPlayer = true;
+    [SerializeField] private SpriteOutlineToggle outlineToggle;
+    [SerializeField] private Collider2D promptCollider;
     public string InteractionPrompt => interactionPrompt;
     public bool CanInteract => canInteract;
     public bool ShouldStopPlayerMovement => shouldStopPlayer;
+    public SpriteOutlineToggle OutlineToggle => outlineToggle;
+    public Collider2D PromptCollider => promptCollider;
 
     [SerializeField] private SceneAreaState sceneAreaState;
-    [SerializeField] private CanvasGroup fadeCanvas;
     [SerializeField] private float fadeDuration = 0.5f;
 
     [Header("Door Animation")]
     [SerializeField] private Animator doorAnimator;
     [SerializeField] private string openTriggerName = "Open";
 
+    [Header("Door SFX")]
+    [SerializeField] private EventReference doorOpenEvent;
+
     private Coroutine currentTransition;
+
+    private void Awake()
+    {
+        if (outlineToggle == null) outlineToggle = GetComponent<SpriteOutlineToggle>();
+        if (promptCollider == null) promptCollider = GetComponent<Collider2D>();
+    }
 
     public void Interact(Player player)
     {
@@ -33,6 +46,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
         if (doorAnimator != null)
         {
             doorAnimator.SetTrigger(openTriggerName);
+            AudioManager.PlaySFX(doorOpenEvent,transform.position);
         }
 
         if (player.Controller != null)
@@ -40,7 +54,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
             player.Controller.InputEnabled = false;
         }
 
-        yield return Fade(0f, 1f);
+        yield return FadeOut();
 
         if (sceneAreaState != null)
         {
@@ -55,7 +69,7 @@ public class TransitionDoor : MonoBehaviour, IInteractable
             }
         }
 
-        yield return Fade(1f, 0f);
+        yield return FadeIn();
 
         if (player.Controller != null)
         {
@@ -67,24 +81,25 @@ public class TransitionDoor : MonoBehaviour, IInteractable
         currentTransition = null;
     }
 
-    private IEnumerator Fade(float from, float to)
+    private IEnumerator FadeOut()
     {
-        if (fadeCanvas == null)
+        if (FadeCanvasController.Instance == null)
         {
-            Debug.LogError($"[TransitionDoor] Fade Canvas is missing on {gameObject.name}!");
+            Debug.LogError($"[TransitionDoor] No FadeCanvasController found — is the master scene loaded?", this);
             yield break;
         }
 
-        float t = 0f;
-        fadeCanvas.alpha = from;
+        yield return FadeCanvasController.Instance.FadeOut(fadeDuration);
+    }
 
-        while (t < fadeDuration)
+    private IEnumerator FadeIn()
+    {
+        if (FadeCanvasController.Instance == null)
         {
-            t += Time.unscaledDeltaTime;
-            fadeCanvas.alpha = Mathf.Lerp(from, to, t / fadeDuration);
-            yield return null;
+            Debug.LogError($"[TransitionDoor] No FadeCanvasController found — is the master scene loaded?", this);
+            yield break;
         }
 
-        fadeCanvas.alpha = to;
+        yield return FadeCanvasController.Instance.FadeIn(fadeDuration);
     }
 }

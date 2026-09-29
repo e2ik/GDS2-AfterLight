@@ -28,10 +28,19 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsAboutToLandHash = Animator.StringToHash("isAboutToLand");
     private static readonly int ChargeProgressHash = Animator.StringToHash("ChargeProgress");
     private static readonly int IsDeadHash = Animator.StringToHash("isDead");
+    private static readonly int IsClimbingHash = Animator.StringToHash("isClimbing");
 
     [Header("particle prefabs")]
     [SerializeField] private ParticleSystem wallSlideParticleSystem;
     [SerializeField] private ParticleSystem skillChargeParticleSystem;
+
+    [Header("Parry Animation Sync")]
+    [SerializeField] private string airParryState = "AirParry";
+    [SerializeField] private string groundParryState = "GroundParry";
+
+    private int airParryHash;
+    private int groundParryHash;
+    private bool wasGroundedForAnim;
 
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
@@ -48,6 +57,9 @@ public class PlayerAnimation : MonoBehaviour
             sr = GetComponentInParent<SpriteRenderer>();
             if (sr != null) ogColor = sr.color;
         }
+
+        airParryHash = Animator.StringToHash(airParryState);
+        groundParryHash = Animator.StringToHash(groundParryState);
 
         if (wallSlideParticleSystem == null)
         {
@@ -116,6 +128,8 @@ public class PlayerAnimation : MonoBehaviour
             animator.SetInteger(AttackIndexHash, 0);
             animator.SetBool(IsSkillingHash, false);
             animator.SetBool(IsPlungingHash, false);
+            
+            animator.SetBool(IsClimbingHash, false);
 
             wasDeadLastFrame = true;
             return;
@@ -147,12 +161,15 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetBool(IsSkillingHash, isSkilling);
         animator.SetBool(IsPlungingHash, isPlunging);
         animator.SetBool(IsDashingHash, player.Controller.IsDashing);
+        animator.SetBool(IsClimbingHash, player.Controller.IsClimbing);
 
         if (isSkilling) return;
 
         bool groundedForAnim = isAttacking
             ? player.CombatController.AttackStartedGrounded
             : player.Controller.IsGrounded;
+
+        SyncParryAcrossGroundChange(isParrying, groundedForAnim);
 
         animator.SetFloat(SpeedHash, Mathf.Abs(rb.linearVelocityX));
         animator.SetFloat(YVelocityHash, rb.linearVelocityY);
@@ -328,6 +345,24 @@ public class PlayerAnimation : MonoBehaviour
     }
 
     #region Helper Methods
+
+    private void SyncParryAcrossGroundChange(bool isParrying, bool groundedNow)
+    {
+        if (isParrying && groundedNow != wasGroundedForAnim)
+        {
+            AnimatorStateInfo info = animator.IsInTransition(0)
+                ? animator.GetNextAnimatorStateInfo(0)
+                : animator.GetCurrentAnimatorStateInfo(0);
+
+            int from = wasGroundedForAnim ? groundParryHash : airParryHash;
+            int to = groundedNow ? groundParryHash : airParryHash;
+
+            if (info.shortNameHash == from || info.fullPathHash == from)
+                animator.Play(to, 0, info.normalizedTime);
+        }
+
+        wasGroundedForAnim = groundedNow;
+    }
 
     private void StartFlashColor(Color flashColor, float duration)
     {

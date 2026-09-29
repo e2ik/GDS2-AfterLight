@@ -11,26 +11,28 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private Vector2 raycastOriginOffset = Vector2.zero;
 
     private int interactionDisableCount;
+    private int lastUnblockFrame = -1;
     public bool InteractionEnabled => interactionDisableCount <= 0;
 
     private IInteractable currentInteractable;
     private Transform currentInteractableTransform;
     private SpriteOutlineToggle currentOutlineToggle;
 
-    public event System.Action<Transform> OnInteractionTargetChanged;
+    public event System.Action<Transform, Collider2D> OnInteractionTargetChanged;
 
     private Player player;
     private PlayerController playerController;
     private InputAction interactAction;
+    private Transform ownRoot;
 
     private void Awake()
     {
         player = GetComponent<Player>();
         playerController = GetComponent<PlayerController>();
+        ownRoot = transform.root;
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
         interactAction = playerInput.actions["Interact"];
-
     }
 
     private void Update()
@@ -45,21 +47,36 @@ public class InteractionManager : MonoBehaviour
 
         DetectInteractable();
 
-        if (currentInteractable != null && interactAction.WasPressedThisFrame())
-        {
-            if (currentInteractable.ShouldStopPlayerMovement)
-            {
-                // Freeze movement using your built-in counter system
-                playerController.FreezeMovement(true);
-            }
+        if (currentInteractable == null || !interactAction.WasPressedThisFrame()) return;
+        if (!CanPlayerInteract()) return;
+        if (!currentInteractable.CanInteract) return;
 
-            currentInteractable.Interact(player);
+        if (currentInteractable.ShouldStopPlayerMovement)
+        {
+            playerController.FreezeMovement(true);
         }
+
+        currentInteractable.Interact(player);
+    }
+
+    private bool CanPlayerInteract()
+    {
+        return playerController.InputEnabled
+               && !playerController.IsUILocked
+               && !playerController.IsPhysicsSuspended
+               && Time.frameCount != lastUnblockFrame;
     }
 
     public void SetInteractionBlocked(bool blocked)
     {
-        interactionDisableCount = blocked ? interactionDisableCount + 1 : Mathf.Max(0, interactionDisableCount - 1);
+        if (blocked)
+        {
+            interactionDisableCount++;
+            return;
+        }
+
+        interactionDisableCount = Mathf.Max(0, interactionDisableCount - 1);
+        if (interactionDisableCount == 0) lastUnblockFrame = Time.frameCount;
     }
 
     private void DetectInteractable()
@@ -75,7 +92,7 @@ public class InteractionManager : MonoBehaviour
 
         foreach (RaycastHit2D hit in hits)
         {
-            if (hit.collider.transform.root == transform.root) continue;
+            if (hit.collider.transform.root == ownRoot) continue;
 
             IInteractable candidate = hit.collider.GetComponent<IInteractable>();
             if (candidate == null || !candidate.CanInteract) continue;
@@ -87,27 +104,25 @@ public class InteractionManager : MonoBehaviour
 
         if (hitInteractable != currentInteractable)
         {
-            // 1. Turn off outline on previous object (if any)
             if (currentOutlineToggle != null)
             {
-                currentOutlineToggle.SetOutline(false);
+                currentOutlineToggle.EndHighlight();
                 currentOutlineToggle = null;
             }
 
             currentInteractable = hitInteractable;
             currentInteractableTransform = hitTransform;
 
-            // 2. Fetch and turn on outline on newly focused object
-            if (currentInteractableTransform != null)
+            if (currentInteractable != null)
             {
-                currentOutlineToggle = currentInteractableTransform.GetComponent<SpriteOutlineToggle>();
+                currentOutlineToggle = currentInteractable.OutlineToggle;
                 if (currentOutlineToggle != null)
                 {
-                    currentOutlineToggle.SetOutline(true);
+                    currentOutlineToggle.BeginHighlight();
                 }
             }
 
-            OnInteractionTargetChanged?.Invoke(currentInteractableTransform);
+            OnInteractionTargetChanged?.Invoke(currentInteractableTransform, currentInteractable?.PromptCollider);
         }
     }
 
@@ -115,14 +130,14 @@ public class InteractionManager : MonoBehaviour
     {
         if (currentOutlineToggle != null)
         {
-            currentOutlineToggle.SetOutline(false);
+            currentOutlineToggle.EndHighlight();
             currentOutlineToggle = null;
         }
 
         currentInteractable = null;
         currentInteractableTransform = null;
 
-        OnInteractionTargetChanged?.Invoke(null);
+        OnInteractionTargetChanged?.Invoke(null, null);
     }
 
     private void OnDrawGizmosSelected()

@@ -12,6 +12,12 @@ public static class FastTravelNodeResolver
         return node;
     }
 
+    public static IReadOnlyList<FastTravelNodeSO> GetAllNodes()
+    {
+        if (_cache == null) BuildCache();
+        return new List<FastTravelNodeSO>(_cache.Values);
+    }
+
     private static void BuildCache()
     {
         var allNodes = Resources.LoadAll<FastTravelNodeSO>("FastTravel");

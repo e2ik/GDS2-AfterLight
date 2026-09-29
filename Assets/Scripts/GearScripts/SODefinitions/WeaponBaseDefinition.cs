@@ -48,7 +48,7 @@ public class WeaponDefinition : InventoryItemBase
             InstRolledCrit = Random.Range(critRange.x, critRange.y)
         };
 
-        Debug.Log($"Created Weapon Instance: {UIName} [{rarity}]");
+        // Debug.Log($"Created Weapon Instance: {UIName} [{rarity}]");
         return newInstance;
     }
 }

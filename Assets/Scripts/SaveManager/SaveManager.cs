@@ -1,11 +1,19 @@
 using System;
+using System.Collections.Specialized;
 using System.IO;
+using System.Runtime.InteropServices;
 using UnityEngine;
+using Tutorial;
 
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance { get; private set; }
-    
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+    [DllImport("__Internal")]
+    private static extern void SyncSaveFilesToIndexedDB();
+#endif
+
     public bool HasSaveFile => File.Exists(SavePath);
     private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
     private string TempSavePath => Path.Combine(Application.persistentDataPath, "save.tmp");
@@ -26,11 +34,17 @@ public class SaveManager : MonoBehaviour
         }
         else
         {
-            CreateNewSaveData();
+            InitializeNewSaveData();
         }
     }
 
     public void CreateNewSaveData()
+    {
+        InitializeNewSaveData();
+        CommitToDisk();
+    }
+
+    private void InitializeNewSaveData()
     {
         _currentSaveData = new SaveData
         {
@@ -38,8 +52,15 @@ public class SaveManager : MonoBehaviour
             chestData = new ChestSaveData(),
             inventoryData = new InventorySaveData()
         };
-        
-        CommitToDisk(); 
+    }
+
+    private void WriteEquipmentToSaveData(PlayerEquipmentManager equipment)
+    {
+        _currentSaveData.equippedGear = equipment.GetEquippedGearSaveData();
+        _currentSaveData.equippedSecondaryGem = equipment.SecondaryGem;
+        _currentSaveData.equippedWeapon = equipment.EquippedWeapon;
+        _currentSaveData.equippedPrimaryGemID = equipment.GetEquippedPrimaryGemID();
+        _currentSaveData.equippedPrimaryGemSaved = true;
     }
 
     public void CommitToDisk()
@@ -49,10 +70,11 @@ public class SaveManager : MonoBehaviour
         Player player = FindFirstObjectByType<Player>();
         if (player != null && player.Equipment != null)
         {
-            _currentSaveData.equippedGear = player.Equipment.GetEquippedGearSaveData();
-            _currentSaveData.equippedSecondaryGem = player.Equipment.SecondaryGem;
-            _currentSaveData.equippedWeapon = player.Equipment.EquippedWeapon;
+            WriteEquipmentToSaveData(player.Equipment);
         }
+
+        if (TutorialDirector.Instance != null)
+            _currentSaveData.progress.completedTutorialSequenceIDs = TutorialDirector.Instance.GetCompletedSequencesForSave();
 
         try
         {
@@ -61,6 +83,10 @@ public class SaveManager : MonoBehaviour
             File.WriteAllText(TempSavePath, json);
             File.Copy(TempSavePath, SavePath, overwrite: true);
             File.Delete(TempSavePath);
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+            SyncSaveFilesToIndexedDB();
+#endif
 
             Debug.Log($"Saved successfully to {SavePath}");
         }
@@ -75,7 +101,7 @@ public class SaveManager : MonoBehaviour
         if (!HasSaveFile)
         {
             Debug.LogWarning("No save file found. Initializing default data.");
-            CreateNewSaveData();
+            InitializeNewSaveData();
             return _currentSaveData;
         }
 
@@ -99,18 +125,22 @@ public class SaveManager : MonoBehaviour
         if (_currentSaveData == null) _currentSaveData = new SaveData();
         if (_currentSaveData.progress == null) _currentSaveData.progress = new ProgressSaveData();
         if (_currentSaveData.chestData == null) _currentSaveData.chestData = new ChestSaveData();
-        if (_currentSaveData.chestData.openedChestIDs == null) 
+        if (_currentSaveData.chestData.openedChestIDs == null)
             _currentSaveData.chestData.openedChestIDs = new System.Collections.Generic.List<string>();
         if (_currentSaveData.inventoryData == null) _currentSaveData.inventoryData = new InventorySaveData();
-        if (_currentSaveData.equippedGear == null) 
+        if (_currentSaveData.equippedGear == null)
             _currentSaveData.equippedGear = new System.Collections.Generic.List<EquippedGearSaveData>();
+        if (_currentSaveData.progress.completedTutorialSequenceIDs == null)
+            _currentSaveData.progress.completedTutorialSequenceIDs = new System.Collections.Generic.List<string>();
+        if (_currentSaveData.progress.storyFlags == null)
+            _currentSaveData.progress.storyFlags = new System.Collections.Generic.List<string>();
     }
 
     public void SaveProgressAtLocation(string sceneName, string anchorID, AreaSide side)
     {
         _currentSaveData.progress.lastVisitedSceneName = sceneName;
         _currentSaveData.progress.lastSpawnAnchorID = anchorID;
-        _currentSaveData.progress.lastAreaSide = side; // <--- Set explicit side
+        _currentSaveData.progress.lastAreaSide = side;
 
         if (worldMapState != null)
         {
@@ -123,14 +153,12 @@ public class SaveManager : MonoBehaviour
             if (player.Inventory != null)
                 _currentSaveData.inventoryData = player.Inventory.ToSaveData();
 
-if (player.Equipment != null)
-{
-    Debug.Log($"[SaveDebug] Player={player.GetInstanceID()} EquippedWeapon={(player.Equipment.EquippedWeapon != null ? player.Equipment.EquippedWeapon.InstTemplateID : "NULL")}");
+            if (player.Equipment != null)
+            {
+                Debug.Log($"[SaveDebug] Player={player.GetInstanceID()} EquippedWeapon={(player.Equipment.EquippedWeapon != null ? player.Equipment.EquippedWeapon.InstTemplateID : "NULL")}");
 
-    _currentSaveData.equippedGear = player.Equipment.GetEquippedGearSaveData();
-    _currentSaveData.equippedSecondaryGem = player.Equipment.SecondaryGem;
-    _currentSaveData.equippedWeapon = player.Equipment.EquippedWeapon;
-}
+                WriteEquipmentToSaveData(player.Equipment);
+            }
         }
 
         CommitToDisk();
@@ -155,6 +183,22 @@ if (player.Equipment != null)
         if (!_currentSaveData.chestData.openedChestIDs.Contains(chestID))
         {
             _currentSaveData.chestData.openedChestIDs.Add(chestID);
+        }
+    }
+
+    public bool HasStoryFlag(string flag)
+    {
+        if (_currentSaveData?.progress?.storyFlags == null) return false;
+        return _currentSaveData.progress.storyFlags.Contains(flag);
+    }
+
+    public void SetStoryFlag(string flag)
+    {
+        if (_currentSaveData?.progress?.storyFlags == null) return;
+
+        if (!_currentSaveData.progress.storyFlags.Contains(flag))
+        {
+            _currentSaveData.progress.storyFlags.Add(flag);
         }
     }
 

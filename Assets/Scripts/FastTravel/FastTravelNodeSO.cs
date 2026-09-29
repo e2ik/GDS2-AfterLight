@@ -12,5 +12,6 @@ public class FastTravelNodeSO : ScriptableObject
 
     [Header("Scene Destination")]
     public string targetSceneName;
-    public string spawnAnchorID; 
+    public string spawnAnchorID;
+    public AreaSide destinationAreaSide = AreaSide.Exterior;
 }

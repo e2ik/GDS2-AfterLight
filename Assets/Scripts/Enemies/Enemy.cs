@@ -19,16 +19,33 @@ namespace Enemies
         [SerializeField] private Animator animator;
         [SerializeField] private Rigidbody2D rb2D;
         [SerializeField] private float attackCooldown;
+        [SerializeField] private float attackFailsafeDuration = 4f;
+        [SerializeField] private float facingDeadZone = 0.15f;
         [SerializeField] private string placeholderClipName = "EmptyAttack";
+
+        [Header("Ledge Safety")]
+        [SerializeField] private bool preventLedgeFalls = true;
+        [SerializeField] private bool ignoreTerrainChecks = false;
+        [SerializeField] private LayerMask ledgeGroundMask;
+        [SerializeField] private float ledgeCheckDistance = 0.5f;
+        [SerializeField] private float ledgeCheckDepth = 1f;
+
+        [Header("Aggro")]
+        [SerializeField] private bool canDropAggro = true;
+        [SerializeField] private float unreachableGiveUpDelay = 1.5f;
+        [SerializeField] private float reaggroCooldown = 3f;
+        private float unreachableTimer;
+        private float reaggroCooldownTimer;
 
         [Header("Stagger")]
         [SerializeField] private bool isStaggerImmune = false;
         [SerializeField] private float staggerImmunityDuration = 2f;
         private float staggerImmunityTimer;
 
-        [Header("FMOD Events")] 
+        [Header("FMOD Events")]
         [SerializeField] private EventReference hitEvent;
-    
+        [SerializeField] private EventReference attackEvent;
+
         [Header("Damage Flash")]
         [SerializeField] private SpriteRenderer spriteRenderer;
         [SerializeField] private Color flashColor = Color.red;
@@ -36,10 +53,25 @@ namespace Enemies
         private Coroutine flashRoutine;
         private Color baseColor;
 
+        [Header("Boss stuff")]
+        [SerializeField] private BossBounds bossBounds;
+        [SerializeField] private int attacksPerTeleport = 3;
+        [SerializeField] private float teleportMinCooldown = 8f;
+        [SerializeField] private bool canTeleport = false;
+        [SerializeField] private bool teleportToTargetWhenOutOfRange = true;
+        [SerializeField] private float outOfRangeTeleportDelay = 4f;
+        private int attacksSinceLastTeleport;
+        private float teleportCooldownTimer;
+        private float outOfRangeTimer;
+
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
+        public bool AttackReady { get; private set; }
+        public bool TeleportReady { get; private set; }
+        public bool IsBoss => Context != null && Context.BossBounds != null;
 
         private float attackCooldownTimer;
+        private float attackStartedTime;
         private bool wasTargetingPlayer;
 
         private void OnEnable()
@@ -53,6 +85,8 @@ namespace Enemies
             Context.Health.OnDamaged -= OnDamaged;
             Context.Health.OnDeath -= OnDeath;
             EnemyCombatTracker.EnemyStoppedTargeting(this);
+
+            if (IsAttacking) MarkAttackEnded();
         }
 
 
@@ -78,6 +112,8 @@ namespace Enemies
                 Animator = animator,
                 OverrideController = overrideController,
                 PlaceholderClip = placeholderClip,
+                BossBounds = bossBounds,
+                SpriteRenderer = spriteRenderer,
                 FacingRight = true
             };
 
@@ -95,7 +131,19 @@ namespace Enemies
 
         private void Update()
         {
+            Context.IgnoreTerrainChecks = ignoreTerrainChecks;
+
             observationSO.Tick(Context, Time.deltaTime);
+
+            if (reaggroCooldownTimer > 0f)
+            {
+                reaggroCooldownTimer -= Time.deltaTime;
+                Context.Target = null;
+                Context.TargetVisible = false;
+            }
+
+            if (IsBoss && Context.Target != null && !IsInsideBossBounds(Context.Target.position))
+                DropAggro();
 
             bool isTargetingPlayer = Context.TargetVisible;
             if (isTargetingPlayer != wasTargetingPlayer)
@@ -113,30 +161,118 @@ namespace Enemies
                 wasTargetingPlayer = isTargetingPlayer;
             }
 
+            if (!IsAttacking && Context.TargetVisible && Context.Target != null)
+                FaceTowards(Context.Target.position.x);
+
             if (!IsAttacking)
-                transform.localScale = new Vector3(Context.FacingRight ? 1f : -1f, 1f, 1f);
+                ApplyFacing();
 
             animator.SetFloat("Speed", Mathf.Abs(Context.Body.linearVelocityX));
 
             attackCooldownTimer = Mathf.Max(0, attackCooldownTimer - Time.deltaTime);
             staggerImmunityTimer = Mathf.Max(0, staggerImmunityTimer - Time.deltaTime);
+            teleportCooldownTimer = Mathf.Max(0, teleportCooldownTimer - Time.deltaTime);
+
+            if (IsAttacking && Time.time - attackStartedTime >= attackFailsafeDuration)
+            {
+                Debug.LogWarning($"{name}: attack never reported finishing, ending it after {attackFailsafeDuration}s.");
+                MarkAttackEnded();
+            }
 
             bool attackReady = IsAttacking;
+            bool usableAttackInRange = false;
+            bool anyAttackInRange = false;
+            bool allAttacksOnCooldown = true;
 
             foreach (AttackInstance attack in attacks)
             {
                 attack.Tick(Context, Time.deltaTime);
+
+                if (attack.InRange) anyAttackInRange = true;
+
+                if (!attack.OnCooldown)
+                {
+                    allAttacksOnCooldown = false;
+                    if (attack.InRange) usableAttackInRange = true;
+                }
+
                 if (!IsAttacking && attackCooldownTimer <= 0 && Context.CanReachTarget && attack.IsValid)
                     attackReady = true;
             }
 
+            Context.TargetInRange = usableAttackInRange || (allAttacksOnCooldown && anyAttackInRange);
+
+            UpdateUnreachableGiveUp();
+            if (!Context.TargetVisible) attackReady = IsAttacking;
+
+            AttackReady = attackReady;
+
+            UpdateOutOfRangeTimer();
+            bool forceTeleport = IsBoss && teleportToTargetWhenOutOfRange && outOfRangeTeleportDelay > 0f && outOfRangeTimer >= outOfRangeTeleportDelay
+                                 && teleportCooldownTimer <= 0f;
+            bool teleportReady = canTeleport && (forceTeleport
+                || (attacksSinceLastTeleport >= attacksPerTeleport && teleportCooldownTimer <= 0f));
+            Context.ForceTeleportNearTarget = canTeleport && forceTeleport;
+            TeleportReady = IsBoss && teleportReady;
+
             behaviorAgent.BlackboardReference.SetVariableValue("TargetVisible", Context.TargetVisible);
             behaviorAgent.BlackboardReference.SetVariableValue("TargetPosition", Context.TargetPosition);
             behaviorAgent.BlackboardReference.SetVariableValue("AttackReady", attackReady);
+            behaviorAgent.BlackboardReference.SetVariableValue("TeleportReady", teleportReady);
             behaviorAgent.BlackboardReference.SetVariableValue("Self", gameObject);
         }
 
+        private void FixedUpdate()
+        {
+            if (IsBoss)
+                KeepInsideBossBounds();
+
+            if (!preventLedgeFalls || ledgeGroundMask == 0 || Context.IgnoreTerrainChecks) return;
+
+            Vector2 velocity = rb2D.linearVelocity;
+            if (Mathf.Abs(velocity.x) < 0.01f) return;
+            if (!EnemyTerrainProbe.HasGroundBelow(Context, ledgeGroundMask, ledgeCheckDepth)) return;
+
+            int dir = velocity.x > 0f ? 1 : -1;
+            if (!EnemyTerrainProbe.HasGroundAhead(Context, dir, ledgeGroundMask, ledgeCheckDistance, ledgeCheckDepth))
+            {
+                rb2D.linearVelocity = new Vector2(0f, velocity.y);
+            }
+        }
+
+        private void KeepInsideBossBounds()
+        {
+            Vector2 velocity = rb2D.linearVelocity;
+            if (Mathf.Abs(velocity.x) < 0.01f) return;
+
+            Bounds arena = Context.BossBounds.WorldBounds;
+            Bounds body = EnemyTerrainProbe.GetBodyBounds(Context);
+            float step = velocity.x * Time.fixedDeltaTime;
+
+            bool leavingLeft = velocity.x < 0f && body.min.x + step < arena.min.x;
+            bool leavingRight = velocity.x > 0f && body.max.x + step > arena.max.x;
+
+            if (leavingLeft || leavingRight)
+            {
+                rb2D.linearVelocity = new Vector2(0f, velocity.y);
+                Context.LastChaseBlockedTime = Time.time;
+            }
+        }
+
+        private bool IsInsideBossBounds(Vector2 point)
+        {
+            Bounds arena = Context.BossBounds.WorldBounds;
+            return point.x >= arena.min.x && point.x <= arena.max.x
+                && point.y >= arena.min.y && point.y <= arena.max.y;
+        }
+
         public void RunMovement(EnemyMovementSO module, float dt) => module.Tick(Context, dt);
+
+        public void SetBossBounds(BossBounds bounds)
+        {
+            bossBounds = bounds;
+            Context.BossBounds = bounds;
+        }
 
         public bool TrySelectAttack(out AttackInstance selected)
         {
@@ -164,11 +300,78 @@ namespace Enemies
             return false;
         }
 
+        private void UpdateUnreachableGiveUp()
+        {
+            if (!canDropAggro || IsBoss)
+            {
+                unreachableTimer = 0f;
+                return;
+            }
+
+            bool chaseBlocked = Time.time - Context.LastChaseBlockedTime < 0.2f;
+            bool unreachable = Context.TargetVisible && !IsAttacking && !Context.TargetInRange && chaseBlocked;
+
+            if (!unreachable)
+            {
+                unreachableTimer = 0f;
+                return;
+            }
+
+            unreachableTimer += Time.deltaTime;
+            if (unreachableTimer < unreachableGiveUpDelay) return;
+
+            DropAggro();
+        }
+
+        private void UpdateOutOfRangeTimer()
+        {
+            bool outOfRange = IsBoss && Context.TargetVisible && Context.Target != null
+                              && !IsAttacking && !Context.TargetInRange;
+
+            if (outOfRange)
+                outOfRangeTimer += Time.deltaTime;
+            else
+                outOfRangeTimer = 0f;
+        }
+
+        private void DropAggro()
+        {
+            unreachableTimer = 0f;
+            reaggroCooldownTimer = reaggroCooldown;
+
+            Context.Target = null;
+            Context.TargetVisible = false;
+            Context.TimeSinceTargetSeen = 0f;
+            Context.LastChaseBlockedTime = float.NegativeInfinity;
+            Context.TargetInRange = false;
+
+            EnemyCombatTracker.EnemyStoppedTargeting(this);
+            wasTargetingPlayer = false;
+        }
+
+        private void FaceTowards(float targetX)
+        {
+            float diff = targetX - transform.position.x;
+            if (Mathf.Abs(diff) > facingDeadZone)
+                Context.FacingRight = diff >= 0f;
+        }
+
+        private void ApplyFacing()
+        {
+            transform.localScale = new Vector3(Context.FacingRight ? 1f : -1f, 1f, 1f);
+        }
+
         public void MarkAttackStarted()
         {
+            if (Context.Target != null)
+                FaceTowards(Context.Target.position.x);
+            ApplyFacing();
+
             IsAttacking = true;
             Context.IsAttacking = true;
             Context.Body.linearVelocity = Vector2.zero;
+            attackStartedTime = Time.time;
+            attacksSinceLastTeleport++;
         }
 
         public void MarkAttackEnded()
@@ -176,6 +379,23 @@ namespace Enemies
             IsAttacking = false;
             Context.IsAttacking = false;
             attackCooldownTimer = attackCooldown;
+        }
+
+        public bool CanTeleport => canTeleport;
+        public bool TeleportToTargetWhenOutOfRange => teleportToTargetWhenOutOfRange;
+
+        public void SetTeleportToTargetWhenOutOfRange(bool enabled)
+        {
+            teleportToTargetWhenOutOfRange = enabled;
+            if (!enabled) outOfRangeTimer = 0f;
+        }
+
+        public void MarkTeleportUsed()
+        {
+            attacksSinceLastTeleport = 0;
+            teleportCooldownTimer = teleportMinCooldown;
+            outOfRangeTimer = 0f;
+            Context.ForceTeleportNearTarget = false;
         }
 
         private void OnDamaged(int amount, int currentHealth, bool isDot)
@@ -216,7 +436,7 @@ namespace Enemies
             lootTable?.SpawnInstance(transform.position);
             gameObject.SetActive(false);
         }
-    
+
         private IEnumerator FlashRed()
         {
             spriteRenderer.color = flashColor;
@@ -231,6 +451,15 @@ namespace Enemies
 
             spriteRenderer.color = baseColor;
             flashRoutine = null;
+        }
+
+        public void TriggerLockOn(Transform target)
+        {
+            Context.Target = target;
+            Context.TargetVisible = true;
+            Context.TargetPosition = target.position;
+            Context.LastKnownTargetPosition = target.position;
+            Context.TimeSinceTargetSeen = 0f;
         }
 
 #if UNITY_EDITOR

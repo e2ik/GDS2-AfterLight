@@ -21,39 +21,85 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [Header("Border")]
     [SerializeField] private Color noRarityBorderColor = Color.white;
 
+    [Header("Selection")]
+    [SerializeField] private Graphic selectionGraphic;
+    [SerializeField] private Color selectedColor = Color.yellow;
+    [SerializeField] private Color unselectedColor = new Color(1f, 1f, 1f, 0f);
+
+    [Header("Tooltip")]
+    [SerializeField, Min(0f)] private float controllerTooltipDelay = 0.5f;
+
+    [Header("New Item Badge")]
+    [SerializeField] private GameObject newBadge;
+
+    [Header("Lore Set Progress")]
+    [SerializeField] private TextMeshProUGUI progressText;
+
     private object currentItem;
     private InventoryDisplay cachedInventoryDisplay;
+    private UIWindowAnimator windowAnimator;
+    private RectTransform rectTransform;
+    private bool isSelected;
+    private bool isPointerOver;
+    private bool tooltipWanted;
 
     private readonly struct SlotContext
     {
         public readonly Sprite Sprite;
         public readonly string Name;
-        public readonly string TooltipBody;
         public readonly bool IsEquipped;
-        public readonly System.Action ToggleEquip;
         public readonly ERarity? Rarity;
 
-        public SlotContext(Sprite sprite, string name, string tooltipBody, bool isEquipped, System.Action toggleEquip, ERarity? rarity)
+        public SlotContext(Sprite sprite, string name, bool isEquipped, ERarity? rarity)
         {
             Sprite = sprite;
             Name = name;
-            TooltipBody = tooltipBody;
             IsEquipped = isEquipped;
-            ToggleEquip = toggleEquip;
             Rarity = rarity;
+        }
+    }
+
+    private InventoryDisplay Display
+    {
+        get
+        {
+            if (cachedInventoryDisplay == null) cachedInventoryDisplay = GetComponentInParent<InventoryDisplay>(true);
+            return cachedInventoryDisplay;
         }
     }
 
     private void Awake()
     {
+        rectTransform = (RectTransform)transform;
+        windowAnimator = GetComponentInParent<UIWindowAnimator>(true);
+
         if (iconImage != null) iconImage.raycastTarget = false;
         if (nameText != null) nameText.raycastTarget = false;
+        if (selectionGraphic != null) selectionGraphic.raycastTarget = false;
+        if (progressText != null) progressText.raycastTarget = false;
 
         if (actionButton != null)
         {
             actionButton.onClick.RemoveAllListeners();
             actionButton.onClick.AddListener(OnSlotClicked);
         }
+
+        ApplySelectionVisual();
+    }
+
+    private void Update()
+    {
+        GameObject current = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        bool selected = current != null && current.transform.IsChildOf(transform);
+
+        if (selected != isSelected)
+        {
+            isSelected = selected;
+            ApplySelectionVisual();
+        }
+
+        UpdateTooltipState();
+        UpdateNewBadgeIfLookedAt();
     }
 
     private void OnDestroy()
@@ -66,18 +112,13 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private void OnDisable()
     {
-        if (ItemTooltip.Instance != null)
-        {
-            ItemTooltip.Instance.HideTooltip();
-        }
+        isSelected = false;
+        isPointerOver = false;
+        tooltipWanted = false;
+        ApplySelectionVisual();
     }
 
-    public void SetupSlot(SecondaryGemInstance gem) => SetCurrentItem(gem);
-    public void SetupSlot(GearInstance gear) => SetCurrentItem(gear);
-    public void SetupSlot(PrimaryGemInstance gem) => SetCurrentItem(gem);
-    public void SetupSlot(WeaponInstance weapon) => SetCurrentItem(weapon);
-
-    private void SetCurrentItem(object item)
+    public void SetupSlot(object item)
     {
         currentItem = item;
 
@@ -90,7 +131,9 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         SetSlotDisplay(ctx.Value.Sprite, ctx.Value.Name);
         SetBorderColor(ctx.Value.Rarity);
-        UpdateEquippedVisuals();
+        UpdateEquippedVisuals(ctx.Value.IsEquipped);
+        SetNewBadgeVisible(GetIsNew(currentItem));
+        UpdateProgressText();
     }
 
     public void SetTextVisibility(bool visible)
@@ -101,79 +144,92 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private SlotContext? BuildContext()
     {
-        Player player = Object.FindFirstObjectByType<Player>();
-        PlayerEquipmentManager equip = player != null ? player.Equipment : null;
+        InventoryItemBase def = ItemActionFactory.GetDefinition(currentItem);
+        if (def == null) return null;
 
-        switch (currentItem)
+        PlayerEquipmentManager equip = ItemActionFactory.GetEquipment();
+        bool isEquipped = ItemActionFactory.IsItemEquipped(currentItem, equip);
+
+        return new SlotContext(def.UISprite, def.UIName, isEquipped, GetRarity(currentItem));
+    }
+
+    private static ERarity? GetRarity(object item)
+    {
+        return item switch
         {
-            case SecondaryGemInstance gem when !string.IsNullOrEmpty(gem.InstTemplateID):
-            {
-                var def = GameDatabase.GetSecondaryTemplateFromID(gem.InstTemplateID);
-                if (def == null) return null;
+            SecondaryGemInstance gem => (ERarity?)gem.Rarity,
+            GearInstance gear => (ERarity?)gear.Rarity,
+            WeaponInstance weapon => (ERarity?)weapon.Rarity,
+            _ => null
+        };
+    }
 
-                bool isEquipped = equip != null && equip.IsGemEquipped(gem);
-                System.Action toggle = () =>
+    private static bool GetIsNew(object item)
+    {
+        return item switch
+        {
+            SecondaryGemInstance gem => gem.IsNew,
+            GearInstance gear => gear.IsNew,
+            PrimaryGemInstance primary => primary.IsNew,
+            WeaponInstance weapon => weapon.IsNew,
+            KeyInstance key => key.IsNew,
+            LoreItemInstance lore => lore.IsNew,
+            LoreSetDisplayInfo loreSet => loreSet.OwnedInstances.Exists(i => i.IsNew),
+            _ => false
+        };
+    }
+
+    private static bool ClearIsNew(object item)
+    {
+        switch (item)
+        {
+            case SecondaryGemInstance gem when gem.IsNew: gem.IsNew = false; return true;
+            case GearInstance gear when gear.IsNew: gear.IsNew = false; return true;
+            case PrimaryGemInstance primary when primary.IsNew: primary.IsNew = false; return true;
+            case WeaponInstance weapon when weapon.IsNew: weapon.IsNew = false; return true;
+            case KeyInstance key when key.IsNew: key.IsNew = false; return true;
+            case LoreItemInstance lore when lore.IsNew: lore.IsNew = false; return true;
+            case LoreSetDisplayInfo loreSet:
                 {
-                    if (equip == null) return;
-                    if (equip.IsGemEquipped(gem)) equip.ClearSecondaryGem();
-                    else equip.EquipSecondaryGem(gem);
-                };
+                    bool anyCleared = false;
+                    foreach (LoreItemInstance piece in loreSet.OwnedInstances)
+                    {
+                        if (piece.IsNew) { piece.IsNew = false; anyCleared = true; }
+                    }
+                    return anyCleared;
+                }
+            default: return false;
+        }
+    }
 
-                return new SlotContext(def.UISprite, def.UIName, GetGemStatsTooltip(gem), isEquipped, toggle, gem.Rarity);
-            }
+    private void SetNewBadgeVisible(bool visible)
+    {
+        if (newBadge != null) newBadge.SetActive(visible);
+    }
 
-            case GearInstance gear when !string.IsNullOrEmpty(gear.InstTemplateID):
-            {
-                var def = GameDatabase.GetGearTemplateFromID(gear.InstTemplateID);
-                if (def == null) return null;
+    private void UpdateProgressText()
+    {
+        if (progressText == null) return;
 
-                bool isEquipped = equip != null && equip.IsGearEquipped(gear);
-                System.Action toggle = () =>
-                {
-                    if (equip == null) return;
-                    if (equip.IsGearEquipped(gear)) equip.ClearGear(def.Slot);
-                    else equip.EquipGear(def.Slot, gear);
-                };
+        if (currentItem is LoreSetDisplayInfo loreSet && !loreSet.IsComplete)
+        {
+            progressText.gameObject.SetActive(true);
+            progressText.text = $"{loreSet.OwnedCount}/{loreSet.TotalPieces}";
+        }
+        else
+        {
+            progressText.gameObject.SetActive(false);
+        }
+    }
 
-                return new SlotContext(def.UISprite, def.UIName, GetGearStatsTooltip(gear, def.Slot.ToString()), isEquipped, toggle, gear.Rarity);
-            }
+    private void UpdateNewBadgeIfLookedAt()
+    {
+        bool lookedAt = InputModeTracker.IsUsingMouse ? isPointerOver : isSelected;
+        if (!lookedAt) return;
 
-            case PrimaryGemInstance primary when !string.IsNullOrEmpty(primary.InstTemplateID):
-            {
-                var def = GameDatabase.GetPrimaryTemplateFromID(primary.InstTemplateID);
-                if (def == null) return null;
-
-                bool isEquipped = equip != null && equip.SpecialAttackDef == def;
-                System.Action toggle = () =>
-                {
-                    if (equip == null) return;
-                    if (equip.SpecialAttackDef == def) equip.ClearSpecialAttack();
-                    else equip.EquipSpecialAttack(def);
-                };
-
-                // Primary gems don't roll rarity — border stays default.
-                return new SlotContext(def.UISprite, def.UIName, def.GemAttackDescription, isEquipped, toggle, null);
-            }
-
-            case WeaponInstance weapon when !string.IsNullOrEmpty(weapon.InstTemplateID):
-            {
-                var def = GameDatabase.GetWeaponTemplateFromID(weapon.InstTemplateID);
-                if (def == null) return null;
-
-                bool isEquipped = equip != null && equip.IsWeaponEquipped(weapon);
-
-                // note DO NOT EVER unequip the weapon lol — toggle only equips, never clears
-                System.Action toggle = () =>
-                {
-                    if (equip == null) return;
-                    if (!equip.IsWeaponEquipped(weapon)) equip.EquipWeapon(weapon);
-                };
-
-                return new SlotContext(def.UISprite, def.UIName, GetWeaponStatsTooltip(weapon), isEquipped, toggle, weapon.Rarity);
-            }
-
-            default:
-                return null;
+        if (ClearIsNew(currentItem))
+        {
+            SetNewBadgeVisible(false);
         }
     }
 
@@ -197,9 +253,20 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         if (borderImage == null) return;
 
-        borderImage.color = rarity.HasValue && GameManager.Instance != null
-            ? GameManager.Instance.GetRarityColor(rarity.Value)
-            : noRarityBorderColor;
+        borderImage.color = currentItem switch
+        {
+            KeyInstance when GameManager.Instance != null => GameManager.Instance.KeyItemColor,
+            LoreItemInstance when GameManager.Instance != null => GameManager.Instance.LoreItemColor,
+            LoreSetDisplayInfo when GameManager.Instance != null => GameManager.Instance.LoreItemColor,
+            _ when rarity.HasValue && GameManager.Instance != null => GameManager.Instance.GetRarityColor(rarity.Value),
+            _ => noRarityBorderColor
+        };
+    }
+
+    private void ApplySelectionVisual()
+    {
+        if (selectionGraphic == null) return;
+        selectionGraphic.color = isSelected ? selectedColor : unselectedColor;
     }
 
     private void ClearDisplay()
@@ -221,28 +288,36 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         {
             borderImage.color = noRarityBorderColor;
         }
+
+        SetNewBadgeVisible(false);
     }
 
     private void OnSlotClicked()
     {
-        SlotContext? ctx = BuildContext();
-        ctx?.ToggleEquip?.Invoke();
+        InventoryDisplay display = Display;
 
-        if (cachedInventoryDisplay == null)
-            cachedInventoryDisplay = Object.FindFirstObjectByType<InventoryDisplay>();
+        if (currentItem is LoreSetDisplayInfo loreSet)
+        {
+            display?.OnLoreSlotClicked(loreSet);
+            return;
+        }
 
-        if (cachedInventoryDisplay != null)
-            cachedInventoryDisplay.RefreshUI();
+        if (currentItem is LoreItemInstance loreItem)
+        {
+            display?.OnLoreItemClicked(loreItem);
+            return;
+        }
 
-        TriggerTooltip();
+        display?.CloseLorePanel();
+
+        ItemActionFactory.ToggleEquip(currentItem, ItemActionFactory.GetEquipment());
+
+        if (display != null) display.RefreshUI();
     }
 
-    private void UpdateEquippedVisuals()
+    private void UpdateEquippedVisuals(bool isEquipped)
     {
         if (actionButton == null || actionButton.image == null) return;
-
-        SlotContext? ctx = BuildContext();
-        bool isEquipped = ctx?.IsEquipped ?? false;
 
         Color targetColor = isEquipped ? equippedColor : normalColor;
         actionButton.image.color = targetColor;
@@ -253,19 +328,33 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         actionButton.colors = cb;
     }
 
-    #region Tooltip Interfaces
+    #region Tooltip
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        TriggerTooltip();
+        isPointerOver = true;
+        UpdateTooltipState();
+        UpdateNewBadgeIfLookedAt();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (ItemTooltip.Instance != null)
-        {
-            ItemTooltip.Instance.HideTooltip();
-        }
+        isPointerOver = false;
+        UpdateTooltipState();
+    }
+
+    private void UpdateTooltipState()
+    {
+        bool windowReady = windowAnimator == null
+            || (!windowAnimator.IsAnimating && windowAnimator.SecondsSinceSettled >= controllerTooltipDelay);
+
+        bool wanted = InputModeTracker.IsUsingMouse ? isPointerOver : (isSelected && windowReady);
+        if (wanted == tooltipWanted) return;
+
+        tooltipWanted = wanted;
+
+        if (wanted) TriggerTooltip();
+        else if (ItemTooltip.Instance != null) ItemTooltip.Instance.HideTooltip(rectTransform);
     }
 
     private void TriggerTooltip()
@@ -275,68 +364,17 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         SlotContext? ctx = BuildContext();
         if (ctx == null)
         {
-            ItemTooltip.Instance.HideTooltip();
+            ItemTooltip.Instance.HideTooltip(rectTransform);
             return;
         }
 
-        ItemTooltip.Instance.ShowTooltip(ctx.Value.Name, ctx.Value.TooltipBody);
-    }
+        InventoryDisplay display = Display;
+        RectTransform dock = display != null ? display.TooltipDock : null;
+        TooltipAnchorSettings settings = display != null ? display.TooltipAnchor : null;
+        TooltipActions actions = ItemActionFactory.ForInventory(currentItem);
+        string body = ItemActionFactory.BuildTooltipBody(currentItem);
 
-    private static string Colorize(string text, ERarity rarity)
-    {
-        Color color = GameManager.Instance != null
-            ? GameManager.Instance.GetRarityColor(rarity)
-            : Color.white;
-
-        return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{text}</color>";
-    }
-
-    private string GetGearStatsTooltip(GearInstance gear, string slotName)
-    {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine($"Slot: {slotName}");
-        sb.AppendLine(Colorize($"Rarity: {gear.Rarity}", gear.Rarity));
-
-        int attack = (int)gear.InstBonusAttack;
-        int defense = (int)gear.InstBonusDefense;
-        int humanity = (int)gear.InstBonusHumanity;
-        float crit = gear.InstBonusCrit;
-
-        if (attack > 0) sb.AppendLine($"Attack: +{attack}");
-        if (defense > 0) sb.AppendLine($"Defense: +{defense}");
-        if (humanity > 0) sb.AppendLine($"Humanity: +{humanity}");
-        if (crit > 0) sb.AppendLine($"Crit: +{crit * 100f:F1}%");
-
-        return sb.ToString().TrimEnd();
-    }
-
-    private string GetGemStatsTooltip(SecondaryGemInstance gem)
-    {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine("Type: Secondary Gem");
-        sb.AppendLine(Colorize($"Rarity: {gem.Rarity}", gem.Rarity));
-
-        int damageBonus = gem.InstRolledDamageValue;
-        int critBonus = gem.InstRolledCritValue;
-        int dotPercent = gem.InstRolledDotPercent;
-
-        if (damageBonus > 0) sb.AppendLine($"Bonus Damage: +{damageBonus}");
-        if (critBonus > 0) sb.AppendLine($"Bonus Crit: +{critBonus}%");
-        if (dotPercent > 0) sb.AppendLine($"Bleed: {dotPercent}% of hit damage over time");
-
-        return sb.ToString().TrimEnd();
-    }
-
-    private string GetWeaponStatsTooltip(WeaponInstance weapon)
-    {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine(Colorize($"Rarity: {weapon.Rarity}", weapon.Rarity));
-
-        if (weapon.InstRolledDamage > 0) sb.AppendLine($"Damage: {weapon.InstRolledDamage:F1}");
-        if (weapon.InstRolledRange > 0) sb.AppendLine($"Range: {weapon.InstRolledRange:F1}");
-        if (weapon.InstRolledCrit > 0) sb.AppendLine($"Crit: {weapon.InstRolledCrit * 100f:F1}%");
-
-        return sb.ToString().TrimEnd();
+        ItemTooltip.Instance.ShowTooltipAnchored(ctx.Value.Name, body, rectTransform, settings, dock, actions);
     }
 
     #endregion

@@ -13,4 +13,5 @@ public class GearInstance
     public float InstBonusCrit;
 
     public int PickupOrder;
+    public bool IsNew = true;
 }

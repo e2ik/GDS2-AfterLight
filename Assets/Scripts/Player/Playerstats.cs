@@ -9,10 +9,10 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float currentHealth;
 
     [Header("Base Stats")]
-    [SerializeField] private float baseAttack = 10f; //using weapon base attack, not sure if this is needed since you will always have a weapon
+    [SerializeField] private float baseAttack = 10f;
     [SerializeField] private float baseDefense = 5f;
     [SerializeField] private float baseHumanity = 10f;
-    [SerializeField, Range(0f, 1f)] private float defenseMitigationPerPoint = 0.05f; // multiplicative damage reduction per point of Defense
+    [SerializeField, Range(0f, 1f)] private float defenseMitigationPerPoint = 0.05f;
 
     [Header("Gear Stats")]
     [SerializeField] private float gearAttackBonus = 0f;
@@ -25,8 +25,19 @@ public class PlayerStats : MonoBehaviour
     [Header("FMOD Events")]
     [SerializeField] private EventReference hitEvent;
 
+    [Header("Crush Death")]
+    [Tooltip("General overlap threshold (world units) for any contact with a PositionSwitch's designated crush collider.")]
+    [SerializeField] private float crushPenetrationThreshold = 0.15f;
+    [Tooltip("Used specifically when a PositionSwitch platform is moving DOWN.")]
+    [SerializeField] private float descendingCrushThreshold = 0.02f;
+
+    [Header("Death")]
+    [SerializeField] private float deathLandingTimeout = 2f;
+
     private Player player;
     private GameUI.DeathWindow deathWindow;
+    private Coroutine landingSuspendRoutine;
+    private bool isRespawning;
 
     public float MaxHealth => maxHealth;
     public float CurrentHealth => currentHealth;
@@ -107,12 +118,13 @@ public class PlayerStats : MonoBehaviour
         }
 
         OnStatsRecalculated?.Invoke();
-        Debug.Log($"[PlayerStats] Stats Recalculated -> Atk: {TotalAttack} (gear:{gearAttackBonus:+#;-#;0}, gem:{gemAttackBonus:+#;-#;0}), Def: {TotalDefense}, Humanity: {TotalHumanity}, Crit: {TotalCrit:P1}");
     }
 
     public void TakeDamage(float rawDamage)
     {
         if (IsDead || rawDamage <= 0f) return;
+
+        if (player != null) player.Controller.CancelClimb();
 
         float mitigationMultiplier = Mathf.Pow(1f - defenseMitigationPerPoint, TotalDefense);
         float effectiveDamage = Mathf.Max(1f, rawDamage * mitigationMultiplier);
@@ -136,6 +148,40 @@ public class PlayerStats : MonoBehaviour
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
+    public void Crush()
+    {
+        if (IsDead) return;
+
+        currentHealth = 0f;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        Die();
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (IsDead) return;
+
+        Collider2D hitCollider = collision.collider;
+
+        PositionSwitch platform = hitCollider.GetComponentInParent<PositionSwitch>();
+        if (platform == null || platform.CrushCollider == null) return;
+        if (hitCollider != platform.CrushCollider) return;
+
+        int contactCount = collision.contactCount;
+        for (int i = 0; i < contactCount; i++)
+        {
+            ContactPoint2D contact = collision.GetContact(i);
+            bool descendingOntoPlayer = platform.CurrentVerticalDirection < -0.01f && contact.normal.y < -0.5f;
+            float threshold = descendingOntoPlayer ? descendingCrushThreshold : crushPenetrationThreshold;
+
+            if (contact.separation <= -threshold)
+            {
+                Crush();
+                return;
+            }
+        }
+    }
+
     public void ReviveFull()
     {
         currentHealth = maxHealth;
@@ -149,6 +195,7 @@ public class PlayerStats : MonoBehaviour
 
         if (player != null)
         {
+            player.Controller.CancelClimb();
             player.CombatController.ForceCancelAttack();
             player.CombatController.CancelParry();
             player.CombatController.EndSkill();
@@ -156,8 +203,9 @@ public class PlayerStats : MonoBehaviour
 
         SetInputLocked(true);
 
+        StopLandingWait();
         if (player != null)
-            StartCoroutine(WaitForLandingThenSuspend());
+            landingSuspendRoutine = StartCoroutine(WaitForLandingThenSuspend());
 
         GameUI.DeathWindow window = GetDeathWindow();
         if (window != null) GameUI.UIManager.Instance.Open(window);
@@ -165,35 +213,65 @@ public class PlayerStats : MonoBehaviour
 
     private IEnumerator WaitForLandingThenSuspend()
     {
-        while (player.Controller != null && !player.Controller.IsGrounded)
+        float timer = 0f;
+        while (player.Controller != null && !player.Controller.IsGrounded && timer < deathLandingTimeout)
         {
+            timer += Time.unscaledDeltaTime;
             yield return null;
         }
+
+        landingSuspendRoutine = null;
 
         if (player.Controller != null)
             player.Controller.SetPhysicsSuspended(true);
     }
 
+    private void StopLandingWait()
+    {
+        if (landingSuspendRoutine == null) return;
+
+        StopCoroutine(landingSuspendRoutine);
+        landingSuspendRoutine = null;
+    }
+
     public void OnRespawnButtonPressed()
     {
+        if (isRespawning) return;
+        isRespawning = true;
+
         GameUI.DeathWindow window = GetDeathWindow();
         if (window != null) GameUI.UIManager.Instance.Close(window);
+
+        StopLandingWait();
+        if (player != null) player.Controller.SetPhysicsSuspended(true);
 
         if (CanRespawn)
         {
             FastTravelManager.Instance.RespawnAtLastFastTravel();
         }
+        else if (GameManager.Instance != null)
+        {
+            Debug.LogWarning("[PlayerStats] No fast travel point visited this session — respawning at the starting anchor instead.");
+
+            GameManager.Instance.ForceReloadAndRespawnAtStart(FinishRespawn);
+        }
         else
         {
-            Debug.LogWarning("[PlayerStats] No fast travel point visited this session; can't respawn.");
-            ReviveFull();
-            SetInputLocked(false);
-            if (player != null) player.Controller.SetPhysicsSuspended(false);
+            Debug.LogWarning("[PlayerStats] No fast travel point visited and no GameManager found; reviving in place.");
+            FinishRespawn();
         }
     }
 
     private void HandleRespawnComplete()
     {
+        FinishRespawn();
+    }
+
+    private void FinishRespawn()
+    {
+        StopLandingWait();
+        isRespawning = false;
+
         ReviveFull();
         SetInputLocked(false);
         if (player != null) player.Controller.SetPhysicsSuspended(false);

@@ -87,7 +87,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -4188933320743342484, guid: 3c08eb098ab112141873fa24672fde37, type: 3}
+  m_Sprite: {fileID: 3718835233311866342, guid: 6e2c1bea1462a4947b3abc824187c8f9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -115,6 +115,8 @@ MonoBehaviour:
   mapOpenDelay: 0.5
   fastTravelVFXKey: FastTravel
   vfxSpawnPoint: {fileID: 1134104855890923425}
+  outlineToggle: {fileID: 0}
+  promptCollider: {fileID: 5986202733250459176}
 --- !u!114 &2611270284688499760
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -129,6 +131,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpriteOutlineToggle
   outlineColor: {r: 1, g: 1, b: 1, a: 1}
   outlineThickness: 1
+  pulseOnHighlight: 1
+  highlightPulseSpeed: 3
+  highlightMinAlpha: 0.2
+  highlightMaxAlpha: 1
+  flashCount: 3
+  flashInterval: 0.15
 --- !u!61 &5986202733250459176
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -167,7 +175,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2, y: 2}
+    oldSize: {x: 4, y: 5.5}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0

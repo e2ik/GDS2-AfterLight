@@ -35,6 +35,8 @@ namespace Enemies
         public void SetParried() => HasBeenParried = true;
 
         public void Disable() => col.enabled = false;
-        
+
+        public void ConfirmHit() => SourceEvents?.ConfirmHit();
+
     }
 }

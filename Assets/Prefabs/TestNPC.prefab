@@ -175,6 +175,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2ed6600bea7b543bd939f3a4eea86f77, type: 2}
   interactionPrompt: Talk
   repeatLastConversation: 0
+  outlineToggle: {fileID: 0}
+  promptCollider: {fileID: 0}
 --- !u!114 &8770194991066699190
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,3 +191,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpriteOutlineToggle
   outlineColor: {r: 0.8679245, g: 0.5289468, b: 0.144654, a: 1}
   outlineThickness: 1
+  pulseOnHighlight: 1
+  highlightPulseSpeed: 3
+  highlightMinAlpha: 0.2
+  highlightMaxAlpha: 1
+  flashCount: 3
+  flashInterval: 0.15

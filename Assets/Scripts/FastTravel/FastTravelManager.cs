@@ -7,8 +7,9 @@ public class FastTravelManager : MonoBehaviour
 {
     public static FastTravelManager Instance { get; private set; }
 
+    [SerializeField] private float fadeDuration = 0.5f;
+
     private FastTravelNodeSO lastVisitedNode;
-    private AreaSide lastVisitedSide;
 
     public bool HasLastVisitedNode => lastVisitedNode != null;
     public event System.Action OnFastTravelComplete;
@@ -28,10 +29,7 @@ public class FastTravelManager : MonoBehaviour
     {
         if (node == null) return;
 
-        AreaSide sideAtInteract = GameManager.Instance != null ? GameManager.Instance.CurrentAreaSide : AreaSide.Exterior;
-
         lastVisitedNode = node;
-        lastVisitedSide = sideAtInteract;
 
         if (SaveManager.Instance != null)
         {
@@ -39,19 +37,22 @@ public class FastTravelManager : MonoBehaviour
             if (saveData?.progress != null)
             {
                 saveData.progress.lastInteractedFastTravelID = node.nodeID;
-                saveData.progress.lastAreaSide = sideAtInteract;
             }
         }
+    }
+
+    public void ClearLastVisitedNode()
+    {
+        lastVisitedNode = null;
     }
 
     public void TravelTo(FastTravelNodeSO node)
     {
         if (node == null) return;
 
-        AreaSide sideAtInteract = GameManager.Instance != null ? GameManager.Instance.CurrentAreaSide : AreaSide.Exterior;
         SetLastInteractedNode(node);
 
-        StartCoroutine(FastTravelRoutine(node, sideAtInteract));
+        StartCoroutine(FastTravelRoutine(node));
     }
 
     public void RespawnAtLastFastTravel()
@@ -70,11 +71,14 @@ public class FastTravelManager : MonoBehaviour
             return;
         }
 
-        GameManager.Instance.ForceReloadAndRespawn(lastVisitedNode, lastVisitedSide, () => OnFastTravelComplete?.Invoke());
+        GameManager.Instance.ForceReloadAndRespawn(lastVisitedNode, lastVisitedNode.destinationAreaSide, () => OnFastTravelComplete?.Invoke());
     }
 
-    private IEnumerator FastTravelRoutine(FastTravelNodeSO destination, AreaSide sideAtInteract)
+    private IEnumerator FastTravelRoutine(FastTravelNodeSO destination)
     {
+        if (FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeOut(fadeDuration);
+
         string targetScene = destination.targetSceneName;
 
         Scene masterScene = SceneManager.GetSceneByName("WorldMaster");
@@ -118,18 +122,20 @@ public class FastTravelManager : MonoBehaviour
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null)
         {
-            GameManager.Instance?.ApplyAreaSide(sideAtInteract);
+            GameManager.Instance?.SetAreaSide(destination.destinationAreaSide);
+            GameManager.Instance?.ApplyAreaSide(destination.destinationAreaSide);
 
             Transform anchorTransform = FindAnchorTransform(destination.spawnAnchorID);
 
             if (anchorTransform != null)
             {
                 player.transform.position = anchorTransform.position;
+                GameManager.Instance?.ResetBackgroundParallax();
 
                 CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
                 cam?.SnapToTarget();
 
-                SaveManager.Instance?.SaveProgressAtLocation(targetScene, destination.spawnAnchorID, sideAtInteract);
+                SaveManager.Instance?.SaveProgressAtLocation(targetScene, destination.spawnAnchorID, destination.destinationAreaSide);
             }
             else
             {
@@ -140,6 +146,9 @@ public class FastTravelManager : MonoBehaviour
         {
             Debug.LogWarning("[FastTravelManager] No GameObject tagged 'Player' found — cannot reposition on respawn.");
         }
+
+        if (FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeIn(fadeDuration);
 
         OnFastTravelComplete?.Invoke();
     }

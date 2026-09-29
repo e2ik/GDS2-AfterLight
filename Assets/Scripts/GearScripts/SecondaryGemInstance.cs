@@ -18,4 +18,5 @@ public class SecondaryGemInstance
     public float InstRolledReflectPercent; // 0 - 1f
 
     public float InstRolledMaxGambleMult;
+    public bool IsNew = true;
 }

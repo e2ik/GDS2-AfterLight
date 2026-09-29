@@ -15,6 +15,8 @@ public class PrefabSpawner : MonoBehaviour
     private GameObject spawnedEnemy;
     private Coroutine spawnCoroutine;
 
+    public GameObject SpawnedEnemy => spawnedEnemy;
+
     private void Awake()
     {
         if (prefabToSpawn == null)

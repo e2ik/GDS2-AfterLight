@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -19,6 +20,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float friction = 0.2f;
     [SerializeField] private float passThroughPlatformDuration = 0.25f;
 
+    [SerializeField] private float verticalDeadzone = 0.3f;
+    [SerializeField] private float upIntentThreshold = 0.5f;
+    [SerializeField] private float downIntentThreshold = 0.7f;
+    public float VerticalInput => verticalInput;
+    public bool IsUpIntent { get; private set; }
+    public bool IsDownIntent { get; private set; }
+
     [Header("Gravity Settings")]
     [SerializeField] private float normGravity = 3f;
     [SerializeField] private float jumpGravity = 2.5f;
@@ -28,12 +36,18 @@ public class PlayerController : MonoBehaviour
 
     [Header("Wall Settings")]
     [SerializeField] private float wallSlideSpeed = 2f;
+    [SerializeField] private float wallSlideGracePeriod = 0.5f;
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     [SerializeField] private float wallCheckNormalThreshold = 0.5f;
-    [SerializeField] private Vector2 wallJumpForce = new(10f, 16f);
+    [SerializeField] private Vector2 wallJumpForce = new(8f, 16f);
     [SerializeField] private float wallJumpDuration = 0.4f;
     [SerializeField] private float wallJumpBufferTime = 0.2f;
+
+    [Header("Step Up Settings")]
+    [SerializeField] private float maxStepHeight = 0.3f;
+    [SerializeField] private float stepCheckDistance = 0.15f;
+    [SerializeField] private float stepSmoothSpeed = 6f;
 
     [Header("Dash Settings")]
     [SerializeField] private float dashVelocity = 20f;
@@ -41,9 +55,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashDuration = 0.2f;
     [SerializeField] private float dashCoolDown = 0.2f;
     [SerializeField] private float dashSkillEnergyCost = 0.1f;
+    [SerializeField] private float neutralDashInvulnExtension = 0.1f;
+    private float neutralDashInvulnTimer;
 
     [Header("Knockback Settings")]
-    [SerializeField] private LayerMask hazardousLayers;
+    [SerializeField] private bool enemyBodyCollisionKnockback = true;
+    [SerializeField] private AttackForce enemyBodyCollisionForce = AttackForce.Light;
     [SerializeField] private float hazardousKnockbackForce = 12f;
     [SerializeField] private float hazardousStaggerDuration = 0.3f;
     [SerializeField] private float bounceDuration = 0.2f;
@@ -51,6 +68,28 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float lightForce = 8f, lightStaggerDuration = 0.1f;
     [SerializeField] private float mediumForce = 10f, mediumStaggerDuration = 0.2f;
     [SerializeField] private float heavyForce = 14f, heavyStaggerDuration = 0.4f;
+
+
+    [Header("Edge Climb Settings")]
+    [Tooltip("Where the player is placed when the climb starts, relative to the ledge corner (x is mirrored by facing).")]
+    [SerializeField] private Vector2 climbStartOffset;
+    [Tooltip("Where the player ends up when the climb finishes, relative to the ledge corner (x is mirrored by facing).")]
+    [SerializeField] private Vector2 climbEndOffset;
+    [Tooltip("Safety net: finishes the climb if the Climb animation event hasn't fired after this long (e.g. the animation got interrupted). Set it a little above the climb clip's length.")]
+    [SerializeField] private float climbTimeout = 1.5f;
+    [Tooltip("Delay after a climb ends or is cancelled before another climb can start.")]
+    [SerializeField] private float climbCooldown = 0.1f;
+
+    private PlayerEdgeDetection edgeDetection;
+    private Vector2 climbStartPos;
+    private Vector2 climbEndPos;
+    private float climbStartTime;
+    private bool canClimbEdge = true;
+    private bool isClimbing;
+
+    // True while a climbable ledge is beside the player. Set by the controller each physics
+    // step; other scripts can read it but shouldn't write it.
+    [HideInInspector] public bool onEdge;
 
     [Header("Detection Settings")]
     public LayerMask groundLayer;
@@ -63,8 +102,9 @@ public class PlayerController : MonoBehaviour
     private bool dashPressed, dashReleased, isDashing, isStaggered, isBouncing;
     private bool isChargingSkillPhysics, isSkillGravityZeroed, isParryGravityActive, inventoryPressed;
     private const float InputDeadzone = 0.1f;
+    private Collider2D currentPassThroughPlatform;
 
-    private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer;
+    private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer, wallContactTimer;
     private float dashTimer, dashDirection, wallJumpDirection;
     private bool wasWallSliding;
     private int movementFreezeCount;
@@ -73,14 +113,18 @@ public class PlayerController : MonoBehaviour
     private PlayerCombatController combat;
     private Rigidbody2D rb;
     private Collider2D[] playerColliders;
+    private Collider2D[] boundsColliders;
     private InventoryDisplay inventoryDisplay;
     private Coroutine hitStaggerRoutine;
     private Coroutine bounceRoutine;
     private Bounds cachedBounds;
+    private Vector2 LastGroundedPos { get; set; }
 
     public bool InputEnabled { get; set; } = true;
     public int FacingDirection { get; private set; } = 1;
     public bool IsMovementFrozen => movementFreezeCount > 0;
+    public bool IsUILocked =>
+        GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.IsInputLocked;
     public bool IsGrounded => isGrounded;
     public bool IsWallSliding => isWallSliding;
     public bool IsDashing => isDashing;
@@ -91,7 +135,8 @@ public class PlayerController : MonoBehaviour
     public bool IsStaggered => isStaggered;
     public bool IsBouncing => isBouncing;
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
-    public bool IsInvulnerable => IsNeutralDash;
+    public bool IsInvulnerable => IsNeutralDash || neutralDashInvulnTimer > 0f;
+    public bool IsClimbing => isClimbing;
     private bool IsSkillBaseLocked =>
         isChargingSkillPhysics
         || isSkillGravityZeroed
@@ -118,9 +163,10 @@ public class PlayerController : MonoBehaviour
         combat = player.CombatController;
         rb = GetComponent<Rigidbody2D>();
         playerColliders = GetComponentsInChildren<Collider2D>(true);
+        boundsColliders = BuildBoundsColliders();
+        edgeDetection = GetComponentInChildren<PlayerEdgeDetection>(true);
     }
 
-    //private void Start() => rb.gravityScale = normGravity;
     private void Start()
     {
         rb.gravityScale = normGravity;
@@ -129,7 +175,9 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (CanMove()) Flip();
+        if (neutralDashInvulnTimer > 0f) neutralDashInvulnTimer -= Time.deltaTime;
+
+        if (!IsUILocked && CanMove()) Flip();
         if (InputEnabled && !IsMovementFrozen) PerformInventoryAction();
     }
 
@@ -142,6 +190,8 @@ public class PlayerController : MonoBehaviour
         GroundCheckUpdate();
         WallCheckUpdate();
 
+        HandleEdgeClimb();
+        HandleStepUp();
         HandleMovement();
         HandleWallSlide();
         HandleJump();
@@ -167,6 +217,7 @@ public class PlayerController : MonoBehaviour
 
         if (suspend)
         {
+            CancelClimb();
             preSuspendGravityScale = rb.gravityScale;
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
@@ -189,7 +240,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private bool IsGravityZeroed => isParryGravityActive || isChargingSkillPhysics || isSkillGravityZeroed;
+    private bool IsGravityZeroed => isParryGravityActive || isChargingSkillPhysics || isSkillGravityZeroed || isClimbing;
 
     private void ApplyGravityZeroLock()
     {
@@ -226,18 +277,20 @@ public class PlayerController : MonoBehaviour
     }
 
     public bool CanMove() => InputEnabled
+                             && !IsMovementFrozen
                              && !isWallJumping
                              && !isDashing
                              && !isStaggered
                              && !isWallSliding
                              && !IsMovementLockedBySkill
-                             && !combat.IsPlunging;
+                             && !combat.IsPlunging
+                             && !isClimbing;
 
     #region Movement Handlers
 
     private void HandleMovement()
     {
-        if (IsMovementLockedBySkill || isStaggered) return;
+        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered || isClimbing) return;
 
         bool duringWallJump = isWallJumping && Mathf.Abs(horizontalInput) > InputDeadzone;
         if (!CanMove() && !duringWallJump) return;
@@ -259,14 +312,35 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void HandleStepUp()
+    {
+        if (!isGrounded) return;
+        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered || isWallSliding || isDashing || isClimbing) return;
+        if (Mathf.Abs(horizontalInput) < InputDeadzone) return;
+
+        Bounds bounds = cachedBounds;
+        float dir = Mathf.Sign(horizontalInput);
+
+        Vector2 lowOrigin = new(bounds.center.x + dir * bounds.extents.x, bounds.min.y + 0.05f);
+        RaycastHit2D lowHit = Physics2D.Raycast(lowOrigin, Vector2.right * dir, stepCheckDistance, groundLayer);
+        if (lowHit.collider == null) return;
+
+        Vector2 highOrigin = new(lowOrigin.x, bounds.min.y + maxStepHeight);
+        RaycastHit2D highHit = Physics2D.Raycast(highOrigin, Vector2.right * dir, stepCheckDistance, groundLayer);
+        if (highHit.collider != null) return;
+
+        rb.position += new Vector2(0f, stepSmoothSpeed * Time.fixedDeltaTime);
+    }
+
     private void HandleJump()
     {
         bool canJump = InputEnabled
-            && !isWallJumping
-            && !isStaggered
-            && !isWallSliding
-            && !IsMovementLockedBySkill
-            && !combat.IsPlunging;
+                       && !isWallJumping
+                       && !isStaggered
+                       && !isWallSliding
+                       && !IsMovementLockedBySkill
+                       && !combat.IsPlunging
+                       && !isClimbing;
         if (!canJump) return;
 
         coyoteTimeCounter = isGrounded ? coyoteTime : coyoteTimeCounter - Time.fixedDeltaTime;
@@ -307,15 +381,19 @@ public class PlayerController : MonoBehaviour
 
     private void HandleWallSlide()
     {
-        if (IsFrozenOrSkillLocked)
+        if (IsFrozenOrSkillLocked || combat.IsAttacking || isClimbing)
         {
             isWallSliding = false;
+            wallContactTimer = 0f;
             return;
         }
 
         wallCoyoteTimer = (onWall && !isGrounded && Mathf.Abs(horizontalInput) > InputDeadzone) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
 
-        if (onWall && !isGrounded && wallCoyoteTimer > 0f)
+        bool touchingWall = onWall && !isGrounded && wallCoyoteTimer > 0f;
+        wallContactTimer = touchingWall ? wallContactTimer + Time.fixedDeltaTime : 0f;
+
+        if (touchingWall && wallContactTimer >= wallSlideGracePeriod)
         {
             if (!isWallSliding)
             {
@@ -325,7 +403,7 @@ public class PlayerController : MonoBehaviour
             }
 
             isWallSliding = true;
-            rb.linearVelocityX = 0f; // prevent sliding into the wall
+            rb.linearVelocityX = 0f;
             if (rb.linearVelocityY > 0f) rb.linearVelocityY *= wallSlideUpwardDampening;
             rb.linearVelocityY = Mathf.Clamp(rb.linearVelocityY, -wallSlideSpeed, float.MaxValue);
         }
@@ -337,7 +415,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleWallJump()
     {
-        if (IsFrozenOrSkillLocked) return;
+        if (IsFrozenOrSkillLocked || isClimbing) return;
 
         if (isWallSliding)
         {
@@ -384,6 +462,7 @@ public class PlayerController : MonoBehaviour
 
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
+            if (isClimbing) return;
             if (combat.IsPlunging) return;
             if (isBouncing) return;
             if (combat.IsChargeInputHeld) return;
@@ -423,7 +502,7 @@ public class PlayerController : MonoBehaviour
             IgnoreAllAirOnlyPlatformsDuringDash(activeDuration);
 
             rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
-        
+
             playerAnimation.TriggerDashEffect();
 
             ConsumeDashInput();
@@ -466,15 +545,99 @@ public class PlayerController : MonoBehaviour
 
     private void StopDashing()
     {
+        if (isDashing && !IsDirectionalDash && !isDashLocked)
+            neutralDashInvulnTimer = neutralDashInvulnExtension;
+
         isDashing = false;
         isDashLocked = false;
     }
 
     private void HandlePlunge()
     {
-        if (!combat.IsPlunging || isBouncing || isStaggered) return;
+        if (!combat.IsPlunging || isBouncing || isStaggered || isClimbing) return;
         if (rb.linearVelocityY > 0.1f) rb.linearVelocityY = 0f;
         rb.linearVelocityX = 0;
+    }
+
+    private void HandleEdgeClimb()
+    {
+        if (isClimbing)
+        {
+            rb.linearVelocity = Vector2.zero;
+            if (Time.time - climbStartTime >= climbTimeout) Climb();
+            return;
+        }
+
+        onEdge = false;
+        if (edgeDetection == null || !canClimbEdge) return;
+        if (!InputEnabled || IsFrozenOrSkillLocked || isStaggered || isBouncing || isDashing) return;
+
+        // Look for a ledge on the side being pressed toward, not the side being faced.
+        // Turning is locked during a wall jump, so using facing made ledges on the other
+        // side undetectable until the wall jump ended.
+        bool pressing = Mathf.Abs(horizontalInput) > InputDeadzone;
+        int dir = pressing ? (horizontalInput > 0f ? 1 : -1) : FacingDirection;
+
+        if (!edgeDetection.TryFindLedge(cachedBounds, dir, out Vector2 corner)) return;
+        onEdge = true;
+
+        // Only climb while holding toward the ledge.
+        if (pressing) StartClimb(corner, dir);
+    }
+
+    private void StartClimb(Vector2 corner, int dir)
+    {
+        canClimbEdge = false;
+        isClimbing = true;
+        climbStartTime = Time.time;
+
+        combat.CancelAllActions();
+
+        // The climb takes over from a wall jump or wall slide.
+        isWallJumping = false;
+        isWallSliding = false;
+        CancelInvoke(nameof(StopWallJumping));
+
+        if (FacingDirection != dir)
+        {
+            FacingDirection = dir;
+            transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
+        }
+
+        climbStartPos = corner + new Vector2(climbStartOffset.x * dir, climbStartOffset.y);
+        climbEndPos = corner + new Vector2(climbEndOffset.x * dir, climbEndOffset.y);
+
+        rb.linearVelocity = Vector2.zero;
+        rb.gravityScale = 0f;
+        TeleportTo(climbStartPos);
+    }
+
+    private void Climb() //triggered in animation events
+    {
+        // Ignore a late event from a climb that was already cancelled or finished.
+        if (!isClimbing) return;
+
+        isClimbing = false;
+        TeleportTo(climbEndPos);
+        rb.linearVelocity = Vector2.zero;
+        Invoke(nameof(AllowClimb), climbCooldown);
+    }
+
+    // Stops a climb part-way (knockback, bounce, physics suspended) without moving the player.
+    public void CancelClimb()
+    {
+        if (!isClimbing) return;
+
+        isClimbing = false;
+        Invoke(nameof(AllowClimb), climbCooldown);
+    }
+
+    private void AllowClimb() => canClimbEdge = true;
+
+    private void TeleportTo(Vector2 position)
+    {
+        rb.position = position;
+        transform.position = position;
     }
 
     private void UpdateGravity()
@@ -494,6 +657,26 @@ public class PlayerController : MonoBehaviour
             };
     }
 
+    public void ResetPosition()
+    {
+        if(FadeCanvasController.Instance != null)
+            StartCoroutine(ResetPosCoroutine());
+        else
+            transform.position = LastGroundedPos;
+    }
+
+    [SerializeField] private float fadeDuration = 0.1f;
+    private IEnumerator ResetPosCoroutine()
+    {
+        FreezeMovement(true);
+        FadeCanvasController.Instance.FadeOut(fadeDuration);
+        yield return new WaitForSeconds(fadeDuration * 4);
+        transform.position = LastGroundedPos;
+        FreezeMovement(false);
+        yield return new WaitForSeconds(fadeDuration);
+        FadeCanvasController.Instance.FadeIn(fadeDuration);
+    }
+
     #endregion
 
     #region Damage & Stagger
@@ -510,12 +693,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce, bool applyStagger = true)
+    public void ApplyKnockback(Vector2 sourcePosition, AttackForce attackForce, bool applyStagger = true, bool playHurtAnimation = true)
     {
         if (physicsSuspended) return;
 
+        CancelClimb();
         combat.ForceCancelAttack();
-        if(applyStagger) playerAnimation.PlayHurtAnimation();
+        if (applyStagger && playHurtAnimation) playerAnimation.PlayHurtAnimation();
 
         KnockbackData data = attackForce switch
         {
@@ -529,7 +713,7 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         rb.AddForce(dir * data.Force, ForceMode2D.Impulse);
 
-        if(applyStagger) StartHitStagger(data.StaggerDuration);
+        if (applyStagger) StartHitStagger(data.StaggerDuration);
     }
 
     private void StartHitStagger(float duration)
@@ -548,8 +732,9 @@ public class PlayerController : MonoBehaviour
 
     public void ApplyBounceImpulse(Vector2 sourcePosition, float force)
     {
-        if (physicsSuspended) return; // NEW
+        if (physicsSuspended) return;
 
+        CancelClimb();
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
         rb.linearVelocity = Vector2.zero;
         rb.AddForce(dir * force, ForceMode2D.Impulse);
@@ -557,8 +742,9 @@ public class PlayerController : MonoBehaviour
 
     public void TriggerBounce(Vector2 sourcePosition, float force, float duration)
     {
-        if (physicsSuspended) return; // NEW
+        if (physicsSuspended) return;
 
+        CancelClimb();
         combat.ForceCancelAttack();
 
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
@@ -570,7 +756,7 @@ public class PlayerController : MonoBehaviour
 
     public void PlayBounceState(float duration)
     {
-        if (physicsSuspended) return; // NEW
+        if (physicsSuspended) return;
 
         if (bounceRoutine != null) StopCoroutine(bounceRoutine);
         bounceRoutine = StartCoroutine(BounceCoroutine(duration));
@@ -591,12 +777,22 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputValue value)
     {
         Vector2 raw = value.Get<Vector2>();
-        verticalInput = raw.y;
-        horizontalInput = Mathf.Abs(raw.x) > InputDeadzone ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude) : 0f;
+
+        verticalInput = Mathf.Abs(raw.y) > verticalDeadzone ? raw.y : 0f;
+
+        bool verticalDominant = Mathf.Abs(raw.y) > Mathf.Abs(raw.x);
+        IsUpIntent = raw.y > upIntentThreshold && verticalDominant;
+        IsDownIntent = raw.y < -downIntentThreshold && verticalDominant;
+
+        horizontalInput = Mathf.Abs(raw.x) > InputDeadzone
+            ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude)
+            : 0f;
     }
 
     public void OnJump(InputValue value)
     {
+        if (value.isPressed && IsUILocked) return;
+
         if (value.isPressed)
         {
             combat.CancelParry();
@@ -604,7 +800,13 @@ public class PlayerController : MonoBehaviour
         jumpPressed = value.isPressed; jumpReleased = !value.isPressed;
     }
 
-    public void OnDash(InputValue value) { dashPressed = value.isPressed; dashReleased = !value.isPressed; }
+    public void OnDash(InputValue value)
+    {
+        if (value.isPressed && IsUILocked) return;
+
+        dashPressed = value.isPressed; dashReleased = !value.isPressed;
+    }
+
     public void OnInventory() => inventoryPressed = true;
 
     private void ConsumeJumpInput()
@@ -627,8 +829,6 @@ public class PlayerController : MonoBehaviour
     {
         if (Mathf.Abs(horizontalInput) > InputDeadzone)
         {
-            // FacingDirection = horizontalInput > 0f ? 1 : -1;
-            // transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
             int newFacingDirection = horizontalInput > 0f ? 1 : -1;
 
             if (newFacingDirection != FacingDirection)
@@ -640,7 +840,7 @@ public class PlayerController : MonoBehaviour
                     playerAnimation.TriggerTurnDustEffect(FacingDirection);
                 }
                 lastFacingDirection = FacingDirection;
-                transform.localScale = new Vector3(FacingDirection,transform.localScale.y,transform.localScale.z);
+                transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
             }
         }
     }
@@ -649,6 +849,10 @@ public class PlayerController : MonoBehaviour
     {
         hit = Physics2D.Raycast(origin, Vector2.down, distance, groundLayer);
         if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
+        if (hit.collider == currentPassThroughPlatform) return false;
+        if (rb.linearVelocityY > 0f && hit.collider.GetComponent<PlatformEffector2D>() != null)
+            return false;
+
         if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
             return false;
 
@@ -662,21 +866,37 @@ public class PlayerController : MonoBehaviour
         Vector2 rightFoot = new(bounds.max.x - edgeMargin, bounds.min.y + 0.02f);
         float dist = groundCheckDistance + 0.04f;
 
+        bool rightGrounded = false;
+        bool leftGrounded = false;
+
         if (RaycastGroundAt(leftFoot, dist, out RaycastHit2D leftHit))
         {
             isGrounded = true;
             currentSurfaceNormal = leftHit.normal;
             lastHitPoint = leftHit.point;
+
+            leftGrounded = true;
+            if (RaycastGroundAt(rightFoot, dist, out RaycastHit2D hit))
+                rightGrounded = true;
         }
         else if (RaycastGroundAt(rightFoot, dist, out RaycastHit2D rightHit))
         {
             isGrounded = true;
             currentSurfaceNormal = rightHit.normal;
             lastHitPoint = rightHit.point;
+
+            rightGrounded = true;
+            if (RaycastGroundAt(leftFoot, dist, out RaycastHit2D hit))
+                leftGrounded = true;
         }
         else
         {
             isGrounded = false;
+        }
+
+        if (isGrounded && leftGrounded && rightGrounded)
+        {
+            LastGroundedPos = transform.position;
         }
     }
 
@@ -698,15 +918,15 @@ public class PlayerController : MonoBehaviour
         if (CheckWallRay(chest, dir, rayLen)) hits++;
         if (CheckWallRay(waist, dir, rayLen)) hits++;
 
-        if (hits >= 2) onWall = true;
+        if (hits >= 3) onWall = true;
     }
 
     private bool CheckWallRay(Vector2 origin, float dir, float len)
     {
         RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.right * dir, len, groundLayer);
         if (hit.collider == null || Mathf.Abs(hit.normal.x) <= wallCheckNormalThreshold) return false;
-    if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
-        return false;
+        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
+            return false;
 
         currentSurfaceNormal = hit.normal;
         lastHitPoint = hit.point;
@@ -731,13 +951,33 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
+    // Every player collider except edge detection. The edge detection collider sits out in
+    // front of the body, so including it stretches the bounds and throws off the wall,
+    // ground and step-up checks. Built once, since the collider setup doesn't change.
+    private Collider2D[] BuildBoundsColliders()
+    {
+        if (playerColliders == null || playerColliders.Length == 0)
+            playerColliders = GetComponentsInChildren<Collider2D>(true);
+
+        List<Collider2D> result = new List<Collider2D>();
+        foreach (Collider2D col in playerColliders)
+        {
+            if (col == null) continue;
+            if (col.GetComponentInParent<PlayerEdgeDetection>(true) != null) continue;
+            result.Add(col);
+        }
+
+        return result.ToArray();
+    }
+
     private Bounds ComputePlayerBounds()
     {
-        if (playerColliders == null || playerColliders.Length == 0) playerColliders = GetComponentsInChildren<Collider2D>(true);
-        if (playerColliders == null || playerColliders.Length == 0) return new Bounds(transform.position, Vector3.one);
+        if (boundsColliders == null || boundsColliders.Length == 0) boundsColliders = BuildBoundsColliders();
+        if (boundsColliders.Length == 0) return new Bounds(transform.position, Vector3.one);
 
-        Bounds b = playerColliders[0].bounds;
-        for (int i = 1; i < playerColliders.Length; i++) b.Encapsulate(playerColliders[i].bounds);
+        //filtering out edge detection collider, I'm pretty sure I needed this for something else
+        Bounds b = boundsColliders[0].bounds;
+        for (int i = 1; i < boundsColliders.Length; i++) b.Encapsulate(boundsColliders[i].bounds);
         return b;
     }
 
@@ -756,9 +996,13 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator DisableCollisionRoutine(Collider2D platform)
     {
+        currentPassThroughPlatform = platform;
+
         foreach (var col in playerColliders) Physics2D.IgnoreCollision(col, platform, true);
         yield return new WaitForSeconds(passThroughPlatformDuration);
         foreach (var col in playerColliders) if (platform != null) Physics2D.IgnoreCollision(col, platform, false);
+
+        if (currentPassThroughPlatform == platform) currentPassThroughPlatform = null;
     }
 
     private void PerformInventoryAction()
@@ -775,34 +1019,37 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D col) => HandleHazardousCollision(col);
-    private void OnCollisionStay2D(Collision2D col) => HandleHazardousCollision(col);
+    public void ApplyHazardKnockback(Vector2 contactPoint) =>
+        ApplyHazardKnockback(contactPoint, hazardousKnockbackForce, hazardousStaggerDuration);
 
-    private void HandleHazardousCollision(Collision2D col)
+    private void OnCollisionEnter2D(Collision2D col) => HandleEnemyBodyCollision(col);
+
+    private void HandleEnemyBodyCollision(Collision2D col)
     {
-        if (((1 << col.gameObject.layer) & hazardousLayers) == 0 || isStaggered || isBouncing || IsSkillActive) return;
-        if (combat.IsPlunging) return;
+        if (!enemyBodyCollisionKnockback) return;
+        if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
+        if (!col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
 
-        bool isEnemyLayer = ((1 << col.gameObject.layer) & combat.enemyLayer) != 0;
-        if (isEnemyLayer && !col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
+        ApplyKnockback(col.transform.position, enemyBodyCollisionForce, applyStagger: true, playHurtAnimation: false);
+    }
 
-        bool wasPlunging = combat.IsPlunging || combat.WasRecentlyPlunging;
+    public bool ApplyHazardKnockback(Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null)
+    {
+        if (physicsSuspended || isStaggered || isBouncing || IsSkillActive) return false;
 
+        bool wasPlunging = combat.WasRecentlyPlunging;
+
+        CancelClimb();
         combat.ForceCancelAttack();
 
-        ContactPoint2D contact = col.GetContact(0);
         rb.linearVelocity = Vector2.zero;
-        Vector2 dir = new Vector2(transform.position.x >= contact.point.x ? 1f : -1f, 1f).normalized;
-        rb.AddForce(dir * hazardousKnockbackForce, ForceMode2D.Impulse);
+        Vector2 dir = directionOverride ?? new Vector2(transform.position.x >= contactPoint.x ? 1f : -1f, 1f);
+        rb.AddForce(dir.normalized * force, ForceMode2D.Impulse);
 
-        if (wasPlunging)
-        {
-            PlayBounceState(bounceDuration);
-        }
-        else
-        {
-            StartHitStagger(hazardousStaggerDuration);
-        }
+        if (wasPlunging) PlayBounceState(bounceDuration);
+        else StartHitStagger(staggerDuration);
+
+        return true;
     }
 
     #endregion

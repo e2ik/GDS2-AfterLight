@@ -8,6 +8,8 @@ public class SaveData
     public WeaponInstance equippedWeapon;
     public List<EquippedGearSaveData> equippedGear = new List<EquippedGearSaveData>();
     public SecondaryGemInstance equippedSecondaryGem;
+    public string equippedPrimaryGemID;
+    public bool equippedPrimaryGemSaved;
     public ProgressSaveData progress;
     public ChestSaveData chestData;
     public InventorySaveData inventoryData;
@@ -37,12 +39,13 @@ public class ItemInstanceSaveData
 [System.Serializable]
 public class ProgressSaveData
 {
-    public List<string> storyFlags;
+    public List<string> storyFlags = new List<string>();
     public List<string> unlockedFastTravelIDs;
     public string lastVisitedSceneName;
     public string lastSpawnAnchorID;
     public AreaSide lastAreaSide = AreaSide.Exterior;
     public string lastInteractedFastTravelID;
+    public List<string> completedTutorialSequenceIDs = new List<string>();
 }
 
 [System.Serializable]
@@ -59,4 +62,6 @@ public class InventorySaveData
     public List<PrimaryGemInstance> primaryGems = new List<PrimaryGemInstance>();
     public List<WeaponInstance> weapons = new List<WeaponInstance>();
     public int equippedSecondaryGemIndex = -1;
+    public List<KeyInstance> keyInstances = new List<KeyInstance>();
+    public List<LoreItemInstance> loreItemInstances = new List<LoreItemInstance>();
 }

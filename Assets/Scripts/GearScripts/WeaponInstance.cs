@@ -8,4 +8,5 @@ public class WeaponInstance
     public float InstRolledRange;
     public float InstRolledCrit;
     public int PickupOrder;
+    public bool IsNew = true;
 }
