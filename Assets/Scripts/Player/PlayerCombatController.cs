@@ -71,8 +71,6 @@ public class PlayerCombatController : MonoBehaviour
     private float attackDurationTimer;
     private Vector2 attackRange;
     private Vector2 attackCenter;
-    private float attackDamage;
-    private float attackCritChance;
     private float attackTimer;
     private bool isAttacking;
     private bool attackStartedGrounded;
@@ -487,8 +485,6 @@ public class PlayerCombatController : MonoBehaviour
         };
 
         float weaponRange = player.Equipment.EquippedWeapon.InstRolledRange;
-        attackDamage = GetDamage();
-        attackCritChance = player.Equipment.EquippedWeapon.InstRolledCrit;
 
         if (attackDir != Vector2.down)
         {
@@ -619,18 +615,16 @@ public class PlayerCombatController : MonoBehaviour
         isPlunging = false;
     }
 
-    private float GetDamage()
+    private float GetComboMultiplier()
     {
-        float baseDmg = GetScaledAttackDamage();
-
         int multiplierIndex = Mathf.Clamp(currentComboIndex - 1, 0, comboDamageMultipliers.Length - 1);
-        float comboMultiplier = comboDamageMultipliers[multiplierIndex];
-
-        return baseDmg * comboMultiplier;
+        return comboDamageMultipliers[multiplierIndex];
     }
 
     private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
     {
+        float attackDamage = context.BaseAttackDamage * GetComboMultiplier();
+
         foreach (var col in enemiesInRange)
         {
             if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
@@ -644,7 +638,7 @@ public class PlayerCombatController : MonoBehaviour
                         : attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
 
                     float roll = UnityEngine.Random.value;
-                    bool isCrit = roll <= attackCritChance;
+                    bool isCrit = roll < context.BaseAttackCrit;
                     dmg *= (isCrit ? critDamageMultiplier : 1f);
 
                     enemyHealth.ApplyHit((int)dmg, context);
@@ -778,7 +772,8 @@ public class PlayerCombatController : MonoBehaviour
             SkillMeter -= SkillActivationCost;
             RaiseEnergyChanged();
         }
-        def.Execute(player.Equipment.GetModifiedAttackContext(isAttack: false), GetScaledAttackDamage() * multiplier, chargePercentage);
+        AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: false);
+        def.Execute(context, context.BaseAttackDamage * multiplier, chargePercentage);
     }
 
     private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
@@ -813,7 +808,7 @@ public class PlayerCombatController : MonoBehaviour
                 currentChargePercentage = chargeRatio;
             }
 
-            float currentTickDamage = GetScaledAttackDamage() * dynamicRampMultiplier;
+            float currentTickDamage = context.BaseAttackDamage * dynamicRampMultiplier;
             def.Execute(context, currentTickDamage, currentChargePercentage);
 
             yield return new WaitForSeconds(tick);
