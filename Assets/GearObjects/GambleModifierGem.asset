@@ -15,22 +15,21 @@ MonoBehaviour:
   ItemID: GambleGem
   UIName: Random Skill Damage
   UISprite: {fileID: 21300000, guid: 42085325519bc6e4ab911f60f2006e23, type: 3}
+  Deletable: 1
+  SortOrder: 0
   maxCommonValue: 0
   maxRareValue: 0
   maxEpicValue: 0
   maxLegendaryValue: 0
   TemplateID: T6
   GemType: 2
-  DamageByRarity:
-    Common: {x: 0, y: 0}
-    Rare: {x: 0, y: 0}
-    Epic: {x: 0, y: 0}
-    Legendary: {x: 0, y: 0}
-  CritByRarity:
-    Common: {x: 0, y: 0}
-    Rare: {x: 0, y: 0}
-    Epic: {x: 0, y: 0}
-    Legendary: {x: 0, y: 0}
+  basicPickupSound:
+    Guid:
+      Data1: 622354256
+      Data2: 1210595945
+      Data3: 893189544
+      Data4: -714071588
+    Path: event:/WorldSFX Events/SecondaryGemPickupEvent
   maxDamageMultByRarity:
     Common: {x: 1, y: 3}
     Rare: {x: 3, y: 5}
