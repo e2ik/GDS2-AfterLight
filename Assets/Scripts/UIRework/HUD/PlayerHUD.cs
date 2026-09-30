@@ -31,7 +31,7 @@ namespace GameUI
         [SerializeField] private Color energyFlashColor = Color.white;
         [SerializeField] private float energyFlashDuration = 0.12f;
         [SerializeField] private Color energyFullPulseColor = new Color(0.4f, 0.9f, 1f);
-        [SerializeField] private float energyFullPulseSpeed = 3f;
+        [SerializeField] private float energyFullPulseSpeed = 10f;
 
         [Header("Heals")]
         [SerializeField] private Image healImage;

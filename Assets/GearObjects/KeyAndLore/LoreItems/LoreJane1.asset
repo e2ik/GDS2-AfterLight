@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 280d69ebfcaeb664c905fc4dc8d6692d, type: 3}
+  m_Name: LoreJane1
+  m_EditorClassIdentifier: Assembly-CSharp::LoreItemDefinition
+  ItemID: LORE_JANE_DIRECTORY_1
+  UIName: Memory Vendor Invoice
+  UISprite: {fileID: 0}
+  Deletable: 1
+  SortOrder: 0
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
+  FullImage: {fileID: 0}
+  Description: A crumpled receipt from a 'companionship memory' vendor.
+  LoreSetID: JANE_DIRECTORY
+  PieceIndex: 1
+  TotalPieces: 2
+  ItemText: "ORDER FORM \u2014 COMPANION MEMORY PACKAGE. TEMPLATE: 'JANE DOE' (STANDARD).
+    CUSTOMIZATION: minimal \u2014 face, voice, name retained per client request.
+    UNITS SOLD TO DATE: 214,006. Customer note: 'She doesn't need to be real. She
+    just needs to be mine.'"
