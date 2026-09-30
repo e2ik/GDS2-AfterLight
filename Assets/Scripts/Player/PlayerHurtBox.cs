@@ -61,6 +61,7 @@ public class PlayerHurtBox : MonoBehaviour
         }
         if (hitbox.HasBeenParried) return false;
 
+        playerController.CancelHeal();
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
         bool isUnparryable = hitbox.AttackForce == AttackForce.Heavy;
 
