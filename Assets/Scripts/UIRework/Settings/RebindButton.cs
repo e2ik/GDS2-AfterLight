@@ -10,6 +10,10 @@ namespace GameUI
 {
     public class RebindButton : MonoBehaviour
     {
+        public enum RebindDevice { Keyboard, Gamepad }
+
+        private RebindDevice device = RebindDevice.Keyboard;
+
         [SerializeField] private InputActionReference actionReference;
         [SerializeField] private int bindingIndex = 0;
 
@@ -43,11 +47,12 @@ namespace GameUI
             rebindingOperation?.Cancel();
         }
 
-        public void Initialize(InputActionReference action, int newBindingIndex, string label, CanvasGroup sharedWaitingPrompt)
+        public void Initialize(InputActionReference action, int newBindingIndex, string label, CanvasGroup sharedWaitingPrompt, RebindDevice rebindDevice)
         {
             actionReference = action;
             bindingIndex = newBindingIndex;
             waitingForInputPrompt = sharedWaitingPrompt;
+            device = rebindDevice;
             if (actionNameText != null) { actionNameText.text = label; }
         }
 
@@ -70,12 +75,26 @@ namespace GameUI
             previousOverridePath = action.bindings[bindingIndex].overridePath;
             action.Disable();
             UIManager.Instance.SuppressCancel = true;
-            rebindingOperation = action.PerformInteractiveRebinding(bindingIndex)
-                .WithControlsHavingToMatchPath("<Keyboard>")
-                .WithControlsExcluding("Mouse")
-                .WithCancelingThrough("<Keyboard>/escape")
-                .OnComplete(operation => OnRebindComplete())
-                .OnCancel(operation => OnRebindCancelled())
+
+            RebindingOperation operation = action.PerformInteractiveRebinding(bindingIndex)
+                .WithCancelingThrough("<Keyboard>/escape");
+
+            if (device == RebindDevice.Gamepad)
+            {
+                operation = operation
+                    .WithControlsHavingToMatchPath("<Gamepad>")
+                    .WithCancelingThrough("<Gamepad>/start");
+            }
+            else
+            {
+                operation = operation
+                    .WithControlsHavingToMatchPath("<Keyboard>")
+                    .WithControlsExcluding("Mouse");
+            }
+
+            rebindingOperation = operation
+                .OnComplete(_ => OnRebindComplete())
+                .OnCancel(_ => OnRebindCancelled())
                 .Start();
         }
 
