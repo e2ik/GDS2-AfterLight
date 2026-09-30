@@ -116,7 +116,7 @@ public static class ItemTooltipTextBuilder
                 ? (float?)(effectComparison.InstRolledChargeAmount * 100f)
                 : null;
 
-            sb.AppendLine($"ENERGY: {charge:F1}%{BuildDiffSuffix(charge, eqCharge, "F1", "%")}");
+            sb.AppendLine($"ENERGY: +{charge:F0}{BuildDiffSuffix(charge, eqCharge, "F0")}");
         }
 
         if (gem.InstRolledReflectPercent > 0f)
@@ -127,6 +127,15 @@ public static class ItemTooltipTextBuilder
                 : null;
 
             sb.AppendLine($"REFLECT: {reflect:F1}%{BuildDiffSuffix(reflect, eqReflect, "F1", "%")} of incoming damage");
+        }
+
+        if (gem.InstRolledMaxGambleMult > 0f)
+        {
+            float? eqGamble = effectComparison != null && effectComparison.InstRolledMaxGambleMult > 0f
+                ? (float?)effectComparison.InstRolledMaxGambleMult
+                : null;
+
+            sb.AppendLine($"GAMBLE: up to {gem.InstRolledMaxGambleMult:F2}x{BuildDiffSuffix(gem.InstRolledMaxGambleMult, eqGamble, "F2", "x")} damage");
         }
 
         return sb.ToString().TrimEnd();

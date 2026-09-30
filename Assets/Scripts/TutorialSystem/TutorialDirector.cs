@@ -72,6 +72,7 @@ namespace Tutorial
         public void LoadCompletedSequences(IEnumerable<string> ids)
         {
             completedSequenceIDs.Clear();
+            resumeIndices.Clear();
             if (ids == null) return;
             foreach (var id in ids) completedSequenceIDs.Add(id);
         }

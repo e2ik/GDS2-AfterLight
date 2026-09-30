@@ -376,6 +376,8 @@ MonoBehaviour:
   dashDuration: 0.2
   dashCoolDown: 0.2
   dashSkillEnergyCost: 0.1
+  neutralDashInvulnExtension: 0.1
+  perfectDodgeWindow: 0.1
   enemyBodyCollisionKnockback: 1
   enemyBodyCollisionForce: 1
   hazardousKnockbackForce: 8
@@ -389,6 +391,8 @@ MonoBehaviour:
   heavyStaggerDuration: 0.4
   climbStartOffset: {x: -1, y: -1.1}
   climbEndOffset: {x: 0.5, y: 1}
+  climbTimeout: 1.5
+  climbCooldown: 0.1
   onEdge: 0
   groundLayer:
     serializedVersion: 2
@@ -414,6 +418,7 @@ MonoBehaviour:
   parryRecoveryDuration: 0.2
   parryBufferTime: 0.15
   successfulParryVisualDuration: 0.15
+  parryWindowExtension: 0.1
   attackOrigin: {fileID: 6444912443510829891}
   damageScalingExponent: 0.8
   enemyLayer:
@@ -433,6 +438,7 @@ MonoBehaviour:
   counterAttackWindow: 0.5
   passiveEnergyCooldown: 4
   passiveEnergyRegenMult: 0.2
+  passiveEnergyCap: 0.5
   maxComboCount: 3
   comboResetDelay: 1
   comboDamageMultipliers:
@@ -445,10 +451,11 @@ MonoBehaviour:
   skillCoolDown: 0.2
   chargingSkillMinDur: 0.4
   chargingSkillMaxDur: 1.5
-  fullChargeDamageMultiplier: 1.5
+  fullChargeDamageMultiplier: 2.5
   skillHoldThreshold: 0.12
   skillReleaseBufferTime: 0.08
   chargeSkillAmount: 0.2
+  skillGemModifierBonus: 0.75
   parryEvent:
     Guid:
       Data1: 1039513163
@@ -505,6 +512,7 @@ MonoBehaviour:
     Path: event:/CombatSFXEvents/PlayerHitEvent
   crushPenetrationThreshold: 0.15
   descendingCrushThreshold: 0.02
+  deathLandingTimeout: 2
 --- !u!114 &7383012226346758473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -541,6 +549,7 @@ MonoBehaviour:
     InstRolledRange: 0
     InstRolledCrit: 0
     PickupOrder: 0
+    IsNew: 1
   specialAttackDef: {fileID: 0}
   secondaryGem:
     InstTemplateID: 
@@ -553,6 +562,8 @@ MonoBehaviour:
     InstRolledDotPercent: 0
     InstRolledChargeAmount: 0
     InstRolledReflectPercent: 0
+    InstRolledMaxGambleMult: 0
+    IsNew: 1
   equippedGearDebug: []
 --- !u!114 &4056446563424932215
 MonoBehaviour:
@@ -777,12 +788,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74eda1ac4de37cc40b2bea57b660a904, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  enabled: 1
-  radius: 0.2
+  detectionEnabled: 1
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  pController: {fileID: 2301400823228123696}
+  grabZoneBottom: -0.4
+  grabZoneTop: 0.3
+  reach: 0.2
+  ledgeTopNormalThreshold: 0.7
+  wallNormalThreshold: 0.7
+  clearanceScale: 0.9
 --- !u!61 &1098441284187602602
 BoxCollider2D:
   m_ObjectHideFlags: 0

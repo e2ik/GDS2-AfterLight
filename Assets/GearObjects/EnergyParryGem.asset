@@ -30,4 +30,14 @@ MonoBehaviour:
       Data3: 893189544
       Data4: -714071588
     Path: event:/WorldSFX Events/SecondaryGemPickupEvent
+  DamageByRarity:
+    Common: {x: 0, y: 0}
+    Rare: {x: 0, y: 0}
+    Epic: {x: 0, y: 0}
+    Legendary: {x: 0, y: 0}
+  CritByRarity:
+    Common: {x: 0.03, y: 0.05}
+    Rare: {x: 0.05, y: 0.1}
+    Epic: {x: 0.1, y: 0.15}
+    Legendary: {x: 0.15, y: 0.2}
   chargeAmountRange: {x: 0.01, y: 0.1}

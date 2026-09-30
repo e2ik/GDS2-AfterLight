@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FMODUnity;
 using UnityEngine;
 
@@ -10,18 +11,19 @@ namespace Enemies.ProjectileScripts
         [SerializeField] private LayerMask playerMask;
         [SerializeField] private LayerMask collideWithMask;
         [SerializeField] private EventReference explodeEvent;
-        
+
         [SerializeField] private float hitAnimationDuration = 0.3f;
         private Animator animator;
 
         // guard against multiple hits (player has more than 1 collider)
         private bool hasTriggered = false;
-        
+        private readonly HashSet<PlayerHurtBox> explosionHits = new HashSet<PlayerHurtBox>();
+
         protected override void OnLaunch(Vector2 initialVelocity)
         {
             hasTriggered = false;
             animator = GetComponent<Animator>();
-            
+
             Rb.gravityScale = gravityScale;
             Rb.linearVelocity = initialVelocity;
         }
@@ -42,15 +44,15 @@ namespace Enemies.ProjectileScripts
                 hasTriggered = true;
                 TryExplodeOrParry(hurtBox);
                 PlayHitAnimation();
-                return false; 
+                return false;
             }
 
             if ((collideWithMask.value & (1 << other.gameObject.layer)) != 0)
             {
                 hasTriggered = true;
-                Explode(); 
+                Explode();
                 PlayHitAnimation();
-                return false; 
+                return false;
             }
 
             return false;
@@ -58,21 +60,15 @@ namespace Enemies.ProjectileScripts
 
         private void TryExplodeOrParry(PlayerHurtBox directHitBox = null)
         {
-            bool wasParried = false;
-
             if (directHitBox != null)
             {
                 Collider2D ownerCollider = Owner != null ? Owner.GetComponentInChildren<Collider2D>() : null;
-
-                if (!directHitBox.TakeHit(HitBox, ownerCollider))
-                {
-                    wasParried = true;
-                }
+                directHitBox.TakeHit(HitBox, ownerCollider);
             }
 
-            if (wasParried)
+            if (HitBox.HasBeenParried)
             {
-                return; 
+                return;
             }
 
             Explode(directHitBox);
@@ -81,8 +77,11 @@ namespace Enemies.ProjectileScripts
         private void Explode(PlayerHurtBox directHitBox = null)
         {
             PSpawner.Spawn("ProjectileExplode", transform.position, Quaternion.identity);
-            
+
             AudioManager.PlaySFX(explodeEvent, transform.position);
+
+            explosionHits.Clear();
+            if (directHitBox != null) explosionHits.Add(directHitBox);
 
             var hits = Physics2D.OverlapCircleAll(transform.position, explosionRadius, playerMask);
             foreach (var hit in hits)
@@ -91,7 +90,7 @@ namespace Enemies.ProjectileScripts
                 if (hurtBox == null)
                     hurtBox = hit.GetComponentInChildren<PlayerHurtBox>();
 
-                if (hurtBox != null && hurtBox != directHitBox)
+                if (hurtBox != null && explosionHits.Add(hurtBox))
                 {
                     hurtBox.TakeHit(HitBox);
                 }

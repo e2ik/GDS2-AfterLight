@@ -1,3 +1,4 @@
+using System;
 using Enemies;
 using UnityEngine;
 
@@ -10,8 +11,13 @@ public class PlayerHurtBox : MonoBehaviour
     private PlayerAnimation playerAnimation;
     private Collider2D col;
     private bool manualInvulnerable;
-    public bool Invulnerable 
-    { 
+
+    public static event Action<HitBox, bool> AnyAttackDodged;
+    private static HitBox lastDodgedHitbox;
+    private static float lastDodgedTime;
+    private const float DodgeRepeatWindow = 0.5f;
+    public bool Invulnerable
+    {
         get => manualInvulnerable || (playerController != null && playerController.IsInvulnerable);
         set => manualInvulnerable = value;
     }
@@ -41,23 +47,28 @@ public class PlayerHurtBox : MonoBehaviour
     {
         var hitbox = other.GetComponent<HitBox>();
         if (hitbox == null || !hitbox.IsActive) return;
-        
+
         TakeHit(hitbox, other);
     }
 
     public bool TakeHit(HitBox hitbox, Collider2D col2d = null)
     {
-        if (Invulnerable) return false;        
+        if (Invulnerable)
+        {
+            if (!manualInvulnerable && playerController != null && playerController.IsInvulnerable)
+                ReportDodge(hitbox, playerController.IsInPerfectDodgeWindow);
+            return false;
+        }
+        if (hitbox.HasBeenParried) return false;
 
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
         bool isUnparryable = hitbox.AttackForce == AttackForce.Heavy;
 
         if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
         {
-            if (hitbox.HasBeenParried) return false;
             hitbox.SetParried();
             combatController.TryModifyParry(hitbox.Damage, col2d); //trigger secondary gem effect
-            
+
             return false; // Successfully parried! Did not take damage.
         }
 
@@ -65,7 +76,7 @@ public class PlayerHurtBox : MonoBehaviour
                                     (combatController.GetComponentInParent<Player>()?.Equipment?.SpecialAttackDef?.SkillExecutionType == SkillExecutionType.Charged);
 
         if (isChargedSkillExecuting) return false;
-        
+
         stats.TakeDamage(hitbox.Damage);
         PSpawner.Spawn("PlayerHit", transform.position);
 
@@ -80,10 +91,20 @@ public class PlayerHurtBox : MonoBehaviour
             combatController.EndSkill();
             playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce);
         }
-        
+
         hitbox.ConfirmHit();
 
         return true; // Successfully took the hit.
+    }
+
+    private static void ReportDodge(HitBox hitbox, bool isPerfect)
+    {
+        if (hitbox == null || hitbox.HasBeenParried) return;
+        if (hitbox == lastDodgedHitbox && Time.time - lastDodgedTime < DodgeRepeatWindow) return;
+
+        lastDodgedHitbox = hitbox;
+        lastDodgedTime = Time.time;
+        AnyAttackDodged?.Invoke(hitbox, isPerfect);
     }
 
     public bool TakeHazardHit(float damage, Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null, bool dealsDamage = true, bool resetsPlayer = false)

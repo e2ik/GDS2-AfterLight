@@ -10,17 +10,18 @@ namespace Enemies.ProjectileScripts
     {
         [SerializeField] private float lifetime = float.MaxValue;
         [SerializeField] private AttackForce attackForce;
-        
+
         protected Rigidbody2D Rb { get; private set; }
         protected HitBox HitBox { get; private set; }
         protected AttackEvents Events { get; private set; }
         protected int Damage { get; private set; }
-        
+
         public Projectile SourcePrefab { get; set; }
         public Transform Owner => owner;
 
         private Transform owner;
         private bool hasOwner;
+        private bool isReleased;
 
         private float _lifeTimer;
 
@@ -33,6 +34,9 @@ namespace Enemies.ProjectileScripts
 
         public void Launch(Vector2 origin, Vector2 initialVelocity, int damage, Transform owner = null)
         {
+            CancelInvoke();
+            isReleased = false;
+
             transform.position = origin;
             Damage = damage;
             _lifeTimer = lifetime;
@@ -50,16 +54,18 @@ namespace Enemies.ProjectileScripts
 
         protected void Update()
         {
+            if (isReleased) return;
+
             if (hasOwner && (owner == null || !owner.gameObject.activeInHierarchy))
             {
-                Destroy(gameObject);
+                ReturnToPool();
                 return;
             }
 
             _lifeTimer -= Time.deltaTime;
             if (_lifeTimer <= 0f)
             {
-                //ReturnToPool();
+                ReturnToPool();
                 return;
             }
 
@@ -67,20 +73,28 @@ namespace Enemies.ProjectileScripts
                 HitBox.UpdateParryDirection(CombatUtility.GetDirectionFromVelocity(Rb.linearVelocity));
         }
 
-        protected void ReturnToPool() => ProjectilePool.Release(SourcePrefab, this);
-        
+        protected void ReturnToPool()
+        {
+            if (isReleased) return;
+            isReleased = true;
+
+            ProjectilePool.Release(SourcePrefab, this);
+        }
+
         protected virtual bool OnHitTrigger(Collider2D other) => true;
 
         private void OnTriggerEnter2D(Collider2D other)
         {
+            if (isReleased) return;
             if (other.GetComponentInParent<AirOnlyCollisionPlatform>() != null) return;
 
             if(OnHitTrigger(other))
                 ReturnToPool();
         }
-        
+
         public virtual void OnPoolRelease()
         {
+            CancelInvoke();
             Rb.linearVelocity = Vector2.zero;
             HitBox.Disable();
             Events.CloseParryWindow();

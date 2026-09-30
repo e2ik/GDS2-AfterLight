@@ -56,6 +56,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashCoolDown = 0.2f;
     [SerializeField] private float dashSkillEnergyCost = 0.1f;
     [SerializeField] private float neutralDashInvulnExtension = 0.1f;
+    [SerializeField] private float perfectDodgeWindow = 0.1f;
+    private float neutralDashStartTime = float.NegativeInfinity;
     private float neutralDashInvulnTimer;
 
     [Header("Knockback Settings")]
@@ -135,6 +137,7 @@ public class PlayerController : MonoBehaviour
     public bool IsStaggered => isStaggered;
     public bool IsBouncing => isBouncing;
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
+    public bool IsInPerfectDodgeWindow => IsNeutralDash && !isDashLocked && Time.time - neutralDashStartTime <= perfectDodgeWindow;
     public bool IsInvulnerable => IsNeutralDash || neutralDashInvulnTimer > 0f;
     public bool IsClimbing => isClimbing;
     private bool IsSkillBaseLocked =>
@@ -495,6 +498,7 @@ public class PlayerController : MonoBehaviour
             else
             {
                 IsDirectionalDash = false;
+                neutralDashStartTime = Time.time;
                 dashDirection = -FacingDirection;
                 activeDuration *= backDashMultiplier;
             }

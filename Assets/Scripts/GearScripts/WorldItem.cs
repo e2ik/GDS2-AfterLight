@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using TMPro;
@@ -23,12 +24,32 @@ public class WorldItem : MonoBehaviour
     [SerializeField] private SpriteRenderer itemSpriteRenderer;
     [SerializeField] private TMP_Text nameLabel;
 
+    [Header("Pickup")]
+    [SerializeField] private float pickupRadius = 0.5f;
+    private CircleCollider2D pickupTrigger;
+
+    [Header("Rarity")]
+    [SerializeField] private bool overrideRarityOdds = false;
+    [SerializeField] private RarityWeights rarityOdds = new RarityWeights();
+    [SerializeField] private bool colorNameByRarity = true;
+    [SerializeField] private GameObject commonEffect;
+    [SerializeField] private GameObject rareEffect;
+    [SerializeField] private GameObject epicEffect;
+    [SerializeField] private GameObject legendaryEffect;
+
     private Collider2D itemCollider;
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
     [SerializeField] private EventReference primaryPickupEvent;
     [SerializeField] private EventReference secondaryPickupEvent;
     private bool markedForDestruction = false;
+
+    private bool hasRarity;
+    private ERarity rarity;
+
+    public bool HasRarity => hasRarity;
+    public ERarity Rarity => rarity;
+    public event Action<ERarity> OnRarityAssigned;
 
     private void Awake()
     {
@@ -39,16 +60,32 @@ public class WorldItem : MonoBehaviour
     private void Start()
     {
         if (markedForDestruction) return;
+        IgnorePlayerCollision(FindPlayer());
+        if (!hasRarity) AssignRarity(null);
         InitializeVisuals();
     }
 
-    public void Initialize(InventoryItemBase newItem)
+    public void Initialize(InventoryItemBase newItem, ERarity? assignedRarity = null)
     {
         itemDefinition = newItem;
         CheckUniqueOwnership();
         if (markedForDestruction) return;
 
+        AssignRarity(assignedRarity);
         InitializeVisuals();
+    }
+
+    private void AssignRarity(ERarity? assignedRarity)
+    {
+        if (!RarityWeights.UsesRarity(itemDefinition))
+        {
+            hasRarity = false;
+            return;
+        }
+
+        rarity = assignedRarity ?? RarityWeights.Roll(overrideRarityOdds, rarityOdds);
+        hasRarity = true;
+        OnRarityAssigned?.Invoke(rarity);
     }
 
     private void CheckUniqueOwnership()
@@ -97,6 +134,34 @@ public class WorldItem : MonoBehaviour
             itemCollider = GetComponent<Collider2D>();
             itemCollider.isTrigger = false;
         }
+
+        if (pickupTrigger == null)
+        {
+            GameObject triggerObject = new GameObject("PickupTrigger");
+            triggerObject.layer = gameObject.layer;
+            triggerObject.transform.SetParent(transform, false);
+
+            pickupTrigger = triggerObject.AddComponent<CircleCollider2D>();
+            pickupTrigger.isTrigger = true;
+            pickupTrigger.radius = pickupRadius;
+        }
+    }
+
+    private void IgnorePlayerCollision(Player player)
+    {
+        if (player == null || itemCollider == null) return;
+
+        foreach (Collider2D playerCollider in player.GetComponentsInChildren<Collider2D>(true))
+        {
+            if (playerCollider != null)
+                Physics2D.IgnoreCollision(itemCollider, playerCollider, true);
+        }
+    }
+
+    private Player FindPlayer()
+    {
+        Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+        return player != null ? player : FindFirstObjectByType<Player>();
     }
 
     public void InitializeVisuals()
@@ -111,7 +176,25 @@ public class WorldItem : MonoBehaviour
         if (nameLabel != null)
         {
             nameLabel.text = itemDefinition.UIName;
+
+            if (hasRarity && colorNameByRarity && GameManager.Instance != null)
+                nameLabel.color = GameManager.Instance.GetRarityColor(rarity);
         }
+
+        ApplyRarityEffects();
+    }
+
+    private void ApplyRarityEffects()
+    {
+        SetEffect(commonEffect, hasRarity && rarity == ERarity.Common);
+        SetEffect(rareEffect, hasRarity && rarity == ERarity.Rare);
+        SetEffect(epicEffect, hasRarity && rarity == ERarity.Epic);
+        SetEffect(legendaryEffect, hasRarity && rarity == ERarity.Legendary);
+    }
+
+    private static void SetEffect(GameObject effect, bool active)
+    {
+        if (effect != null) effect.SetActive(active);
     }
 
     public void PopOut(Vector2 forceDirection, float forceMagnitude)
@@ -129,27 +212,31 @@ public class WorldItem : MonoBehaviour
 
     private IEnumerator EnablePickupDelay(float delay)
     {
-        if (itemCollider != null) itemCollider.enabled = false;
+        if (pickupTrigger != null) pickupTrigger.enabled = false;
         yield return new WaitForSeconds(delay);
-        if (itemCollider != null) itemCollider.enabled = true;
+        if (pickupTrigger != null) pickupTrigger.enabled = true;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        Player player = collision.gameObject.GetComponentInParent<Player>();
+        if (player != null) IgnorePlayerCollision(player);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
         if (hasBeenPickedUp || itemDefinition == null) return;
 
-        Player player = collision.gameObject.GetComponent<Player>();
-        if (player == null && !collision.gameObject.CompareTag("Player")) return;
+        Player player = other.GetComponentInParent<Player>();
+        if (player == null) return;
 
-        if (player == null)
-        {
-            player = collision.gameObject.GetComponentInParent<Player>();
-        }
+        CollectItem(player);
+    }
 
-        if (player != null)
-        {
-            CollectItem(player);
-        }
+    private ERarity GetPickupRarity()
+    {
+        if (!hasRarity) AssignRarity(null);
+        return rarity;
     }
 
     private void CollectItem(Player player)
@@ -160,7 +247,7 @@ public class WorldItem : MonoBehaviour
         {
             case SecondaryGemBehaviourDefinition secondaryDef:
                 {
-                    ERarity secondaryRarity = GetWeightedRarity();
+                    ERarity secondaryRarity = GetPickupRarity();
                     SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(secondaryRarity);
                     SecondaryGemInstance previouslyEquippedGem = !player.Equipment.IsSecondaryGemSlotEmpty() ? player.Equipment.SecondaryGem : null;
 
@@ -209,7 +296,7 @@ public class WorldItem : MonoBehaviour
 
             case WeaponDefinition weaponDef:
                 {
-                    ERarity weaponRarity = GetWeightedRarity();
+                    ERarity weaponRarity = GetPickupRarity();
                     WeaponInstance weaponLoot = weaponDef.CreateInstance(weaponRarity);
                     WeaponInstance previouslyEquippedWeapon = player.Equipment.EquippedWeapon;
 
@@ -233,7 +320,7 @@ public class WorldItem : MonoBehaviour
 
             case GearDefinition gearDef:
                 {
-                    ERarity gearRarity = GetWeightedRarity();
+                    ERarity gearRarity = GetPickupRarity();
                     GearInstance gearLoot = gearDef.CreateInstance(gearRarity);
                     GearInstance previouslyEquippedGear = player.Equipment.GetEquippedGear(gearDef.Slot);
 
@@ -314,32 +401,5 @@ public class WorldItem : MonoBehaviour
         LootPickupDisplay.Instance?.AddPickup(
             def.UISprite, "Inventory Full", null,
             $"Not enough room for {def.UIName}.");
-    }
-
-    private ERarity GetRandomRarity()
-    {
-        System.Array rarities = System.Enum.GetValues(typeof(ERarity));
-        return (ERarity)rarities.GetValue(Random.Range(0, rarities.Length));
-    }
-    private ERarity GetWeightedRarity()
-    {
-        float randF = Random.Range(0f,1f);
-
-        if(randF <= 0.5f)
-        {
-            return ERarity.Common;
-        }
-        else if(randF <= 0.85)
-        {
-            return ERarity.Rare;
-        }
-        else if(randF <= 0.95)
-        {
-            return ERarity.Epic;
-        }
-        else
-        {
-            return ERarity.Legendary;
-        }
     }
 }

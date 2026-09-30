@@ -52,6 +52,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Color keyItemColor = Color.yellow;
     [SerializeField] private Color loreItemColor = Color.cyan;
 
+    [Header("Loot Rarity Odds")]
+    [SerializeField] private RarityWeights defaultRarityOdds = new RarityWeights();
+    public RarityWeights DefaultRarityOdds => defaultRarityOdds;
+
     private GameObject _playerInstance;
     private Player player;
     public Player Player { get => player; }
@@ -214,6 +218,9 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayer();
 
+        TutorialDirector.Instance?.AbortActiveSequence();
+        TutorialDirector.Instance?.ClearCompletedSequences();
+
         ClearPlayerInventory();
         ClearPlayerEquipment();
 
@@ -259,6 +266,8 @@ public class GameManager : MonoBehaviour
         SpawnPlayer();
 
         FastTravelManager.Instance?.ClearLastVisitedNode();
+
+        TutorialDirector.Instance?.AbortActiveSequence();
 
         SaveManager targetSaveManager = GetSaveManager();
         SaveData data = targetSaveManager != null ? targetSaveManager.LoadGame() : null;

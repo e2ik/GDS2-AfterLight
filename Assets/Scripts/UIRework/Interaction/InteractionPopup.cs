@@ -21,7 +21,12 @@ namespace GameUI
             }
         }
 
-        private void Update()
+        private void LateUpdate()
+        {
+            UpdateIconPosition();
+        }
+
+        private void UpdateIconPosition()
         {
             if (iconInstance == null || currentTarget == null) return;
 
@@ -52,6 +57,7 @@ namespace GameUI
         {
             currentTarget = target;
             currentPromptCollider = promptCollider;
+            UpdateIconPosition();
             if (iconInstance != null) iconInstance.SetActive(target != null);
         }
 

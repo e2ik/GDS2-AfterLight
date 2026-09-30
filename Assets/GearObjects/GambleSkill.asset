@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7264a4ffde87ecac7a9da3fe33a1e9ee, type: 3}
+  m_Name: GambleSkill
+  m_EditorClassIdentifier: Assembly-CSharp::GambleModifierGemTemplate
+  ItemID: GambleSGem
+  UIName: Random Skill Damage
+  UISprite: {fileID: 21300000, guid: 42085325519bc6e4ab911f60f2006e23, type: 3}
+  Deletable: 1
+  SortOrder: 0
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
+  TemplateID: T7
+  GemType: 2
+  basicPickupSound:
+    Guid:
+      Data1: 622354256
+      Data2: 1210595945
+      Data3: 893189544
+      Data4: -714071588
+    Path: event:/WorldSFX Events/SecondaryGemPickupEvent
+  maxDamageMultByRarity:
+    Common: {x: 1, y: 3}
+    Rare: {x: 3, y: 5}
+    Epic: {x: 5, y: 10}
+    Legendary: {x: 15, y: 20}
+  whiff:
+    chance: 15
+    minMult: 0.3
+    maxMult: 0.6
+  normal:
+    chance: 45
+    minMult: 0.9
+    maxMult: 1.1
+  nice:
+    chance: 30
+    minMult: 1.2
+    maxMult: 1.5
+  jackpot:
+    chance: 10
+    minMult: 1.6
+    maxMult: 0

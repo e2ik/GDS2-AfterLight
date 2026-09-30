@@ -40,7 +40,12 @@ namespace Enemies
         [Header("Stagger")]
         [SerializeField] private bool isStaggerImmune = false;
         [SerializeField] private float staggerImmunityDuration = 2f;
+        [SerializeField] private float staggerStunDuration = 0.5f;
+        [SerializeField] private float postStaggerAttackDelay = 0.5f;
         private float staggerImmunityTimer;
+        private float staggerStunTimer;
+
+        public bool IsStaggered => staggerStunTimer > 0f;
 
         [Header("FMOD Events")]
         [SerializeField] private EventReference hitEvent;
@@ -76,13 +81,13 @@ namespace Enemies
 
         private void OnEnable()
         {
-            Context.Health.OnDamaged += OnDamaged;
+            Context.Health.OnDamageTaken += OnDamaged;
             Context.Health.OnDeath += OnDeath;
         }
 
         private void OnDisable()
         {
-            Context.Health.OnDamaged -= OnDamaged;
+            Context.Health.OnDamageTaken -= OnDamaged;
             Context.Health.OnDeath -= OnDeath;
             EnemyCombatTracker.EnemyStoppedTargeting(this);
 
@@ -171,6 +176,7 @@ namespace Enemies
 
             attackCooldownTimer = Mathf.Max(0, attackCooldownTimer - Time.deltaTime);
             staggerImmunityTimer = Mathf.Max(0, staggerImmunityTimer - Time.deltaTime);
+            staggerStunTimer = Mathf.Max(0, staggerStunTimer - Time.deltaTime);
             teleportCooldownTimer = Mathf.Max(0, teleportCooldownTimer - Time.deltaTime);
 
             if (IsAttacking && Time.time - attackStartedTime >= attackFailsafeDuration)
@@ -266,7 +272,16 @@ namespace Enemies
                 && point.y >= arena.min.y && point.y <= arena.max.y;
         }
 
-        public void RunMovement(EnemyMovementSO module, float dt) => module.Tick(Context, dt);
+        public void RunMovement(EnemyMovementSO module, float dt)
+        {
+            if (IsStaggered && module is not Enemies.ModuleScripts.Movement.TeleportMovementSO)
+            {
+                rb2D.linearVelocity = new Vector2(0f, rb2D.linearVelocity.y);
+                return;
+            }
+
+            module.Tick(Context, dt);
+        }
 
         public void SetBossBounds(BossBounds bounds)
         {
@@ -378,7 +393,7 @@ namespace Enemies
         {
             IsAttacking = false;
             Context.IsAttacking = false;
-            attackCooldownTimer = attackCooldown;
+            attackCooldownTimer = Mathf.Max(attackCooldown, attackCooldownTimer);
         }
 
         public bool CanTeleport => canTeleport;
@@ -398,9 +413,12 @@ namespace Enemies
             Context.ForceTeleportNearTarget = false;
         }
 
-        private void OnDamaged(int amount, int currentHealth, bool isDot)
+        private void OnDamaged(DamageInfo info)
         {
-            Debug.Log($"Enemy blud was damaged for {amount}. Current Health: {currentHealth}");
+            bool isDot = info.DamageType == EDamageType.Dot;
+            string crit = info.IsCrit ? " CRIT" : "";
+            string roll = info.HasRoll ? $" roll:{info.RollQuality:F2}" : "";
+            Debug.Log($"Enemy blud was damaged for {info.Amount} ({info.DamageType}{crit}{roll}). Current Health: {Context.Health.CurrentHealth}");
 
             AudioManager.PlaySFXAttached(hitEvent, gameObject);
 
@@ -424,6 +442,9 @@ namespace Enemies
             {
                 animator.SetTrigger("Hurt");
                 staggerImmunityTimer = staggerImmunityDuration;
+                staggerStunTimer = staggerStunDuration;
+                attackCooldownTimer = Mathf.Max(attackCooldownTimer, staggerStunDuration + postStaggerAttackDelay);
+                rb2D.linearVelocity = new Vector2(0f, rb2D.linearVelocity.y);
             }
 
             PSpawner.Spawn("EnemyHit", transform.position);

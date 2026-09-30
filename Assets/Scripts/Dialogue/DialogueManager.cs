@@ -26,6 +26,7 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private float holdSkipDuration = 1.5f;
     [SerializeField] private float holdSkipAppearDelay = 0.25f;
     [SerializeField] private GameObject holdSkipUI;
+    [SerializeField] private Image holdSkipFill;
     private float interactHoldTime;
     private bool isHoldingInteract;
     private bool holdSkipTriggered;
@@ -117,6 +118,8 @@ public class DialogueManager : MonoBehaviour
             {
                 holdSkipUI.SetActive(true);
             }
+
+            UpdateHoldSkipFill();
 
             if (!holdSkipTriggered &&
                 interactHoldTime >= holdSkipDuration)
@@ -219,6 +222,24 @@ public class DialogueManager : MonoBehaviour
         {
             holdSkipUI.SetActive(false);
         }
+
+        if (holdSkipFill != null)
+        {
+            holdSkipFill.fillAmount = 0f;
+        }
+    }
+
+    private void UpdateHoldSkipFill()
+    {
+        if (holdSkipFill == null)
+            return;
+
+        float fillDuration = holdSkipDuration - holdSkipAppearDelay;
+        float progress = fillDuration > 0f
+            ? (interactHoldTime - holdSkipAppearDelay) / fillDuration
+            : 1f;
+
+        holdSkipFill.fillAmount = Mathf.Clamp01(progress);
     }
 
     private void ShowCurrentLine()

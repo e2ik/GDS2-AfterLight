@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 78526261}
   - component: {fileID: 78526263}
   - component: {fileID: 78526264}
+  - component: {fileID: 78526266}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -175,10 +176,13 @@ MonoBehaviour:
   masterSceneName: WorldMaster
   defaultStartSceneName: Tutorial
   defaultSpawnAnchorID: start
+  defaultStartAreaSide: 1
   titleSceneName: Bootstrap
   playerPrefab: {fileID: 6310612592100663882, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
   worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
   saveManager: {fileID: 78526259}
+  startupFadeDuration: 0.5
+  respawnFadeDuration: 0.5
   commonColor: {r: 0.69, g: 0.69, b: 0.69, a: 1}
   rareColor: {r: 0.56, g: 0.76, b: 1, a: 1}
   epicColor: {r: 0.78, g: 0.61, b: 1, a: 1}
@@ -186,6 +190,11 @@ MonoBehaviour:
   defaultRarityColor: {r: 1, g: 1, b: 1, a: 1}
   keyItemColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   loreItemColor: {r: 0, g: 1, b: 1, a: 1}
+  defaultRarityOdds:
+    common: 50
+    rare: 35
+    epic: 10
+    legendary: 5
   unlockAllFastTravelAction: {fileID: 7163206889840615523, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   tempBackgroundPrefab: {fileID: 8412158347902167548, guid: f6bdba2aea3bb1741a687ba8d5d96a43, type: 3}
   backgroundNormalColor: {r: 1, g: 1, b: 1, a: 1}
@@ -344,6 +353,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c082fa6a54147c043b550f59a9c836fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialDirector
+--- !u!114 &78526266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 78526255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 492adc927902afb4ca380abd022bd25b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputManager
+  iconDatabase: {fileID: 11400000, guid: 402c7ad02a3389741bce4f23ee0ff7fa, type: 2}
+  stickThreshold: 0.5
+  triggerThreshold: 0.5
+  mouseMoveThreshold: 3
+  hideCursorOnGamepad: 1
 --- !u!1 &215098120
 GameObject:
   m_ObjectHideFlags: 0
@@ -1331,8 +1357,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.UI.InputSystemUIInputModule
   m_SendPointerHoverToParent: 1
-  m_MoveRepeatDelay: 0.1
-  m_MoveRepeatRate: 0.05
+  m_MoveRepeatDelay: 0.25
+  m_MoveRepeatRate: 0.5
   m_XRTrackingOrigin: {fileID: 0}
   m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
   m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
@@ -1361,7 +1387,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.EventSystems.EventSystem
-  m_FirstSelected: {fileID: 0}
+  m_FirstSelected: {fileID: 215098120}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
 --- !u!4 &1903205255

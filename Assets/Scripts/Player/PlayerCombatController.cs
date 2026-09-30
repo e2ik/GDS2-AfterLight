@@ -71,8 +71,6 @@ public class PlayerCombatController : MonoBehaviour
     private float attackDurationTimer;
     private Vector2 attackRange;
     private Vector2 attackCenter;
-    private float attackDamage;
-    private float attackCritChance;
     private float attackTimer;
     private bool isAttacking;
     private bool attackStartedGrounded;
@@ -93,6 +91,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float skillHoldThreshold = 0.12f;
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
     [SerializeField] private float chargeSkillAmount = 0.2f;
+    [SerializeField] private float skillGemModifierBonus = 1f;
 
     [Header("FMOD Events")]
     [SerializeField] private EventReference parryEvent;
@@ -144,6 +143,8 @@ public class PlayerCombatController : MonoBehaviour
 
     public event Action<float, float> OnEnergyChanged;
     public event Action OnParrySuccess;
+    public event Action<float> OnGemEnergyGained;
+    public static event Action<PlayerCombatController, float> AnyGemEnergyGained;
 
     private void RaiseEnergyChanged() => OnEnergyChanged?.Invoke(SkillMeter, 1f);
 
@@ -487,8 +488,6 @@ public class PlayerCombatController : MonoBehaviour
         };
 
         float weaponRange = player.Equipment.EquippedWeapon.InstRolledRange;
-        attackDamage = GetDamage();
-        attackCritChance = player.Equipment.EquippedWeapon.InstRolledCrit;
 
         if (attackDir != Vector2.down)
         {
@@ -619,18 +618,16 @@ public class PlayerCombatController : MonoBehaviour
         isPlunging = false;
     }
 
-    private float GetDamage()
+    private float GetComboMultiplier()
     {
-        float baseDmg = GetScaledAttackDamage();
-
         int multiplierIndex = Mathf.Clamp(currentComboIndex - 1, 0, comboDamageMultipliers.Length - 1);
-        float comboMultiplier = comboDamageMultipliers[multiplierIndex];
-
-        return baseDmg * comboMultiplier;
+        return comboDamageMultipliers[multiplierIndex];
     }
 
     private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
     {
+        float attackDamage = context.BaseAttackDamage * GetComboMultiplier();
+
         foreach (var col in enemiesInRange)
         {
             if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
@@ -644,10 +641,10 @@ public class PlayerCombatController : MonoBehaviour
                         : attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
 
                     float roll = UnityEngine.Random.value;
-                    bool isCrit = roll <= attackCritChance;
+                    bool isCrit = roll < context.BaseAttackCrit;
                     dmg *= (isCrit ? critDamageMultiplier : 1f);
 
-                    enemyHealth.ApplyHit((int)dmg, context);
+                    enemyHealth.ApplyHit((int)dmg, context, isCrit);
                 }
             }
         }
@@ -778,12 +775,14 @@ public class PlayerCombatController : MonoBehaviour
             SkillMeter -= SkillActivationCost;
             RaiseEnergyChanged();
         }
-        def.Execute(player.Equipment.GetModifiedAttackContext(isAttack: false), GetScaledAttackDamage() * multiplier, chargePercentage);
+        AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: false);
+        context.DamageType = EDamageType.Skill;
+        context.SkillModifierBonus = GetSkillModifierBonus();
+        def.Execute(context, context.BaseAttackDamage * multiplier, chargePercentage);
     }
 
     private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
     {
-        var context = player.Equipment.GetModifiedAttackContext(isAttack: false);
         float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : DefaultEnergyDrainTick;
 
         bool isHeld = def.SkillExecutionType == SkillExecutionType.Held;
@@ -813,12 +812,14 @@ public class PlayerCombatController : MonoBehaviour
                 currentChargePercentage = chargeRatio;
             }
 
-            float currentTickDamage = GetScaledAttackDamage() * dynamicRampMultiplier;
+            AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: false);
+            context.DamageType = EDamageType.Skill;
+            context.SkillModifierBonus = GetSkillModifierBonus();
+
+            float currentTickDamage = context.BaseAttackDamage * dynamicRampMultiplier;
             def.Execute(context, currentTickDamage, currentChargePercentage);
 
             yield return new WaitForSeconds(tick);
-
-            if (isHeld) chargingSkillTimer += tick;
         }
 
         EndSkill();
@@ -862,13 +863,29 @@ public class PlayerCombatController : MonoBehaviour
 
     #region SecondaryGem Logic
 
+    private float GetSkillModifierBonus()
+    {
+        SecondaryGemInstance gem = player.Equipment.SecondaryGem;
+        bool hasSkillGem = gem != null && !string.IsNullOrEmpty(gem.InstTemplateID) && gem.Type == SGemType.Skill;
+        return hasSkillGem ? skillGemModifierBonus : 0f;
+    }
+
     public void CheckEnergyChargePassive(bool isAttack, AttackContext context)
     {
         if ((player.Equipment.SecondaryGem.Type == SGemType.Attack && isAttack)
             || player.Equipment.SecondaryGem.Type == SGemType.Skill && !isAttack)
         {
-            ChargeSkillMeter(context.ChargeAmount);
+            GainGemEnergy(context.ChargeAmount);
         }
+    }
+
+    private void GainGemEnergy(float amount)
+    {
+        if (amount <= 0f) return;
+
+        ChargeSkillMeter(amount);
+        OnGemEnergyGained?.Invoke(amount);
+        AnyGemEnergyGained?.Invoke(this, amount);
     }
 
     public void TryModifyParry(float incomingDamage, Collider2D col)
@@ -884,7 +901,7 @@ public class PlayerCombatController : MonoBehaviour
         switch (secondaryDef.GetPassiveType(secondaryGem))
         {
             case PassiveType.Energy:
-                ChargeSkillMeter(secondaryGem.InstRolledChargeAmount);
+                GainGemEnergy(secondaryGem.InstRolledChargeAmount);
                 break;
             case PassiveType.Reflect:
                 TryReflectDmg(secondaryDef, col, incomingDamage);
@@ -909,11 +926,12 @@ public class PlayerCombatController : MonoBehaviour
         {
             AttackContext context = new AttackContext
             {
-                BaseAttackDamage = incomingDamage
+                BaseAttackDamage = incomingDamage,
+                DamageType = EDamageType.Reflect
             };
 
             behaviourDefinition.Modify(ref context, player.Equipment.SecondaryGem);
-            int reflectDmg = (int)Mathf.Max(1, context.BaseAttackDamage);
+            int reflectDmg = Mathf.Max(1, Mathf.RoundToInt(context.BaseAttackDamage));
             enemyHealth.ApplyHit(reflectDmg, context);
         }
         else
