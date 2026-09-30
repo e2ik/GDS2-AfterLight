@@ -28,6 +28,7 @@ public class UIWindowAnimator : MonoBehaviour
     [SerializeField] private float duration = 0.3f;
     [SerializeField] private AnimationCurve easeCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     [SerializeField] private bool keepActiveWhenHidden = true;
+    [SerializeField, Min(0f)] private float slideDistanceOverride = 0f;
 
     private CanvasGroup canvasGroup;
     private RectTransform rectTransform;
@@ -171,16 +172,19 @@ public class UIWindowAnimator : MonoBehaviour
     private Vector2 GetOffscreenPosition(Direction direction)
     {
         RectTransform parentRect = rectTransform.parent as RectTransform;
-        float width = parentRect != null ? parentRect.rect.width : Screen.width;
-        float height = parentRect != null ? parentRect.rect.height : Screen.height;
+        float fallbackWidth = parentRect != null ? parentRect.rect.width : Screen.width;
+        float fallbackHeight = parentRect != null ? parentRect.rect.height : Screen.height;
+
+        float width = slideDistanceOverride > 0f ? slideDistanceOverride : fallbackWidth;
+        float height = slideDistanceOverride > 0f ? slideDistanceOverride : fallbackHeight;
 
         switch (direction)
         {
-            case Direction.Left:   return targetPosition + new Vector2(-width, 0);
-            case Direction.Right:  return targetPosition + new Vector2(width, 0);
-            case Direction.Top:    return targetPosition + new Vector2(0, height);
+            case Direction.Left: return targetPosition + new Vector2(-width, 0);
+            case Direction.Right: return targetPosition + new Vector2(width, 0);
+            case Direction.Top: return targetPosition + new Vector2(0, height);
             case Direction.Bottom: return targetPosition + new Vector2(0, -height);
-            default:               return targetPosition;
+            default: return targetPosition;
         }
     }
 }

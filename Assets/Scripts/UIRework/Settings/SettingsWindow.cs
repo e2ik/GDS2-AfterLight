@@ -1,6 +1,7 @@
 using FMOD.Studio;
 using FMODUnity;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace GameUI
@@ -9,9 +10,14 @@ namespace GameUI
     {
         [Header("Tabs")]
         [SerializeField] private Button audioTabButton;
-        [SerializeField] private Button controlsTabButton;
+        [FormerlySerializedAs("controlsTabButton")]
+        [SerializeField] private Button keyboardTabButton;
+        [SerializeField] private Button controllerTabButton;
+
         [SerializeField] private GameObject audioPanel;
-        [SerializeField] private GameObject controlsPanel;
+        [FormerlySerializedAs("controlsPanel")]
+        [SerializeField] private GameObject keyboardPanel;
+        [SerializeField] private GameObject controllerPanel;
 
         [Header("Audio")]
         [SerializeField] private Slider masterVolumeSlider;
@@ -29,7 +35,8 @@ namespace GameUI
             masterVolumeSlider.onValueChanged.AddListener(HandleMasterVolumeChanged);
 
             audioTabButton.onClick.AddListener(HandleAudioTabClicked);
-            controlsTabButton.onClick.AddListener(HandleControlsTabClicked);
+            keyboardTabButton.onClick.AddListener(HandleKeyboardTabClicked);
+            controllerTabButton.onClick.AddListener(HandleControllerTabClicked);
         }
 
         protected override void OnWindowOpened()
@@ -51,13 +58,22 @@ namespace GameUI
         private void ShowAudioTab()
         {
             audioPanel.SetActive(true);
-            controlsPanel.SetActive(false);
+            keyboardPanel.SetActive(false);
+            controllerPanel.SetActive(false);
         }
 
-        private void ShowControlsTab()
+        private void ShowKeyboardTab()
         {
             audioPanel.SetActive(false);
-            controlsPanel.SetActive(true);
+            keyboardPanel.SetActive(true);
+            controllerPanel.SetActive(false);
+        }
+
+        private void ShowControllerTab()
+        {
+            audioPanel.SetActive(false);
+            keyboardPanel.SetActive(false);
+            controllerPanel.SetActive(true);
         }
 
         private void HandleMasterVolumeChanged(float value) => masterBus.setVolume(value);
@@ -68,10 +84,16 @@ namespace GameUI
             ShowAudioTab();
         }
 
-        private void HandleControlsTabClicked()
+        private void HandleKeyboardTabClicked()
         {
             UISFX.PlayClick();
-            ShowControlsTab();
+            ShowKeyboardTab();
+        }
+
+        private void HandleControllerTabClicked()
+        {
+            UISFX.PlayClick();
+            ShowControllerTab();
         }
 
         private void HandleBackClicked()

@@ -2428,6 +2428,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   keepActiveWhenHidden: 1
+  slideDistanceOverride: 0
 --- !u!1 &387532747
 GameObject:
   m_ObjectHideFlags: 0
@@ -2679,6 +2680,8 @@ GameObject:
   - component: {fileID: 406886596}
   - component: {fileID: 406886595}
   - component: {fileID: 406886594}
+  - component: {fileID: 406886598}
+  - component: {fileID: 406886597}
   m_Layer: 5
   m_Name: StatsAndGear
   m_TagString: Untagged
@@ -2768,6 +2771,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 406886592}
   m_CullTransparentMesh: 1
+--- !u!114 &406886597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 406886592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f08357b71266b39489bc192edd4a5c07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIWindowAnimator
+  animationType: 1
+  slideFrom: 0
+  duration: 0.35
+  easeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  keepActiveWhenHidden: 1
+  slideDistanceOverride: 3000
+--- !u!225 &406886598
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 406886592}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &447305630
 GameObject:
   m_ObjectHideFlags: 0
@@ -3340,13 +3396,15 @@ GameObject:
   - component: {fileID: 524027926}
   - component: {fileID: 524027925}
   - component: {fileID: 524027927}
+  - component: {fileID: 524027929}
+  - component: {fileID: 524027928}
   m_Layer: 0
   m_Name: LorePanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &524027924
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3425,6 +3483,59 @@ MonoBehaviour:
   bodyText: {fileID: 795918539}
   lockedGroup: {fileID: 1560854182}
   lockedText: {fileID: 1859631030}
+--- !u!114 &524027928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524027923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f08357b71266b39489bc192edd4a5c07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIWindowAnimator
+  animationType: 1
+  slideFrom: 0
+  duration: 0.35
+  easeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  keepActiveWhenHidden: 1
+  slideDistanceOverride: 3000
+--- !u!225 &524027929
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524027923}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &551148886
 GameObject:
   m_ObjectHideFlags: 0
@@ -4759,6 +4870,7 @@ GameObject:
   - component: {fileID: 795918538}
   - component: {fileID: 795918540}
   - component: {fileID: 795918539}
+  - component: {fileID: 795918541}
   m_Layer: 0
   m_Name: BodyText
   m_TagString: Untagged
@@ -4805,7 +4917,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: '
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -4885,6 +4999,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 795918537}
   m_CullTransparentMesh: 1
+--- !u!114 &795918541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 795918537}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df635fd3cf083fc40a211ff0e59f8a10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoreGlowText
+  text: {fileID: 795918539}
+  baseColor: {r: 1, g: 1, b: 1, a: 1}
+  glowColor: {r: 1, g: 0.92, b: 0.65, a: 1}
+  pulseSpeed: 1.2
 --- !u!1 &797422560
 GameObject:
   m_ObjectHideFlags: 0
@@ -8245,6 +8375,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2564233170340465673, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2564233170340465673, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2609850207301157379, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -8473,6 +8611,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6004221790502906064, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6110671832713856430, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -8551,15 +8693,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6965080885634829713, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 650
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6965080885634829713, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 335
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6965080885634829713, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -95
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7177489252190523553, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchorMax.y
@@ -8658,6 +8800,26 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8880331276151082885, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8929567613279779346, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8929567613279779346, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8929567613279779346, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8929567613279779346, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8929567613279779346, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
@@ -8767,6 +8929,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   keepActiveWhenHidden: 1
+  slideDistanceOverride: 0
 --- !u!225 &1324207321
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -8851,7 +9014,7 @@ MonoBehaviour:
     offset: {x: 0, y: 0}
   emptyStateText: {fileID: 2145716370}
   lorePanel: {fileID: 524027927}
-  statsAndGearPanel: {fileID: 406886592}
+  statsAndGearAnimator: {fileID: 406886597}
 --- !u!1 &1332018576
 GameObject:
   m_ObjectHideFlags: 0
@@ -9037,10 +9200,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0
+    x: 0.2541667
     y: 0
-    width: 1
-    height: 1
+    width: 0.3101852
+    height: 0.3101852
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -10322,11 +10485,11 @@ PrefabInstance:
       objectReference: {fileID: 1781555164194001046, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     - target: {fileID: 3554293607578817304, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_text
-      value: E
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 3554293607578817304, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6820752225732327202, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_Name
@@ -10470,6 +10633,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   keepActiveWhenHidden: 1
+  slideDistanceOverride: 0
 --- !u!225 &1742991546
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -11995,6 +12159,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   keepActiveWhenHidden: 0
+  slideDistanceOverride: 0
 --- !u!222 &1926914321
 CanvasRenderer:
   m_ObjectHideFlags: 0

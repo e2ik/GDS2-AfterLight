@@ -58,7 +58,7 @@ public class InventoryDisplay : GameUI.UIWindow
 
     [Header("Lore Panel")]
     [SerializeField] private LorePanel lorePanel;
-    [SerializeField] private GameObject statsAndGearPanel;
+    [SerializeField] private UIWindowAnimator statsAndGearAnimator;
 
     public RectTransform TooltipDock => tooltipDock;
     public TooltipAnchorSettings TooltipAnchor => tooltipAnchor;
@@ -245,7 +245,7 @@ public class InventoryDisplay : GameUI.UIWindow
         }
 
         openLoreSetID = loreSet.SetID;
-        if (statsAndGearPanel != null) statsAndGearPanel.SetActive(false);
+        if (statsAndGearAnimator != null) statsAndGearAnimator.Hide();
         lorePanel.Show(loreSet);
     }
 
@@ -273,7 +273,7 @@ public class InventoryDisplay : GameUI.UIWindow
 
         openLoreSetID = null;
         if (lorePanel != null) lorePanel.Hide();
-        if (statsAndGearPanel != null) statsAndGearPanel.SetActive(true);
+        if (statsAndGearAnimator != null) statsAndGearAnimator.Show();
     }
 
     protected override Selectable GetInitialSelectable()

@@ -85,7 +85,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &2152255888189990809
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -135,6 +135,14 @@ MonoBehaviour:
   reflectStyle:
     format: Reflect {amount}
     color: {r: 0.35, g: 0.65, b: 1, a: 1}
+    scale: 1.2
+  dodgeStyle:
+    format: Dodged
+    color: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+    scale: 0.9
+  perfectDodgeStyle:
+    format: Perfect!
+    color: {r: 1, g: 0.84, b: 0, a: 1}
     scale: 1.2
   tintByRoll: 1
   lowRollColor: {r: 0.61635214, g: 0.61635214, b: 0.61635214, a: 1}
