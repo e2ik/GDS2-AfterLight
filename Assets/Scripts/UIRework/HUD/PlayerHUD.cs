@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace GameUI
@@ -10,6 +11,10 @@ namespace GameUI
 
         [Header("Energy")]
         [SerializeField] private Image energyFillImage;
+        
+        [Header("Heals")]
+        [SerializeField] private Image healImage;
+        [SerializeField] private Sprite[] healSprites;
 
         [Header("Skill Icon")]
         [SerializeField] private Image skillIconImage;
@@ -25,14 +30,17 @@ namespace GameUI
         private PlayerStats stats;
         private PlayerCombatController combat;
         private PlayerEquipmentManager equipment;
+        private PlayerHeals heals;
         private bool isReadyToUse;
 
-        public void Bind(PlayerStats playerStats, PlayerCombatController playerCombat, PlayerEquipmentManager playerEquipment)
+        public void Bind(PlayerStats playerStats, PlayerCombatController playerCombat, PlayerEquipmentManager playerEquipment, PlayerHeals playerHeals)
         {
             Unbind();
             stats = playerStats;
             combat = playerCombat;
             equipment = playerEquipment;
+            heals = playerHeals;
+            
 
             ResetGlowState();
 
@@ -54,6 +62,12 @@ namespace GameUI
             {
                 equipment.OnEquipmentChanged += HandleEquipmentChanged;
                 HandleEquipmentChanged();
+            }
+
+            if (heals != null)
+            {
+                heals.OnUpdateHeals += UpdateHealUI;
+                UpdateHealUI(heals.GetCurrentHealCount());
             }
         }
 
@@ -132,6 +146,18 @@ namespace GameUI
                 readyGlowImage.color = c;
                 readyGlowImage.enabled = false;
             }
+        }
+
+        private void UpdateHealUI(int healCount)
+        {
+            healImage.sprite = healCount switch
+            {
+                0 => healSprites[0],
+                1 => healSprites[1],
+                2 => healSprites[2],
+                3 => healSprites[3],
+                _ => healImage.sprite
+            };
         }
     }
 }

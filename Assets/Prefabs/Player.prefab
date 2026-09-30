@@ -191,6 +191,7 @@ GameObject:
   - component: {fileID: 5837685772460609055}
   - component: {fileID: 2522387617810979971}
   - component: {fileID: 4540935121380188695}
+  - component: {fileID: 7617347761851408306}
   - component: {fileID: 2301400823228123696}
   - component: {fileID: 3547647608137716798}
   - component: {fileID: 4877809276059888347}
@@ -332,6 +333,18 @@ MonoBehaviour:
   m_DefaultActionMap: 
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &7617347761851408306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6310612592100663882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 189154f24ae1ab54a8c1cc7e37c03666, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHeals
 --- !u!114 &2301400823228123696
 MonoBehaviour:
   m_ObjectHideFlags: 0

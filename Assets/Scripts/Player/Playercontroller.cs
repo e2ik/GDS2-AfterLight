@@ -101,6 +101,7 @@ public class PlayerController : MonoBehaviour
     private bool jumpPressed, jumpReleased, isGrounded, onWall, isWallSliding, isWallJumping;
     private bool dashPressed, dashReleased, isDashing, isStaggered, isBouncing;
     private bool isChargingSkillPhysics, isSkillGravityZeroed, isParryGravityActive, inventoryPressed;
+    private bool healPressed, isHealing;
     private const float InputDeadzone = 0.1f;
     private Collider2D currentPassThroughPlatform;
 
@@ -111,6 +112,7 @@ public class PlayerController : MonoBehaviour
 
     private PlayerAnimation playerAnimation;
     private PlayerCombatController combat;
+    private PlayerHeals heals;
     private Rigidbody2D rb;
     private Collider2D[] playerColliders;
     private Collider2D[] boundsColliders;
@@ -137,6 +139,7 @@ public class PlayerController : MonoBehaviour
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
     public bool IsInvulnerable => IsNeutralDash || neutralDashInvulnTimer > 0f;
     public bool IsClimbing => isClimbing;
+    public bool IsHealing => isHealing;
     private bool IsSkillBaseLocked =>
         isChargingSkillPhysics
         || isSkillGravityZeroed
@@ -161,6 +164,7 @@ public class PlayerController : MonoBehaviour
         Player player = GetComponent<Player>();
         playerAnimation = player.Animation;
         combat = player.CombatController;
+        heals = player.Heals;
         rb = GetComponent<Rigidbody2D>();
         playerColliders = GetComponentsInChildren<Collider2D>(true);
         boundsColliders = BuildBoundsColliders();
@@ -178,7 +182,11 @@ public class PlayerController : MonoBehaviour
         if (neutralDashInvulnTimer > 0f) neutralDashInvulnTimer -= Time.deltaTime;
 
         if (!IsUILocked && CanMove()) Flip();
-        if (InputEnabled && !IsMovementFrozen) PerformInventoryAction();
+        if (InputEnabled && !IsMovementFrozen)
+        {
+            PerformInventoryAction(); 
+            HandleHeal();
+        }
     }
 
     private void FixedUpdate()
@@ -284,7 +292,8 @@ public class PlayerController : MonoBehaviour
                              && !isWallSliding
                              && !IsMovementLockedBySkill
                              && !combat.IsPlunging
-                             && !isClimbing;
+                             && !isClimbing
+                             && !isHealing;
 
     #region Movement Handlers
 
@@ -340,7 +349,8 @@ public class PlayerController : MonoBehaviour
                        && !isWallSliding
                        && !IsMovementLockedBySkill
                        && !combat.IsPlunging
-                       && !isClimbing;
+                       && !isClimbing
+                       && !isHealing;
         if (!canJump) return;
 
         coyoteTimeCounter = isGrounded ? coyoteTime : coyoteTimeCounter - Time.fixedDeltaTime;
@@ -677,6 +687,31 @@ public class PlayerController : MonoBehaviour
         FadeCanvasController.Instance.FadeIn(fadeDuration);
     }
 
+    private Coroutine attemptHealRoutine;
+    [SerializeField] private float healDuration = 0.1f;
+    private void HandleHeal()
+    {
+        if (!CanMove() || !isGrounded || !healPressed || isHealing)
+        {
+            healPressed = false;
+            return;
+        }
+        healPressed = false;
+        isHealing = true;
+        rb.linearVelocityX = 0;
+    }
+
+    public void CancelHeal()
+    {
+        isHealing = false;
+    }
+    public void FinishHealing() //animation event
+    {
+        if (!isHealing) return;
+        heals.TryUseHeal();
+        isHealing = false;
+    }
+
     #endregion
 
     #region Damage & Stagger
@@ -820,6 +855,8 @@ public class PlayerController : MonoBehaviour
         dashPressed = false;
         dashReleased = false;
     }
+    
+    private void OnHeal() => healPressed = true;
 
     #endregion
 

@@ -9,6 +9,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerEquipmentManager))]
 [RequireComponent(typeof(PlayerCombatController))]
 [RequireComponent(typeof(PlayerAnimation))]
+[RequireComponent(typeof(PlayerHeals))]
 public class Player : MonoBehaviour
 {
     private PlayerInput _input;
@@ -35,12 +36,15 @@ public class Player : MonoBehaviour
     private PlayerAnimation _animation;
     public PlayerAnimation Animation => _animation ??= GetComponent<PlayerAnimation>();
 
+    private PlayerHeals _heals;
+    public PlayerHeals Heals => _heals ??= GetComponent<PlayerHeals>();
+
     private void Start()
     {
         GameUI.PlayerHUD hud = FindFirstObjectByType<GameUI.PlayerHUD>();
         if (hud != null)
         {
-            hud.Bind(GetComponent<PlayerStats>(), GetComponent<PlayerCombatController>(), GetComponent<PlayerEquipmentManager>());
+            hud.Bind(GetComponent<PlayerStats>(), GetComponent<PlayerCombatController>(), GetComponent<PlayerEquipmentManager>(), _heals);
         }
 
         GameUI.InteractionPopup popup = FindFirstObjectByType<GameUI.InteractionPopup>();
