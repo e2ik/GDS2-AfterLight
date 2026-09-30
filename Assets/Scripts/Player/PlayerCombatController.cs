@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using System.Collections;
 using System.Collections.Generic;
 using FMODUnity;
+using FMOD.Studio;
 
 public enum ParryDirection { Up, Down, Left, Right }
 public enum AttackForce { Zero, Light, Medium, Heavy }
@@ -95,6 +96,9 @@ public class PlayerCombatController : MonoBehaviour
 
     [Header("FMOD Events")]
     [SerializeField] private EventReference parryEvent;
+    [SerializeField] private EventReference chargingSkillEvent;
+
+    private EventInstance chargingEventInstance;
 
     public float SkillActivationCost { get; private set; }
     private const float DefaultEnergyDrainTick = 0.16f;
@@ -841,6 +845,10 @@ public class PlayerCombatController : MonoBehaviour
         isSkilling = isChargingSkill = skillButtonHeld = false;
         CurrentSkillGemName = string.Empty;
         movement.SetSkillGravityZero(false);
+        if (chargingEventInstance.isValid())
+        {
+            AudioManager.StopandReleaseVariableLengthSFX(chargingEventInstance);
+        }
     }
 
     public void CancelSkillStates()
@@ -1003,6 +1011,7 @@ public class PlayerCombatController : MonoBehaviour
             }
 
             isChargingSkill = true;
+            chargingEventInstance = AudioManager.StartVariableLengthSFX(chargingSkillEvent,gameObject);
             singleSkillCostTick = specialDef.SkillCost / chargingSkillMaxDur;
             CancelInvoke(nameof(AutoFireAtMaxCharge));
             Invoke(nameof(AutoFireAtMaxCharge), chargingSkillMaxDur);
