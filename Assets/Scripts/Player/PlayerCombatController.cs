@@ -783,9 +783,6 @@ public class PlayerCombatController : MonoBehaviour
 
     private IEnumerator PerformTimedSkill(PrimaryGemBehaviourDefinition def, float fixedChargeMultiplier = 1f, float chargePercentage = 0f)
     {
-        var context = player.Equipment.GetModifiedAttackContext(isAttack: false);
-        context.DamageType = EDamageType.Skill;
-        context.SkillModifierBonus = GetSkillModifierBonus();
         float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : DefaultEnergyDrainTick;
 
         bool isHeld = def.SkillExecutionType == SkillExecutionType.Held;
@@ -814,6 +811,10 @@ public class PlayerCombatController : MonoBehaviour
                 dynamicRampMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
                 currentChargePercentage = chargeRatio;
             }
+
+            AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: false);
+            context.DamageType = EDamageType.Skill;
+            context.SkillModifierBonus = GetSkillModifierBonus();
 
             float currentTickDamage = context.BaseAttackDamage * dynamicRampMultiplier;
             def.Execute(context, currentTickDamage, currentChargePercentage);
