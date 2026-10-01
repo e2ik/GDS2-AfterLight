@@ -345,6 +345,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 189154f24ae1ab54a8c1cc7e37c03666, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHeals
+  max: 3
+  healAmount: 70
 --- !u!114 &2301400823228123696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -390,7 +392,7 @@ MonoBehaviour:
   dashCoolDown: 0.2
   dashSkillEnergyCost: 0.1
   neutralDashInvulnExtension: 0.1
-  perfectDodgeWindow: 0.1
+  perfectDodgeWindow: 0.05
   enemyBodyCollisionKnockback: 1
   enemyBodyCollisionForce: 1
   hazardousKnockbackForce: 8
@@ -415,6 +417,7 @@ MonoBehaviour:
   wallCheckDistance: 0.2
   edgeMargin: 0.05
   fadeDuration: 0.2
+  healDuration: 0.1
 --- !u!114 &3547647608137716798
 MonoBehaviour:
   m_ObjectHideFlags: 0
