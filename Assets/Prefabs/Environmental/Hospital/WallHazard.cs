@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class WallHazard : MonoBehaviour, IOnOff
 {
@@ -27,12 +28,22 @@ public class WallHazard : MonoBehaviour, IOnOff
     [SerializeField] private bool particlesOnlyWhenOn = true;
     [SerializeField] private FMODUnity.EventReference sparkEvent;
 
+    [Header("Light")]
+    [SerializeField] private Light2D hazardLight;
+    [SerializeField, Min(0f)] private float offIntensity = 0f;
+    [SerializeField, Min(0f)] private float inBetweenIntensity = 0.4f;
+    [SerializeField, Min(0f)] private float onIntensity = 1f;
+    [SerializeField, Min(0f)] private float sparkFlashIntensity = 1.5f;
+    [SerializeField, Min(0.01f)] private float sparkFlashDuration = 0.15f;
+
     [Header("Hazard Collider (optional)")]
     [SerializeField] private Collider2D hazardCollider;
 
     private Coroutine flickerRoutine;
     private Coroutine particleRoutine;
     private readonly List<ParticleSystem> activeParticles = new();
+    private float baseIntensity;
+    private float flashAmount;
 
     public bool IsOn { get; private set; }
 
@@ -53,6 +64,8 @@ public class WallHazard : MonoBehaviour, IOnOff
         IsOn = false;
         if (hazardCollider != null) hazardCollider.enabled = false;
         SetSprite(offSprite);
+        flashAmount = 0f;
+        ApplyLight();
 
         foreach (var ps in activeParticles)
         {
@@ -113,6 +126,7 @@ public class WallHazard : MonoBehaviour, IOnOff
             Vector3 position = particleSpawnPoint != null ? particleSpawnPoint.position : transform.position;
             ParticleSystem ps = PSpawner.Spawn(particleKey, position);
             AudioManager.PlaySFX(sparkEvent, position);
+            flashAmount = sparkFlashIntensity;
 
             if (ps != null)
             {
@@ -122,10 +136,33 @@ public class WallHazard : MonoBehaviour, IOnOff
         }
     }
 
+    private void Update()
+    {
+        if (flashAmount <= 0f) return;
+
+        flashAmount = Mathf.MoveTowards(flashAmount, 0f, sparkFlashIntensity / sparkFlashDuration * Time.deltaTime);
+        ApplyLight();
+    }
+
     private void SetSprite(Sprite sprite)
     {
         if (spriteRenderer != null && sprite != null)
             spriteRenderer.sprite = sprite;
+
+        if (sprite == onSprite) baseIntensity = onIntensity;
+        else if (sprite == inBetweenSprite) baseIntensity = inBetweenIntensity;
+        else baseIntensity = offIntensity;
+
+        ApplyLight();
+    }
+
+    private void ApplyLight()
+    {
+        if (hazardLight == null) return;
+
+        float intensity = baseIntensity + flashAmount;
+        hazardLight.intensity = intensity;
+        hazardLight.enabled = intensity > 0f;
     }
 
     private static WaitForSeconds Wait(Vector2 range)

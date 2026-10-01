@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8488492540890644507}
   - component: {fileID: 5497425098577746589}
   - component: {fileID: 4084028358662351601}
+  - component: {fileID: 1613640984066926956}
   m_Layer: 0
   m_Name: aggro
   m_TagString: Untagged
@@ -4788,7 +4789,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 1cdc67d865dd771489caebe39f577084, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4842,3 +4843,19 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!114 &1613640984066926956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 808012042735887737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f1b057f72264a945ad1c7b0f7e382f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleGlow
+  glowMaterial: {fileID: 2100000, guid: 1cdc67d865dd771489caebe39f577084, type: 2}
+  intensity: 1.25
+  setStartColor: 0
+  color: {r: 1, g: 1, b: 1, a: 1}

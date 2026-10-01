@@ -53,6 +53,8 @@ MonoBehaviour:
   cover: {fileID: 2641404052707163314}
   cone: {fileID: 368406401328540003}
   darken: {fileID: 950765190144281580}
+  lights:
+  - {fileID: 2631525723723775638}
   mode: 2
   onSwitchMode: 0
   onState:
@@ -60,11 +62,13 @@ MonoBehaviour:
     coverAlpha: 0.5
     coneAlpha: 0.15
     darkenAlpha: 0
+    lightIntensity: 1
   offState:
     bulbColor: {r: 0.64097536, g: 0.735849, b: 0.7240296, a: 1}
     coverAlpha: 0.1
     coneAlpha: 0
     darkenAlpha: 0.2
+    lightIntensity: 0
   steadyTimeRange: {x: 0.5, y: 3}
   flickersPerBurst: {x: 2, y: 6}
   flickerOffTimeRange: {x: 0.02, y: 0.08}
@@ -170,6 +174,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4780784285225943242}
   - component: {fileID: 4206740198313051501}
+  - component: {fileID: 2631525723723775638}
   m_Layer: 0
   m_Name: H_light_bulb
   m_TagString: Untagged
@@ -251,6 +256,58 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &2631525723723775638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1584273470432052947}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 073797afb82c5a1438f328866b10b3f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.2D.Runtime::UnityEngine.Rendering.Universal.Light2D
+  m_ComponentVersion: 2
+  m_LightType: 3
+  m_BlendStyleIndex: 0
+  m_FalloffIntensity: 0.5
+  m_Color: {r: 0, g: 0.6874161, b: 1, a: 1}
+  m_Intensity: 1
+  m_LightVolumeIntensity: 1
+  m_LightVolumeEnabled: 0
+  m_ApplyToSortingLayers: a71fc12500000000d325d302
+  m_LightCookieSprite: {fileID: 0}
+  m_DeprecatedPointLightCookieSprite: {fileID: 0}
+  m_LightOrder: 0
+  m_AlphaBlendOnOverlap: 0
+  m_OverlapOperation: 0
+  m_NormalMapDistance: 3
+  m_NormalMapQuality: 2
+  m_UseNormalMap: 0
+  m_ShadowsEnabled: 0
+  m_ShadowIntensity: 0.75
+  m_ShadowSoftness: 0.3
+  m_ShadowSoftnessFalloffIntensity: 0.5
+  m_ShadowVolumeIntensityEnabled: 0
+  m_ShadowVolumeIntensity: 0.75
+  m_LocalBounds:
+    m_Center: {x: 0, y: -0.00000011920929, z: 0}
+    m_Extent: {x: 0.9985302, y: 0.99853027, z: 0}
+  m_PointLightInnerAngle: 360
+  m_PointLightOuterAngle: 360
+  m_PointLightInnerRadius: 1
+  m_PointLightOuterRadius: 4
+  m_ShapeLightParametricSides: 5
+  m_ShapeLightParametricAngleOffset: 0
+  m_ShapeLightParametricRadius: 1
+  m_ShapeLightFalloffSize: 0.5
+  m_ShapeLightFalloffOffset: {x: 0, y: 0}
+  m_ShapePath:
+  - {x: -0.5, y: -0.5, z: 0}
+  - {x: 0.5, y: -0.5, z: 0}
+  - {x: 0.5, y: 0.5, z: 0}
+  - {x: -0.5, y: 0.5, z: 0}
 --- !u!1 &2500479654352336811
 GameObject:
   m_ObjectHideFlags: 0
