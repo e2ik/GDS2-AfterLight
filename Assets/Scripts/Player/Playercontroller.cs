@@ -1072,6 +1072,7 @@ public class PlayerController : MonoBehaviour
 
         if (inventoryDisplay != null && GameUI.UIGlobalInput.Instance != null)
         {
+            if (inventoryDisplay.IsOpen && InputManager.IsUsingGamepad) return;
             GameUI.UIGlobalInput.Instance.ToggleWindow(inventoryDisplay);
         }
     }

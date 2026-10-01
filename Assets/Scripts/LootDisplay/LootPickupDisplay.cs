@@ -36,6 +36,7 @@ public class LootPickupDisplay : MonoBehaviour
     [Header("Controller Inspect")]
     [SerializeField] private InputActionReference inspectAction;
     [SerializeField] private float inspectDuration = 4f;
+    [SerializeField] private bool cycleBeforeClosing = true;
 
     [Header("Tooltip")]
     [SerializeField] private RectTransform tooltipDock;
@@ -154,7 +155,14 @@ public class LootPickupDisplay : MonoBehaviour
         if (GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.IsInputLocked) return;
 
         int current = inspectedEntry != null ? activeEntries.IndexOf(inspectedEntry) : -1;
-        ShowInspect(activeEntries[(current + 1) % activeEntries.Count]);
+
+        if (inspectedEntry != null && (!cycleBeforeClosing || current >= activeEntries.Count - 1))
+        {
+            EndInspect();
+            return;
+        }
+
+        ShowInspect(activeEntries[current + 1]);
     }
 
     private void ShowInspect(LootPickupEntry entry)
