@@ -80,7 +80,7 @@ public class GameManager : MonoBehaviour
             unlockAllFastTravelAction.action.performed += ctx => UnlockAllFastTravelNodes();
         }
 
-        SpawnTempBackground();
+        SpawnBackground();
     }
 
     private SaveManager GetSaveManager()
@@ -96,8 +96,6 @@ public class GameManager : MonoBehaviour
         if (currentAreaSide == side) return;
         currentAreaSide = side;
         OnAreaSideChanged?.Invoke(side);
-
-        UpdateTempBackgroundTint(side);
     }
 
     public void ApplyAreaSide(AreaSide side)
@@ -117,7 +115,7 @@ public class GameManager : MonoBehaviour
 
     public void ResetBackgroundParallax()
     {
-        hasInitializedParallax = false;
+        if (background != null) background.ResetParallax();
     }
 
     #endregion
@@ -166,13 +164,6 @@ public class GameManager : MonoBehaviour
         if (currentState == newState) return;
 
         currentState = newState;
-
-        if (backgroundRoot != null)
-        {
-            bool shouldBeVisible = newState == GameState.Game;
-            backgroundRoot.gameObject.SetActive(shouldBeVisible);
-            if (shouldBeVisible) hasInitializedParallax = false;
-        }
 
         switch (currentState)
         {
@@ -615,123 +606,19 @@ public class GameManager : MonoBehaviour
     public Color KeyItemColor => keyItemColor;
     public Color LoreItemColor => loreItemColor;
 
-    [Header("Temp Background (REMOVE LATER)")]
-    [SerializeField] private GameObject tempBackgroundPrefab;
-    [SerializeField] private Color backgroundNormalColor = Color.white;
-    [SerializeField] private Color backgroundDarkenedColor = new Color(0.4f, 0.4f, 0.4f);
-    [SerializeField, Range(0f, 1f)] private float horizontalParallaxFactor = 0.1f;
-    [SerializeField, Range(0f, 1f)] private float verticalParallaxFactor = 0.05f;
-    [SerializeField] private int tileGridSize = 3;
-    [SerializeField] private float tileOverlap = 0.02f;
+    [Header("Background")]
+    [SerializeField] private ParallaxBackground backgroundPrefab;
+    private ParallaxBackground background;
+    public ParallaxBackground Background => background;
 
-    private SpriteRenderer[] tempBackgroundTiles;
-    private Transform backgroundRoot;
-    private Vector2 tileSize;
-    private Vector3 lastPlayerPosition;
-    private bool hasInitializedParallax;
+    #region Background
 
-    #region TEMP Background Sprite (remove later)
-
-    private void SpawnTempBackground()
+    private void SpawnBackground()
     {
-        if (tempBackgroundPrefab == null) return;
+        if (backgroundPrefab == null) return;
 
-        GameObject rootObj = new GameObject("TempBackgroundRoot");
-        rootObj.transform.SetParent(transform);
-        backgroundRoot = rootObj.transform;
-
-        int total = tileGridSize * tileGridSize;
-        tempBackgroundTiles = new SpriteRenderer[total];
-
-        SpriteRenderer prefabSr = tempBackgroundPrefab.GetComponentInChildren<SpriteRenderer>();
-        tileSize = prefabSr != null
-            ? Vector2.Scale(prefabSr.sprite.bounds.size, tempBackgroundPrefab.transform.localScale)
-            : Vector2.one;
-
-        Vector2 spacing = new Vector2(tileSize.x - tileOverlap, tileSize.y - tileOverlap);
-
-        int half = tileGridSize / 2;
-        int index = 0;
-
-        for (int x = -half; x <= half; x++)
-        {
-            for (int y = -half; y <= half; y++)
-            {
-                GameObject tile = Instantiate(tempBackgroundPrefab, backgroundRoot);
-                tile.transform.localPosition = new Vector3(x * spacing.x, y * spacing.y, 0f);
-                tempBackgroundTiles[index] = tile.GetComponentInChildren<SpriteRenderer>();
-                index++;
-            }
-        }
-
-        rootObj.SetActive(false);
-    }
-
-    private void Update()
-    {
-        UpdateTempBackgroundParallax();
-        UpdateTempBackgroundTileWrap();
-    }
-
-    private void UpdateTempBackgroundParallax()
-    {
-        if (backgroundRoot == null || player == null) return;
-
-        if (!hasInitializedParallax)
-        {
-            backgroundRoot.position = player.transform.position;
-            lastPlayerPosition = player.transform.position;
-            hasInitializedParallax = true;
-            return;
-        }
-
-        Vector3 playerDelta = player.transform.position - lastPlayerPosition;
-        lastPlayerPosition = player.transform.position;
-
-        Vector3 backgroundDelta = new Vector3(
-            playerDelta.x * horizontalParallaxFactor,
-            -playerDelta.y * verticalParallaxFactor,
-            0f
-        );
-
-        backgroundRoot.position += backgroundDelta;
-    }
-
-    private void UpdateTempBackgroundTileWrap()
-    {
-        if (tempBackgroundTiles == null || player == null) return;
-
-        float wrapDistanceX = tileSize.x;
-        float wrapDistanceY = tileSize.y;
-        float gridExtentX = tileSize.x * tileGridSize;
-        float gridExtentY = tileSize.y * tileGridSize;
-
-        foreach (var tile in tempBackgroundTiles)
-        {
-            if (tile == null) continue;
-
-            Vector3 tilePos = tile.transform.position;
-            Vector3 diff = player.transform.position - tilePos;
-
-            if (Mathf.Abs(diff.x) > wrapDistanceX * (tileGridSize / 2f))
-                tilePos.x += Mathf.Sign(diff.x) * gridExtentX;
-
-            if (Mathf.Abs(diff.y) > wrapDistanceY * (tileGridSize / 2f))
-                tilePos.y += Mathf.Sign(diff.y) * gridExtentY;
-
-            tile.transform.position = tilePos;
-        }
-    }
-
-    private void UpdateTempBackgroundTint(AreaSide side)
-    {
-        if (tempBackgroundTiles == null) return;
-
-        Color target = side == AreaSide.Interior ? backgroundDarkenedColor : backgroundNormalColor;
-        foreach (var tile in tempBackgroundTiles)
-        {
-            if (tile != null) tile.color = target;
-        }
+        background = Instantiate(backgroundPrefab, transform);
+        background.name = "Background";
     }
 
     #endregion
