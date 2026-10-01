@@ -245,7 +245,7 @@ public class InventoryDisplay : GameUI.UIWindow
         }
 
         openLoreSetID = loreSet.SetID;
-        if (statsAndGearAnimator != null) statsAndGearAnimator.Hide();
+        // if (statsAndGearAnimator != null) statsAndGearAnimator.Hide();
         lorePanel.Show(loreSet);
     }
 
@@ -273,7 +273,7 @@ public class InventoryDisplay : GameUI.UIWindow
 
         openLoreSetID = null;
         if (lorePanel != null) lorePanel.Hide();
-        if (statsAndGearAnimator != null) statsAndGearAnimator.Show();
+        // if (statsAndGearAnimator != null) statsAndGearAnimator.Show();
     }
 
     protected override Selectable GetInitialSelectable()
