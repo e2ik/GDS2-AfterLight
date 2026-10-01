@@ -94,5 +94,11 @@ namespace GameUI
                 UIManager.Instance.Open(window);
             }
         }
+
+        public void SetCancelSuppressed(bool suppressed)
+        {
+            if (suppressed) cancelAction.action.Disable();
+            else cancelAction.action.Enable();
+        }
     }
 }
