@@ -128,6 +128,11 @@ public class InputManager : MonoBehaviour
         return InputDeviceType.Gamepad;
     }
 
+    public static InputDeviceType ResolveGamepadIconDevice()
+    {
+        return Classify(CurrentGamepad ?? Gamepad.current);
+    }
+
     private void SetDevice(InputDeviceType device)
     {
         if (device == CurrentDevice) return;

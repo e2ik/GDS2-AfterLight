@@ -18,7 +18,16 @@ namespace GameUI
 
         public bool HasOpenWindows => openWindows.Count > 0;
         public bool IsInputLocked => HasOpenWindows || releaseRoutine != null;
-        public bool SuppressCancel { get; set; }
+        private bool suppressCancel;
+        public bool SuppressCancel
+        {
+            get => suppressCancel;
+            set
+            {
+                suppressCancel = value;
+                UIGlobalInput.Instance?.SetCancelSuppressed(value);
+            }
+        }
 
         private void Awake()
         {

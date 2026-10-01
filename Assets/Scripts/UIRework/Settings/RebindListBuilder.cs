@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace GameUI
 {
@@ -22,8 +23,19 @@ namespace GameUI
         [SerializeField] private List<RebindEntry> entries;
         [SerializeField] private bool startInGamepadMode;
 
+        [Header("Reset to Default")]
+        [SerializeField] private Button resetButton;
+        [SerializeField] private ConfirmWindow confirmWindow;
+
+        private bool currentlyGamepad;
+
         private void Awake()
         {
+            if (resetButton != null)
+            {
+                resetButton.onClick.AddListener(HandleResetClicked);
+            }
+
             PopulateRows(useGamepad: startInGamepadMode);
         }
 
@@ -32,6 +44,8 @@ namespace GameUI
 
         private void PopulateRows(bool useGamepad)
         {
+            currentlyGamepad = useGamepad;
+
             foreach (Transform child in rowContainer)
             {
                 Destroy(child.gameObject);
@@ -56,6 +70,47 @@ namespace GameUI
                     useGamepad ? RebindButton.RebindDevice.Gamepad : RebindButton.RebindDevice.Keyboard);
                 row.gameObject.SetActive(true);
             }
+        }
+
+        private void HandleResetClicked()
+        {
+            UISFX.PlayClick();
+
+            string deviceName = currentlyGamepad ? "controller" : "keyboard";
+            string message = $"Reset all {deviceName} bindings to their defaults? This cannot be undone.";
+
+            if (confirmWindow != null)
+            {
+                confirmWindow.Show(message, ResetToDefault);
+            }
+            else
+            {
+                ResetToDefault();
+            }
+        }
+
+        private void ResetToDefault()
+        {
+            InputActionAsset asset = null;
+
+            foreach (RebindEntry entry in entries)
+            {
+                if (entry == null || entry.action == null || entry.action.action == null) continue;
+                if (currentlyGamepad && entry.keyboardOnly) continue;
+
+                int index = FindBindingIndex(entry, currentlyGamepad ? "Gamepad" : "Keyboard");
+                if (index < 0) continue;
+
+                entry.action.action.RemoveBindingOverride(index);
+                if (asset == null) asset = entry.action.action.actionMap.asset;
+            }
+
+            if (asset != null)
+            {
+                InputRebindSaver.Save(asset);
+            }
+
+            PopulateRows(currentlyGamepad);
         }
 
         private static int FindBindingIndex(RebindEntry entry, string layoutName)

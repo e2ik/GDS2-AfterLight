@@ -22,6 +22,7 @@ namespace GameUI
         [SerializeField] private Button rebindButton;
         [SerializeField] private CanvasGroup waitingForInputPrompt;
         [SerializeField] private string unboundLabel = "-";
+        [SerializeField] private Image bindingIcon;
 
         public Button Button => rebindButton;
 
@@ -38,14 +39,18 @@ namespace GameUI
         private void OnEnable()
         {
             if (!activeButtons.Contains(this)) activeButtons.Add(this);
+            InputManager.OnDeviceChanged += HandleDeviceChanged;
             RefreshDisplay();
         }
 
         private void OnDisable()
         {
             activeButtons.Remove(this);
+            InputManager.OnDeviceChanged -= HandleDeviceChanged;
             rebindingOperation?.Cancel();
         }
+
+        private void HandleDeviceChanged(InputDeviceType _) => RefreshDisplay();
 
         public void Initialize(InputActionReference action, int newBindingIndex, string label, CanvasGroup sharedWaitingPrompt, RebindDevice rebindDevice)
         {
@@ -60,11 +65,37 @@ namespace GameUI
         {
             if (actionReference == null || actionReference.action == null) { return; }
 
-            string display = actionReference.action.GetBindingDisplayString(
-                bindingIndex,
-                InputBinding.DisplayStringOptions.DontIncludeInteractions);
+            Sprite sprite = null;
 
-            bindingDisplayText.text = string.IsNullOrEmpty(display) ? unboundLabel : display;
+            if (device == RebindDevice.Gamepad)
+            {
+                InputIconDatabase icons = InputManager.Icons;
+                string path = actionReference.action.bindings[bindingIndex].effectivePath;
+
+                if (icons != null && !string.IsNullOrEmpty(path))
+                {
+                    string control = InputBindingUtility.ControlName(path);
+                    sprite = icons.GetGamepadSprite(InputManager.ResolveGamepadIconDevice(), control);
+                }
+            }
+
+            if (bindingIcon != null)
+            {
+                bindingIcon.sprite = sprite;
+                bindingIcon.enabled = sprite != null;
+            }
+
+            if (bindingDisplayText != null)
+            {
+                bool showText = sprite == null;
+                if (showText)
+                {
+                    string display = actionReference.action.GetBindingDisplayString(
+                        bindingIndex, InputBinding.DisplayStringOptions.DontIncludeInteractions);
+                    bindingDisplayText.text = string.IsNullOrEmpty(display) ? unboundLabel : display;
+                }
+                bindingDisplayText.enabled = showText;
+            }
         }
 
         private void StartRebind()
