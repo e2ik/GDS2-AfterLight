@@ -194,6 +194,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6625797}
   m_CullTransparentMesh: 1
+--- !u!114 &10184121 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 9133045449437048852, guid: adfc91a2933814544855a46195c04b88, type: 3}
+  m_PrefabInstance: {fileID: 1320074725}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &20268392
 GameObject:
   m_ObjectHideFlags: 0
@@ -2755,6 +2766,8 @@ GameObject:
   - component: {fileID: 406886596}
   - component: {fileID: 406886595}
   - component: {fileID: 406886594}
+  - component: {fileID: 406886598}
+  - component: {fileID: 406886597}
   m_Layer: 5
   m_Name: StatsAndGear
   m_TagString: Untagged
@@ -2844,6 +2857,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 406886592}
   m_CullTransparentMesh: 1
+--- !u!114 &406886597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 406886592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f08357b71266b39489bc192edd4a5c07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIWindowAnimator
+  animationType: 0
+  slideFrom: 1
+  duration: 0.2
+  easeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  keepActiveWhenHidden: 1
+  slideDistanceOverride: 0
+--- !u!225 &406886598
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 406886592}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &447305630
 GameObject:
   m_ObjectHideFlags: 0
@@ -3416,6 +3482,8 @@ GameObject:
   - component: {fileID: 524027926}
   - component: {fileID: 524027925}
   - component: {fileID: 524027927}
+  - component: {fileID: 524027929}
+  - component: {fileID: 524027928}
   m_Layer: 0
   m_Name: LorePanel
   m_TagString: Untagged
@@ -3501,6 +3569,64 @@ MonoBehaviour:
   bodyText: {fileID: 795918539}
   lockedGroup: {fileID: 1560854182}
   lockedText: {fileID: 1859631030}
+--- !u!114 &524027928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524027923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f08357b71266b39489bc192edd4a5c07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIWindowAnimator
+  animationType: 0
+  slideFrom: 1
+  duration: 0.2
+  easeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  keepActiveWhenHidden: 1
+  slideDistanceOverride: 0
+--- !u!225 &524027929
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524027923}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!1 &543125937 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5363252768514771816, guid: adfc91a2933814544855a46195c04b88, type: 3}
+  m_PrefabInstance: {fileID: 1320074725}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &551148886
 GameObject:
   m_ObjectHideFlags: 0
@@ -3586,7 +3712,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1324207323}
         m_TargetAssemblyTypeName: InventoryDisplay, Assembly-CSharp
-        m_MethodName: ShowKeys
+        m_MethodName: ShowSpecial
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -7843,6 +7969,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FadeCanvasController
   canvasGroup: {fileID: 1241604479}
+--- !u!1 &1250681363 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5102102051359560152, guid: adfc91a2933814544855a46195c04b88, type: 3}
+  m_PrefabInstance: {fileID: 1320074725}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1259280009
 GameObject:
   m_ObjectHideFlags: 0
@@ -8213,24 +8344,60 @@ PrefabInstance:
     m_TransformParent: {fileID: 898698206}
     m_Modifications:
     - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: scrollRect
+      value: 
+      objectReference: {fileID: 1320074728}
+    - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: confirmWindow
+      value: 
+      objectReference: {fileID: 964560543}
+    - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: navigateUpTarget
+      value: 
+      objectReference: {fileID: 1320074730}
+    - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: entries.Array.size
-      value: 6
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: startInGamepadMode
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: entries.Array.data[5].action
       value: 
-      objectReference: {fileID: 1781555164194001046, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+      objectReference: {fileID: 1120369429361536294, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: entries.Array.data[6].action
       value: 
       objectReference: {fileID: 1781555164194001046, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+    - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[0].keyboardOnly
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[1].keyboardOnly
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[2].keyboardOnly
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[3].keyboardOnly
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[4].keyboardOnly
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: entries.Array.data[5].bindingIndex
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: entries.Array.data[5].displayLabel
-      value: Interact
+      value: Attack
       objectReference: {fileID: 0}
     - target: {fileID: 565231335890621661, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: entries.Array.data[6].bindingIndex
@@ -8274,6 +8441,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 582199914679287296, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 920851586594944468, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: m_Navigation.m_Mode
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1043150691264492802, guid: adfc91a2933814544855a46195c04b88, type: 3}
@@ -8842,11 +9013,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6965080885634829713, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 650
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6965080885634829713, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 335
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6965080885634829713, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -8907,6 +9078,54 @@ PrefabInstance:
     - target: {fileID: 7420419258476844801, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: scrollRect
+      value: 
+      objectReference: {fileID: 1320074729}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: confirmWindow
+      value: 
+      objectReference: {fileID: 964560543}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: navigateUpTarget
+      value: 
+      objectReference: {fileID: 10184121}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.size
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[7].action
+      value: 
+      objectReference: {fileID: -7471211009204490832, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[8].action
+      value: 
+      objectReference: {fileID: -4060923160753726069, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[9].action
+      value: 
+      objectReference: {fileID: 247586721346189777, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[10].action
+      value: 
+      objectReference: {fileID: -8536845815939033917, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[7].displayLabel
+      value: Dash
+      objectReference: {fileID: 0}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[8].displayLabel
+      value: Special
+      objectReference: {fileID: 0}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[9].displayLabel
+      value: Inventory
+      objectReference: {fileID: 0}
+    - target: {fileID: 7469663348311023102, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      propertyPath: entries.Array.data[10].displayLabel
+      value: Parry
       objectReference: {fileID: 0}
     - target: {fileID: 8071112763919127655, guid: adfc91a2933814544855a46195c04b88, type: 3}
       propertyPath: m_AnchorMax.y
@@ -8987,7 +9206,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5363252768514771816, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1320074731}
+    - targetCorrespondingSourceObject: {fileID: 5102102051359560152, guid: adfc91a2933814544855a46195c04b88, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1320074732}
   m_SourcePrefab: {fileID: 100100000, guid: adfc91a2933814544855a46195c04b88, type: 3}
 --- !u!224 &1320074726 stripped
 RectTransform:
@@ -9005,6 +9230,63 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acebd74137f8990449a2f8e7bd560020, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameUI.SettingsWindow
+--- !u!114 &1320074728 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4165013952887279182, guid: adfc91a2933814544855a46195c04b88, type: 3}
+  m_PrefabInstance: {fileID: 1320074725}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 543125937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ScrollRect
+--- !u!114 &1320074729 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8946800763843024408, guid: adfc91a2933814544855a46195c04b88, type: 3}
+  m_PrefabInstance: {fileID: 1320074725}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1250681363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ScrollRect
+--- !u!114 &1320074730 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6786492105316582327, guid: adfc91a2933814544855a46195c04b88, type: 3}
+  m_PrefabInstance: {fileID: 1320074725}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+--- !u!114 &1320074731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 543125937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a61bcac7a40441469d25c24ca088f2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameUI.ScrollRectSelectionFollow
+--- !u!114 &1320074732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1250681363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a61bcac7a40441469d25c24ca088f2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameUI.ScrollRectSelectionFollow
 --- !u!1 &1324207318
 GameObject:
   m_ObjectHideFlags: 0
@@ -9175,7 +9457,7 @@ MonoBehaviour:
     offset: {x: 0, y: 0}
   emptyStateText: {fileID: 2145716370}
   lorePanel: {fileID: 524027927}
-  statsAndGearAnimator: {fileID: 0}
+  statsAndGearAnimator: {fileID: 406886597}
 --- !u!1 &1332018576
 GameObject:
   m_ObjectHideFlags: 0
@@ -10646,11 +10928,11 @@ PrefabInstance:
       objectReference: {fileID: 1781555164194001046, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     - target: {fileID: 3554293607578817304, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_text
-      value: E
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 3554293607578817304, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6820752225732327202, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_Name
