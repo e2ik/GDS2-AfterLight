@@ -696,16 +696,27 @@ public class PlayerController : MonoBehaviour
 
     private Coroutine attemptHealRoutine;
     [SerializeField] private float healDuration = 0.1f;
+    public event System.Action OnHealStarted;
+    public event System.Action OnHealDenied;
+
     private void HandleHeal()
     {
-        if (!healPressed || isHealing || !CanMove() || !combat.CanHeal || heals == null || heals.GetCurrentHealCount() <= 0 || (stats != null && stats.CurrentHealth >= stats.MaxHealth))
+        if (!healPressed) return;
+        healPressed = false;
+
+        if (isHealing) return;
+
+        if (heals != null && heals.GetCurrentHealCount() <= 0)
         {
-            healPressed = false;
+            OnHealDenied?.Invoke();
             return;
         }
-        healPressed = false;
+
+        if (!CanMove() || !combat.CanHeal || heals == null || (stats != null && stats.CurrentHealth >= stats.MaxHealth)) return;
+
         isHealing = true;
         rb.linearVelocityX = 0;
+        OnHealStarted?.Invoke();
     }
 
     public void CancelHeal()
