@@ -106,6 +106,8 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
         FastTravelManager.Instance?.SetLastInteractedNode(nodeData);
 
+        RestorePlayer(interactingPlayer);
+
         if (anim != null)
         {
             anim.SetTrigger(IsInteractedHash);
@@ -148,6 +150,14 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
         interactingPlayer = null;
         isInteracting = false;
+    }
+
+    private void RestorePlayer(Player player)
+    {
+        if (player == null) return;
+
+        if (player.Stats != null) player.Stats.ReviveFull();
+        if (player.Heals != null) player.Heals.ResetHeals();
     }
 
     public void UpdateVisualState()
