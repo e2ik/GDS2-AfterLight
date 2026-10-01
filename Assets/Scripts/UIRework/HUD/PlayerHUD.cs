@@ -22,6 +22,19 @@ namespace GameUI
         [SerializeField] private Color healthChipDamageColor = new Color(1f, 0.85f, 0.85f);
         [SerializeField] private Color healthChipHealColor = new Color(0.45f, 1f, 0.45f);
 
+        [Header("Health Colour By Amount")]
+        [SerializeField] private bool useHealthGradient = true;
+        [SerializeField] private Gradient healthGradient = new Gradient
+        {
+            colorKeys = new[]
+            {
+                new GradientColorKey(new Color(0.9f, 0.2f, 0.2f), 0f),
+                new GradientColorKey(new Color(1f, 0.8f, 0.2f), 0.5f),
+                new GradientColorKey(new Color(0.3f, 0.9f, 0.3f), 1f)
+            },
+            alphaKeys = new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) }
+        };
+
         [Header("Healing")]
         [SerializeField] private Color healthRisingColor = new Color(0.4f, 1f, 0.4f);
         [SerializeField] private bool showHealCasting = true;
@@ -396,8 +409,9 @@ namespace GameUI
         {
             if (healthBar.fill == null) return;
 
-            Color baseColor = healthBaseColor;
             float fill = healthBar.fill.fillAmount;
+            Color amountColor = useHealthGradient && healthGradient != null ? healthGradient.Evaluate(fill) : healthBaseColor;
+            Color baseColor = amountColor;
 
             if (fill < healthBar.fillTarget - 0.0001f)
             {
@@ -406,12 +420,12 @@ namespace GameUI
             else if (showHealCasting && controller != null && controller.IsHealing)
             {
                 float pulse = (Mathf.Sin(Time.unscaledTime * healCastingPulseSpeed) + 1f) * 0.5f;
-                baseColor = Color.Lerp(healthBaseColor, healCastingColor, pulse);
+                baseColor = Color.Lerp(amountColor, healCastingColor, pulse);
             }
             else if (fill > 0f && fill <= lowHealthThreshold)
             {
                 float pulse = (Mathf.Sin(Time.unscaledTime * lowHealthPulseSpeed) + 1f) * 0.5f;
-                baseColor = Color.Lerp(healthBaseColor, lowHealthPulseColor, pulse);
+                baseColor = Color.Lerp(amountColor, lowHealthPulseColor, pulse);
             }
 
             float flash = FlashAmount(healthBar);

@@ -2167,23 +2167,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameUI.PlayerHUD
   healthFillImage: {fileID: 840207588}
   healthTweenDuration: 0.6
-  healthFlashColor: {r: 1, g: 1, b: 1, a: 1}
+  healthFlashColor: {r: 1, g: 0.46855342, b: 0.7604551, a: 1}
   healthFlashDuration: 0.15
-  healthGainFlashColor: {r: 0.6763972, g: 0.9559748, b: 0.6763972, a: 1}
+  healthGainFlashColor: {r: 0.88890076, g: 1, b: 0, a: 1}
   healthGlowIntensity: 1
   healthFlashIntensity: 2
   healthChipImage: {fileID: 295008261}
   chipDelay: 0.4
   chipTweenDuration: 0.6
-  healthChipDamageColor: {r: 0.84276724, g: 0.42154667, b: 0.34717765, a: 1}
+  healthChipDamageColor: {r: 1, g: 0.6840123, b: 0, a: 1}
   healthChipHealColor: {r: 0.4324789, g: 0.6981132, b: 0.4324789, a: 1}
   healthRisingColor: {r: 0.4, g: 1, b: 0.4, a: 1}
   showHealCasting: 1
   healCastingColor: {r: 1, g: 0.4936719, b: 0, a: 1}
   healCastingPulseSpeed: 8
   lowHealthThreshold: 0.25
-  lowHealthPulseColor: {r: 1, g: 0.2, b: 0.2, a: 1}
-  lowHealthPulseSpeed: 10
+  lowHealthPulseColor: {r: 0.9622642, g: 0.49323598, b: 0.84605116, a: 1}
+  lowHealthPulseSpeed: 20
   energyFillImage: {fileID: 1910176607}
   energyTweenDuration: 0.6
   energyGlowIntensity: 1
@@ -2198,7 +2198,7 @@ MonoBehaviour:
   energyFlashDuration: 0.12
   energyFlashMinChange: 0.02
   energyFullPulseColor: {r: 0.4, g: 0.9, b: 1, a: 1}
-  energyFullPulseSpeed: 3
+  energyFullPulseSpeed: 15
   healImage: {fileID: 1192107772}
   healSprites:
   - {fileID: 4814329235773686857, guid: d9cf895159c16fe4cbf89f2952bc8967, type: 3}
@@ -2210,7 +2210,7 @@ MonoBehaviour:
   healDeniedPulses: 2
   healShakeStrength: 6
   healShakeFrequency: 40
-  healActivatedColor: {r: 0.5, g: 1, b: 0.5, a: 1}
+  healActivatedColor: {r: 0.85201424, g: 0.91194963, b: 0.26670212, a: 1}
   healActivatedDuration: 0.3
   healActivatedScale: 1.2
   skillIconImage: {fileID: 1233590216}
