@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class HLight : MonoBehaviour, IOnOff
 {
@@ -12,6 +13,7 @@ public class HLight : MonoBehaviour, IOnOff
         [Range(0f, 1f)] public float coverAlpha;
         [Range(0f, 1f)] public float coneAlpha;
         [Range(0f, 1f)] public float darkenAlpha;
+        [Min(0f)] public float lightIntensity;
     }
 
     [Header("Sprites")]
@@ -19,6 +21,9 @@ public class HLight : MonoBehaviour, IOnOff
     [SerializeField] private SpriteRenderer cover;
     [SerializeField] private SpriteRenderer cone;
     [SerializeField] private SpriteRenderer darken;
+
+    [Header("Lights")]
+    [SerializeField] private Light2D[] lights;
 
     [Header("Mode")]
     [SerializeField] private LightMode mode = LightMode.On;
@@ -31,7 +36,8 @@ public class HLight : MonoBehaviour, IOnOff
         bulbColor = Color.white,
         coverAlpha = 0.5f,
         coneAlpha = 0.5f,
-        darkenAlpha = 0f
+        darkenAlpha = 0f,
+        lightIntensity = 1f
     };
 
     [SerializeField] private LightState offState = new()
@@ -39,7 +45,8 @@ public class HLight : MonoBehaviour, IOnOff
         bulbColor = new Color(0.5f, 0.5f, 0.5f, 1f),
         coverAlpha = 0.2f,
         coneAlpha = 0f,
-        darkenAlpha = 0.6f
+        darkenAlpha = 0.6f,
+        lightIntensity = 0f
     };
 
     [Header("Flicker")]
@@ -115,6 +122,19 @@ public class HLight : MonoBehaviour, IOnOff
         SetAlpha(cover, state.coverAlpha);
         SetAlpha(cone, state.coneAlpha);
         SetAlpha(darken, state.darkenAlpha);
+        SetLights(state.lightIntensity);
+    }
+
+    private void SetLights(float intensity)
+    {
+        if (lights == null) return;
+
+        foreach (Light2D light in lights)
+        {
+            if (light == null) continue;
+            light.intensity = intensity;
+            light.enabled = intensity > 0f;
+        }
     }
 
     private static void SetAlpha(SpriteRenderer sr, float alpha)
