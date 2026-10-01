@@ -115,6 +115,7 @@ public class PlayerController : MonoBehaviour
     private PlayerAnimation playerAnimation;
     private PlayerCombatController combat;
     private PlayerHeals heals;
+    private PlayerStats stats;
     private Rigidbody2D rb;
     private Collider2D[] playerColliders;
     private Collider2D[] boundsColliders;
@@ -168,6 +169,7 @@ public class PlayerController : MonoBehaviour
         playerAnimation = player.Animation;
         combat = player.CombatController;
         heals = player.Heals;
+        stats = player.Stats;
         rb = GetComponent<Rigidbody2D>();
         playerColliders = GetComponentsInChildren<Collider2D>(true);
         boundsColliders = BuildBoundsColliders();
@@ -476,6 +478,7 @@ public class PlayerController : MonoBehaviour
         if (dashPressed && isGrounded && dashTimer <= 0f)
         {
             if (isClimbing) return;
+            if (isHealing) return;
             if (combat.IsPlunging) return;
             if (isBouncing) return;
             if (combat.IsChargeInputHeld) return;
@@ -695,7 +698,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float healDuration = 0.1f;
     private void HandleHeal()
     {
-        if (!CanMove() || !isGrounded || !healPressed || isHealing)
+        if (!healPressed || isHealing || !CanMove() || !combat.CanHeal || heals == null || heals.GetCurrentHealCount() <= 0 || (stats != null && stats.CurrentHealth >= stats.MaxHealth))
         {
             healPressed = false;
             return;
@@ -737,6 +740,7 @@ public class PlayerController : MonoBehaviour
         if (physicsSuspended) return;
 
         CancelClimb();
+        CancelHeal();
         combat.ForceCancelAttack();
         if (applyStagger && playHurtAnimation) playerAnimation.PlayHurtAnimation();
 
@@ -784,6 +788,7 @@ public class PlayerController : MonoBehaviour
         if (physicsSuspended) return;
 
         CancelClimb();
+        CancelHeal();
         combat.ForceCancelAttack();
 
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
@@ -1081,6 +1086,7 @@ public class PlayerController : MonoBehaviour
         bool wasPlunging = combat.WasRecentlyPlunging;
 
         CancelClimb();
+        CancelHeal();
         combat.ForceCancelAttack();
 
         rb.linearVelocity = Vector2.zero;
