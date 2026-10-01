@@ -9,7 +9,7 @@ public class ParticleGlow : MonoBehaviour
     [SerializeField] private bool setStartColor;
     [SerializeField] private Color color = Color.white;
 
-    private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
     private ParticleSystem ps;
     private ParticleSystemRenderer psRenderer;
@@ -50,10 +50,7 @@ public class ParticleGlow : MonoBehaviour
             psRenderer.sharedMaterial = glowMaterial;
 
         Material material = psRenderer.sharedMaterial;
-        if (material == null || !material.HasProperty(EmissionColorId)) return;
-
-        if (!material.IsKeywordEnabled("_EMISSION"))
-            Debug.LogWarning($"[ParticleGlow] Emission isn't ticked on '{material.name}', so '{name}' won't glow.", this);
+        if (material == null || !material.HasProperty(BaseColorId)) return;
 
         if (setStartColor)
         {
@@ -61,31 +58,11 @@ public class ParticleGlow : MonoBehaviour
             main.startColor = color;
         }
 
-        Color baseColor = setStartColor ? color : GetStartColor();
-        Color glow = new Color(baseColor.r, baseColor.g, baseColor.b, 1f) * intensity;
-        glow.a = 1f;
+        Color boost = new Color(intensity, intensity, intensity, 1f);
 
         if (block == null) block = new MaterialPropertyBlock();
         psRenderer.GetPropertyBlock(block);
-        block.SetColor(EmissionColorId, glow);
+        block.SetColor(BaseColorId, boost);
         psRenderer.SetPropertyBlock(block);
-    }
-
-    private Color GetStartColor()
-    {
-        ParticleSystem.MinMaxGradient startColor = ps.main.startColor;
-
-        switch (startColor.mode)
-        {
-            case ParticleSystemGradientMode.TwoColors:
-                return Color.Lerp(startColor.colorMin, startColor.colorMax, 0.5f);
-            case ParticleSystemGradientMode.Gradient:
-            case ParticleSystemGradientMode.RandomColor:
-                return startColor.gradient != null ? startColor.gradient.Evaluate(0.5f) : Color.white;
-            case ParticleSystemGradientMode.TwoGradients:
-                return startColor.gradientMax != null ? startColor.gradientMax.Evaluate(0.5f) : Color.white;
-            default:
-                return startColor.color;
-        }
     }
 }
