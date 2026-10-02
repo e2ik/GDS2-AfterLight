@@ -39996,6 +39996,20 @@ MonoBehaviour:
   arenaBounds: {fileID: 457803890}
   playerTag: Player
   bossID: CHboss_intro_unique_id
+  bossMusicEvent:
+    Guid:
+      Data1: -575299851
+      Data2: 1122126428
+      Data3: 1939245233
+      Data4: 1325775335
+    Path: event:/DrBuzz
+  postBossMusicEvent:
+    Guid:
+      Data1: 1626273885
+      Data2: 1300586119
+      Data3: 1151470465
+      Data4: 998864367
+    Path: event:/TowerTheme
 --- !u!61 &1345720211
 BoxCollider2D:
   m_ObjectHideFlags: 0

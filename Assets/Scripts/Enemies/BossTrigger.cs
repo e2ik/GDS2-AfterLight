@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using FMODUnity;
 using UnityEngine;
 
 namespace Enemies
@@ -13,11 +14,17 @@ namespace Enemies
         [SerializeField] private string playerTag = "Player";
         [SerializeField] private string bossID = "boss_intro_unique_id";
 
+        [Header("Music")] 
+        [SerializeField] private EventReference bossMusicEvent;
+        [SerializeField] private EventReference postBossMusicEvent;
+        
         private bool hasTriggered;
+        private bool bossDefeated;
 
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (hasTriggered) return;
+            if (bossDefeated) return;
             if (!other.CompareTag(playerTag)) return;
 
             Player player = other.GetComponentInParent<Player>();
@@ -67,9 +74,21 @@ namespace Enemies
             {
                 bossEnemy.SetBossBounds(arenaBounds);
                 bossEnemy.TriggerLockOn(player.transform);
+                
+                MusicManager.Instance?.SwitchMusic(bossMusicEvent, isBossMusic: true);
+
+                bossEnemy.Context.Health.OnDamaged += (amount, currentHealth, isCrit) =>
+                    MusicManager.Instance?.SetBossIntensity((float)currentHealth / bossEnemy.Context.Health.MaxHealth);
+                
+                bossEnemy.Context.Health.OnDeath += () => 
+                {
+                    bossDefeated = true;
+                    MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
+                };
             }
             else
                 Debug.LogWarning("[BossTrigger] No spawned boss Enemy found to trigger lock-on");
         }
+        
     }
 }

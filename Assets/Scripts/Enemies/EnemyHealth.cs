@@ -19,6 +19,7 @@ namespace Enemies
     {
         [SerializeField] private int maxHealth = 10;
         public int CurrentHealth { get; private set; }
+        public int MaxHealth => maxHealth;
 
         public event Action<int, int, bool> OnDamaged; // amount, currentHealth, isDot
         public event Action<DamageInfo> OnDamageTaken;
