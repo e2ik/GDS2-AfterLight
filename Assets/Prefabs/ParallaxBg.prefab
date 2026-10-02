@@ -105,6 +105,21 @@ MonoBehaviour:
     sortingLayer: 
     orderInLayer: -97
     useAreaTint: 1
+  - name: LandscapeBack2
+    sprite: {fileID: 21300000, guid: ea2edab2c8e0ecb41916172abd20961c, type: 3}
+    material: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+    color: {r: 0.9254902, g: 0.627451, b: 0.39215687, a: 0.29803923}
+    source: 0
+    followCamera: {x: 0.75, y: 0.5}
+    autoScroll: {x: -0.4, y: 0}
+    offset: {x: 0, y: -5.5}
+    scale: 1
+    fitToCameraHeight: 0
+    tileX: 1
+    tileY: 0
+    sortingLayer: 
+    orderInLayer: -96
+    useAreaTint: 1
   exteriorTint: {r: 1, g: 1, b: 1, a: 1}
   interiorTint: {r: 0, g: 0, b: 0, a: 1}
   onlyVisibleInGame: 1
