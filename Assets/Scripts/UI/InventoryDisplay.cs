@@ -21,6 +21,7 @@ public class InventoryDisplay : GameUI.UIWindow
     {
         public InventoryFilter filter;
         public Graphic graphic;
+        public TMP_Text label;
     }
 
     [Header("UI Container")]
@@ -31,6 +32,8 @@ public class InventoryDisplay : GameUI.UIWindow
     [SerializeField] private FilterButtonVisual[] filterButtons;
     [SerializeField] private Color activeFilterColor = Color.yellow;
     [SerializeField] private Color inactiveFilterColor = Color.white;
+    [SerializeField] private Color activeFilterTextColor = Color.black;
+    [SerializeField] private Color inactiveFilterTextColor = Color.white;
 
     [Header("Controller")]
     [SerializeField] private InputActionReference prevFilterAction;
@@ -161,7 +164,13 @@ public class InventoryDisplay : GameUI.UIWindow
         foreach (FilterButtonVisual entry in filterButtons)
         {
             if (entry == null || entry.graphic == null) continue;
-            entry.graphic.color = entry.filter == currentFilter ? activeFilterColor : inactiveFilterColor;
+
+            bool active = entry.filter == currentFilter;
+            entry.graphic.color = active ? activeFilterColor : inactiveFilterColor;
+
+            if (entry.label == null) entry.label = entry.graphic.GetComponentInChildren<TMP_Text>(true);
+            if (entry.label != null && entry.label != entry.graphic)
+                entry.label.color = active ? activeFilterTextColor : inactiveFilterTextColor;
         }
     }
 
