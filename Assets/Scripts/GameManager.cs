@@ -424,6 +424,9 @@ public class GameManager : MonoBehaviour
         PlacePlayerAtAnchor(anchorID);
 
         SaveManager.Instance?.SaveProgressAtLocation(targetScene, anchorID, side);
+        
+        if(MusicManager.Instance != null && MusicManager.Instance.IsBossMusicActive)
+            MusicManager.Instance.ExitBossMusicToPrevious();
 
         onComplete?.Invoke();
 

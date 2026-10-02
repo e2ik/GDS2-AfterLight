@@ -21,6 +21,10 @@ namespace Enemies
         private bool hasTriggered;
         private bool bossDefeated;
 
+        private Enemy activeBossEnemy;
+        private Action<int, int, bool> onBossDamaged;
+        private Action onBossDeath;
+
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (hasTriggered) return;
@@ -77,17 +81,40 @@ namespace Enemies
                 
                 MusicManager.Instance?.SwitchMusic(bossMusicEvent, isBossMusic: true);
 
-                bossEnemy.Context.Health.OnDamaged += (amount, currentHealth, isCrit) =>
+                activeBossEnemy = bossEnemy;
+                
+                onBossDamaged = (amount, currentHealth, isCrit) =>
                     MusicManager.Instance?.SetBossIntensity((float)currentHealth / bossEnemy.Context.Health.MaxHealth);
                 
-                bossEnemy.Context.Health.OnDeath += () => 
+                onBossDeath = () => 
                 {
                     bossDefeated = true;
                     MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
+                    CleanupFightSubscriptions();
                 };
+
+                bossEnemy.Context.Health.OnDamaged += onBossDamaged;
+                bossEnemy.Context.Health.OnDeath += onBossDeath;
             }
             else
                 Debug.LogWarning("[BossTrigger] No spawned boss Enemy found to trigger lock-on");
+        }
+        
+
+        private void CleanupFightSubscriptions()
+        {
+            if (activeBossEnemy != null)
+            {
+                if (onBossDamaged != null)
+                    activeBossEnemy.Context.Health.OnDamaged -= onBossDamaged;
+
+                if (onBossDeath != null)
+                    activeBossEnemy.Context.Health.OnDeath -= onBossDeath;
+            }
+
+            activeBossEnemy = null;
+            onBossDamaged = null;
+            onBossDeath = null;
         }
         
     }

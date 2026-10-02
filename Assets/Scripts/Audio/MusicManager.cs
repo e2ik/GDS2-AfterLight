@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using FMOD.Studio;
 using FMODUnity;
 using Unity.VisualScripting;
@@ -14,9 +15,14 @@ public class MusicManager : MonoBehaviour
     [SerializeField] private float smoothSpeed = 2f;
     [SerializeField] private float decayPerSecond = 0.125f;
     [SerializeField] private float decayDelay = 1.5f;
+    [SerializeField] private float crossfadeDuration = 1.5f;
     [SerializeField, Range(0f, 1f)] private float idleFloor = 0f;
 
     private EventInstance _instance;
+    public bool IsBossMusicActive => _bossMode;
+
+    private Coroutine _crossfadeRoutine;
+    
     private PARAMETER_ID _intensityParamId;
     private PARAMETER_ID _pauseParamId;
     private bool _hasPauseParam;
@@ -34,6 +40,11 @@ public class MusicManager : MonoBehaviour
     private EventReference _pendingEvent;
     private bool _hasGlobalParams;
 
+    private EventReference _currentEvent;
+    private bool _hasCurrentEvent;
+    private EventReference _preBossEvent;
+    private bool _hasPreBossEvent;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -49,6 +60,8 @@ public class MusicManager : MonoBehaviour
 
 #if !UNITY_WEBGL
         PlayMusic(defaultMusicEvent);
+        _currentEvent = defaultMusicEvent;
+        _hasCurrentEvent = true;
 #else
         _pendingEvent = defaultMusicEvent;
 #endif
@@ -78,24 +91,92 @@ public class MusicManager : MonoBehaviour
 
     public void PlayMusic(EventReference musicEvent, bool fadeOutPrevious = true)
     {
-        StopMusic(fadeOutPrevious);
-        
         if (musicEvent.IsNull) return;
 
-        _instance = RuntimeManager.CreateInstance(musicEvent);
-        _instance.start();
+        EventInstance previousInstance = _instance;
+        bool hasPrevious = previousInstance.isValid();
 
-        _instance.getDescription(out var eventDesc);
+        EventInstance newInstance = RuntimeManager.CreateInstance(musicEvent);
+
+        if (fadeOutPrevious && hasPrevious)
+        {
+            newInstance.setVolume(0f);
+            newInstance.start();
+
+            if (_crossfadeRoutine != null)
+                StopCoroutine(_crossfadeRoutine);
+
+            _crossfadeRoutine = StartCoroutine(CrossfadeRoutine(previousInstance, newInstance));
+        }
+        else
+        {
+            if (hasPrevious)
+            {
+                previousInstance.stop(STOP_MODE.IMMEDIATE);
+                previousInstance.release();
+            }
+
+            newInstance.setVolume(1f);
+            newInstance.start();
+        }
+
+        _instance = newInstance;
+        
+        newInstance.getDescription(out var eventDesc);
         _hasLoopParam = eventDesc.getParameterDescriptionByName("Loop", out var loopDesc) == FMOD.RESULT.OK;
 
         if (_hasLoopParam)
             _loopParamId = loopDesc.id;
     }
 
+    private IEnumerator CrossfadeRoutine(EventInstance fadingOut, EventInstance fadingIn)
+    {
+        float t = 0f;
+
+        while (t < crossfadeDuration)
+        {
+            t += Time.deltaTime;
+            float ratio = Mathf.Clamp01(t / crossfadeDuration);
+
+            if (fadingOut.isValid())
+                fadingOut.setVolume(1f - ratio);
+
+            if (fadingIn.isValid())
+                fadingIn.setVolume(ratio);
+
+            yield return null;
+        }
+
+        if (fadingOut.isValid())
+        {
+            fadingOut.stop(STOP_MODE.IMMEDIATE);
+            fadingOut.release();
+        }
+
+        if (fadingIn.isValid())
+            fadingIn.setVolume(1f);
+
+        _crossfadeRoutine = null;
+    }
+
     public void SwitchMusic(EventReference newLevelEvent, bool isBossMusic = false, bool fadeOutPrevious = true)
     {
+        bool sameEvent = _hasCurrentEvent && _instance.isValid() && _currentEvent.Guid.Equals(newLevelEvent.Guid);
+
+        if (isBossMusic && !_bossMode)
+        {
+            _preBossEvent = _currentEvent;
+            _hasPreBossEvent = _hasCurrentEvent;
+        }
+        
         _bossMode = isBossMusic;
+
+        if (sameEvent)
+            return;
+        
         PlayMusic(newLevelEvent, fadeOutPrevious);
+        _currentEvent = newLevelEvent;
+        _hasCurrentEvent = true;
         _currentNormalized = _targetNormalized = isBossMusic ? 0f : idleFloor;
     }
 
@@ -156,6 +237,14 @@ public class MusicManager : MonoBehaviour
         _instance.setParameterByID(_loopParamId, loop ? 1f : 0f);
     }
 
+    public void ExitBossMusicToPrevious(bool fadeOutPrevious = true)
+    {
+        if (!_hasPreBossEvent)
+            return;
+        
+        SwitchMusic(_preBossEvent, isBossMusic: false, fadeOutPrevious);
+    }
+
     private void Update()
     {
 #if UNITY_WEBGL
@@ -182,7 +271,6 @@ public class MusicManager : MonoBehaviour
 
         _currentNormalized = Mathf.MoveTowards(_currentNormalized, _targetNormalized, smoothSpeed * Time.deltaTime);
         float actualValue = Mathf.Lerp(_intensityMin, _intensityMax, _currentNormalized);
-        Debug.Log($"Intensity Value {actualValue}");
         RuntimeManager.StudioSystem.setParameterByID(_intensityParamId, actualValue);
     }
 }
