@@ -20,6 +20,13 @@ public class InputActionPrompt : MonoBehaviour
     [SerializeField] private TMP_Text keyLabel;
     [SerializeField] private bool upperCaseKeys = true;
 
+    [Header("Icon Glow")]
+    [SerializeField] private Color iconColor = Color.white;
+    [SerializeField, Min(0f)] private float iconIntensity = 1f;
+
+    private static readonly int TintId = Shader.PropertyToID("_Color");
+    private Material imageMaterial;
+
     private bool pendingRefresh;
     private bool warnedMissingIcons;
 
@@ -34,6 +41,42 @@ public class InputActionPrompt : MonoBehaviour
     {
         InputManager.OnDeviceChanged -= HandleDeviceChanged;
         InputSystem.onActionChange -= HandleActionChange;
+    }
+
+    private void OnDestroy()
+    {
+        if (imageMaterial != null) Destroy(imageMaterial);
+    }
+
+    public void SetGlow(Color color, float intensity)
+    {
+        iconColor = color;
+        iconIntensity = Mathf.Max(0f, intensity);
+        ApplyGlow();
+    }
+
+    private void ApplyGlow()
+    {
+        if (iconRenderer != null)
+            iconRenderer.color = new Color(iconColor.r * iconIntensity, iconColor.g * iconIntensity, iconColor.b * iconIntensity, iconColor.a);
+
+        if (iconImage != null)
+        {
+            iconImage.color = iconColor;
+
+            if (Application.isPlaying)
+            {
+                if (imageMaterial == null && !Mathf.Approximately(iconIntensity, 1f))
+                {
+                    Material source = iconImage.material != null ? iconImage.material : Graphic.defaultGraphicMaterial;
+                    imageMaterial = new Material(source) { name = $"{source.name} (Prompt Glow)" };
+                    iconImage.material = imageMaterial;
+                }
+
+                if (imageMaterial != null && imageMaterial.HasProperty(TintId))
+                    imageMaterial.SetColor(TintId, new Color(iconIntensity, iconIntensity, iconIntensity, 1f));
+            }
+        }
     }
 
     private void Start() => Refresh();
@@ -132,6 +175,8 @@ public class InputActionPrompt : MonoBehaviour
 
     private void Show(Sprite sprite, string label)
     {
+        ApplyGlow();
+
         if (iconImage != null)
         {
             iconImage.sprite = sprite;

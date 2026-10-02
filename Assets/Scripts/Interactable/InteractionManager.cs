@@ -9,6 +9,8 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private float interactionRange = 1.5f;
     [SerializeField] private LayerMask interactableLayers = ~0;
     [SerializeField] private Vector2 raycastOriginOffset = Vector2.zero;
+    [SerializeField] private Vector2 boxSize = new Vector2(0.5f, 1f);
+    [SerializeField] private Collider2D bodyCollider;
 
     private int interactionDisableCount;
     private int lastUnblockFrame = -1;
@@ -30,6 +32,7 @@ public class InteractionManager : MonoBehaviour
         player = GetComponent<Player>();
         playerController = GetComponent<PlayerController>();
         ownRoot = transform.root;
+        if (bodyCollider == null) bodyCollider = GetComponent<Collider2D>();
 
         PlayerInput playerInput = GetComponent<PlayerInput>();
         interactAction = playerInput.actions["Interact"];
@@ -84,10 +87,10 @@ public class InteractionManager : MonoBehaviour
         IInteractable hitInteractable = null;
         Transform hitTransform = null;
 
-        Vector2 origin = (Vector2)transform.position + raycastOriginOffset;
+        Vector2 origin = GetCastOrigin();
         Vector2 direction = playerController.FacingDirection == 1 ? Vector2.right : Vector2.left;
 
-        RaycastHit2D[] hits = Physics2D.RaycastAll(origin, direction, interactionRange, interactableLayers);
+        RaycastHit2D[] hits = Physics2D.BoxCastAll(origin, boxSize, 0f, direction, interactionRange, interactableLayers);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
         foreach (RaycastHit2D hit in hits)
@@ -126,6 +129,15 @@ public class InteractionManager : MonoBehaviour
         }
     }
 
+    private Vector2 GetCastOrigin()
+    {
+        Vector2 center = bodyCollider != null && bodyCollider.enabled
+            ? (Vector2)bodyCollider.bounds.center
+            : (Vector2)transform.position;
+
+        return center + raycastOriginOffset;
+    }
+
     private void ClearCurrentInteractable()
     {
         if (currentOutlineToggle != null)
@@ -142,11 +154,17 @@ public class InteractionManager : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Vector2 origin = (Vector2)transform.position + raycastOriginOffset;
+        if (bodyCollider == null) bodyCollider = GetComponent<Collider2D>();
+
+        Vector2 origin = GetCastOrigin();
         int facing = Application.isPlaying && playerController != null ? playerController.FacingDirection : 1;
         Vector2 direction = facing == 1 ? Vector2.right : Vector2.left;
+        Vector2 end = origin + direction * interactionRange;
 
         Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(origin, origin + direction * interactionRange);
+        Gizmos.DrawWireCube(origin, boxSize);
+        Gizmos.DrawWireCube(end, boxSize);
+        Gizmos.DrawLine(origin + Vector2.up * boxSize.y * 0.5f, end + Vector2.up * boxSize.y * 0.5f);
+        Gizmos.DrawLine(origin - Vector2.up * boxSize.y * 0.5f, end - Vector2.up * boxSize.y * 0.5f);
     }
 }

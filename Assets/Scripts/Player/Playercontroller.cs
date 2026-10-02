@@ -192,6 +192,11 @@ public class PlayerController : MonoBehaviour
             PerformInventoryAction(); 
             HandleHeal();
         }
+        else
+        {
+            inventoryPressed = false;
+            healPressed = false;
+        }
     }
 
     private void FixedUpdate()
@@ -862,7 +867,11 @@ public class PlayerController : MonoBehaviour
         dashPressed = value.isPressed; dashReleased = !value.isPressed;
     }
 
-    public void OnInventory() => inventoryPressed = true;
+    public void OnInventory()
+    {
+        if (!InputEnabled) return;
+        inventoryPressed = true;
+    }
 
     private void ConsumeJumpInput()
     {
@@ -876,7 +885,11 @@ public class PlayerController : MonoBehaviour
         dashReleased = false;
     }
     
-    private void OnHeal() => healPressed = true;
+    private void OnHeal()
+    {
+        if (!InputEnabled) return;
+        healPressed = true;
+    }
 
     #endregion
 
@@ -1072,7 +1085,8 @@ public class PlayerController : MonoBehaviour
 
         if (inventoryDisplay != null && GameUI.UIGlobalInput.Instance != null)
         {
-            if (inventoryDisplay.IsOpen && InputManager.IsUsingGamepad) return;
+            bool anyPanelOpen = GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.HasOpenWindows;
+            if (anyPanelOpen && InputManager.IsUsingGamepad) return;
             GameUI.UIGlobalInput.Instance.ToggleWindow(inventoryDisplay);
         }
     }

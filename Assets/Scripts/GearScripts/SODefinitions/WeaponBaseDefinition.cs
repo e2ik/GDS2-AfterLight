@@ -32,11 +32,21 @@ public class WeaponDefinition : InventoryItemBase
         Legendary = new Vector2(15f, 20f)
     };
 
+    [Header("Attack by Rarity")]
+    public RarityRange AttackByRarity = new RarityRange
+    {
+        Common = new Vector2(1f, 3f),
+        Rare = new Vector2(3f, 6f),
+        Epic = new Vector2(6f, 10f),
+        Legendary = new Vector2(10f, 15f)
+    };
+
     public WeaponInstance CreateInstance(ERarity rarity)
     {
         Vector2 dmgRange = DamageByRarity.GetRange(rarity);
         Vector2 rangeRange = RangeByRarity.GetRange(rarity);
         Vector2 critRange = CritByRarity.GetRange(rarity);
+        Vector2 attackRange = AttackByRarity.GetRange(rarity);
 
         WeaponInstance newInstance = new WeaponInstance
         {
@@ -45,7 +55,8 @@ public class WeaponDefinition : InventoryItemBase
             Rarity = rarity,
             InstRolledDamage = BaseWeaponDamage + Random.Range(dmgRange.x, dmgRange.y),
             InstRolledRange = Random.Range(rangeRange.x, rangeRange.y),
-            InstRolledCrit = Random.Range(critRange.x, critRange.y)
+            InstRolledCrit = Random.Range(critRange.x, critRange.y),
+            InstRolledAttack = Mathf.Round(Random.Range(attackRange.x, attackRange.y))
         };
 
         // Debug.Log($"Created Weapon Instance: {UIName} [{rarity}]");
