@@ -21,12 +21,12 @@ MonoBehaviour:
   maxRareValue: 0
   maxEpicValue: 0
   maxLegendaryValue: 0
-  BaseWeaponDamage: 6
+  BaseWeaponDamage: 2
   RangeByRarity:
-    Common: {x: 2, y: 2}
-    Rare: {x: 2, y: 3}
-    Epic: {x: 3, y: 4}
-    Legendary: {x: 4, y: 6}
+    Common: {x: 3, y: 3}
+    Rare: {x: 3, y: 4}
+    Epic: {x: 4, y: 4}
+    Legendary: {x: 4, y: 5}
   CritByRarity:
     Common: {x: 0, y: 0}
     Rare: {x: 0, y: 0}
@@ -37,3 +37,8 @@ MonoBehaviour:
     Rare: {x: 4, y: 6}
     Epic: {x: 6, y: 10}
     Legendary: {x: 12, y: 20}
+  AttackByRarity:
+    Common: {x: 3, y: 5}
+    Rare: {x: 5, y: 8}
+    Epic: {x: 8, y: 10}
+    Legendary: {x: 10, y: 15}

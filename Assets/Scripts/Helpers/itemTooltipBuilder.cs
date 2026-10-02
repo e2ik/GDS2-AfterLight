@@ -150,8 +150,10 @@ public static class ItemTooltipTextBuilder
         float? eqDamage = equippedComparison != null ? (float?)equippedComparison.InstRolledDamage : null;
         float? eqRange = equippedComparison != null ? (float?)equippedComparison.InstRolledRange : null;
         float? eqCrit = equippedComparison != null ? (float?)(equippedComparison.InstRolledCrit * 100f) : null;
+        float? eqAttack = equippedComparison != null ? (float?)equippedComparison.InstRolledAttack : null;
 
         if (weapon.InstRolledDamage > 0) sb.AppendLine($"{Label("Damage")} {weapon.InstRolledDamage:F1}{BuildDiffSuffix(weapon.InstRolledDamage, eqDamage, "F1")}");
+        if (weapon.InstRolledAttack > 0) sb.AppendLine($"{Label("Attack")} +{weapon.InstRolledAttack:F0}{BuildDiffSuffix(weapon.InstRolledAttack, eqAttack)}");
         if (weapon.InstRolledRange > 0) sb.AppendLine($"{Label("Range")} {weapon.InstRolledRange:F1}{BuildDiffSuffix(weapon.InstRolledRange, eqRange, "F1")}");
         if (weapon.InstRolledCrit > 0) sb.AppendLine($"{Label("Crit")} {weapon.InstRolledCrit * 100f:F1}%{BuildDiffSuffix(weapon.InstRolledCrit * 100f, eqCrit, "F1", "%")}");
 

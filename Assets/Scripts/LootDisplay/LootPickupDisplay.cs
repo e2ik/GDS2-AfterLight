@@ -48,10 +48,12 @@ public class LootPickupDisplay : MonoBehaviour
     [SerializeField] private int lootPaddingBottom = 10;
     [SerializeField] private int quickEquipPaddingTop = 50;
     [SerializeField] private int quickEquipPaddingBottom = 50;
+    [SerializeField] private HorizontalOrVerticalLayoutGroup lootControlledContainer;
 
     [Header("Debug")]
     [SerializeField] private bool debugDrawTooltip;
     [SerializeField] private Color debugColor = Color.green;
+    [SerializeField] private bool debugLogLootStyle;
 
     public TooltipAnchorSettings TooltipAnchor => inspectAnchor;
     public RectTransform TooltipDock => tooltipDock;
@@ -66,6 +68,10 @@ public class LootPickupDisplay : MonoBehaviour
     private bool lootStyleActive;
     private bool lootHasQuickEquip;
     private LootPickupEntry lootStyleEntry;
+    private LootPickupEntry pointerHoveredEntry;
+    private HorizontalOrVerticalLayoutGroup controlledContainer;
+    private bool originalControlWidth;
+    private bool originalControlHeight;
     private LayoutGroup paddedLayout;
     private int originalPaddingTop;
     private int originalPaddingBottom;
@@ -117,10 +123,17 @@ public class LootPickupDisplay : MonoBehaviour
             }
         }
 
-        LootPickupEntry target = inspectedEntry != null ? inspectedEntry : GetHoveredEntry();
+        if (pointerHoveredEntry != null && !pointerHoveredEntry.gameObject.activeInHierarchy) pointerHoveredEntry = null;
+
+        LootPickupEntry target = inspectedEntry != null
+            ? inspectedEntry
+            : pointerHoveredEntry != null ? pointerHoveredEntry : GetHoveredEntry();
 
         if (target != lootStyleEntry || (target != null) != lootStyleActive)
         {
+            if (debugLogLootStyle)
+                Debug.Log($"[LootPickupDisplay] Loot style target -> {(target != null ? target.name : "none")} (inspected: {inspectedEntry != null}, tooltip active: {ItemTooltip.Instance != null && ItemTooltip.Instance.gameObject.activeInHierarchy})", this);
+
             lootStyleEntry = target;
 
             if (target != null)
@@ -138,7 +151,7 @@ public class LootPickupDisplay : MonoBehaviour
 
     private LootPickupEntry GetHoveredEntry()
     {
-        if (Mouse.current == null || !InputModeTracker.IsUsingMouse) return null;
+        if (Mouse.current == null || ItemTooltip.Instance == null || !ItemTooltip.Instance.gameObject.activeInHierarchy) return null;
 
         Vector2 mousePosition = Mouse.current.position.ReadValue();
 
@@ -251,13 +264,39 @@ public class LootPickupDisplay : MonoBehaviour
 
     private void SetLootBackground(bool visible)
     {
+        if (debugLogLootStyle)
+            Debug.Log($"[LootPickupDisplay] Background {(visible ? "ON" : "OFF")} on '{(lootOnlyBackground != null ? lootOnlyBackground.name : "NOT ASSIGNED")}'", this);
+
         if (lootOnlyBackground == null) return;
 
         SetLootPadding(visible);
+        SetLootChildControl(visible);
 
         Color color = lootOnlyBackground.color;
         color.a = visible ? 1f : 0f;
         lootOnlyBackground.color = color;
+    }
+
+    private void SetLootChildControl(bool loot)
+    {
+        if (controlledContainer == null)
+        {
+            controlledContainer = lootControlledContainer;
+            if (controlledContainer == null && ItemTooltip.Instance != null)
+                controlledContainer = ItemTooltip.Instance.GetComponent<HorizontalOrVerticalLayoutGroup>();
+            if (controlledContainer == null) return;
+
+            originalControlWidth = controlledContainer.childControlWidth;
+            originalControlHeight = controlledContainer.childControlHeight;
+        }
+
+        controlledContainer.childControlWidth = loot || originalControlWidth;
+        controlledContainer.childControlHeight = loot || originalControlHeight;
+        if (!loot)
+        {
+            controlledContainer.childControlWidth = originalControlWidth;
+            controlledContainer.childControlHeight = originalControlHeight;
+        }
     }
 
     private void SetLootPadding(bool loot)
@@ -281,6 +320,16 @@ public class LootPickupDisplay : MonoBehaviour
         LayoutRebuilder.MarkLayoutForRebuild(layoutRect);
         if (ItemTooltip.Instance != null)
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)ItemTooltip.Instance.transform);
+    }
+
+    public void SetHoveredEntry(LootPickupEntry entry)
+    {
+        pointerHoveredEntry = entry;
+    }
+
+    public void ClearHoveredEntry(LootPickupEntry entry)
+    {
+        if (pointerHoveredEntry == entry) pointerHoveredEntry = null;
     }
 
     public void ApplyTooltipScale()
@@ -386,7 +435,9 @@ public class LootPickupDisplay : MonoBehaviour
         GUI.DrawTexture(new Rect(guiRect.xMin, guiRect.yMin, 2f, guiRect.height), debugTexture);
         GUI.DrawTexture(new Rect(guiRect.xMax - 2f, guiRect.yMin, 2f, guiRect.height), debugTexture);
 
-        string info = $"Rect {rect.rect.width:0}x{rect.rect.height:0}  Screen {guiRect.width:0}x{guiRect.height:0}px  {(resizedTooltip != null ? "LOOT" : "NORMAL")}";
+        LootPickupEntry hovered = GetHoveredEntry();
+        float bgAlpha = lootOnlyBackground != null ? lootOnlyBackground.color.a : -1f;
+        string info = $"Rect {rect.rect.width:0}x{rect.rect.height:0}  Screen {guiRect.width:0}x{guiRect.height:0}px  {(lootStyleActive ? "LOOT" : "NORMAL")}  Hover: {(hovered != null ? hovered.name : "none")}  BG alpha: {bgAlpha:0.##}";
         GUI.Label(new Rect(guiRect.xMin, guiRect.yMin - 20f, 600f, 20f), info);
 
         GUI.color = previous;

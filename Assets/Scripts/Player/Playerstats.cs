@@ -19,6 +19,7 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float gearDefenseBonus = 0f;
     [SerializeField] private float gearHumanityBonus = 0f;
     [SerializeField] private float gemAttackBonus = 0f;
+    [SerializeField] private float weaponAttackBonus = 0f;
     [SerializeField] private float gearCritBonus = 0f;
     [SerializeField] private float gemCritBonus = 0f;
 
@@ -83,7 +84,7 @@ public class PlayerStats : MonoBehaviour
 
     private float UpdateAttackDisplay()
     {
-        return baseAttack + gearAttackBonus + gemAttackBonus;
+        return baseAttack + gearAttackBonus + gemAttackBonus + weaponAttackBonus;
     }
 
     public void RecalculateStats()
@@ -92,6 +93,7 @@ public class PlayerStats : MonoBehaviour
         gearDefenseBonus = 0f;
         gearHumanityBonus = 0f;
         gemAttackBonus = 0f;
+        weaponAttackBonus = 0f;
         gearCritBonus = 0f;
         gemCritBonus = 0f;
 
@@ -107,6 +109,12 @@ public class PlayerStats : MonoBehaviour
                     gearHumanityBonus += gear.InstBonusHumanity;
                     gearCritBonus += gear.InstBonusCrit;
                 }
+            }
+
+            WeaponInstance weapon = player.Equipment.EquippedWeapon;
+            if (weapon != null && !string.IsNullOrEmpty(weapon.InstTemplateID))
+            {
+                weaponAttackBonus = weapon.InstRolledAttack;
             }
 
             var gem = player.Equipment.SecondaryGem;
