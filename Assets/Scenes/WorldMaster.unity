@@ -2177,6 +2177,37 @@ MonoBehaviour:
   chipTweenDuration: 0.6
   healthChipDamageColor: {r: 1, g: 0.6840123, b: 0, a: 1}
   healthChipHealColor: {r: 0.4324789, g: 0.6981132, b: 0.4324789, a: 1}
+  useHealthGradient: 1
+  healthGradient:
+    serializedVersion: 2
+    key0: {r: 0.9, g: 0.2, b: 0.2, a: 1}
+    key1: {r: 1, g: 0.8, b: 0.2, a: 1}
+    key2: {r: 0.3, g: 0.9, b: 0.3, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 32768
+    ctime2: 65535
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 3
+    m_NumAlphaKeys: 2
   healthRisingColor: {r: 0.4, g: 1, b: 0.4, a: 1}
   showHealCasting: 1
   healCastingColor: {r: 1, g: 0.4936719, b: 0, a: 1}
@@ -4756,7 +4787,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameUI.InteractionPopup
   iconPrefab: {fileID: 999654685950981340, guid: d96e24872caa42d43b9b0c0c42c0a4ea, type: 3}
-  iconOffset: {x: 0, y: 0.75}
+  iconOffset: {x: 0, y: 0.65}
+  hover: 1
+  hoverHeight: 0.035
+  hoverSpeed: 8
 --- !u!224 &1284252395 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8305582429712239306, guid: d73b34840c2074cc8a1ec47f842a5ddb, type: 3}

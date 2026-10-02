@@ -7,6 +7,11 @@ namespace GameUI
         [SerializeField] private GameObject iconPrefab;
         [SerializeField] private Vector2 iconOffset = new Vector2(0f, 0.15f);
 
+        [Header("Hover")]
+        [SerializeField] private bool hover = true;
+        [SerializeField] private float hoverHeight = 0.05f;
+        [SerializeField] private float hoverSpeed = 3f;
+
         private InteractionManager interactionManager;
         private GameObject iconInstance;
         private Transform currentTarget;
@@ -31,7 +36,8 @@ namespace GameUI
             if (iconInstance == null || currentTarget == null) return;
 
             Vector3 anchor = GetAnchor(currentTarget, currentPromptCollider);
-            iconInstance.transform.position = (Vector2)anchor + iconOffset;
+            float bob = hover ? Mathf.Sin(Time.unscaledTime * hoverSpeed) * hoverHeight : 0f;
+            iconInstance.transform.position = (Vector2)anchor + iconOffset + Vector2.up * bob;
         }
 
         public void Bind(InteractionManager manager)
