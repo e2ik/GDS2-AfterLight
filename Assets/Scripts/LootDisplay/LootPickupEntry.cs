@@ -146,6 +146,8 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 owner != null ? owner.TooltipAnchor : null,
                 owner != null ? owner.TooltipDock : null,
                 BuildActions());
+
+            if (owner != null) owner.ApplyTooltipScale();
         }
     }
 
@@ -157,6 +159,8 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             ItemTooltip.Instance.HideTooltip();
         }
+
+        if (owner != null) owner.RestoreTooltipScale();
     }
 
     private void OnDisable()
@@ -164,6 +168,7 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (isHovered && ItemTooltip.Instance != null)
         {
             ItemTooltip.Instance.HideTooltip();
+            if (owner != null) owner.RestoreTooltipScale();
         }
         isHovered = false;
         isInspected = false;

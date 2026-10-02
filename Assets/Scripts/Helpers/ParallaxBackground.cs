@@ -43,19 +43,18 @@ public class ParallaxBackground : MonoBehaviour
     [SerializeField] private Color exteriorTint = Color.white;
     [SerializeField] private Color interiorTint = new Color(0.4f, 0.4f, 0.4f);
 
+    [Header("World Anchor")]
+    [SerializeField] private Vector2 worldOrigin = Vector2.zero;
+
     [Header("Behaviour")]
     [SerializeField] private bool onlyVisibleInGame = true;
-    [SerializeField] private float snapResetDistance = 15f;
 
     private Transform content;
     private Camera cam;
-    private Vector2 cameraStart;
-    private Vector2 playerStart;
-    private Vector2 lastCameraPosition;
-    private Vector2 lastPlayerPosition;
-    private bool initialized;
     private Color currentTint = Color.white;
     private GameManager subscribedManager;
+    private bool hasAppliedSide;
+    private AreaSide appliedSide;
 
     private void Awake()
     {
@@ -80,11 +79,6 @@ public class ParallaxBackground : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        initialized = false;
-    }
-
     private void OnDisable()
     {
         Unsubscribe();
@@ -92,7 +86,6 @@ public class ParallaxBackground : MonoBehaviour
 
     public void ResetParallax()
     {
-        initialized = false;
     }
 
     public void SetTint(Color tint)
@@ -125,7 +118,17 @@ public class ParallaxBackground : MonoBehaviour
 
     private void HandleAreaSideChanged(AreaSide side)
     {
+        appliedSide = side;
+        hasAppliedSide = true;
         SetTint(side == AreaSide.Interior ? interiorTint : exteriorTint);
+    }
+
+    private void SyncAreaTint()
+    {
+        if (GameManager.Instance == null) return;
+
+        AreaSide side = GameManager.Instance.CurrentAreaSide;
+        if (!hasAppliedSide || side != appliedSide) HandleAreaSideChanged(side);
     }
 
     private void LateUpdate()
@@ -136,9 +139,11 @@ public class ParallaxBackground : MonoBehaviour
         if (content.gameObject.activeSelf != visible)
         {
             content.gameObject.SetActive(visible);
-            if (visible) initialized = false;
+            if (visible) hasAppliedSide = false;
         }
         if (!visible) return;
+
+        SyncAreaTint();
 
         if (cam == null || !cam.isActiveAndEnabled) cam = Camera.main;
         if (cam == null) return;
@@ -146,31 +151,14 @@ public class ParallaxBackground : MonoBehaviour
         Vector2 cameraPosition = cam.transform.position;
         Vector2 playerPosition = GetPlayerPosition(cameraPosition);
 
-        if (initialized && (Vector2.Distance(cameraPosition, lastCameraPosition) > snapResetDistance
-            || Vector2.Distance(playerPosition, lastPlayerPosition) > snapResetDistance))
-            initialized = false;
-
-        if (!initialized)
-        {
-            cameraStart = cameraPosition;
-            playerStart = playerPosition;
-            initialized = true;
-        }
-
-        lastCameraPosition = cameraPosition;
-        lastPlayerPosition = playerPosition;
-
-        Vector2 cameraDelta = cameraPosition - cameraStart;
-        Vector2 playerDelta = playerPosition - playerStart;
         float viewHeight = cam.orthographicSize * 2f;
         float viewWidth = viewHeight * cam.aspect;
 
         foreach (ParallaxLayer layer in layers)
         {
             bool followPlayer = layer.source == ParallaxSource.Player;
-            Vector2 sourceDelta = followPlayer ? new Vector2(playerDelta.x, cameraDelta.y) : cameraDelta;
-            Vector2 anchor = followPlayer ? new Vector2(playerPosition.x, cameraPosition.y) : cameraPosition;
-            UpdateLayer(layer, cameraPosition, anchor, sourceDelta, viewWidth, viewHeight);
+            Vector2 source = followPlayer ? new Vector2(playerPosition.x, cameraPosition.y) : cameraPosition;
+            UpdateLayer(layer, cameraPosition, source, viewWidth, viewHeight);
         }
     }
 
@@ -182,7 +170,7 @@ public class ParallaxBackground : MonoBehaviour
         return cameraPosition;
     }
 
-    private void UpdateLayer(ParallaxLayer layer, Vector2 cameraPosition, Vector2 anchor, Vector2 sourceDelta, float viewWidth, float viewHeight)
+    private void UpdateLayer(ParallaxLayer layer, Vector2 cameraPosition, Vector2 source, float viewWidth, float viewHeight)
     {
         SpriteRenderer sr = layer.renderer;
         if (sr == null || layer.sprite == null) return;
@@ -209,8 +197,7 @@ public class ParallaxBackground : MonoBehaviour
 
         layer.scroll += layer.autoScroll * Time.deltaTime;
 
-        Vector2 stayBehind = Vector2.one - layer.followCamera;
-        Vector2 position = anchor + layer.offset - Vector2.Scale(sourceDelta, stayBehind) + layer.scroll;
+        Vector2 position = worldOrigin + layer.offset + Vector2.Scale(source - worldOrigin, layer.followCamera) + layer.scroll;
 
         if (layer.tileX)
         {
