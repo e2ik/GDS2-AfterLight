@@ -4,8 +4,9 @@ using UnityEngine;
 public class SpriteOutlineToggle : MonoBehaviour
 {
     [Header("Default Outline Settings")]
-    [SerializeField] private Color outlineColor = Color.yellow;
-    [SerializeField] private float outlineThickness = 1f;
+    [SerializeField, ColorUsage(true, true)] private Color outlineColor = Color.yellow;
+    [SerializeField] private float outlineThickness = 0.5f;
+    [SerializeField, Min(0f)] private float outlineIntensity = 1.4f;
 
     [Header("Hover Highlight")]
     [SerializeField] private bool pulseOnHighlight = true;
@@ -41,16 +42,23 @@ public class SpriteOutlineToggle : MonoBehaviour
     {
         if (spriteRenderers == null || spriteRenderers.Length == 0) return;
 
+        Color glowColor = new Color(color.r * outlineIntensity, color.g * outlineIntensity, color.b * outlineIntensity, color.a);
+
         foreach (var sr in spriteRenderers)
         {
             if (sr == null) continue;
 
             sr.GetPropertyBlock(propertyBlock);
             propertyBlock.SetFloat(OutlineEnabledID, enabled ? 1f : 0f);
-            propertyBlock.SetColor(OutlineColorID, color);
+            propertyBlock.SetColor(OutlineColorID, glowColor);
             propertyBlock.SetFloat(OutlineThicknessID, thickness);
             sr.SetPropertyBlock(propertyBlock);
         }
+    }
+
+    public void SetIntensity(float intensity)
+    {
+        outlineIntensity = Mathf.Max(0f, intensity);
     }
 
     public void BeginHighlight()
@@ -120,4 +128,5 @@ public class SpriteOutlineToggle : MonoBehaviour
 
     public Color DefaultColor => outlineColor;
     public float DefaultThickness => outlineThickness;
+    public float Intensity => outlineIntensity;
 }

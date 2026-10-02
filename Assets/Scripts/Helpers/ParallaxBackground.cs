@@ -4,6 +4,8 @@ using UnityEngine;
 [DefaultExecutionOrder(1000)]
 public class ParallaxBackground : MonoBehaviour
 {
+    public enum ParallaxSource { Camera, Player }
+
     [System.Serializable]
     public class ParallaxLayer
     {
@@ -13,6 +15,7 @@ public class ParallaxBackground : MonoBehaviour
         public Color color = Color.white;
 
         [Header("Movement")]
+        public ParallaxSource source = ParallaxSource.Player;
         public Vector2 followCamera = new Vector2(0.5f, 0.5f);
         public Vector2 autoScroll;
 
@@ -47,7 +50,9 @@ public class ParallaxBackground : MonoBehaviour
     private Transform content;
     private Camera cam;
     private Vector2 cameraStart;
+    private Vector2 playerStart;
     private Vector2 lastCameraPosition;
+    private Vector2 lastPlayerPosition;
     private bool initialized;
     private Color currentTint = Color.white;
     private GameManager subscribedManager;
@@ -139,29 +144,45 @@ public class ParallaxBackground : MonoBehaviour
         if (cam == null) return;
 
         Vector2 cameraPosition = cam.transform.position;
+        Vector2 playerPosition = GetPlayerPosition(cameraPosition);
 
-        if (initialized && Vector2.Distance(cameraPosition, lastCameraPosition) > snapResetDistance)
+        if (initialized && (Vector2.Distance(cameraPosition, lastCameraPosition) > snapResetDistance
+            || Vector2.Distance(playerPosition, lastPlayerPosition) > snapResetDistance))
             initialized = false;
 
         if (!initialized)
         {
             cameraStart = cameraPosition;
+            playerStart = playerPosition;
             initialized = true;
         }
 
         lastCameraPosition = cameraPosition;
+        lastPlayerPosition = playerPosition;
 
         Vector2 cameraDelta = cameraPosition - cameraStart;
+        Vector2 playerDelta = playerPosition - playerStart;
         float viewHeight = cam.orthographicSize * 2f;
         float viewWidth = viewHeight * cam.aspect;
 
         foreach (ParallaxLayer layer in layers)
         {
-            UpdateLayer(layer, cameraPosition, cameraDelta, viewWidth, viewHeight);
+            bool followPlayer = layer.source == ParallaxSource.Player;
+            Vector2 sourceDelta = followPlayer ? new Vector2(playerDelta.x, cameraDelta.y) : cameraDelta;
+            Vector2 anchor = followPlayer ? new Vector2(playerPosition.x, cameraPosition.y) : cameraPosition;
+            UpdateLayer(layer, cameraPosition, anchor, sourceDelta, viewWidth, viewHeight);
         }
     }
 
-    private void UpdateLayer(ParallaxLayer layer, Vector2 cameraPosition, Vector2 cameraDelta, float viewWidth, float viewHeight)
+    private Vector2 GetPlayerPosition(Vector2 cameraPosition)
+    {
+        if (GameManager.Instance != null && GameManager.Instance.Player != null)
+            return GameManager.Instance.Player.transform.position;
+
+        return cameraPosition;
+    }
+
+    private void UpdateLayer(ParallaxLayer layer, Vector2 cameraPosition, Vector2 anchor, Vector2 sourceDelta, float viewWidth, float viewHeight)
     {
         SpriteRenderer sr = layer.renderer;
         if (sr == null || layer.sprite == null) return;
@@ -188,7 +209,8 @@ public class ParallaxBackground : MonoBehaviour
 
         layer.scroll += layer.autoScroll * Time.deltaTime;
 
-        Vector2 position = cameraStart + layer.offset + Vector2.Scale(cameraDelta, layer.followCamera) + layer.scroll;
+        Vector2 stayBehind = Vector2.one - layer.followCamera;
+        Vector2 position = anchor + layer.offset - Vector2.Scale(sourceDelta, stayBehind) + layer.scroll;
 
         if (layer.tileX)
         {
