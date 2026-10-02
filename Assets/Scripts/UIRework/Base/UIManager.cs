@@ -64,6 +64,11 @@ namespace GameUI
                 CancelRelease();
                 Time.timeScale = window.BlocksPlayerInput ? 0f : 1f;
                 BlockPlayerInteraction();
+
+                if (window.BlocksPlayerInput)
+                {
+                    MusicManager.Instance?.SetPaused(true);
+                }
             }
         }
 
@@ -144,6 +149,7 @@ namespace GameUI
 
         private IEnumerator ReleasePlayerRoutine()
         {
+            MusicManager.Instance.SetPaused(false);
             while (AnyClosing()) { yield return null; }
             FinishRelease();
         }

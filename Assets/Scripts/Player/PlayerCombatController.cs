@@ -411,6 +411,7 @@ public class PlayerCombatController : MonoBehaviour
         player.Animation.FlashGreenOnParrySuccess();
         CancelParry();
         AudioManager.PlaySFX(parryEvent, transform.position);
+        MusicManager.AddIntensity(0.2f);
         ChargeSkillMeter(chargeSkillAmount);
         isCounterAttacking = true;
 
@@ -651,6 +652,8 @@ public class PlayerCombatController : MonoBehaviour
     private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
     {
         float attackDamage = context.BaseAttackDamage * GetComboMultiplier();
+
+        MusicManager.AddIntensity(0.05f);
 
         foreach (var col in enemiesInRange)
         {

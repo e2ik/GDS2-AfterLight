@@ -444,7 +444,7 @@ public class GameManager : MonoBehaviour
         }
 
         MusicManager musicManager = FindFirstObjectByType<MusicManager>();
-        musicManager.SetState(MusicState.Explore);
+        musicManager.SetTargetIntensity(0.5f);
     }
 
     private IEnumerator LoadSceneAdditive(string sceneName)
