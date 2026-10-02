@@ -116,26 +116,42 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DamageNumber
   text: {fileID: 5346441271564829247}
+  glowIntensity: 1.35
   normalStyle:
     format: '{amount}'
     color: {r: 1, g: 1, b: 1, a: 1}
     scale: 1
+    material: {fileID: 0}
   critStyle:
     format: '{amount}!'
     color: {r: 1, g: 0.85, b: 0.2, a: 1}
     scale: 1.5
+    material: {fileID: 0}
   skillStyle:
     format: '{amount}'
     color: {r: 0.5501364, g: 0.9559748, b: 0.9435223, a: 1}
     scale: 1.25
+    material: {fileID: 0}
   dotStyle:
     format: '{amount}'
     color: {r: 0.9685534, g: 0.56346655, b: 0.56346655, a: 1}
     scale: 0.8
+    material: {fileID: 0}
   reflectStyle:
     format: Reflect {amount}
     color: {r: 0.35, g: 0.65, b: 1, a: 1}
     scale: 1.2
+    material: {fileID: 0}
+  dodgeStyle:
+    format: Dodged
+    color: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+    scale: 0.9
+    material: {fileID: 0}
+  perfectDodgeStyle:
+    format: Perfect!
+    color: {r: 1, g: 0.84, b: 0, a: 1}
+    scale: 1.2
+    material: {fileID: 0}
   tintByRoll: 1
   lowRollColor: {r: 0.61635214, g: 0.61635214, b: 0.61635214, a: 1}
   midRollColor: {r: 1, g: 0.95645815, b: 0.50628924, a: 1}

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
@@ -9,6 +10,7 @@ public class InputPromptTextSlots : MonoBehaviour
     [SerializeField] private TMP_Text text;
     [SerializeField] private InputActionPrompt promptPrefab;
     [SerializeField] private string slotText = "MM";
+    [SerializeField] private string partSeparator = " ";
     [SerializeField] private float promptScale = 1.3f;
     [SerializeField] private Vector2 promptOffset = Vector2.zero;
 
@@ -23,10 +25,22 @@ public class InputPromptTextSlots : MonoBehaviour
         if (text == null) text = GetComponent<TMP_Text>();
     }
 
+    public bool HasTarget => text != null || GetComponent<TMP_Text>() != null;
+
+    public void SetTargetIfMissing(TMP_Text target)
+    {
+        if (text == null) text = GetComponent<TMP_Text>();
+        if (text == null) text = target;
+    }
+
     public void SetText(string raw)
     {
         if (text == null) text = GetComponent<TMP_Text>();
-        if (text == null) return;
+        if (text == null)
+        {
+            Debug.LogWarning("[InputPromptTextSlots] No TMP text assigned — drag the text into the Text slot.", this);
+            return;
+        }
 
         rawText = raw;
         text.text = BuildSlotText(raw);
@@ -89,12 +103,89 @@ public class InputPromptTextSlots : MonoBehaviour
     {
         if (string.IsNullOrEmpty(raw)) return raw;
 
-        return TokenPattern.Replace(raw, match =>
+        InputActionAsset actions = ResolveActions();
+        bool wantGamepad = Application.isPlaying && InputManager.CurrentDevice != InputDeviceType.KeyboardMouse;
+
+        StringBuilder sb = new StringBuilder(raw.Length);
+        int lastEnd = 0;
+        string lastCollapsedAction = null;
+
+        foreach (Match match in TokenPattern.Matches(raw))
         {
-            string token = match.Groups[1].Value.Trim();
-            if (match.Groups[2].Success) token += ":" + match.Groups[2].Value;
-            return $"<link=\"input:{token}\"><color=#00000000>{slotText}</color></link>";
-        });
+            string between = raw.Substring(lastEnd, match.Index - lastEnd);
+            lastEnd = match.Index + match.Length;
+
+            string actionName = match.Groups[1].Value.Trim();
+            string part = match.Groups[2].Success ? match.Groups[2].Value : null;
+            InputAction action = actions != null ? actions.FindAction(actionName) : null;
+
+            if (action == null)
+            {
+                sb.Append(between);
+                sb.Append(SlotLink(part != null ? actionName + ":" + part : actionName));
+                lastCollapsedAction = null;
+                continue;
+            }
+
+            if (part != null)
+            {
+                bool partFound = InputBindingUtility.TryFindBinding(action, wantGamepad, part, out int partIndex, out _, out _)
+                    && action.bindings[partIndex].isPartOfComposite;
+
+                if (!partFound)
+                {
+                    if (lastCollapsedAction == actionName && string.IsNullOrWhiteSpace(between)) continue;
+
+                    sb.Append(between);
+                    sb.Append(SlotLink(actionName));
+                    lastCollapsedAction = actionName;
+                    continue;
+                }
+
+                sb.Append(between);
+                sb.Append(SlotLink(actionName + ":" + part));
+                lastCollapsedAction = null;
+                continue;
+            }
+
+            sb.Append(between);
+            sb.Append(BuildWholeAction(action, actionName, wantGamepad));
+            lastCollapsedAction = null;
+        }
+
+        sb.Append(raw.Substring(lastEnd));
+        return sb.ToString();
+    }
+
+    private string BuildWholeAction(InputAction action, string actionName, bool wantGamepad)
+    {
+        if (!InputBindingUtility.TryFindBinding(action, wantGamepad, null, out int index, out _, out _))
+            return SlotLink(actionName);
+
+        var bindings = action.bindings;
+        if (!bindings[index].isComposite) return SlotLink(actionName);
+
+        List<string> parts = new List<string>();
+        for (int i = index + 1; i < bindings.Count && bindings[i].isPartOfComposite; i++)
+        {
+            string partName = bindings[i].name;
+            if (!string.IsNullOrEmpty(partName) && !parts.Contains(partName)) parts.Add(partName);
+        }
+
+        if (parts.Count == 0) return SlotLink(actionName);
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parts.Count; i++)
+        {
+            if (i > 0) sb.Append(partSeparator);
+            sb.Append(SlotLink(actionName + ":" + parts[i]));
+        }
+        return sb.ToString();
+    }
+
+    private string SlotLink(string token)
+    {
+        return $"<link=\"input:{token}\"><color=#00000000>{slotText}</color></link>";
     }
 
     private InputActionAsset ResolveActions()

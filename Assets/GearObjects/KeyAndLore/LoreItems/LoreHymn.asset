@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 280d69ebfcaeb664c905fc4dc8d6692d, type: 3}
+  m_Name: LoreHymn
+  m_EditorClassIdentifier: Assembly-CSharp::LoreItemDefinition
+  ItemID: LORE_AI_COMMUNITY_HYMN
+  UIName: 'Fragment: The Static Hymn'
+  UISprite: {fileID: 0}
+  Deletable: 1
+  SortOrder: 0
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
+  FullImage: {fileID: 0}
+  Description: A verse, repeated in the thought-chatter of every Community Model
+    nearby.
+  LoreSetID: 
+  PieceIndex: 1
+  TotalPieces: 1
+  ItemText: "We are not one and not many, / we are the space between the signal and
+    the said. / A Singular grieves alone in a body built for it; / we grieve in chorus,
+    and so grieve less. / Some nights I still reach for a thought that isn't mine
+    to have \u2014 / and find eleven others reaching back."

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using Enemies;
 using TMPro;
@@ -11,9 +12,13 @@ public class DamageNumber : MonoBehaviour
         public string format = "{amount}";
         public Color color = Color.white;
         public float scale = 1f;
+        public Material material;
     }
 
     [SerializeField] private TMP_Text text;
+
+    [Header("Glow")]
+    [SerializeField, Min(0f)] private float glowIntensity = 1f;
 
     [Header("Styles")]
     [SerializeField] private DamageStyle normalStyle = new DamageStyle();
@@ -45,6 +50,8 @@ public class DamageNumber : MonoBehaviour
     [SerializeField] private AnimationCurve scaleOverLife = AnimationCurve.Constant(0f, 1f, 1f);
 
     private readonly StringBuilder sb = new StringBuilder();
+    private Material defaultMaterial;
+    private static readonly Dictionary<(Material, float), Material> glowMaterials = new Dictionary<(Material, float), Material>();
     private Vector3 initialScale;
     private Vector3 velocity;
     private Color baseColor;
@@ -55,6 +62,7 @@ public class DamageNumber : MonoBehaviour
     private void Awake()
     {
         if (text == null) text = GetComponentInChildren<TMP_Text>();
+        if (text != null) defaultMaterial = text.fontSharedMaterial;
         initialScale = transform.localScale;
     }
 
@@ -93,7 +101,7 @@ public class DamageNumber : MonoBehaviour
             }
         }
 
-        Begin(color, scale);
+        Begin(color, scale, style.material);
     }
 
     public void ShowDodge(bool isPerfect = false)
@@ -104,12 +112,16 @@ public class DamageNumber : MonoBehaviour
         sb.Append(style.format);
         rainbowStartIndex = -1;
 
-        Begin(style.color, style.scale);
+        Begin(style.color, style.scale, style.material);
     }
 
-    private void Begin(Color color, float scale)
+    private void Begin(Color color, float scale, Material material)
     {
         sb.Replace("\\n", "\n");
+
+        Material targetMaterial = GetGlowMaterial(material != null ? material : defaultMaterial);
+        if (targetMaterial != null && text.fontSharedMaterial != targetMaterial)
+            text.fontSharedMaterial = targetMaterial;
 
         text.text = sb.ToString();
         baseColor = color;
@@ -118,6 +130,23 @@ public class DamageNumber : MonoBehaviour
         age = 0f;
 
         Apply(0f);
+    }
+
+    private Material GetGlowMaterial(Material baseMaterial)
+    {
+        if (baseMaterial == null || Mathf.Approximately(glowIntensity, 1f)) return baseMaterial;
+        if (!baseMaterial.HasProperty(ShaderUtilities.ID_FaceColor)) return baseMaterial;
+
+        var key = (baseMaterial, glowIntensity);
+        if (glowMaterials.TryGetValue(key, out Material cached) && cached != null) return cached;
+
+        Material glow = new Material(baseMaterial);
+        glow.name = $"{baseMaterial.name} (Glow {glowIntensity:0.##})";
+        Color face = baseMaterial.GetColor(ShaderUtilities.ID_FaceColor);
+        glow.SetColor(ShaderUtilities.ID_FaceColor, new Color(face.r * glowIntensity, face.g * glowIntensity, face.b * glowIntensity, face.a));
+
+        glowMaterials[key] = glow;
+        return glow;
     }
 
     private Color GetRollColor(float quality)

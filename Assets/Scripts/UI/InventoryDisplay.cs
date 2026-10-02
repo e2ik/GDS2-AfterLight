@@ -58,10 +58,11 @@ public class InventoryDisplay : GameUI.UIWindow
 
     [Header("Lore Panel")]
     [SerializeField] private LorePanel lorePanel;
-    [SerializeField] private GameObject statsAndGearPanel;
+    [SerializeField] private UIWindowAnimator statsAndGearAnimator;
 
     public RectTransform TooltipDock => tooltipDock;
     public TooltipAnchorSettings TooltipAnchor => tooltipAnchor;
+    public bool IsLorePanelOpen => openLoreSetID != null;
 
     private PlayerInventoryManager invManager;
     private PlayerEquipmentManager equipManager;
@@ -244,8 +245,10 @@ public class InventoryDisplay : GameUI.UIWindow
             return;
         }
 
+        if (ItemTooltip.Instance != null) ItemTooltip.Instance.HideTooltip();
+
         openLoreSetID = loreSet.SetID;
-        if (statsAndGearPanel != null) statsAndGearPanel.SetActive(false);
+        // if (statsAndGearAnimator != null) statsAndGearAnimator.Hide();
         lorePanel.Show(loreSet);
     }
 
@@ -267,13 +270,37 @@ public class InventoryDisplay : GameUI.UIWindow
         OnLoreSlotClicked(wrapper);
     }
 
+    public void OnSlotFocused(object item)
+    {
+        if (!IsLorePanelOpen) return;
+
+        string focusedLoreID = GetLoreSetID(item);
+
+        if (focusedLoreID != openLoreSetID)
+            CloseLorePanel();
+    }
+
+    private string GetLoreSetID(object item)
+    {
+        if (item is LoreSetDisplayInfo loreSet)
+            return loreSet.SetID;
+
+        if (item is LoreItemInstance loreItem)
+        {
+            LoreItemDefinition def = GameDatabase.GetLoreItemTemplateFromID(loreItem.InstItemID);
+            return def != null ? def.EffectiveSetID : loreItem.InstItemID;
+        }
+
+        return null;
+    }
+
     public void CloseLorePanel()
     {
         if (openLoreSetID == null) return;
 
         openLoreSetID = null;
         if (lorePanel != null) lorePanel.Hide();
-        if (statsAndGearPanel != null) statsAndGearPanel.SetActive(true);
+        // if (statsAndGearAnimator != null) statsAndGearAnimator.Show();
     }
 
     protected override Selectable GetInitialSelectable()

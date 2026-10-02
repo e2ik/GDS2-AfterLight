@@ -133,6 +133,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   keepActiveWhenHidden: 1
+  slideDistanceOverride: 0
 --- !u!114 &3364962344219568532
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -378,6 +379,26 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1109058427462892339, guid: c68723414a40a1a4bba1959c1a35074c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095692481234905878, guid: c68723414a40a1a4bba1959c1a35074c, type: 3}
+      propertyPath: m_fontSize
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095692481234905878, guid: c68723414a40a1a4bba1959c1a35074c, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 2caf916d51a264dbba559afef366c187, type: 2}
+    - target: {fileID: 4095692481234905878, guid: c68723414a40a1a4bba1959c1a35074c, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 4095692481234905878, guid: c68723414a40a1a4bba1959c1a35074c, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 5256162471703705019, guid: 2caf916d51a264dbba559afef366c187, type: 2}
+    - target: {fileID: 4095692481234905878, guid: c68723414a40a1a4bba1959c1a35074c, type: 3}
+      propertyPath: m_hasFontAssetChanged
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9192470877035144698, guid: c68723414a40a1a4bba1959c1a35074c, type: 3}

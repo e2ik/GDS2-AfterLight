@@ -96,6 +96,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         {
             isSelected = selected;
             ApplySelectionVisual();
+            if (isSelected) Display?.OnSlotFocused(currentItem);
         }
 
         UpdateTooltipState();
@@ -299,12 +300,14 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (currentItem is LoreSetDisplayInfo loreSet)
         {
             display?.OnLoreSlotClicked(loreSet);
+            UpdateTooltipState();
             return;
         }
 
         if (currentItem is LoreItemInstance loreItem)
         {
             display?.OnLoreItemClicked(loreItem);
+            UpdateTooltipState();
             return;
         }
 
@@ -333,6 +336,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void OnPointerEnter(PointerEventData eventData)
     {
         isPointerOver = true;
+        Display?.OnSlotFocused(currentItem);
         UpdateTooltipState();
         UpdateNewBadgeIfLookedAt();
     }
@@ -349,6 +353,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             || (!windowAnimator.IsAnimating && windowAnimator.SecondsSinceSettled >= controllerTooltipDelay);
 
         bool wanted = InputModeTracker.IsUsingMouse ? isPointerOver : (isSelected && windowReady);
+        
+        if (Display != null && Display.IsLorePanelOpen) wanted = false;
         if (wanted == tooltipWanted) return;
 
         tooltipWanted = wanted;
@@ -375,6 +381,11 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         string body = ItemActionFactory.BuildTooltipBody(currentItem);
 
         ItemTooltip.Instance.ShowTooltipAnchored(ctx.Value.Name, body, rectTransform, settings, dock, actions);
+    }
+
+    public void RefreshTooltip()
+    {
+        UpdateTooltipState();
     }
 
     #endregion

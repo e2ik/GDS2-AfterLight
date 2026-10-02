@@ -83,7 +83,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 5
+  m_SortingOrder: 10
   m_MaskInteraction: 0
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -108,8 +108,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldItem
   itemDefinition: {fileID: 0}
+  behaviour: 0
   itemSpriteRenderer: {fileID: 0}
   nameLabel: {fileID: 0}
+  pickupRadius: 0.5
+  overrideRarityOdds: 0
+  rarityOdds:
+    common: 50
+    rare: 35
+    epic: 10
+    legendary: 5
+  colorNameByRarity: 1
+  commonEffect: {fileID: 0}
+  rareEffect: {fileID: 0}
+  epicEffect: {fileID: 0}
+  legendaryEffect: {fileID: 0}
   primaryPickupEvent:
     Guid:
       Data1: -2049036258

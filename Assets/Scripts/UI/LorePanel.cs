@@ -16,10 +16,16 @@ public class LorePanel : MonoBehaviour
     [SerializeField] private GameObject lockedGroup;
     [SerializeField] private TextMeshProUGUI lockedText;
 
+    // private UIWindowAnimator animator;
+
+    // private void Awake()
+    // {
+    //     animator = GetComponent<UIWindowAnimator>();
+    //     if (animator != null) animator.InstantHide();
+    // }
+
     public void Show(LoreSetDisplayInfo loreSet)
     {
-        gameObject.SetActive(true);
-
         LoreItemDefinition def = loreSet.RepresentativeInstance != null
             ? GameDatabase.GetLoreItemTemplateFromID(loreSet.RepresentativeInstance.InstItemID)
             : null;
@@ -44,10 +50,16 @@ public class LorePanel : MonoBehaviour
         {
             lockedText.text = $"{loreSet.OwnedCount}/{loreSet.TotalPieces} pages found.\nFind the rest to read this.";
         }
+
+        // if (animator != null) animator.Show();
+        // else gameObject.SetActive(true);
+        gameObject.SetActive(true);
     }
 
     public void Hide()
     {
+        // if (animator != null) animator.Hide();
+        // else gameObject.SetActive(false);
         gameObject.SetActive(false);
     }
 }

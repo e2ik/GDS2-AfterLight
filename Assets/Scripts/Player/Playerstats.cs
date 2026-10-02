@@ -264,6 +264,7 @@ public class PlayerStats : MonoBehaviour
 
     private void HandleRespawnComplete()
     {
+        if (!isRespawning) return;
         FinishRespawn();
     }
 
@@ -273,6 +274,7 @@ public class PlayerStats : MonoBehaviour
         isRespawning = false;
 
         ReviveFull();
+        if (player != null && player.Heals != null) player.Heals.ResetHeals();
         SetInputLocked(false);
         if (player != null) player.Controller.SetPhysicsSuspended(false);
     }

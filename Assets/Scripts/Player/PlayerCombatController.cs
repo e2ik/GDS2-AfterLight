@@ -316,6 +316,7 @@ public class PlayerCombatController : MonoBehaviour
             && !isParryInRecovery
             && !isSkilling
             && !isPlunging
+            && !movement.IsHealing
             && !movement.IsClimbing;
     }
 
@@ -332,8 +333,31 @@ public class PlayerCombatController : MonoBehaviour
         return CanActBase() && !isParrying;
     }
 
+    public bool CanHeal =>
+        movement.InputEnabled
+        && movement.IsGrounded
+        && !movement.IsDashing
+        && !movement.IsWallSliding
+        && !movement.IsClimbing
+        && !movement.IsBouncing
+        && !movement.IsChargingSkill
+        && !isAttacking
+        && !comboQueued
+        && attackBufferTimer <= 0f
+        && !isParrying
+        && !isParryInRecovery
+        && parryBufferTimer <= 0f
+        && !isSkilling
+        && !isChargingSkill
+        && !skillButtonHeld
+        && skillBufferTimer <= 0f
+        && !isPlunging
+        && plungeRecoveryTimer <= 0f
+        && !movement.IsHealing;
+
     public void CancelAllActions()
     {
+        movement.CancelHeal();
         CancelParry();
         ForceCancelAttack();
         CancelSkillStates();
@@ -954,13 +978,13 @@ public class PlayerCombatController : MonoBehaviour
 
     public void OnParry()
     {
-        if (isPlunging || movement.IsUILocked || movement.IsClimbing) return;
+        if (movement.IsHealing || isPlunging || movement.IsUILocked || movement.IsClimbing) return;
         parryBufferTimer = parryBufferTime;
     }
 
     public void OnAttack()
     {
-        if (isChargingSkill || isPlunging || movement.IsUILocked || movement.IsClimbing) return;
+        if (movement.IsHealing || isChargingSkill || isPlunging || movement.IsUILocked || movement.IsClimbing) return;
 
         if (IsParrying)
         {
@@ -991,7 +1015,7 @@ public class PlayerCombatController : MonoBehaviour
 
         if (value.isPressed)
         {
-            if (isPlunging || movement.IsUILocked || movement.IsClimbing) return;
+            if (movement.IsHealing || isPlunging || movement.IsUILocked || movement.IsClimbing) return;
             if (movement.IsWallSliding) return;
             if (specialDef == null) return;
             if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;
