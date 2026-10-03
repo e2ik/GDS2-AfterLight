@@ -96,6 +96,33 @@ public class CameraFollow2D : MonoBehaviour
         _verticalTargetInitialized = true;
     }
 
+    public void SettleToRest()
+    {
+        if (target == null) return;
+
+        if (!_verticalTargetInitialized)
+        {
+            SnapToTarget();
+            return;
+        }
+
+        _currentLookAhead = Mathf.Abs(_currentLookAhead) > 0.01f
+            ? Mathf.Sign(_currentLookAhead) * lookAheadDistance
+            : 0f;
+
+        _lastTargetPosX = target.position.x;
+        _smoothedVelocityX = 0f;
+        _velocitySmoothingVelocity = 0f;
+        _lookAheadVelocity = 0f;
+        _velocity = Vector3.zero;
+
+        transform.position = new Vector3(
+            target.position.x + horizontalOffset + _currentLookAhead,
+            _verticalCamTarget,
+            transform.position.z
+        );
+    }
+
     public void RevealBounds(Bounds bounds, float holdSeconds, System.Action onRevealComplete = null)
     {
         if (_revealRoutine != null) StopCoroutine(_revealRoutine);

@@ -24,6 +24,11 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     [SerializeField] private bool canBeInteractedWith = true;
     [SerializeField] private float mapOpenDelay = 0.5f;
 
+    [Header("Rest Fade")]
+    [SerializeField, Min(0f)] private float restFadeOutDuration = 0.2f;
+    [SerializeField, Min(0f)] private float restBlackHoldDuration = 0.1f;
+    [SerializeField, Min(0f)] private float restFadeInDuration = 0.25f;
+
     [Header("VFX")]
     [SerializeField] private string fastTravelVFXKey = "FastTravel";
     [SerializeField] private Transform vfxSpawnPoint;
@@ -134,10 +139,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     {
         isInteracting = true;
 
-        if (interactingPlayer != null && interactingPlayer.Controller != null)
-        {
-            interactingPlayer.Controller.SetPhysicsSuspended(true);
-        }
+        StopPlayer(interactingPlayer);
 
         FastTravelManager.Instance?.SetLastInteractedNode(nodeData);
 
@@ -171,20 +173,72 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
         UpdateVisualState();
 
+        Player restingPlayer = interactingPlayer;
+
         if (MapUIManager.Instance != null)
         {
             MapUIManager.Instance.OpenMap(nodeData);
+
+            while (MapUIManager.Instance != null && MapUIManager.Instance.IsMapOpen)
+                yield return null;
+
+            yield return null;
+            yield return null;
+
+            bool travelling = FastTravelManager.Instance != null && FastTravelManager.Instance.IsTravelling;
+            if (!travelling)
+                yield return RestFadeRoutine(restingPlayer);
         }
         else
         {
-            if (interactingPlayer != null && interactingPlayer.Controller != null)
-            {
-                interactingPlayer.Controller.SetPhysicsSuspended(false);
-            }
+            yield return RestFadeRoutine(restingPlayer);
         }
 
         interactingPlayer = null;
         isInteracting = false;
+    }
+
+    private IEnumerator RestFadeRoutine(Player player)
+    {
+        PlayerController controller = player != null ? player.Controller : null;
+        StopPlayer(player);
+
+        FadeCanvasController fader = FadeCanvasController.Instance;
+        CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
+        bool camWasEnabled = cam != null && cam.enabled;
+        if (cam != null) cam.enabled = false;
+
+        if (fader != null)
+            yield return fader.FadeOut(restFadeOutDuration);
+
+        if (cam != null)
+        {
+            cam.enabled = camWasEnabled;
+            cam.SettleToRest();
+        }
+
+        PrefabSpawner.ResetAllDefeated();
+
+        if (restBlackHoldDuration > 0f)
+            yield return new WaitForSecondsRealtime(restBlackHoldDuration);
+
+        if (fader != null)
+            yield return fader.FadeIn(restFadeInDuration);
+
+        if (controller != null) controller.SetPhysicsSuspended(false);
+    }
+
+    private static void StopPlayer(Player player)
+    {
+        if (player == null) return;
+
+        if (player.TryGetComponent(out Rigidbody2D body))
+        {
+            body.linearVelocity = Vector2.zero;
+            body.angularVelocity = 0f;
+        }
+
+        if (player.Controller != null) player.Controller.SetPhysicsSuspended(true);
     }
 
     private void RestorePlayer(Player player)
@@ -193,8 +247,6 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
         if (player.Stats != null) player.Stats.ReviveFull();
         if (player.Heals != null) player.Heals.ResetHeals();
-
-        PrefabSpawner.ResetAllDefeated();
     }
 
     public void UpdateVisualState()

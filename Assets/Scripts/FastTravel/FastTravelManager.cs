@@ -12,6 +12,7 @@ public class FastTravelManager : MonoBehaviour
     private FastTravelNodeSO lastVisitedNode;
 
     public bool HasLastVisitedNode => lastVisitedNode != null;
+    public bool IsTravelling { get; private set; }
     public event System.Action OnFastTravelComplete;
 
     private void Awake()
@@ -52,6 +53,7 @@ public class FastTravelManager : MonoBehaviour
 
         SetLastInteractedNode(node);
 
+        IsTravelling = true;
         StartCoroutine(FastTravelRoutine(node));
     }
 
@@ -147,9 +149,12 @@ public class FastTravelManager : MonoBehaviour
             Debug.LogWarning("[FastTravelManager] No GameObject tagged 'Player' found — cannot reposition on respawn.");
         }
 
+        PrefabSpawner.ResetAllDefeated();
+
         if (FadeCanvasController.Instance != null)
             yield return FadeCanvasController.Instance.FadeIn(fadeDuration);
 
+        IsTravelling = false;
         OnFastTravelComplete?.Invoke();
     }
 
