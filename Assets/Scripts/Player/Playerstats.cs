@@ -283,6 +283,7 @@ public class PlayerStats : MonoBehaviour
 
         ReviveFull();
         if (player != null && player.Heals != null) player.Heals.ResetHeals();
+        PrefabSpawner.ResetAllDefeated();
         SetInputLocked(false);
         if (player != null) player.Controller.SetPhysicsSuspended(false);
     }

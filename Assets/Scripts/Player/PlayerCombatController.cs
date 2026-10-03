@@ -655,6 +655,7 @@ public class PlayerCombatController : MonoBehaviour
     private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
     {
         float attackDamage = context.BaseAttackDamage * GetComboMultiplier();
+        context.IsComboFinisher = plungeDmgMult <= 0f && currentComboIndex >= maxComboCount;
 
         if (plungeDmgMult <= 0f)
         {

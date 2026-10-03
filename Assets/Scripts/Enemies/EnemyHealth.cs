@@ -12,6 +12,7 @@ namespace Enemies
         public bool HasRoll;
         public float RollQuality;
         public ERollTier RollTier;
+        public bool IsComboFinisher;
         public Vector3 Position;
     }
 
@@ -63,7 +64,8 @@ namespace Enemies
                 IsCrit = isCrit,
                 HasRoll = context.HasRoll,
                 RollQuality = context.RollQuality,
-                RollTier = context.RollTier
+                RollTier = context.RollTier,
+                IsComboFinisher = context.IsComboFinisher
             });
 
             if (CurrentHealth <= 0) return;

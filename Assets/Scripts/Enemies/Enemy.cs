@@ -39,6 +39,7 @@ namespace Enemies
 
         [Header("Stagger")]
         [SerializeField] private bool isStaggerImmune = false;
+        [SerializeField] private bool staggerOnlyOnComboFinisher = true;
         [SerializeField] private float staggerImmunityDuration = 2f;
         [SerializeField] private float staggerStunDuration = 0.5f;
         [SerializeField] private float postStaggerAttackDelay = 0.5f;
@@ -428,7 +429,7 @@ namespace Enemies
 
             if (isDot) return;
 
-            if (isStaggerImmune)
+            if (isStaggerImmune || (staggerOnlyOnComboFinisher && !info.IsComboFinisher))
             {
                 PSpawner.Spawn("EnemyHit", transform.position);
                 return;
