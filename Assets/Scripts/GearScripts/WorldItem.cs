@@ -37,6 +37,24 @@ public class WorldItem : MonoBehaviour
     [SerializeField] private GameObject epicEffect;
     [SerializeField] private GameObject legendaryEffect;
 
+    [Header("Rarity Glow")]
+    [SerializeField] private ParticleGlow rarityGlow;
+    [SerializeField] private bool useGameManagerRarityColors = true;
+    [SerializeField, ColorUsage(false, false)] private Color commonGlowColor = Color.white;
+    [SerializeField, ColorUsage(false, false)] private Color rareGlowColor = new Color(0.3f, 0.6f, 1f);
+    [SerializeField, ColorUsage(false, false)] private Color epicGlowColor = new Color(0.7f, 0.3f, 1f);
+    [SerializeField, ColorUsage(false, false)] private Color legendaryGlowColor = new Color(1f, 0.75f, 0.2f);
+    [SerializeField, Min(0f)] private float commonGlowIntensity = 1.5f;
+    [SerializeField, Min(0f)] private float rareGlowIntensity = 2f;
+    [SerializeField, Min(0f)] private float epicGlowIntensity = 2.5f;
+    [SerializeField, Min(0f)] private float legendaryGlowIntensity = 3f;
+    [SerializeField, Range(0f, 1f)] private float commonGlowOpacity = 1f;
+    [SerializeField, Range(0f, 1f)] private float rareGlowOpacity = 1f;
+    [SerializeField, Range(0f, 1f)] private float epicGlowOpacity = 1f;
+    [SerializeField, Range(0f, 1f)] private float legendaryGlowOpacity = 1f;
+    [SerializeField] private bool matchItemSorting = true;
+    [SerializeField] private int glowSortingOffset = -1;
+
     private Collider2D itemCollider;
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
@@ -54,6 +72,16 @@ public class WorldItem : MonoBehaviour
     {
         EnsureComponentsCached();
         CheckUniqueOwnership();
+        ApplyBehaviourPhysics();
+    }
+
+    private void ApplyBehaviourPhysics()
+    {
+        if (rb == null || behaviour != WorldItemBehaviour.Unique) return;
+
+        rb.linearVelocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+        rb.bodyType = RigidbodyType2D.Kinematic;
     }
 
     private void Start()
@@ -189,6 +217,71 @@ public class WorldItem : MonoBehaviour
         SetEffect(rareEffect, hasRarity && rarity == ERarity.Rare);
         SetEffect(epicEffect, hasRarity && rarity == ERarity.Epic);
         SetEffect(legendaryEffect, hasRarity && rarity == ERarity.Legendary);
+        ApplyRarityGlow();
+    }
+
+    private void ApplyRarityGlow()
+    {
+        if (rarityGlow == null) return;
+
+        GameObject glowObject = rarityGlow.gameObject;
+        if (glowObject != gameObject && glowObject.activeSelf != hasRarity)
+            glowObject.SetActive(hasRarity);
+
+        if (!hasRarity) return;
+
+        if (matchItemSorting && itemSpriteRenderer != null && rarityGlow.TryGetComponent(out ParticleSystemRenderer glowRenderer))
+        {
+            glowRenderer.sortingLayerID = itemSpriteRenderer.sortingLayerID;
+            glowRenderer.sortingOrder = itemSpriteRenderer.sortingOrder + glowSortingOffset;
+        }
+
+        Color glowColor = GetGlowColor(rarity);
+        glowColor.a = GetGlowOpacity(rarity);
+        rarityGlow.SetColor(glowColor);
+        rarityGlow.SetIntensity(GetGlowIntensity(rarity));
+
+        if (rarityGlow.TryGetComponent(out ParticleSystem ps))
+        {
+            ps.Clear(true);
+            ps.Play(true);
+        }
+    }
+
+    private Color GetGlowColor(ERarity value)
+    {
+        if (useGameManagerRarityColors && GameManager.Instance != null)
+            return GameManager.Instance.GetRarityColor(value);
+
+        switch (value)
+        {
+            case ERarity.Rare: return rareGlowColor;
+            case ERarity.Epic: return epicGlowColor;
+            case ERarity.Legendary: return legendaryGlowColor;
+            default: return commonGlowColor;
+        }
+    }
+
+    private float GetGlowOpacity(ERarity value)
+    {
+        switch (value)
+        {
+            case ERarity.Rare: return rareGlowOpacity;
+            case ERarity.Epic: return epicGlowOpacity;
+            case ERarity.Legendary: return legendaryGlowOpacity;
+            default: return commonGlowOpacity;
+        }
+    }
+
+    private float GetGlowIntensity(ERarity value)
+    {
+        switch (value)
+        {
+            case ERarity.Rare: return rareGlowIntensity;
+            case ERarity.Epic: return epicGlowIntensity;
+            case ERarity.Legendary: return legendaryGlowIntensity;
+            default: return commonGlowIntensity;
+        }
     }
 
     private static void SetEffect(GameObject effect, bool active)
@@ -200,7 +293,7 @@ public class WorldItem : MonoBehaviour
     {
         EnsureComponentsCached();
 
-        if (rb != null)
+        if (rb != null && behaviour != WorldItemBehaviour.Unique)
         {
             rb.linearVelocity = Vector2.zero;
             rb.AddForce(forceDirection.normalized * forceMagnitude, ForceMode2D.Impulse);
