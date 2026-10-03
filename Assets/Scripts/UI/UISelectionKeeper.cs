@@ -68,6 +68,8 @@ public class UISelectionKeeper : MonoBehaviour
         {
             if (keyboard.upArrowKey.wasPressedThisFrame || keyboard.downArrowKey.wasPressedThisFrame
                 || keyboard.leftArrowKey.wasPressedThisFrame || keyboard.rightArrowKey.wasPressedThisFrame
+                || keyboard.wKey.wasPressedThisFrame || keyboard.aKey.wasPressedThisFrame
+                || keyboard.sKey.wasPressedThisFrame || keyboard.dKey.wasPressedThisFrame
                 || keyboard.tabKey.wasPressedThisFrame)
                 pressed = true;
         }

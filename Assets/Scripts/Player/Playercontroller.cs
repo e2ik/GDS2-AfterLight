@@ -385,7 +385,7 @@ public class PlayerController : MonoBehaviour
             combat.ForceCancelAttack();
             combat.NotifyJumpInputReceived();
 
-            if (!isGrounded) rb.linearVelocityY = 0f;
+            if (!isGrounded || rb.linearVelocityY < 0f) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
 
             playerAnimation.TriggerJumpEffect(false);
