@@ -569,6 +569,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5672344763947494334, guid: d3330045b911a174988ea77ec52a99c4, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5672344763947494334, guid: d3330045b911a174988ea77ec52a99c4, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5672344763947494334, guid: d3330045b911a174988ea77ec52a99c4, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5672344763947494334, guid: d3330045b911a174988ea77ec52a99c4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -586,15 +598,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5672344763947494334, guid: d3330045b911a174988ea77ec52a99c4, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5672344763947494334, guid: d3330045b911a174988ea77ec52a99c4, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5672344763947494334, guid: d3330045b911a174988ea77ec52a99c4, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5672344763947494334, guid: d3330045b911a174988ea77ec52a99c4, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -681,6 +693,6 @@ MonoBehaviour:
   resumeButton: {fileID: 9185383859543361156}
   quitButton: {fileID: 1615524969656613152}
   returnToTitleButton: {fileID: 5738930755153761597}
-  confirmWindow: {fileID: 1887419905229614611, guid: 400434d466cda764fbbb519c08b3412d, type: 3}
+  confirmWindow: {fileID: 0}
   settingsButton: {fileID: 5107598602902457401}
-  settingsWindow: {fileID: 8357372214032658465, guid: adfc91a2933814544855a46195c04b88, type: 3}
+  settingsWindow: {fileID: 0}
