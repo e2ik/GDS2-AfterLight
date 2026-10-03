@@ -34,6 +34,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8532052910102268438}
+  - {fileID: 6977331737318697702}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7881789332135102143
@@ -123,6 +124,22 @@ MonoBehaviour:
   rareEffect: {fileID: 0}
   epicEffect: {fileID: 0}
   legendaryEffect: {fileID: 0}
+  rarityGlow: {fileID: 133081562145189661}
+  useGameManagerRarityColors: 1
+  commonGlowColor: {r: 0.81761, g: 0.81761, b: 0.81761, a: 1}
+  rareGlowColor: {r: 0, g: 0.5054807, b: 0.8666667, a: 1}
+  epicGlowColor: {r: 0.7364795, g: 0, b: 0.94509804, a: 1}
+  legendaryGlowColor: {r: 1, g: 0.6947383, b: 0, a: 1}
+  commonGlowIntensity: 1
+  rareGlowIntensity: 1
+  epicGlowIntensity: 1
+  legendaryGlowIntensity: 1.15
+  commonGlowOpacity: 0.43
+  rareGlowOpacity: 0.791
+  epicGlowOpacity: 0.88
+  legendaryGlowOpacity: 0.957
+  matchItemSorting: 1
+  glowSortingOffset: -1
   primaryPickupEvent:
     Guid:
       Data1: -2049036258
@@ -254,4 +271,85 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 6920971451774156018, guid: 1175fa7b195bb411fb1a7fcf5ca1e4ba, type: 3}
   m_PrefabInstance: {fileID: 1615607230741477092}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &4541513206623612143
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6550958579883511404}
+    m_Modifications:
+    - target: {fileID: 4277619305434743032, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_Name
+      value: LootEffect
+      objectReference: {fileID: 0}
+    - target: {fileID: 4554544770036102152, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4554544770036102152, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.a
+      value: 0.6509804
+      objectReference: {fileID: 0}
+    - target: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.015
+      objectReference: {fileID: 0}
+    - target: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.93
+      objectReference: {fileID: 0}
+    - target: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+--- !u!114 &133081562145189661 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4530197684624737266, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+  m_PrefabInstance: {fileID: 4541513206623612143}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f1b057f72264a945ad1c7b0f7e382f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleGlow
+--- !u!4 &6977331737318697702 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6904796736367822345, guid: 1753f0ce03166bc49999fbf48888948c, type: 3}
+  m_PrefabInstance: {fileID: 4541513206623612143}
   m_PrefabAsset: {fileID: 0}
