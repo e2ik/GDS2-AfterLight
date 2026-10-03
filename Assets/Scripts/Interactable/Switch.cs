@@ -24,6 +24,7 @@ public class Switch : MonoBehaviour, IInteractable
     [SerializeField] private KeyDefinition requiredKey;
     [Tooltip("{0} is replaced with the required key's name, colored to match its inventory color, e.g. \"I need the [{0}]...\" -> \"I need the [Hospital Key]...\"")]
     [SerializeField] private string missingKeyMessage = "I need the [{0}]...";
+    [SerializeField] private Color keyNameColor = new Color(1f, 0.85f, 0.3f);
     [SerializeField, Min(0f)] private float missingKeyMessageDuration = 2f;
     [SerializeField] private DialogueEffect missingKeyMessageEffect = DialogueEffect.Default;
 
@@ -120,9 +121,7 @@ public class Switch : MonoBehaviour, IInteractable
 
                 if (requiredKey != null)
                 {
-                    string coloredName = GameManager.Instance != null
-                        ? $"<color=#{ColorUtility.ToHtmlStringRGB(GameManager.Instance.KeyItemColor)}>{requiredKey.UIName}</color>"
-                        : requiredKey.UIName;
+                    string coloredName = $"<color=#{ColorUtility.ToHtmlStringRGB(keyNameColor)}>{requiredKey.UIName}</color>";
 
                     message = string.Format(missingKeyMessage, coloredName);
                 }

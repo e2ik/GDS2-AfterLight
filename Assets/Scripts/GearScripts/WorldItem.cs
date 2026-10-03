@@ -59,6 +59,9 @@ public class WorldItem : MonoBehaviour
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
     [SerializeField] private EventReference primaryPickupEvent;
+    [SerializeField, Min(0f)] private float inventoryFullMessageCooldown = 3f;
+    [SerializeField] private Color inventoryFullColor = new Color(1f, 0.35f, 0.35f);
+    private static float nextInventoryFullMessageTime = float.NegativeInfinity;
     private bool markedForDestruction = false;
 
     private bool hasRarity;
@@ -555,8 +558,11 @@ public class WorldItem : MonoBehaviour
 
     private void ShowInventoryFullMessage(InventoryItemBase def)
     {
+        if (Time.unscaledTime < nextInventoryFullMessageTime) return;
+        nextInventoryFullMessageTime = Time.unscaledTime + inventoryFullMessageCooldown;
+
         LootPickupDisplay.Instance?.AddPickup(
-            def.UISprite, "Inventory Full", null,
+            def.UISprite, $"<color=#{ColorUtility.ToHtmlStringRGB(inventoryFullColor)}>Inventory Full</color>", null,
             $"Not enough room for {def.UIName}.");
     }
 }

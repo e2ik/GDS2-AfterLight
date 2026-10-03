@@ -63,7 +63,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.83137256}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -79,7 +79,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 8
+  m_PixelsPerUnitMultiplier: 15
 --- !u!225 &5552097762145191444
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -132,6 +132,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   keepActiveWhenHidden: 1
+  slideDistanceOverride: 0
 --- !u!114 &7076784149775742434
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,6 +274,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   keepActiveWhenHidden: 1
+  slideDistanceOverride: 0
 --- !u!114 &8516671820017346350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -292,7 +294,6 @@ MonoBehaviour:
   promptLabel: {fileID: 1562866631859714862}
   layoutRoot: {fileID: 8249030845892533999}
   dialogueEffects: {fileID: 0}
-  inputIcons: {fileID: 11400000, guid: 402c7ad02a3389741bce4f23ee0ff7fa, type: 2}
   useTypewriter: 1
   typewriterCharDelay: 0.03
   playEffectAfterTypewriter: 1
@@ -385,8 +386,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2caf916d51a264dbba559afef366c187, type: 2}
-  m_sharedMaterial: {fileID: 5256162471703705019, guid: 2caf916d51a264dbba559afef366c187, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 7ac79339de301e64983ac70e9f798c33, type: 2}
+  m_sharedMaterial: {fileID: 5256162471703705019, guid: 7ac79339de301e64983ac70e9f798c33, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

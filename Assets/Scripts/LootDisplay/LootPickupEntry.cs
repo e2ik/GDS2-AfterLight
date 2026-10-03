@@ -83,7 +83,9 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 _ => (Color?)null
             };
 
-            nameText.text = ItemTooltipTextBuilder.BuildLootLineText(itemName, rarity, overrideColor);
+            nameText.text = item == null
+                ? itemName
+                : ItemTooltipTextBuilder.BuildLootLineText(itemName, rarity, overrideColor);
         }
 
         SetBorderColor(rarity);

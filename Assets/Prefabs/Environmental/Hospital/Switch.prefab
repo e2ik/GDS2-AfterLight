@@ -195,7 +195,8 @@ MonoBehaviour:
   switchMode: 0
   requiredKey: {fileID: 0}
   missingKeyMessage: '"I need the {0}..."'
-  missingKeyMessageDuration: 2
+  keyNameColor: {r: 0.7882353, g: 0.5058824, b: 0.050980393, a: 1}
+  missingKeyMessageDuration: 3
   missingKeyMessageEffect: 0
   brokenMessage: This switch doesn't seem to work...
   brokenMessageDuration: 2
@@ -238,6 +239,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpriteOutlineToggle
   outlineColor: {r: 0, g: 1, b: 0.99045587, a: 1}
   outlineThickness: 0.5
+  outlineIntensity: 1.4
   pulseOnHighlight: 1
   highlightPulseSpeed: 20
   highlightMinAlpha: 0.2
