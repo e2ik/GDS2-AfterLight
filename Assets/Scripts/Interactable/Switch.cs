@@ -75,7 +75,8 @@ public class Switch : MonoBehaviour, IInteractable
         {
             if (obj == null)
             {
-                Debug.LogWarning($"{name}: a Target Objects slot is empty (None)", this);
+                if (switchMode != SwitchMode.Broken)
+                    Debug.LogWarning($"{name}: a Target Objects slot is empty (None)", this);
                 continue;
             }
 
@@ -83,7 +84,8 @@ public class Switch : MonoBehaviour, IInteractable
 
             if (found.Length == 0)
             {
-                Debug.LogWarning($"{name}: {obj.name} has no component implementing IOnOff, skipping.", this);
+                if (switchMode != SwitchMode.Broken)
+                    Debug.LogWarning($"{name}: {obj.name} has no component implementing IOnOff, skipping.", this);
                 continue;
             }
 

@@ -1,16 +1,10 @@
 fileFormatVersion: 2
-guid: ea2edab2c8e0ecb41916172abd20961c
+guid: e65455c7735a6054eba060fe9c5209d3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7114034164818333334
-    second: BG_LandscapeBack02_0
-  - first:
-      213: 4386547504888327580
-    second: BG_LandscapeBack02_1
-  - first:
-      213: -5770952238852235552
-    second: BG_LandscapeBack02_2
+      213: 6098252087836440060
+    second: H_metalshielf_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -54,7 +48,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 0
+  spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 8
@@ -132,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BG_LandscapeBack02_0
+      name: H_metalshielf_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 105
-        width: 160
-        height: 45
+        y: 0
+        width: 31
+        height: 31
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,52 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a61b20e6e9fd54d90800000000000000
-      internalID: -7114034164818333334
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BG_LandscapeBack02_1
-      rect:
-        serializedVersion: 2
-        x: 72
-        y: 104
-        width: 16
-        height: 6
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: c9dae3bf6b520ec30800000000000000
-      internalID: 4386547504888327580
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BG_LandscapeBack02_2
-      rect:
-        serializedVersion: 2
-        x: 93
-        y: 102
-        width: 58
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0ee977bb38579efa0800000000000000
-      internalID: -5770952238852235552
+      spriteID: cf57646c6f751a450800000000000000
+      internalID: 6098252087836440060
       vertices: []
       indices: 
       edges: []
@@ -211,9 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BG_LandscapeBack02_0: -7114034164818333334
-      BG_LandscapeBack02_1: 4386547504888327580
-      BG_LandscapeBack02_2: -5770952238852235552
+      H_metalshielf_0: 6098252087836440060
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

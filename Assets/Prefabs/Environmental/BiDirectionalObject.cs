@@ -64,6 +64,12 @@ public class BiDirectionalObject : MonoBehaviour
         SetLocked(accessMode == AccessMode.RequireKey);
     }
 
+    private void OnDisable()
+    {
+        occupants.Clear();
+        openedFromSide = Side.None;
+    }
+
     private void SetLocked(bool locked)
     {
         isLocked = locked;
@@ -117,6 +123,12 @@ public class BiDirectionalObject : MonoBehaviour
 
         if (occupants.Count > 0) return;
         if (openedFromSide == Side.None) return;
+
+        if (!gameObject.activeInHierarchy)
+        {
+            openedFromSide = Side.None;
+            return;
+        }
 
         Play(openedFromSide == Side.Left ? closeLeftState : closeRightState);
         AudioManager.PlaySFX(closeEvent, transform.position);
@@ -179,6 +191,8 @@ public class BiDirectionalObject : MonoBehaviour
             Debug.LogWarning($"{name}: No Animator assigned to BiDirectionalObject.", this);
             return;
         }
+
+        if (!animator.isActiveAndEnabled) return;
 
         animator.Play(stateName);
     }
