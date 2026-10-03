@@ -193,6 +193,8 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
 
         if (player.Stats != null) player.Stats.ReviveFull();
         if (player.Heals != null) player.Heals.ResetHeals();
+
+        PrefabSpawner.ResetAllDefeated();
     }
 
     public void UpdateVisualState()

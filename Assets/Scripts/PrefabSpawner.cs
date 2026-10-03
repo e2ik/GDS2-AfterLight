@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,10 +14,39 @@ public class PrefabSpawner : MonoBehaviour
     [Header("Area Configuration")]
     [SerializeField] private AreaSide targetAreaSide = AreaSide.Exterior;
 
+    [Header("Respawn")]
+    [SerializeField] private bool respawnOnlyAfterRest = true;
+
+    private static readonly HashSet<string> defeatedSpawners = new HashSet<string>();
+    public static event Action OnDefeatedReset;
+
     private GameObject spawnedEnemy;
+    private Enemies.EnemyHealth spawnedHealth;
     private Coroutine spawnCoroutine;
+    private bool enemyAlive;
+    private string spawnerKey;
 
     public GameObject SpawnedEnemy => spawnedEnemy;
+    public bool IsDefeated => respawnOnlyAfterRest && defeatedSpawners.Contains(SpawnerKey);
+
+    private string SpawnerKey
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(spawnerKey))
+            {
+                Vector3 p = transform.position;
+                spawnerKey = $"{gameObject.scene.name}:{Mathf.RoundToInt(p.x * 100f)}:{Mathf.RoundToInt(p.y * 100f)}:{targetAreaSide}";
+            }
+            return spawnerKey;
+        }
+    }
+
+    public static void ResetAllDefeated()
+    {
+        defeatedSpawners.Clear();
+        OnDefeatedReset?.Invoke();
+    }
 
     private void Awake()
     {
@@ -30,6 +61,11 @@ public class PrefabSpawner : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        OnDefeatedReset += HandleDefeatedReset;
+    }
+
     private void Start()
     {
         if (spawnOnStart)
@@ -40,6 +76,9 @@ public class PrefabSpawner : MonoBehaviour
 
     private void Update()
     {
+        if (enemyAlive && spawnedEnemy == null)
+            HandleEnemyKilled();
+
         if (GameManager.Instance == null) return;
 
         bool isCurrentArea = GameManager.Instance.CurrentAreaSide == targetAreaSide;
@@ -48,14 +87,37 @@ public class PrefabSpawner : MonoBehaviour
         {
             DespawnEnemy();
         }
-        else if (isCurrentArea && spawnedEnemy == null && spawnCoroutine == null)
+        else if (isCurrentArea && spawnedEnemy == null && spawnCoroutine == null && !IsDefeated)
         {
             TrySpawn();
         }
     }
 
+    private void HandleEnemyKilled()
+    {
+        enemyAlive = false;
+        UnhookHealth();
+        if (respawnOnlyAfterRest) defeatedSpawners.Add(SpawnerKey);
+    }
+
+    private void UnhookHealth()
+    {
+        if (spawnedHealth != null) spawnedHealth.OnDeath -= HandleEnemyKilled;
+        spawnedHealth = null;
+    }
+
+    private void HandleDefeatedReset()
+    {
+        if (spawnedEnemy != null && spawnedEnemy.activeSelf && enemyAlive) return;
+        if (GameManager.Instance != null && GameManager.Instance.CurrentAreaSide != targetAreaSide) return;
+
+        DespawnEnemy();
+        TrySpawn();
+    }
+
     public void ForceRespawn()
     {
+        defeatedSpawners.Remove(SpawnerKey);
         DespawnEnemy();
         TrySpawn();
     }
@@ -69,6 +131,7 @@ public class PrefabSpawner : MonoBehaviour
         }
 
         if (spawnedEnemy != null) return;
+        if (IsDefeated) return;
 
         if (spawnCoroutine != null)
         {
@@ -85,6 +148,9 @@ public class PrefabSpawner : MonoBehaviour
             StopCoroutine(spawnCoroutine);
             spawnCoroutine = null;
         }
+
+        enemyAlive = false;
+        UnhookHealth();
 
         if (spawnedEnemy != null)
         {
@@ -108,7 +174,7 @@ public class PrefabSpawner : MonoBehaviour
             }
         }
 
-        if (GameManager.Instance.CurrentAreaSide != targetAreaSide)
+        if (GameManager.Instance.CurrentAreaSide != targetAreaSide || IsDefeated)
         {
             spawnCoroutine = null;
             yield break;
@@ -121,6 +187,10 @@ public class PrefabSpawner : MonoBehaviour
         }
 
         spawnedEnemy = Instantiate(prefabToSpawn, transform.position, transform.rotation);
+        enemyAlive = true;
+
+        spawnedHealth = spawnedEnemy.GetComponentInChildren<Enemies.EnemyHealth>(true);
+        if (spawnedHealth != null) spawnedHealth.OnDeath += HandleEnemyKilled;
 
         Vector3 pos = spawnedEnemy.transform.position;
         spawnedEnemy.transform.position = new Vector3(pos.x, pos.y, 0f);
@@ -136,6 +206,7 @@ public class PrefabSpawner : MonoBehaviour
 
     private void OnDisable()
     {
+        OnDefeatedReset -= HandleDefeatedReset;
         DespawnEnemy();
     }
 

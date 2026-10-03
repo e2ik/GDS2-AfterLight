@@ -64,6 +64,14 @@ public class WorldItem : MonoBehaviour
     private bool hasRarity;
     private ERarity rarity;
 
+    private bool isDropped;
+    private AreaSide droppedAreaSide;
+    private bool hiddenByArea;
+    private Renderer[] areaRenderers;
+    private bool[] areaRendererStates;
+    private Behaviour[] areaLights;
+    private bool[] areaLightStates;
+
     public bool HasRarity => hasRarity;
     public ERarity Rarity => rarity;
     public event Action<ERarity> OnRarityAssigned;
@@ -92,11 +100,68 @@ public class WorldItem : MonoBehaviour
         InitializeVisuals();
     }
 
+    private void Update()
+    {
+        if (!isDropped || GameManager.Instance == null) return;
+
+        bool shouldHide = GameManager.Instance.CurrentAreaSide != droppedAreaSide;
+        if (shouldHide != hiddenByArea) SetHiddenByArea(shouldHide);
+    }
+
+    private void MarkDropped()
+    {
+        if (isDropped || GameManager.Instance == null) return;
+
+        isDropped = true;
+        droppedAreaSide = GameManager.Instance.CurrentAreaSide;
+    }
+
+    private void SetHiddenByArea(bool hide)
+    {
+        if (hide)
+        {
+            areaRenderers = GetComponentsInChildren<Renderer>(true);
+            areaRendererStates = new bool[areaRenderers.Length];
+            for (int i = 0; i < areaRenderers.Length; i++)
+            {
+                areaRendererStates[i] = areaRenderers[i].enabled;
+                areaRenderers[i].enabled = false;
+            }
+
+            areaLights = GetComponentsInChildren<UnityEngine.Rendering.Universal.Light2D>(true);
+            areaLightStates = new bool[areaLights.Length];
+            for (int i = 0; i < areaLights.Length; i++)
+            {
+                areaLightStates[i] = areaLights[i].enabled;
+                areaLights[i].enabled = false;
+            }
+        }
+        else
+        {
+            if (areaRenderers != null)
+            {
+                for (int i = 0; i < areaRenderers.Length; i++)
+                    if (areaRenderers[i] != null) areaRenderers[i].enabled = areaRendererStates[i];
+            }
+
+            if (areaLights != null)
+            {
+                for (int i = 0; i < areaLights.Length; i++)
+                    if (areaLights[i] != null) areaLights[i].enabled = areaLightStates[i];
+            }
+        }
+
+        if (rb != null) rb.simulated = !hide;
+        hiddenByArea = hide;
+    }
+
     public void Initialize(InventoryItemBase newItem, ERarity? assignedRarity = null)
     {
         itemDefinition = newItem;
         CheckUniqueOwnership();
         if (markedForDestruction) return;
+
+        MarkDropped();
 
         AssignRarity(assignedRarity);
         InitializeVisuals();
@@ -292,6 +357,7 @@ public class WorldItem : MonoBehaviour
     public void PopOut(Vector2 forceDirection, float forceMagnitude)
     {
         EnsureComponentsCached();
+        MarkDropped();
 
         if (rb != null && behaviour != WorldItemBehaviour.Unique)
         {
