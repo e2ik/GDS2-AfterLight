@@ -59,6 +59,8 @@ public class PlayerCombatController : MonoBehaviour
     private bool comboQueued = false;
     private float comboResetTimer;
     [SerializeField] private float[] comboDamageMultipliers = { 1.0f, 1.25f, 1.5f };
+    [SerializeField] private float dashAttackMultiplier = 1.25f;
+    [SerializeField] private float airAttackMultiplier = 1.1f;
     public int CurrentComboIndex => currentComboIndex;
 
     [Header("Input Conflict Settings")]
@@ -75,6 +77,7 @@ public class PlayerCombatController : MonoBehaviour
     private bool isAttacking;
     private bool attackStartedGrounded;
     private bool isCounterAttacking;
+    private bool isDashAttack;
     private bool isPlunging;
     private float plungeGraceTimer;
     private float plungeRecoveryTimer;
@@ -411,7 +414,6 @@ public class PlayerCombatController : MonoBehaviour
         player.Animation.FlashGreenOnParrySuccess();
         CancelParry();
         AudioManager.PlaySFX(parryEvent, transform.position);
-        MusicManager.AddIntensity(0.2f);
         ChargeSkillMeter(chargeSkillAmount);
         isCounterAttacking = true;
 
@@ -488,6 +490,7 @@ public class PlayerCombatController : MonoBehaviour
 
             isAttacking = true;
             attackStartedGrounded = movement.IsGrounded;
+            isDashAttack = movement.IsDashing;
             attackDurationTimer = attackDuration;
 
             enemiesHitThisAttack.Clear();
@@ -653,7 +656,11 @@ public class PlayerCombatController : MonoBehaviour
     {
         float attackDamage = context.BaseAttackDamage * GetComboMultiplier();
 
-        MusicManager.AddIntensity(0.05f);
+        if (plungeDmgMult <= 0f)
+        {
+            if (isDashAttack) attackDamage *= dashAttackMultiplier;
+            if (!attackStartedGrounded) attackDamage *= airAttackMultiplier;
+        }
 
         foreach (var col in enemiesInRange)
         {

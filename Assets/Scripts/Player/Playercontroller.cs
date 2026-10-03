@@ -63,6 +63,9 @@ public class PlayerController : MonoBehaviour
     [Header("Knockback Settings")]
     [SerializeField] private bool enemyBodyCollisionKnockback = true;
     [SerializeField] private AttackForce enemyBodyCollisionForce = AttackForce.Light;
+    [SerializeField] private float enemyBodyAirKnockbackForce = 8f;
+    [SerializeField] private float enemyBodyAirStaggerDuration = 0.1f;
+    [SerializeField, Range(0f, 90f)] private float enemyBodyAirKnockbackAngle = 45f;
     [SerializeField] private float hazardousKnockbackForce = 12f;
     [SerializeField] private float hazardousStaggerDuration = 0.3f;
     [SerializeField] private float bounceDuration = 0.2f;
@@ -768,11 +771,30 @@ public class PlayerController : MonoBehaviour
             _ => new KnockbackData(0f, 0f)
         };
 
-        Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
-        rb.linearVelocity = Vector2.zero;
-        rb.AddForce(dir * data.Force, ForceMode2D.Impulse);
+        PushAway(sourcePosition, data.Force, data.StaggerDuration, applyStagger);
+    }
 
-        if (applyStagger) StartHitStagger(data.StaggerDuration);
+    public void ApplyKnockback(Vector2 sourcePosition, float force, float staggerDuration, bool applyStagger = true, bool playHurtAnimation = true, Vector2? directionOverride = null)
+    {
+        if (physicsSuspended) return;
+
+        CancelClimb();
+        CancelHeal();
+        combat.ForceCancelAttack();
+        if (applyStagger && playHurtAnimation) playerAnimation.PlayHurtAnimation();
+
+        PushAway(sourcePosition, force, staggerDuration, applyStagger, directionOverride);
+    }
+
+    private void PushAway(Vector2 sourcePosition, float force, float staggerDuration, bool applyStagger, Vector2? directionOverride = null)
+    {
+        Vector2 dir = directionOverride.HasValue
+            ? directionOverride.Value.normalized
+            : ((Vector2)transform.position - sourcePosition).normalized;
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce(dir * force, ForceMode2D.Impulse);
+
+        if (applyStagger && staggerDuration > 0f) StartHitStagger(staggerDuration);
     }
 
     private void StartHitStagger(float duration)
@@ -1102,7 +1124,15 @@ public class PlayerController : MonoBehaviour
         if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
         if (!col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
 
-        ApplyKnockback(col.transform.position, enemyBodyCollisionForce, applyStagger: true, playHurtAnimation: false);
+        if (isGrounded)
+            ApplyKnockback(col.transform.position, enemyBodyCollisionForce, applyStagger: true, playHurtAnimation: false);
+        else
+        {
+            float away = transform.position.x >= col.transform.position.x ? 1f : -1f;
+            float radians = enemyBodyAirKnockbackAngle * Mathf.Deg2Rad;
+            Vector2 airDirection = new Vector2(away * Mathf.Cos(radians), Mathf.Sin(radians));
+            ApplyKnockback(col.transform.position, enemyBodyAirKnockbackForce, enemyBodyAirStaggerDuration, applyStagger: true, playHurtAnimation: false, directionOverride: airDirection);
+        }
     }
 
     public bool ApplyHazardKnockback(Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null)
