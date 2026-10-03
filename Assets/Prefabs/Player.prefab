@@ -443,7 +443,7 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 6656
-  critDamageMultiplier: 2
+  critDamageMultiplier: 1.5
   counterAttackMultiplier: 1.5
   plungeDmgMaxMultiplier: 10
   plungeAdjustedDmg: 3
@@ -462,9 +462,9 @@ MonoBehaviour:
   comboResetDelay: 1
   comboDamageMultipliers:
   - 1
-  - 1.5
-  - 2
-  dashAttackMultiplier: 2
+  - 1.75
+  - 2.5
+  dashAttackMultiplier: 3
   airAttackMultiplier: 2
   dashAttackConflictWindow: 0.03
   jumpAttackConflictWindow: 0.03
