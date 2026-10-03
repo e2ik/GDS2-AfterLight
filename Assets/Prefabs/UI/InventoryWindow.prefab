@@ -923,7 +923,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -16.000027, y: -42.000027}
+  m_AnchoredPosition: {x: -11.000004, y: -42.000027}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &869292113905129798
@@ -948,9 +948,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentSlot
   iconImage: {fileID: 2836867369740413267}
   nameText: {fileID: 5242197298924510600}
-  emptySlotSprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  emptySlotSprite: {fileID: 21300000, guid: 88bf6191b250948e2aef3d16fd0c7679, type: 3}
   showDefaultTextWhenEmpty: 1
   equippedIconScale: 1.2
+  emptySlotColor: {r: 0.8627451, g: 1, b: 0.21568628, a: 0.39215687}
+  equippedItemColor: {r: 1, g: 1, b: 1, a: 0.43137255}
 --- !u!114 &2836867369740413267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -964,14 +966,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.39215687}
+  m_Color: {r: 0.8627451, g: 1, b: 0.21568628, a: 0.43137255}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 88bf6191b250948e2aef3d16fd0c7679, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1587,7 +1589,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -16, y: 133}
+  m_AnchoredPosition: {x: -11, y: 133}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2185004729781112643
@@ -1612,9 +1614,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentSlot
   iconImage: {fileID: 5758170470429795297}
   nameText: {fileID: 2191559361284766896}
-  emptySlotSprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  emptySlotSprite: {fileID: 21300000, guid: 88bf6191b250948e2aef3d16fd0c7679, type: 3}
   showDefaultTextWhenEmpty: 1
   equippedIconScale: 1.2
+  emptySlotColor: {r: 0.8627451, g: 1, b: 0.21568628, a: 0.39215687}
+  equippedItemColor: {r: 1, g: 1, b: 1, a: 0.43137255}
 --- !u!114 &5758170470429795297
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1628,14 +1632,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.39215687}
+  m_Color: {r: 0.8627451, g: 1, b: 0.21568628, a: 0.43137255}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 88bf6191b250948e2aef3d16fd0c7679, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2282,8 +2286,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4288190616
-  m_fontColor: {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
+    rgba: 4291940817
+  m_fontColor: {r: 0.8207547, g: 0.8207547, b: 0.8207547, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2527,8 +2531,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 2100756444
+  m_fontColor: {r: 0.86214626, g: 1, b: 0.21226418, a: 0.49019608}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2545,8 +2549,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 28
+  m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -3211,8 +3215,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 2100756444
+  m_fontColor: {r: 0.86214626, g: 1, b: 0.21226418, a: 0.49019608}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -3229,8 +3233,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 28
+  m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -3713,9 +3717,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentSlot
   iconImage: {fileID: 1696271472722563640}
   nameText: {fileID: 1973761455987424314}
-  emptySlotSprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  emptySlotSprite: {fileID: 21300000, guid: 88bf6191b250948e2aef3d16fd0c7679, type: 3}
   showDefaultTextWhenEmpty: 1
   equippedIconScale: 1.2
+  emptySlotColor: {r: 0.8627451, g: 1, b: 0.21568628, a: 0.39215687}
+  equippedItemColor: {r: 1, g: 1, b: 1, a: 0.43137255}
 --- !u!114 &1696271472722563640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3729,14 +3735,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.39215687}
+  m_Color: {r: 0.8627451, g: 1, b: 0.21568628, a: 0.43137255}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 88bf6191b250948e2aef3d16fd0c7679, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4499,9 +4505,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentSlot
   iconImage: {fileID: 733767002819147009}
   nameText: {fileID: 1745024501761167902}
-  emptySlotSprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  emptySlotSprite: {fileID: 21300000, guid: 88bf6191b250948e2aef3d16fd0c7679, type: 3}
   showDefaultTextWhenEmpty: 1
   equippedIconScale: 1.2
+  emptySlotColor: {r: 0.8627451, g: 1, b: 0.21568628, a: 0.39215687}
+  equippedItemColor: {r: 1, g: 1, b: 1, a: 0.43137255}
 --- !u!114 &733767002819147009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4515,14 +4523,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.39215687}
+  m_Color: {r: 0.8627451, g: 1, b: 0.21568628, a: 0.43137255}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 88bf6191b250948e2aef3d16fd0c7679, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4606,8 +4614,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4288190616
-  m_fontColor: {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
+    rgba: 4291940817
+  m_fontColor: {r: 0.8207547, g: 0.8207547, b: 0.8207547, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -5237,8 +5245,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 2100756444
+  m_fontColor: {r: 0.86214626, g: 1, b: 0.21226418, a: 0.49019608}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -5255,8 +5263,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 28
+  m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -5793,8 +5801,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4288190616
-  m_fontColor: {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
+    rgba: 4291940817
+  m_fontColor: {r: 0.8207547, g: 0.8207547, b: 0.8207547, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -6420,8 +6428,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 2100756444
+  m_fontColor: {r: 0.86214626, g: 1, b: 0.21226418, a: 0.49019608}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -6438,8 +6446,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 28
+  m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -6788,8 +6796,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 2100756444
+  m_fontColor: {r: 0.86214626, g: 1, b: 0.21226418, a: 0.49019608}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -6806,8 +6814,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 28
+  m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -6996,9 +7004,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentSlot
   iconImage: {fileID: 8538398464277017458}
   nameText: {fileID: 3855168299382554595}
-  emptySlotSprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  emptySlotSprite: {fileID: 21300000, guid: 88bf6191b250948e2aef3d16fd0c7679, type: 3}
   showDefaultTextWhenEmpty: 1
   equippedIconScale: 1.2
+  emptySlotColor: {r: 0.8627451, g: 1, b: 0.21568628, a: 0.39215687}
+  equippedItemColor: {r: 1, g: 1, b: 1, a: 0.43137255}
 --- !u!114 &8538398464277017458
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7012,14 +7022,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.39215687}
+  m_Color: {r: 0.8627451, g: 1, b: 0.21568628, a: 0.43137255}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 7c6dedc12236a0047a5f3e6200e4c159, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 88bf6191b250948e2aef3d16fd0c7679, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -7521,8 +7531,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4288190616
-  m_fontColor: {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
+    rgba: 4291940817
+  m_fontColor: {r: 0.8207547, g: 0.8207547, b: 0.8207547, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
