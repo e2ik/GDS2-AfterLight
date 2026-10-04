@@ -75,6 +75,7 @@ namespace GameUI
         public void Close(UIWindow window)
         {
             if (window == null || !window.IsOpen) { return; }
+            if (!window.CanClose) { return; }
 
             if (openWindows.Count == 0 || openWindows.Peek() != window)
             {

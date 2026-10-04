@@ -29,6 +29,7 @@ namespace Tutorial
 
         [Tooltip("If > 0, aborts the active sequence once the player moves this far from the volume. 0 = disabled.")]
         [SerializeField] private float maxDistanceFromPlayer = 0f;
+        [SerializeField] private bool completeWhenOutOfRange = false;
 
         [TextArea(2, 4)]
         [SerializeField] private string speechBubbleText;
@@ -126,7 +127,8 @@ namespace Tutorial
             float sqrDistance = (player.position - transform.position).sqrMagnitude;
             if (sqrDistance > maxDistanceFromPlayer * maxDistanceFromPlayer)
             {
-                TutorialDirector.Instance?.AbortActiveSequence();
+                if (completeWhenOutOfRange) TutorialDirector.Instance?.SkipActiveSequence();
+                else TutorialDirector.Instance?.AbortActiveSequence();
                 sequenceActiveFromThisVolume = false;
             }
         }
@@ -178,7 +180,7 @@ namespace Tutorial
                 if (string.IsNullOrEmpty(line.text)) continue;
 
                 TutorialSpeechBubblePool.Instance.Show(line.text, target, speechBubbleDuration, line.effect);
-                yield return new WaitForSeconds(speechBubbleDuration);
+                yield return new WaitForSecondsRealtime(speechBubbleDuration);
             }
         }
     }

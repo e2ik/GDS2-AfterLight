@@ -13,14 +13,12 @@ namespace Tutorial
             public string eventKey = TutorialEvents.ItemPickedUp;
             public TutorialSequenceDefinition sequence;
             public TutorialSequenceDefinition[] requiredCompletedSequences;
-            public bool waitIfBusy = true;
         }
 
         public static TutorialDirector Instance { get; private set; }
 
         [SerializeField] private EventSequenceTrigger[] eventTriggers;
         [SerializeField] private bool debugEventTriggers = false;
-        private readonly List<TutorialSequenceDefinition> pendingSequences = new();
 
         public event Action<TutorialSequenceDefinition> OnSequenceBegan;
         public event Action<TutorialSequenceDefinition> OnSequenceCompleted;
@@ -47,6 +45,7 @@ namespace Tutorial
         [SerializeField] private bool pauseTimeOnPromptSteps = true;
         private bool timePausedByStep;
         private int stepHoldCount;
+        private bool menusAllowed;
         private readonly HashSet<TutorialSequenceDefinition.SequenceReaction> firedReactions = new();
         private bool listeningForReactions;
 
@@ -61,6 +60,13 @@ namespace Tutorial
             && activeSequence.KeepEnemiesAlive
             && (activeStep == null || activeStep.ConditionType != TutorialStepConditionType.DefeatEnemies);
         public TutorialStepDefinition ActiveStep => activeStep;
+
+        public bool MapCloseLocked =>
+            activeSequence != null
+            && activeSequence.LockMapCloseUntilCloseStep
+            && !(activeStep != null
+                 && activeStep.ConditionType == TutorialStepConditionType.GameEvent
+                 && activeStep.GameEventKey == TutorialEvents.MapClosed);
 
         private void Awake()
         {
@@ -96,16 +102,15 @@ namespace Tutorial
                     continue;
                 }
 
-                if (activeSequence == trigger.sequence || pendingSequences.Contains(trigger.sequence))
+                if (activeSequence == trigger.sequence)
                 {
-                    LogTrigger(trigger, "skipped, already running or queued");
+                    LogTrigger(trigger, "skipped, already running");
                     continue;
                 }
 
                 if (IsRunningSequence)
                 {
-                    if (trigger.waitIfBusy) pendingSequences.Add(trigger.sequence);
-                    LogTrigger(trigger, trigger.waitIfBusy ? "queued, another sequence is running" : "skipped, another sequence is running");
+                    LogTrigger(trigger, "skipped, another sequence is running");
                     continue;
                 }
 
@@ -136,19 +141,6 @@ namespace Tutorial
                 Debug.Log($"[TutorialDirector] Trigger '{trigger.eventKey}' -> '{trigger.sequence.name}': {message}", this);
         }
 
-        private void TryStartPendingSequence()
-        {
-            while (pendingSequences.Count > 0 && !IsRunningSequence)
-            {
-                TutorialSequenceDefinition next = pendingSequences[0];
-                pendingSequences.RemoveAt(0);
-                if (next == null) continue;
-                if (!next.CanRepeat && IsSequenceCompleted(next.SequenceID)) continue;
-
-                BeginSequence(next);
-            }
-        }
-
         private void OnDestroy()
         {
             ResumeTime();
@@ -171,7 +163,7 @@ namespace Tutorial
 
             RaiseWindowEvents(window);
 
-            if (activeStep != null && activeStep.AllowMenus) return;
+            if (menusAllowed || (activeSequence != null && activeSequence.AllowMenus)) return;
             if (IsRunningSequence) AbortActiveSequence();
         }
 
@@ -204,7 +196,6 @@ namespace Tutorial
 
         public void ClearCompletedSequences()
         {
-            pendingSequences.Clear();
             completedSequenceIDs.Clear();
             resumeIndices.Clear();
         }
@@ -218,12 +209,7 @@ namespace Tutorial
             {
                 if (activeSequence == sequence) return false;
 
-                if (activeSequence.Uninterruptible && !force)
-                {
-                    if (activeSequence.QueueBlockedSequences && !pendingSequences.Contains(sequence))
-                        pendingSequences.Add(sequence);
-                    return false;
-                }
+                if (activeSequence.Uninterruptible && !force) return false;
 
                 AbortActiveSequence();
             }
@@ -245,6 +231,8 @@ namespace Tutorial
         public void AbortActiveSequence()
         {
             if (!IsRunningSequence) return;
+            if (debugEventTriggers)
+                Debug.Log($"[TutorialDirector] Aborted '{activeSequence.name}' at step {activeStepIndex}\n{System.Environment.StackTrace}", this);
             if (sequenceRoutine != null) StopCoroutine(sequenceRoutine);
             EndActiveStepAbruptly();
             SetCutsceneState(false, false);
@@ -274,6 +262,7 @@ namespace Tutorial
         {
             activeSequence = sequence;
             stepHoldCount = 0;
+            menusAllowed = false;
             StartReactions();
             OnSequenceBegan?.Invoke(sequence);
 
@@ -298,6 +287,7 @@ namespace Tutorial
         private IEnumerator RunStep(TutorialStepDefinition step, Player player)
         {
             activeStep = step;
+            menusAllowed = step.AllowMenus;
 
             bool pauseTime = pauseTimeOnPromptSteps && step.ConditionType == TutorialStepConditionType.Prompt;
             bool disableInput = step.DisableInput || pauseTime;
@@ -400,8 +390,6 @@ namespace Tutorial
             activeSequence = null;
             sequenceRoutine = null;
             OnSequenceCompleted?.Invoke(sequence);
-
-            if (markCompleted) TryStartPendingSequence();
         }
 
         public void SetCutsceneState(bool freezeMovement, bool disableInput)

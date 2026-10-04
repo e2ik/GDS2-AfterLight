@@ -24,8 +24,9 @@ namespace Tutorial
         [SerializeField] private bool canRepeat = false;
 
         [SerializeField] private bool uninterruptible = false;
-        [SerializeField] private bool queueBlockedSequences = true;
         [SerializeField] private bool keepEnemiesAlive = false;
+        [SerializeField] private bool lockMapCloseUntilCloseStep = false;
+        [SerializeField] private bool allowMenus = false;
 
         [SerializeField] private SequenceReaction[] reactions;
 
@@ -34,8 +35,9 @@ namespace Tutorial
         public bool CanRepeat => canRepeat;
         public SequenceReaction[] Reactions => reactions;
         public bool Uninterruptible => uninterruptible;
-        public bool QueueBlockedSequences => queueBlockedSequences;
         public bool KeepEnemiesAlive => keepEnemiesAlive;
+        public bool LockMapCloseUntilCloseStep => lockMapCloseUntilCloseStep;
+        public bool AllowMenus => allowMenus;
 
         private void OnValidate()
         {

@@ -76,6 +76,7 @@ namespace Tutorial
         public bool DisableInput => disableInput;
         public bool AllowMenus => allowMenus;
         public TutorialStepConditionType ConditionType => conditionType;
+        public string GameEventKey => gameEventKey;
 
         public TutorialStepRequirement RunOnlyIf => runOnlyIf;
 

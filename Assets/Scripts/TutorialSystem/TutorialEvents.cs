@@ -27,6 +27,10 @@ namespace Tutorial
         public const string InventoryOpened = "InventoryOpened";
         public const string WindowOpenedPrefix = "WindowOpened:";
 
+        public const string FastTravelUsed = "FastTravelUsed";
+        public const string MapOpened = "MapOpened";
+        public const string MapClosed = "MapClosed";
+
         public const string EnemyHit = "EnemyHit";
         public const string EnemyComboFinished = "EnemyComboFinished";
         public const string EnemyCrit = "EnemyCrit";
