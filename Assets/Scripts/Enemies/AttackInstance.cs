@@ -10,6 +10,9 @@ namespace Enemies
         [Range(0f, 100f)] public float Weight = 50f;
         [SerializeField] private float maxDuration = 3f; // failsafe is animation fails
 
+        [SerializeField] private bool manualOnly = false;
+        public bool ManualOnly => manualOnly;
+        
         private float _cooldownTimer;
         private float _elapsed;
 

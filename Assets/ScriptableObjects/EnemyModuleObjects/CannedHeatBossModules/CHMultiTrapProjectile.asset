@@ -16,8 +16,8 @@ MonoBehaviour:
   cooldownDuration: 3
   projectilePrefab: {fileID: 3971712004336234337, guid: 3ccdb85a5d01e404a81ec01d049fc413, type: 3}
   damage: 10
-  launchAngleDegrees: 55
-  launchSpeed: 8
+  launchAngleDegrees: 45
+  launchSpeed: 15
   shotSpacingDegrees: 30
   shotCount: 3
   clip: {fileID: 0}
@@ -30,3 +30,4 @@ MonoBehaviour:
       Data3: -1823744120
       Data4: -1124302290
     Path: event:/CombatSFXEvents/Projectile Spawn Event
+  maxHealthFractionToUse: 0.5

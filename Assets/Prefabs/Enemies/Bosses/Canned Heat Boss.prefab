@@ -250,13 +250,20 @@ MonoBehaviour:
   attacks:
   - Attack: {fileID: 11400000, guid: c5d6043f22bf2e04ab0cd5336e72fca9, type: 2}
     Weight: 40
-    maxDuration: 3
+    maxDuration: 2
+    manualOnly: 0
   - Attack: {fileID: 11400000, guid: 0f75b721bbec5ef43b6f61278a419117, type: 2}
     Weight: 35
-    maxDuration: 5
+    maxDuration: 3
+    manualOnly: 0
   - Attack: {fileID: 11400000, guid: 4cd372f9398bcd342a8a8aa495170729, type: 2}
     Weight: 25
-    maxDuration: 5
+    maxDuration: 1
+    manualOnly: 0
+  - Attack: {fileID: 11400000, guid: 7ac295fc9c94d5945a3eafb92e640e53, type: 2}
+    Weight: 0
+    maxDuration: 1
+    manualOnly: 1
   lootTable: {fileID: 11400000, guid: 6252f6ee048300646a7a55bd5c7f22d6, type: 2}
   behaviorAgent: {fileID: 7603609893098896341}
   animator: {fileID: 1943101255374262222}
