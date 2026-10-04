@@ -22,5 +22,6 @@ namespace Enemies
         
         public abstract void Begin(EnemyContext ctx);
         public abstract bool IsFinished(EnemyContext ctx);
+        public virtual bool CanUse(EnemyContext ctx) => true;
     }
 }

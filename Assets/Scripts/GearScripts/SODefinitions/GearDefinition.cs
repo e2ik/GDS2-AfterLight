@@ -14,6 +14,11 @@ public class GearDefinition : InventoryItemBase
     public EGearSlot Slot;
     public string TemplateID;
 
+    [Header("Rolled Stats")]
+    public bool RollAttack = true;
+    public bool RollDefense = true;
+    public bool RollCrit = true;
+
     [Header("Attack by Rarity")]
     public RarityRange AttackRanges = new RarityRange
     {
@@ -45,19 +50,30 @@ public class GearDefinition : InventoryItemBase
 
     public GearInstance Roll(RarityLineRoller roller)
     {
+        ERarity attackRarity = ERarity.Common;
+        ERarity defenseRarity = ERarity.Common;
+        ERarity critRarity = ERarity.Common;
+
         GearInstance newInstance = new GearInstance
         {
             InstanceGUID = System.Guid.NewGuid().ToString(),
             InstTemplateID = TemplateID,
-            InstBonusAttack = roller.RollValue(AttackRanges),
-            InstBonusDefense = roller.RollValue(DefenseRanges),
-            InstBonusCrit = roller.RollValue(CritRanges),
+            InstBonusAttack = RollAttack ? RollLine(roller, AttackRanges, out attackRarity) : 0f,
+            InstBonusDefense = RollDefense ? RollLine(roller, DefenseRanges, out defenseRarity) : 0f,
+            InstBonusCrit = RollCrit ? RollLine(roller, CritRanges, out critRarity) : 0f,
         };
 
         newInstance.Rarity = roller.Final;
-        newInstance.LineRarities = new System.Collections.Generic.List<ERarity>(roller.Lines);
+        newInstance.LineRarities = new System.Collections.Generic.List<ERarity> { attackRarity, defenseRarity, critRarity };
 
         // Debug.Log($"Created Gear Instance: {UIName} [{newInstance.Rarity}]");
         return newInstance;
+    }
+
+    private static float RollLine(RarityLineRoller roller, RarityRange range, out ERarity lineRarity)
+    {
+        lineRarity = roller.Next();
+        Vector2 minMax = range.GetRange(lineRarity);
+        return Random.Range(minMax.x, minMax.y);
     }
 }

@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: Movement
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialStepDefinition
   promptText: Press {Move:up}{Move:left}{Move:down}{Move:right} to move
-  minimumDisplayDuration: 3
+  minimumDisplayDuration: 1
+  startDelay: 2
+  showSuccessOnComplete: 1
   freezeMovement: 0
   disableInput: 0
   conditionType: 2

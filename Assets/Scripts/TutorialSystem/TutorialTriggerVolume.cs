@@ -38,6 +38,8 @@ namespace Tutorial
         [Tooltip("SpeechBubble mode only. If any lines are set here, they play one after another (each shown for Speech Bubble Duration, each with its own effect) instead of the single Speech Bubble Text above. Leave empty to just use the single line as before.")]
         [SerializeField] private SpeechLine[] speechBubbleLines;
 
+        [SerializeField] private bool hideVisualsOnStart = true;
+
         private bool sequenceActiveFromThisVolume;
 
         private bool UsesSequence => uiMode == TutorialTriggerUIMode.TutorialUI || uiMode == TutorialTriggerUIMode.Both;
@@ -76,6 +78,18 @@ namespace Tutorial
             }
         }
 #endif
+
+        private void Awake()
+        {
+            if (!hideVisualsOnStart) return;
+
+            foreach (SpriteRenderer sr in GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                Color c = sr.color;
+                c.a = 0f;
+                sr.color = c;
+            }
+        }
 
         private void OnEnable()
         {

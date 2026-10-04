@@ -13,6 +13,7 @@ namespace Tutorial
         public event Action<TutorialSequenceDefinition> OnSequenceCompleted;
         public event Action<TutorialStepDefinition> OnStepBegan;
         public event Action<TutorialStepDefinition> OnStepEnded;
+        public event Action<TutorialStepDefinition> OnStepCompleted;
         public event Action OnCutsceneEntered;
         public event Action OnCutsceneExited;
         public event Action PlayerContinued;
@@ -165,11 +166,17 @@ namespace Tutorial
 
             OnStepBegan?.Invoke(step);
 
+            float elapsed = 0f;
+            if (step.StartDelay > 0f)
+            {
+                yield return new WaitForSeconds(step.StartDelay);
+                elapsed = step.StartDelay;
+            }
+
             bool complete = false;
             activeEvaluator = step.CreateEvaluator();
             activeEvaluator.Begin(player, () => complete = true);
 
-            float elapsed = 0f;
             while (!complete)
             {
                 elapsed += Time.deltaTime;
@@ -184,6 +191,7 @@ namespace Tutorial
 
             if (needsLock) SetCutsceneState(false, false);
 
+            OnStepCompleted?.Invoke(step);
             OnStepEnded?.Invoke(step);
             activeStep = null;
         }

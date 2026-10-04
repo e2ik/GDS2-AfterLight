@@ -23,6 +23,8 @@ namespace Tutorial
         [TextArea(2, 5)]
         [SerializeField] private string promptText;
         [SerializeField] private float minimumDisplayDuration = 0f;
+        [SerializeField, Min(0f)] private float startDelay = 0f;
+        [SerializeField] private bool showSuccessOnComplete = false;
 
         [Header("Cutscene Behaviour For This Step")]
         [Tooltip("Stops player movement (physics) while this step is active.")]
@@ -46,6 +48,8 @@ namespace Tutorial
 
         public string PromptText => promptText;
         public float MinimumDisplayDuration => minimumDisplayDuration;
+        public float StartDelay => startDelay;
+        public bool ShowSuccessOnComplete => showSuccessOnComplete;
         public bool FreezeMovement => freezeMovement;
         public bool DisableInput => disableInput;
         public TutorialStepConditionType ConditionType => conditionType;

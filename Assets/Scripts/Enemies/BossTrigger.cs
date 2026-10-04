@@ -80,16 +80,21 @@ namespace Enemies
                 bossEnemy.TriggerLockOn(player.transform);
                 
                 MusicManager.Instance?.SwitchMusic(bossMusicEvent, isBossMusic: true);
+                BossHealthBarUI.Instance?.Initialize(bossEnemy.Context.Health.CurrentHealth, bossEnemy.Context.Health.MaxHealth);
 
                 activeBossEnemy = bossEnemy;
-                
+
                 onBossDamaged = (amount, currentHealth, isCrit) =>
+                {
                     MusicManager.Instance?.SetBossIntensity((float)currentHealth / bossEnemy.Context.Health.MaxHealth);
+                    BossHealthBarUI.Instance?.SetHealth(currentHealth, bossEnemy.Context.Health.MaxHealth);
+                };
                 
                 onBossDeath = () => 
                 {
                     bossDefeated = true;
                     MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
+                    BossHealthBarUI.Instance?.Hide();
                     CleanupFightSubscriptions();
                 };
 

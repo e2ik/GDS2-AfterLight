@@ -23,7 +23,7 @@ TagManager:
   - Projectile
   - PlayerProjectiles
   - Doors
-  - 
+  - BossUILayer
   - 
   - 
   - 
@@ -45,6 +45,9 @@ TagManager:
     locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Boss
+    uniqueID: 3893055053
     locked: 0
   - name: Effects
     uniqueID: 47392211
