@@ -439,7 +439,7 @@ MonoBehaviour:
   successfulParryVisualDuration: 0.15
   parryWindowExtension: 0.1
   attackOrigin: {fileID: 6444912443510829891}
-  damageScalingExponent: 0.8
+  damageScalingExponent: 0.5
   enemyLayer:
     serializedVersion: 2
     m_Bits: 6656
@@ -514,10 +514,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   maxHealth: 100
   currentHealth: 0
-  baseAttack: 10
-  baseDefense: 5
+  baseAttack: 35
+  baseDefense: 10
   baseHumanity: 10
-  defenseMitigationPerPoint: 0.02
+  defenseMitigationPerPoint: 0.005
   gearAttackBonus: 0
   gearDefenseBonus: 0
   gearHumanityBonus: 0
@@ -571,6 +571,7 @@ MonoBehaviour:
     InstRolledRange: 0
     InstRolledCrit: 0
     InstRolledAttack: 0
+    LineRarities: 
     PickupOrder: 0
     IsNew: 1
   specialAttackDef: {fileID: 0}
@@ -586,6 +587,7 @@ MonoBehaviour:
     InstRolledChargeAmount: 0
     InstRolledReflectPercent: 0
     InstRolledMaxGambleMult: 0
+    LineRarities: 
     IsNew: 1
   equippedGearDebug: []
 --- !u!114 &4056446563424932215
