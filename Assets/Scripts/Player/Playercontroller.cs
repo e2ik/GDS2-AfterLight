@@ -194,6 +194,21 @@ public class PlayerController : MonoBehaviour
         if (rb == null) return false;
         if (maxDistance <= 0f) maxDistance = groundSnapMaxDistance;
 
+        bool restoreDisabledColliders = physicsSuspended;
+        if (restoreDisabledColliders) SetCollidersEnabled(true);
+
+        try
+        {
+            return SnapToGroundInternal(maxDistance);
+        }
+        finally
+        {
+            if (restoreDisabledColliders) SetCollidersEnabled(false);
+        }
+    }
+
+    private bool SnapToGroundInternal(float maxDistance)
+    {
         Physics2D.SyncTransforms();
         Bounds bounds = ComputePlayerBounds();
 

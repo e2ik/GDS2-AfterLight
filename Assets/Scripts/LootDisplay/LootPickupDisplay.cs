@@ -32,11 +32,14 @@ public class LootPickupDisplay : MonoBehaviour
     [Header("Timing")]
     [SerializeField] private float holdDuration = 3f;
     [SerializeField] private float fadeDuration = 1.5f;
+    [SerializeField] private bool clearWhenWindowOpens = true;
+    [SerializeField] private GameUI.UIWindow[] clearForWindows;
 
     [Header("Controller Inspect")]
     [SerializeField] private InputActionReference inspectAction;
     [SerializeField] private float inspectDuration = 4f;
     [SerializeField] private bool cycleBeforeClosing = true;
+    [SerializeField] private GameObject inspectPrompt;
 
     [Header("Tooltip")]
     [SerializeField] private RectTransform tooltipDock;
@@ -79,6 +82,8 @@ public class LootPickupDisplay : MonoBehaviour
     private Vector2 originalTooltipSize;
     private ContentSizeFitter resizedFitter;
     private ContentSizeFitter.FitMode originalHorizontalFit;
+    private CanvasGroup inspectPromptGroup;
+    private bool clearWindowWasOpen;
 
     private void Awake()
     {
@@ -91,6 +96,73 @@ public class LootPickupDisplay : MonoBehaviour
         Instance = this;
         ApplyOrdering();
         SetLootBackground(false);
+
+        if (inspectPrompt != null)
+        {
+            inspectPromptGroup = inspectPrompt.GetComponent<CanvasGroup>();
+            if (inspectPromptGroup == null) inspectPromptGroup = inspectPrompt.AddComponent<CanvasGroup>();
+            inspectPromptGroup.alpha = 0f;
+            inspectPrompt.SetActive(false);
+        }
+    }
+
+    private void LateUpdate()
+    {
+        UpdateClearOnWindow();
+        UpdateInspectPrompt();
+    }
+
+    private void UpdateClearOnWindow()
+    {
+        if (!clearWhenWindowOpens) return;
+
+        bool open = IsClearWindowOpen();
+        if (open && !clearWindowWasOpen) ClearAll();
+        clearWindowWasOpen = open;
+    }
+
+    private bool IsClearWindowOpen()
+    {
+        if (clearForWindows != null && clearForWindows.Length > 0)
+        {
+            foreach (GameUI.UIWindow window in clearForWindows)
+            {
+                if (window != null && window.IsOpen) return true;
+            }
+            return false;
+        }
+
+        return GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.HasOpenWindows;
+    }
+
+    public void ClearAll()
+    {
+        EndInspect();
+        pointerHoveredEntry = null;
+
+        for (int i = activeEntries.Count - 1; i >= 0; i--)
+        {
+            LootPickupEntry entry = activeEntries[i];
+            activeEntries.RemoveAt(i);
+            if (entry != null) ReturnToPool(entry);
+        }
+    }
+
+    private void UpdateInspectPrompt()
+    {
+        if (inspectPrompt == null) return;
+
+        float alpha = 0f;
+        foreach (LootPickupEntry entry in activeEntries)
+        {
+            if (entry == null || !entry.gameObject.activeInHierarchy) continue;
+            CanvasGroup group = entry.GetComponent<CanvasGroup>();
+            alpha = Mathf.Max(alpha, group != null ? group.alpha : 1f);
+        }
+
+        bool visible = alpha > 0f;
+        if (inspectPrompt.activeSelf != visible) inspectPrompt.SetActive(visible);
+        if (inspectPromptGroup != null) inspectPromptGroup.alpha = alpha;
     }
 
     private void OnEnable()
