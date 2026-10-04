@@ -18441,6 +18441,124 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6145143574291511702, guid: 97ae6dbf2b9864440bb906dbdc0e9e42, type: 3}
   m_PrefabInstance: {fileID: 319225756}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &320636801
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1554939726}
+    m_Modifications:
+    - target: {fileID: 403585201152628262, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_Name
+      value: TuteTrigger (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 68.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 3.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: uiMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: sequence
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: triggerID
+      value: Secret01
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleText
+      value: What's up there?
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleEffect
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: maxDistanceFromPlayer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: 'speechBubbleLines.Array.data[0]'
+      value: Where am I?
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: 'speechBubbleLines.Array.data[1]'
+      value: What happened here...
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.data[0].text
+      value: What is this thing?
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.data[1].text
+      value: What happened here?
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.data[2].text
+      value: Where am I??!
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.data[1].effect
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.data[2].effect
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+--- !u!4 &320636802 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+  m_PrefabInstance: {fileID: 320636801}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &321779929
 GameObject:
   m_ObjectHideFlags: 0
@@ -45820,6 +45938,124 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4316455170185187936, guid: 97cae8ca79b9b934ca280a483b5dcb5a, type: 3}
   m_PrefabInstance: {fileID: 1496313942}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1511890465
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1554939726}
+    m_Modifications:
+    - target: {fileID: 403585201152628262, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_Name
+      value: TuteTrigger (7)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 49.93
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.51
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: uiMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: sequence
+      value: 
+      objectReference: {fileID: 11400000, guid: 69b55e4faf7f4674abcbd3e6ddc7e788, type: 2}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: triggerID
+      value: PlatformDrop
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleText
+      value: What's up there?
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleEffect
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: maxDistanceFromPlayer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: 'speechBubbleLines.Array.data[0]'
+      value: Where am I?
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: 'speechBubbleLines.Array.data[1]'
+      value: What happened here...
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.data[0].text
+      value: What is this thing?
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.data[1].text
+      value: What happened here?
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.data[2].text
+      value: Where am I??!
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.data[1].effect
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4903676579098707105, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+      propertyPath: speechBubbleLines.Array.data[2].effect
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+--- !u!4 &1511890466 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
+  m_PrefabInstance: {fileID: 1511890465}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1520031226
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -46661,6 +46897,8 @@ Transform:
   - {fileID: 165727695}
   - {fileID: 1871094307}
   - {fileID: 341113977}
+  - {fileID: 320636802}
+  - {fileID: 1511890466}
   m_Father: {fileID: 282204496}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1559879631
@@ -59586,7 +59824,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 33.5
+      value: 32.85
       objectReference: {fileID: 0}
     - target: {fileID: 4893471408922277018, guid: 4ce9b624b921c00478ab6a62e19306af, type: 3}
       propertyPath: m_LocalPosition.y

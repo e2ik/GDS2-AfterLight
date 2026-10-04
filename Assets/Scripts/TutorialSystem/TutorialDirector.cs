@@ -34,6 +34,8 @@ namespace Tutorial
         [SerializeField] private bool pauseTimeOnPromptSteps = true;
         private bool timePausedByStep;
         private int stepHoldCount;
+        private readonly HashSet<TutorialSequenceDefinition.SequenceReaction> firedReactions = new();
+        private bool listeningForReactions;
 
         public void AddStepHold() => stepHoldCount++;
         public void RemoveStepHold() => stepHoldCount = Mathf.Max(0, stepHoldCount - 1);
@@ -58,6 +60,7 @@ namespace Tutorial
         private void OnDestroy()
         {
             ResumeTime();
+            StopReactions();
             if (Instance == this) UIWindowAnimator.OnAnyShown -= HandleAnyWindowShown;
         }
 
@@ -153,6 +156,7 @@ namespace Tutorial
         {
             activeSequence = sequence;
             stepHoldCount = 0;
+            StartReactions();
             OnSequenceBegan?.Invoke(sequence);
 
             Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
@@ -232,8 +236,44 @@ namespace Tutorial
             timePausedByStep = false;
         }
 
+        private void StartReactions()
+        {
+            firedReactions.Clear();
+            if (listeningForReactions) return;
+            TutorialEvents.OnRaised += HandleReactionEvent;
+            listeningForReactions = true;
+        }
+
+        private void StopReactions()
+        {
+            firedReactions.Clear();
+            if (!listeningForReactions) return;
+            TutorialEvents.OnRaised -= HandleReactionEvent;
+            listeningForReactions = false;
+        }
+
+        private void HandleReactionEvent(string key)
+        {
+            if (activeSequence == null || activeSequence.Reactions == null) return;
+
+            foreach (var reaction in activeSequence.Reactions)
+            {
+                if (reaction == null || reaction.eventKey != key) continue;
+                if (string.IsNullOrEmpty(reaction.speechText)) continue;
+                if (reaction.onlyOnce && firedReactions.Contains(reaction)) continue;
+
+                firedReactions.Add(reaction);
+
+                Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+                if (player != null)
+                    TutorialSpeechBubblePool.Instance?.Show(reaction.speechText, player.transform, reaction.duration, reaction.effect);
+            }
+        }
+
         private void FinishSequence(TutorialSequenceDefinition sequence, bool markCompleted)
         {
+            StopReactions();
+
             if (markCompleted)
             {
                 if (sequence != null && !sequence.CanRepeat) completedSequenceIDs.Add(sequence.SequenceID);

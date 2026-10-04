@@ -5,6 +5,16 @@ namespace Tutorial
     [CreateAssetMenu(menuName = "Tutorial/Sequence", fileName = "New Tutorial Sequence")]
     public class TutorialSequenceDefinition : ScriptableObject
     {
+        [System.Serializable]
+        public class SequenceReaction
+        {
+            public string eventKey = TutorialEvents.PlayerHit;
+            [TextArea(2, 4)] public string speechText;
+            public DialogueEffect effect = DialogueEffect.Default;
+            [Min(0f)] public float duration = 2.5f;
+            public bool onlyOnce = true;
+        }
+
         [Tooltip("Unique, stable ID used for save persistence.")]
         [SerializeField] private string sequenceID;
 
@@ -13,9 +23,12 @@ namespace Tutorial
         [Tooltip("If true, this sequence can run again after being completed (no save-gating).")]
         [SerializeField] private bool canRepeat = false;
 
+        [SerializeField] private SequenceReaction[] reactions;
+
         public string SequenceID => sequenceID;
         public TutorialStepDefinition[] Steps => steps;
         public bool CanRepeat => canRepeat;
+        public SequenceReaction[] Reactions => reactions;
 
         private void OnValidate()
         {

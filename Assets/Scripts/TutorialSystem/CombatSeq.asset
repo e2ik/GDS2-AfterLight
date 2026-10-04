@@ -23,3 +23,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 82a315fce73f30343bc42e3b5770dcbf, type: 2}
   - {fileID: 11400000, guid: c91538e2d1ed2484ca95b6ecf470d43d, type: 2}
   canRepeat: 0
+  reactions:
+  - eventKey: PlayerHit
+    speechText: Ouch!
+    effect: 2
+    duration: 1
+    onlyOnce: 1
+  - eventKey: EnemyKilled
+    speechText: Thank god...
+    effect: 2
+    duration: 1.5
+    onlyOnce: 1

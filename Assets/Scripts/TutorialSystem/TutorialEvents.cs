@@ -22,6 +22,7 @@ namespace Tutorial
         public const string PlayerClimbed = "PlayerClimbed";
         public const string PlayerHealed = "PlayerHealed";
         public const string PlayerHit = "PlayerHit";
+        public const string PlayerDroppedThrough = "PlayerDroppedThrough";
 
         public const string EnemyHit = "EnemyHit";
         public const string EnemyComboFinished = "EnemyComboFinished";

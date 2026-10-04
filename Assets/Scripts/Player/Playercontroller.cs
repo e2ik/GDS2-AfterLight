@@ -98,6 +98,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Detection Settings")]
     public LayerMask groundLayer;
+    [SerializeField] private bool snapToGroundOnStart = true;
+    [SerializeField, Min(0f)] private float groundSnapMaxDistance = 10f;
     [SerializeField] private float groundCheckDistance = 0.05f;
     [SerializeField] private float groundCheckNormalThreshold = 0.6f;
     [SerializeField] private float wallCheckDistance = 0.05f;
@@ -183,6 +185,39 @@ public class PlayerController : MonoBehaviour
     {
         rb.gravityScale = normGravity;
         lastFacingDirection = FacingDirection;
+
+        if (snapToGroundOnStart) SnapToGround();
+    }
+
+    public bool SnapToGround(float maxDistance = -1f)
+    {
+        if (rb == null) return false;
+        if (maxDistance <= 0f) maxDistance = groundSnapMaxDistance;
+
+        Physics2D.SyncTransforms();
+        Bounds bounds = ComputePlayerBounds();
+
+        Vector2 origin = new Vector2(bounds.center.x, bounds.center.y);
+        float castDistance = bounds.extents.y + maxDistance;
+
+        bool previousStartInColliders = Physics2D.queriesStartInColliders;
+        Physics2D.queriesStartInColliders = false;
+        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, castDistance, groundLayer);
+        Physics2D.queriesStartInColliders = previousStartInColliders;
+
+        if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
+
+        float offset = hit.point.y - bounds.min.y;
+        Vector3 position = transform.position + new Vector3(0f, offset, 0f);
+
+        transform.position = position;
+        rb.position = position;
+        rb.linearVelocity = Vector2.zero;
+
+        Physics2D.SyncTransforms();
+        cachedBounds = ComputePlayerBounds();
+        GroundCheckUpdate();
+        return true;
     }
 
     private void Update()
@@ -396,6 +431,7 @@ public class PlayerController : MonoBehaviour
         {
             if (verticalInput < -0.5f && TryPassThroughPlatform())
             {
+                Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerDroppedThrough);
                 ConsumeJumpInput();
                 return;
             }

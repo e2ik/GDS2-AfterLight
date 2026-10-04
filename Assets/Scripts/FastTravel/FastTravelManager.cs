@@ -132,6 +132,9 @@ public class FastTravelManager : MonoBehaviour
             if (anchorTransform != null)
             {
                 player.transform.position = anchorTransform.position;
+
+                PlayerController controller = player.GetComponent<PlayerController>();
+                if (controller != null) controller.SnapToGround();
                 GameManager.Instance?.ResetBackgroundParallax();
 
                 CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
