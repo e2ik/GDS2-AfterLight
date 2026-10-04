@@ -59,6 +59,7 @@ public class Chest : MonoBehaviour, IInteractable
     public bool CanInteract => !isOpened;
     public bool ShouldStopPlayerMovement => false;
     [SerializeField] private EventReference chestOpen;
+    [SerializeField] private string tutorialEventKey;
     public SpriteOutlineToggle OutlineToggle => outlineToggle;
     public Collider2D PromptCollider => promptCollider;
 
@@ -149,6 +150,9 @@ public class Chest : MonoBehaviour, IInteractable
     private void CompleteOpening()
     {
         isOpened = true;
+
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.ChestOpened);
+        Tutorial.TutorialEvents.Raise(tutorialEventKey);
 
         if (SaveManager.Instance != null)
         {

@@ -200,6 +200,12 @@ public class PlayerController : MonoBehaviour
             inventoryPressed = false;
             healPressed = false;
         }
+
+        if (!InputEnabled)
+        {
+            jumpPressed = false;
+            dashPressed = false;
+        }
     }
 
     private void FixedUpdate()
@@ -226,7 +232,25 @@ public class PlayerController : MonoBehaviour
     public void FreezeMovement(bool freeze)
     {
         movementFreezeCount = freeze ? movementFreezeCount + 1 : Mathf.Max(0, movementFreezeCount - 1);
-        if (freeze) rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+
+        if (freeze)
+        {
+            if (isDashing && !isDashLocked)
+            {
+                CancelInvoke(nameof(StopDashing));
+                StopDashing();
+            }
+
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+            jumpPressed = false;
+            dashPressed = false;
+        }
+        else if (movementFreezeCount == 0)
+        {
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+            jumpPressed = false;
+            dashPressed = false;
+        }
     }
 
     public void SetPhysicsSuspended(bool suspend)
@@ -389,6 +413,7 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
 
             playerAnimation.TriggerJumpEffect(false);
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerJumped);
 
             ConsumeJumpInput();
             coyoteTimeCounter = 0f;
@@ -423,6 +448,7 @@ public class PlayerController : MonoBehaviour
                 combat.ForceCancelAttack();
                 combat.CancelParry();
                 if (combat.IsSkilling) combat.EndSkill();
+                Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerWallSlid);
             }
 
             isWallSliding = true;
@@ -457,6 +483,7 @@ public class PlayerController : MonoBehaviour
         if (jumpPressed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerWallJumped);
             combat.ForceCancelAttack();
             combat.NotifyJumpInputReceived();
             rb.linearVelocity = Vector2.zero;
@@ -529,6 +556,8 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
 
             playerAnimation.TriggerDashEffect();
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerDashed);
+            if (!IsDirectionalDash) Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerBackDashed);
 
             ConsumeDashInput();
 
@@ -614,6 +643,7 @@ public class PlayerController : MonoBehaviour
     {
         canClimbEdge = false;
         isClimbing = true;
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerClimbed);
         climbStartTime = Time.time;
 
         combat.CancelAllActions();
@@ -725,6 +755,7 @@ public class PlayerController : MonoBehaviour
         isHealing = true;
         rb.linearVelocityX = 0;
         OnHealStarted?.Invoke();
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerHealed);
     }
 
     public void CancelHeal()
@@ -873,7 +904,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputValue value)
     {
-        if (value.isPressed && IsUILocked) return;
+        if (value.isPressed && (IsUILocked || !InputEnabled)) return;
 
         if (value.isPressed)
         {
@@ -884,7 +915,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnDash(InputValue value)
     {
-        if (value.isPressed && IsUILocked) return;
+        if (value.isPressed && (IsUILocked || !InputEnabled)) return;
 
         dashPressed = value.isPressed; dashReleased = !value.isPressed;
     }

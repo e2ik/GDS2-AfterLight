@@ -10,18 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b126725b3c352c6458202a11e09a8e71, type: 3}
-  m_Name: MoveIntro
+  m_Name: Combat04
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialStepDefinition
-  promptText: You just woke up... You're body feels different...
-  minimumDisplayDuration: 1.5
+  promptText: Now Destroy this enemy!
+  minimumDisplayDuration: 1
   startDelay: 0
-  showSuccessOnComplete: 0
+  showSuccessOnComplete: 1
   freezeMovement: 0
   disableInput: 0
-  conditionType: 0
+  runOnlyIf: 0
+  conditionType: 3
   buttonPressAction: {fileID: 0}
   requiredKills: 1
   enemyTagFilter: 
   requiredParries: 1
-  gameEventKey: SwitchUsed
+  gameEventKey: EnemyHit
   requiredEventCount: 1

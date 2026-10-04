@@ -59,6 +59,7 @@ public class WorldItem : MonoBehaviour
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
     [SerializeField] private EventReference primaryPickupEvent;
+    [SerializeField] private string tutorialEventKey;
     [SerializeField, Min(0f)] private float inventoryFullMessageCooldown = 3f;
     [SerializeField] private Color inventoryFullColor = new Color(1f, 0.35f, 0.35f);
     private static float nextInventoryFullMessageTime = float.NegativeInfinity;
@@ -565,12 +566,36 @@ public class WorldItem : MonoBehaviour
         if (pickedUp)
         {
             hasBeenPickedUp = true;
+            RaisePickupTutorialEvents();
             Destroy(gameObject);
         }
         else
         {
             hasBeenPickedUp = false;
         }
+    }
+
+    private void RaisePickupTutorialEvents()
+    {
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.ItemPickedUp);
+
+        string typeKey = itemDefinition switch
+        {
+            WeaponDefinition _ => Tutorial.TutorialEvents.WeaponPickedUp,
+            GearDefinition _ => Tutorial.TutorialEvents.GearPickedUp,
+            SecondaryGemBehaviourDefinition _ => Tutorial.TutorialEvents.GemPickedUp,
+            PrimaryGemBehaviourDefinition _ => Tutorial.TutorialEvents.GemPickedUp,
+            KeyDefinition _ => Tutorial.TutorialEvents.KeyPickedUp,
+            LoreItemDefinition _ => Tutorial.TutorialEvents.LorePickedUp,
+            _ => null
+        };
+
+        Tutorial.TutorialEvents.Raise(typeKey);
+
+        if (itemDefinition != null)
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PickedUpPrefix + itemDefinition.name);
+
+        Tutorial.TutorialEvents.Raise(tutorialEventKey);
     }
 
     private void ShowInventoryFullMessage(InventoryItemBase def)

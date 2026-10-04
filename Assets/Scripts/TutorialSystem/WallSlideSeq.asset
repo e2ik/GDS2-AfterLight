@@ -10,11 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2acefbb5902d7144eba89835c8ff06bf, type: 3}
-  m_Name: MovementTut
+  m_Name: WallSlideSeq
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialSequenceDefinition
-  sequenceID: movement
+  sequenceID: WallSlideSeq
   steps:
-  - {fileID: 11400000, guid: fe1cf490dc79db642b2961437ecc8898, type: 2}
-  - {fileID: 11400000, guid: b43a3525fd49beb43b8d20863665b9b8, type: 2}
-  - {fileID: 11400000, guid: e5ccc91d0126c214381bf2ebbec43a4a, type: 2}
+  - {fileID: 11400000, guid: 934aa201a297c794f8451f507c3dd62e, type: 2}
+  - {fileID: 11400000, guid: b575ed568511857408ba362cd722e8bb, type: 2}
   canRepeat: 0

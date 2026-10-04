@@ -11,6 +11,7 @@ namespace Tutorial
     {
         [SerializeField] private UIWindowAnimator windowAnimator;
         [SerializeField] private TMP_Text promptLabel;
+        [SerializeField] private GameObject continueContainer;
         [SerializeField] private GameObject continueElement;
         [SerializeField] private InputActionReference continueAction;
         [SerializeField] private bool clickElementToContinue = true;
@@ -18,6 +19,12 @@ namespace Tutorial
         [Tooltip("The RectTransform with the Content Size Fitter (usually promptLabel's parent panel). Auto-detected if left empty.")]
         [SerializeField] private RectTransform layoutRoot;
         [SerializeField] private InputPromptTextSlots promptSlots;
+
+        [Header("Prompt Pulse")]
+        [SerializeField] private RectTransform pulseTarget;
+        [SerializeField, Range(0f, 0.2f)] private float pulseAmount = 0.03f;
+        [SerializeField, Min(0f)] private float pulsesPerSecond = 1f;
+        [SerializeField] private bool pulseOnlyWhenReady = true;
 
         [Header("Success Panel")]
         [SerializeField] private GameObject successPanel;
@@ -47,6 +54,10 @@ namespace Tutorial
         private TutorialStepDefinition shownStep;
         private Coroutine continueDelayRoutine;
         private CanvasGroup continueGroup;
+        private Vector3 pulseBaseScale = Vector3.one;
+        private float pulseTime;
+        private bool pulsing;
+        private bool holdingNextStep;
         private bool continueReady;
         private Vector2 bounceBasePosition;
         private Vector3 bounceBaseScale = Vector3.one;
@@ -72,6 +83,9 @@ namespace Tutorial
             if (successPanel == null && successLabel != null && successLabel.transform.parent != null) successPanel = successLabel.transform.parent.gameObject;
             if (successPanel != null && (successPanel == gameObject || transform.IsChildOf(successPanel.transform))) successPanel = null;
             if (bounceTarget == null && successPanel != null) bounceTarget = successPanel.transform as RectTransform;
+
+            if (pulseTarget == null) pulseTarget = layoutRoot;
+            if (pulseTarget != null) pulseBaseScale = pulseTarget.localScale;
 
             if (bounceTarget != null)
             {
@@ -109,7 +123,9 @@ namespace Tutorial
 
             if (successRoutine != null) StopCoroutine(successRoutine);
             successRoutine = null;
+            ReleaseNextStepHold();
             ResetBounce();
+            StopPulse();
             HideSuccessInstant();
         }
 
@@ -119,12 +135,44 @@ namespace Tutorial
             if (successRoutine == null) HideSuccessInstant();
         }
 
+        private void Update()
+        {
+            bool isPromptStep = shownStep != null && shownStep.ConditionType == TutorialStepConditionType.Prompt;
+            bool shouldPulse = isPromptStep && (!pulseOnlyWhenReady || continueReady);
+
+            if (!shouldPulse)
+            {
+                StopPulse();
+                return;
+            }
+
+            if (pulseTarget == null || pulseAmount <= 0f) return;
+
+            if (!pulsing)
+            {
+                pulsing = true;
+                pulseTime = 0f;
+            }
+
+            pulseTime += Time.unscaledDeltaTime;
+            float wave = Mathf.Sin(pulseTime * pulsesPerSecond * Mathf.PI * 2f);
+            pulseTarget.localScale = pulseBaseScale * (1f + wave * pulseAmount);
+        }
+
+        private void StopPulse()
+        {
+            if (!pulsing) return;
+            pulsing = false;
+            if (pulseTarget != null) pulseTarget.localScale = pulseBaseScale;
+        }
+
         private void TrySubscribe()
         {
             if (subscribed || TutorialDirector.Instance == null) return;
             TutorialDirector.Instance.OnStepBegan += HandleStepBegan;
             TutorialDirector.Instance.OnStepEnded += HandleStepEnded;
             TutorialDirector.Instance.OnStepCompleted += HandleStepCompleted;
+            TutorialDirector.Instance.OnSequenceBegan += HandleSequenceBegan;
             TutorialDirector.Instance.RegisterExcludedWindow(windowAnimator);
             if (successAnimator != null) TutorialDirector.Instance.RegisterExcludedWindow(successAnimator);
             subscribed = true;
@@ -136,6 +184,7 @@ namespace Tutorial
             TutorialDirector.Instance.OnStepBegan -= HandleStepBegan;
             TutorialDirector.Instance.OnStepEnded -= HandleStepEnded;
             TutorialDirector.Instance.OnStepCompleted -= HandleStepCompleted;
+            TutorialDirector.Instance.OnSequenceBegan -= HandleSequenceBegan;
             subscribed = false;
         }
 
@@ -146,7 +195,14 @@ namespace Tutorial
             ApplyPromptText();
 
             bool needsContinue = step.ConditionType == TutorialStepConditionType.Prompt;
+            if (continueContainer != null) continueContainer.SetActive(needsContinue);
             if (continueElement != null) continueElement.SetActive(needsContinue);
+
+            if (layoutRoot != null)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(layoutRoot);
+                if (promptSlots != null) promptSlots.RebuildPrompts();
+            }
 
             if (continueDelayRoutine != null) StopCoroutine(continueDelayRoutine);
             continueDelayRoutine = null;
@@ -162,7 +218,7 @@ namespace Tutorial
         private IEnumerator ContinueDelayRoutine(float delay)
         {
             SetContinueReady(false);
-            yield return new WaitForSeconds(delay);
+            yield return new WaitForSecondsRealtime(delay);
             SetContinueReady(shownStep != null && shownStep.ConditionType == TutorialStepConditionType.Prompt);
             continueDelayRoutine = null;
         }
@@ -238,6 +294,13 @@ namespace Tutorial
 
             if (successRoutine != null) StopCoroutine(successRoutine);
             ResetBounce();
+
+            if (!holdingNextStep && TutorialDirector.Instance != null)
+            {
+                TutorialDirector.Instance.AddStepHold();
+                holdingNextStep = true;
+            }
+
             successRoutine = StartCoroutine(SuccessRoutine());
         }
 
@@ -266,6 +329,28 @@ namespace Tutorial
             if (successPanel != null) successPanel.SetActive(false);
 
             successRoutine = null;
+            ReleaseNextStepHold();
+        }
+
+        private void HandleSequenceBegan(TutorialSequenceDefinition sequence)
+        {
+            CancelSuccess();
+        }
+
+        private void CancelSuccess()
+        {
+            if (successRoutine != null) StopCoroutine(successRoutine);
+            successRoutine = null;
+            ResetBounce();
+            HideSuccessInstant();
+            ReleaseNextStepHold();
+        }
+
+        private void ReleaseNextStepHold()
+        {
+            if (!holdingNextStep) return;
+            holdingNextStep = false;
+            TutorialDirector.Instance?.RemoveStepHold();
         }
 
         private void ApplyBounce(float elapsed)
