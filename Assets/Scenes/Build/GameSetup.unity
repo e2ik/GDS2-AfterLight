@@ -361,11 +361,9 @@ MonoBehaviour:
     sequence: {fileID: 11400000, guid: 44a60c5ab5476284a8f772c67e5c9a34, type: 2}
     requiredCompletedSequences:
     - {fileID: 11400000, guid: 1631a3fff5c7db048bca853201e8496e, type: 2}
-    waitIfBusy: 1
   - eventKey: FastTravelUsed
     sequence: {fileID: 11400000, guid: 40faba29a39be0140aaf8831fe9cace1, type: 2}
     requiredCompletedSequences: []
-    waitIfBusy: 1
   debugEventTriggers: 0
   pauseTimeOnPromptSteps: 1
 --- !u!114 &78526266
@@ -1450,6 +1448,9 @@ MonoBehaviour:
   materialsToWarm:
   - {fileID: 2100000, guid: 15c4c1982bbd35d40b3050d0b06a9e29, type: 2}
   - {fileID: 2100000, guid: 3777f4d643ba84c59ab92c3122bad925, type: 2}
+  - {fileID: 2100000, guid: a8e68e8dcb1786f41a237abe9af72c6e, type: 2}
+  - {fileID: 2100000, guid: b0d90b5219f95224ba6ffe30774f0e19, type: 2}
+  - {fileID: 2100000, guid: 025e3814ef71b0f44a464a5f245dd14e, type: 2}
 --- !u!4 &1958938305
 Transform:
   m_ObjectHideFlags: 0

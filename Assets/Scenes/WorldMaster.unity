@@ -816,6 +816,8 @@ MonoBehaviour:
   newestOnTop: 0
   holdDuration: 3
   fadeDuration: 1.5
+  clearWhenWindowOpens: 1
+  clearForWindows: []
   inspectAction: {fileID: -7448565794075178778, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   inspectDuration: 4
   cycleBeforeClosing: 1
@@ -5340,7 +5342,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1815799618517163597, guid: d73b34840c2074cc8a1ec47f842a5ddb, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 18.600008
+      value: -4.4000072
       objectReference: {fileID: 0}
     - target: {fileID: 2221517824218670207, guid: d73b34840c2074cc8a1ec47f842a5ddb, type: 3}
       propertyPath: m_AnchorMax.y
@@ -5408,7 +5410,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7901631185809707872, guid: d73b34840c2074cc8a1ec47f842a5ddb, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 19
+      value: -4
       objectReference: {fileID: 0}
     - target: {fileID: 8305582429712239306, guid: d73b34840c2074cc8a1ec47f842a5ddb, type: 3}
       propertyPath: m_Pivot.x
