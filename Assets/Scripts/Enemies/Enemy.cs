@@ -148,7 +148,7 @@ namespace Enemies
                 Context.TargetVisible = false;
             }
 
-            if (IsBoss && Context.Target != null && !IsInsideBossBounds(Context.Target.position))
+            if (IsBoss && canDropAggro && Context.Target != null && !IsInsideBossBounds(Context.Target.position))
                 DropAggro();
 
             bool isTargetingPlayer = Context.TargetVisible;
@@ -195,12 +195,14 @@ namespace Enemies
             {
                 attack.Tick(Context, Time.deltaTime);
 
-                if (attack.InRange) anyAttackInRange = true;
+                if (attack.ManualOnly) continue;
+
+                if (attack.InRangeIfUsable) anyAttackInRange = true;
 
                 if (!attack.OnCooldown)
                 {
                     allAttacksOnCooldown = false;
-                    if (attack.InRange) usableAttackInRange = true;
+                    if (attack.InRangeIfUsable) usableAttackInRange = true;
                 }
 
                 if (!IsAttacking && attackCooldownTimer <= 0 && Context.CanReachTarget && attack.IsValid)

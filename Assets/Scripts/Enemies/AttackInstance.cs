@@ -19,6 +19,7 @@ namespace Enemies
         public bool InRange { get; private set; }
         public bool OnCooldown => _cooldownTimer > 0f;
         public bool IsValid => InRange && !OnCooldown && _canUse;
+        public bool InRangeIfUsable { get; private set; }
 
         private bool _canUse = true;
 
@@ -31,6 +32,7 @@ namespace Enemies
                       EnemyRange.DistanceToTarget(ctx) <= Attack.Range;
 
             _canUse = Attack != null && Attack.CanUse(ctx);
+            InRangeIfUsable = InRange && _canUse;
         }
 
         public void Begin(EnemyContext ctx)
