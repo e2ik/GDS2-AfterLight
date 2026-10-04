@@ -5,7 +5,7 @@ namespace Enemies.ProjectileScripts
 {
     public class TrapProjectile : Projectile
     {
-        private enum TrapPhase {Flying, Armed, Firing}
+        private enum TrapPhase {Flying, Armed, Triggered, Firing}
         
         [Header("Flight")]
         [SerializeField] private float gravityScale = 2f;
@@ -19,11 +19,19 @@ namespace Enemies.ProjectileScripts
         [SerializeField] private LayerMask playerMask;
         [SerializeField] private HitBox[] beamHitBoxes = new HitBox[4];
 
+        [Header("Trigger / Warning")] 
+        [SerializeField] private float warningDelay = 0.6f;
+        [SerializeField] private EventReference warningEvent;
+        [SerializeField] private float armedLifetime = 8f;
+        
+        
         private static readonly float[] CardinalAngles = { 0f, 90f, 180f, 270f };
         private static readonly float[] DiagonalAngles = { 45f, 135f, 225f, 315f };
 
         private TrapPhase phase;
         private float fireTimer;
+        private float warningTimer;
+        private float armedTimer;
         private bool wasRisingLastStep;
         
         protected override void OnLaunch(Vector2 initialVelocity)
@@ -53,6 +61,9 @@ namespace Enemies.ProjectileScripts
                 case TrapPhase.Armed:
                     TickArmed();
                     break;
+                case TrapPhase.Triggered:
+                    TickTriggered();
+                    break;
                 case TrapPhase.Firing:
                     TickFiring();
                     break;
@@ -71,7 +82,8 @@ namespace Enemies.ProjectileScripts
         private void Freeze()
         {
             phase = TrapPhase.Armed;
-
+            armedTimer = armedLifetime;
+            
             Rb.linearVelocity = Vector2.zero;
             Rb.gravityScale = 0f;
             Rb.bodyType = RigidbodyType2D.Kinematic;
@@ -97,6 +109,13 @@ namespace Enemies.ProjectileScripts
         
         private void TickArmed()
         {
+            armedTimer -= Time.fixedDeltaTime;
+            if (armedTimer <= 0f)
+            {
+                TriggerWarning();
+                return;
+            }
+            
             foreach (HitBox beam in beamHitBoxes)
             {
                 Vector2 direction = beam.transform.right;
@@ -105,10 +124,28 @@ namespace Enemies.ProjectileScripts
 
                 if (Physics2D.OverlapBox(center, new Vector2(beamLength, beamWidth), angle, playerMask) != null)
                 {
-                    Fire();
+                    TriggerWarning();
                     return;
                 }
             }
+        }
+
+        private void TriggerWarning()
+        {
+            phase = TrapPhase.Triggered;
+            warningTimer = warningDelay;
+            
+            AudioManager.PlaySFX(warningEvent, transform.position);
+            
+            foreach (HitBox beam in beamHitBoxes)
+                beam.GetComponent<LaserBeamVFX>()?.ShowWarning(beamLength, beamWidth);
+        }
+
+        private void TickTriggered()
+        {
+            warningTimer -= Time.fixedDeltaTime;
+            if(warningTimer <= 0f)
+                Fire();
         }
 
         private void Fire()
@@ -120,7 +157,9 @@ namespace Enemies.ProjectileScripts
             {
                 Vector2 direction = beam.transform.right;
                 beam.Enable(Damage, CombatUtility.GetDirectionFromVelocity(direction), AttackForce.Heavy);
-                beam.GetComponent<LaserBeamVFX>()?.Play();
+                var vfx = beam.GetComponent<LaserBeamVFX>();
+                vfx?.HideWarning();
+                vfx?.Play();
             }
         }
 
@@ -138,11 +177,16 @@ namespace Enemies.ProjectileScripts
             TrapTracker.Unregister(this);
             Rb.bodyType = RigidbodyType2D.Dynamic;
             phase = TrapPhase.Flying;
+            fireTimer = 0f;
+            warningTimer = 0f;
+            armedTimer = 0f;
 
             foreach (HitBox beam in beamHitBoxes)
             {
                 beam.Disable();
-                beam.GetComponent<LaserBeamVFX>()?.Stop();
+                var vfx = beam.GetComponent<LaserBeamVFX>();
+                vfx?.Stop();
+                vfx?.HideWarning();
             }
         }
     }

@@ -215,7 +215,7 @@ MonoBehaviour:
     Path: event:/Interface Events/Dialogue Event
   diagonalChance: 0.5
   beamLength: 6
-  beamWidth: 0.4
+  beamWidth: 0.8
   fireDuration: 0.5
   playerMask:
     serializedVersion: 2
@@ -225,6 +225,15 @@ MonoBehaviour:
   - {fileID: 7457591294180096695}
   - {fileID: 90629895500057088}
   - {fileID: 7583248251523569936}
+  warningDelay: 0.6
+  warningEvent:
+    Guid:
+      Data1: 1184366980
+      Data2: 1163176732
+      Data3: 295247018
+      Data4: 2098668369
+    Path: event:/CombatSFXEvents/Parry Warning Event
+  armedLifetime: 8
 --- !u!1001 &553052476945293517
 PrefabInstance:
   m_ObjectHideFlags: 0
