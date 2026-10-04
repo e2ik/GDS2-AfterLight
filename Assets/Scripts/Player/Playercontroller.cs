@@ -136,6 +136,7 @@ public class PlayerController : MonoBehaviour
     public bool IsUILocked =>
         GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.IsInputLocked;
     public bool IsGrounded => isGrounded;
+    private bool wasGrounded;
     public bool IsWallSliding => isWallSliding;
     public bool IsDashing => isDashing;
     private bool isDashLocked;
@@ -1035,6 +1036,7 @@ public class PlayerController : MonoBehaviour
 
     private void GroundCheckUpdate()
     {
+        bool groundedLastFrame = isGrounded;
         Bounds bounds = cachedBounds;
         Vector2 leftFoot = new(bounds.min.x + edgeMargin, bounds.min.y + 0.02f);
         Vector2 rightFoot = new(bounds.max.x - edgeMargin, bounds.min.y + 0.02f);
@@ -1071,6 +1073,10 @@ public class PlayerController : MonoBehaviour
         if (isGrounded && leftGrounded && rightGrounded)
         {
             LastGroundedPos = transform.position;
+        }
+        if (!groundedLastFrame && isGrounded)
+        {
+            playerAnimation.TriggerLandingEffect();
         }
     }
 
