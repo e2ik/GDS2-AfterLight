@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 [System.Serializable]
 public class WeaponInstance
 {
@@ -8,6 +10,7 @@ public class WeaponInstance
     public float InstRolledRange;
     public float InstRolledCrit;
     public float InstRolledAttack;
+    public List<ERarity> LineRarities = new List<ERarity>();
     public int PickupOrder;
     public bool IsNew = true;
 }

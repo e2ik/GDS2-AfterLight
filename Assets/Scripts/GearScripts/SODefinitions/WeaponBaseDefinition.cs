@@ -41,25 +41,24 @@ public class WeaponDefinition : InventoryItemBase
         Legendary = new Vector2(10f, 15f)
     };
 
-    public WeaponInstance CreateInstance(ERarity rarity)
-    {
-        Vector2 dmgRange = DamageByRarity.GetRange(rarity);
-        Vector2 rangeRange = RangeByRarity.GetRange(rarity);
-        Vector2 critRange = CritByRarity.GetRange(rarity);
-        Vector2 attackRange = AttackByRarity.GetRange(rarity);
+    public WeaponInstance CreateInstance(ERarity rarity) => Roll(RarityLineRoller.Fixed(rarity));
 
+    public WeaponInstance Roll(RarityLineRoller roller)
+    {
         WeaponInstance newInstance = new WeaponInstance
         {
             InstanceGUID = System.Guid.NewGuid().ToString(),
             InstTemplateID = ItemID,
-            Rarity = rarity,
-            InstRolledDamage = BaseWeaponDamage + Random.Range(dmgRange.x, dmgRange.y),
-            InstRolledRange = Random.Range(rangeRange.x, rangeRange.y),
-            InstRolledCrit = Random.Range(critRange.x, critRange.y),
-            InstRolledAttack = Mathf.Round(Random.Range(attackRange.x, attackRange.y))
+            InstRolledDamage = BaseWeaponDamage + roller.RollValue(DamageByRarity),
+            InstRolledRange = roller.RollValue(RangeByRarity),
+            InstRolledCrit = roller.RollValue(CritByRarity),
+            InstRolledAttack = Mathf.Round(roller.RollValue(AttackByRarity))
         };
 
-        // Debug.Log($"Created Weapon Instance: {UIName} [{rarity}]");
+        newInstance.Rarity = roller.Final;
+        newInstance.LineRarities = new System.Collections.Generic.List<ERarity>(roller.Lines);
+
+        // Debug.Log($"Created Weapon Instance: {UIName} [{newInstance.Rarity}]");
         return newInstance;
     }
 }

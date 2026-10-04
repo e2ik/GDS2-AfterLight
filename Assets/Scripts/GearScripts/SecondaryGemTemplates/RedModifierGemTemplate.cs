@@ -16,12 +16,11 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
         Legendary = new Vector2(15f, 20f)
     };
 
-    public override SecondaryGemInstance CreateInstance(ERarity rarity)
+    protected override SecondaryGemInstance CreateInstance(RarityLineRoller roller)
     {
-        SecondaryGemInstance instance = base.CreateInstance(rarity);
+        SecondaryGemInstance instance = base.CreateInstance(roller);
 
-        Vector2 dotRange = dotPercentByRarity.GetRange(rarity);
-        instance.InstRolledDotPercent = Mathf.RoundToInt(Random.Range(dotRange.x, dotRange.y));
+        instance.InstRolledDotPercent = Mathf.RoundToInt(roller.RollValue(dotPercentByRarity));
 
         return instance;
     }
@@ -33,7 +32,7 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
         context.DotTickInterval = dotTickInterval;
         context.DotDuration = dotDuration;
     }
-    
+
     public override PassiveType GetPassiveType(SecondaryGemInstance instance)
     {
         return PassiveType.DoT;

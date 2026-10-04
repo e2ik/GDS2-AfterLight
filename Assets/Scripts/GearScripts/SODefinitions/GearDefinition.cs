@@ -41,23 +41,23 @@ public class GearDefinition : InventoryItemBase
         Legendary = new Vector2(0.15f, 0.20f)
     };
 
-    public GearInstance CreateInstance(ERarity rarity)
-    {
-        Vector2 atkRange = AttackRanges.GetRange(rarity);
-        Vector2 defRange = DefenseRanges.GetRange(rarity);
-        Vector2 critRange = CritRanges.GetRange(rarity);
+    public GearInstance CreateInstance(ERarity rarity) => Roll(RarityLineRoller.Fixed(rarity));
 
+    public GearInstance Roll(RarityLineRoller roller)
+    {
         GearInstance newInstance = new GearInstance
         {
             InstanceGUID = System.Guid.NewGuid().ToString(),
             InstTemplateID = TemplateID,
-            Rarity = rarity,
-            InstBonusAttack = Random.Range(atkRange.x, atkRange.y),
-            InstBonusDefense = Random.Range(defRange.x, defRange.y),
-            InstBonusCrit = Random.Range(critRange.x, critRange.y),
+            InstBonusAttack = roller.RollValue(AttackRanges),
+            InstBonusDefense = roller.RollValue(DefenseRanges),
+            InstBonusCrit = roller.RollValue(CritRanges),
         };
 
-        // Debug.Log($"Created Gear Instance: {UIName} [{rarity}]");
+        newInstance.Rarity = roller.Final;
+        newInstance.LineRarities = new System.Collections.Generic.List<ERarity>(roller.Lines);
+
+        // Debug.Log($"Created Gear Instance: {UIName} [{newInstance.Rarity}]");
         return newInstance;
     }
 }

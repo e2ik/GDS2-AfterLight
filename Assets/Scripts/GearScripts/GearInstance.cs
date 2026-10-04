@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 [Serializable]
 public class GearInstance
@@ -11,6 +12,8 @@ public class GearInstance
     public float InstBonusDefense;
     public float InstBonusHumanity;
     public float InstBonusCrit;
+
+    public List<ERarity> LineRarities = new List<ERarity>();
 
     public int PickupOrder;
     public bool IsNew = true;

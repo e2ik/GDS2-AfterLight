@@ -50,19 +50,25 @@ public abstract class SecondaryGemBehaviourDefinition : InventoryItemBase, ISeco
     public abstract void Modify(ref AttackContext context, SecondaryGemInstance instance);
     public abstract PassiveType GetPassiveType(SecondaryGemInstance instance);
 
-    public virtual SecondaryGemInstance CreateInstance(ERarity rarity)
-    {
-        Vector2 dmgRange = DamageByRarity.GetRange(rarity);
-        Vector2 critRange = CritByRarity.GetRange(rarity);
+    public SecondaryGemInstance CreateInstance(ERarity rarity) => Roll(RarityLineRoller.Fixed(rarity));
 
+    public SecondaryGemInstance Roll(RarityLineRoller roller)
+    {
+        SecondaryGemInstance instance = CreateInstance(roller);
+        instance.Rarity = roller.Final;
+        instance.LineRarities = new System.Collections.Generic.List<ERarity>(roller.Lines);
+        return instance;
+    }
+
+    protected virtual SecondaryGemInstance CreateInstance(RarityLineRoller roller)
+    {
         SecondaryGemInstance newInstance = new SecondaryGemInstance
         {
-            InstRolledDamageValue = Mathf.RoundToInt(Random.Range(dmgRange.x, dmgRange.y)),
-            InstRolledCritValue = Mathf.RoundToInt(Random.Range(critRange.x, critRange.y) * 100f),
+            InstRolledDamageValue = Mathf.RoundToInt(roller.RollValue(DamageByRarity)),
+            InstRolledCritValue = Mathf.RoundToInt(roller.RollValue(CritByRarity) * 100f),
             InstTemplateID = TemplateID,
             InstanceGUID = System.Guid.NewGuid().ToString(),
-            Type = GemType,
-            Rarity = rarity
+            Type = GemType
         };
         return newInstance;
     }

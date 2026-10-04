@@ -34,11 +34,11 @@ public class LootTableDefinitionSO : ScriptableObject
             return;
         }
 
-        ERarity? rarity = RarityWeights.UsesRarity(entry.lootItem) ? RarityWeights.Roll(overrideRarityOdds, rarityOdds) : (ERarity?)null;
+        RarityWeights odds = overrideRarityOdds ? rarityOdds : null;
 
         Vector3 spawnPosition = spawn + new Vector3(0f, 0.5f, 0f);
         WorldItem droppedItem = Instantiate(entry.worldItem, spawnPosition, Quaternion.identity);
-        droppedItem.Initialize(entry.lootItem, rarity);
+        droppedItem.Initialize(entry.lootItem, null, odds);
 
         Vector2 popDirection = new Vector2(Random.Range(-popSpreadX, popSpreadX), 1f).normalized;
         droppedItem.PopOut(popDirection, popForce);
