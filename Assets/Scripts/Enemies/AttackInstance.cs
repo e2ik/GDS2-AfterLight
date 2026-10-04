@@ -15,7 +15,9 @@ namespace Enemies
 
         public bool InRange { get; private set; }
         public bool OnCooldown => _cooldownTimer > 0f;
-        public bool IsValid => InRange && !OnCooldown;
+        public bool IsValid => InRange && !OnCooldown && _canUse;
+
+        private bool _canUse = true;
 
         public void Tick(EnemyContext ctx, float deltaTime)
         {
@@ -24,6 +26,8 @@ namespace Enemies
 
             InRange = Attack != null && ctx.Target != null &&
                       EnemyRange.DistanceToTarget(ctx) <= Attack.Range;
+
+            _canUse = Attack != null && Attack.CanUse(ctx);
         }
 
         public void Begin(EnemyContext ctx)

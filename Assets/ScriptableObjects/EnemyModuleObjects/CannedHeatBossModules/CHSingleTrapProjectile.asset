@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2fd163314de46e094e794c66a7e03d9, type: 3}
+  m_Name: CHSingleTrapProjectile
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.TrapProjectileAttackSO
+  range: 6
+  cooldownDuration: 3
+  projectilePrefab: {fileID: 3971712004336234337, guid: 3ccdb85a5d01e404a81ec01d049fc413, type: 3}
+  damage: 1
+  launchAngleDegrees: 70
+  launchSpeed: 15
+  shotSpacingDegrees: 25
+  shotCount: 3
+  clip: {fileID: 0}
+  placeholderClipName: AttackPlaceholder
+  attackStateName: Attack
+  launchEvent:
+    Guid:
+      Data1: -1597026466
+      Data2: 1110444166
+      Data3: -1823744120
+      Data4: -1124302290
+    Path: event:/CombatSFXEvents/Projectile Spawn Event
