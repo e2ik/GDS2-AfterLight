@@ -23,12 +23,19 @@ namespace Tutorial
         [Tooltip("If true, this sequence can run again after being completed (no save-gating).")]
         [SerializeField] private bool canRepeat = false;
 
+        [SerializeField] private bool uninterruptible = false;
+        [SerializeField] private bool queueBlockedSequences = true;
+        [SerializeField] private bool keepEnemiesAlive = false;
+
         [SerializeField] private SequenceReaction[] reactions;
 
         public string SequenceID => sequenceID;
         public TutorialStepDefinition[] Steps => steps;
         public bool CanRepeat => canRepeat;
         public SequenceReaction[] Reactions => reactions;
+        public bool Uninterruptible => uninterruptible;
+        public bool QueueBlockedSequences => queueBlockedSequences;
+        public bool KeepEnemiesAlive => keepEnemiesAlive;
 
         private void OnValidate()
         {

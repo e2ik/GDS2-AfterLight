@@ -48,7 +48,7 @@ namespace Tutorial
         private bool IsCompleted(string id) =>
             !string.IsNullOrEmpty(id) && TutorialDirector.Instance != null && TutorialDirector.Instance.IsSequenceCompleted(id);
 
-        private bool SequenceDone => sequence == null || IsCompleted(sequence.SequenceID);
+        private bool SequenceDone => sequence == null || (!sequence.CanRepeat && IsCompleted(sequence.SequenceID));
         private bool BubbleDone => string.IsNullOrEmpty(triggerID) ? false : IsCompleted(triggerID);
 
         private void Reset()

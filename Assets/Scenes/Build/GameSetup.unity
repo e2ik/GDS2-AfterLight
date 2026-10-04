@@ -356,6 +356,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c082fa6a54147c043b550f59a9c836fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialDirector
+  eventTriggers:
+  - eventKey: ItemPickedUp
+    sequence: {fileID: 11400000, guid: 44a60c5ab5476284a8f772c67e5c9a34, type: 2}
+    requiredCompletedSequences:
+    - {fileID: 11400000, guid: 1631a3fff5c7db048bca853201e8496e, type: 2}
+    waitIfBusy: 1
+  pauseTimeOnPromptSteps: 1
 --- !u!114 &78526266
 MonoBehaviour:
   m_ObjectHideFlags: 0

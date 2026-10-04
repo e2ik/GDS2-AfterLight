@@ -7,7 +7,20 @@ namespace Tutorial
 {
     public class TutorialDirector : MonoBehaviour
     {
+        [System.Serializable]
+        public class EventSequenceTrigger
+        {
+            public string eventKey = TutorialEvents.ItemPickedUp;
+            public TutorialSequenceDefinition sequence;
+            public TutorialSequenceDefinition[] requiredCompletedSequences;
+            public bool waitIfBusy = true;
+        }
+
         public static TutorialDirector Instance { get; private set; }
+
+        [SerializeField] private EventSequenceTrigger[] eventTriggers;
+        [SerializeField] private bool debugEventTriggers = false;
+        private readonly List<TutorialSequenceDefinition> pendingSequences = new();
 
         public event Action<TutorialSequenceDefinition> OnSequenceBegan;
         public event Action<TutorialSequenceDefinition> OnSequenceCompleted;
@@ -42,6 +55,11 @@ namespace Tutorial
         private float pausedTimeScale = 1f;
 
         public bool IsRunningSequence => activeSequence != null;
+
+        public bool EnemiesProtected =>
+            activeSequence != null
+            && activeSequence.KeepEnemiesAlive
+            && (activeStep == null || activeStep.ConditionType != TutorialStepConditionType.DefeatEnemies);
         public TutorialStepDefinition ActiveStep => activeStep;
 
         private void Awake()
@@ -55,13 +73,91 @@ namespace Tutorial
             DontDestroyOnLoad(gameObject);
 
             UIWindowAnimator.OnAnyShown += HandleAnyWindowShown;
+            TutorialEvents.OnRaised += HandleTriggerEvent;
+        }
+
+        private void HandleTriggerEvent(string key)
+        {
+            if (eventTriggers == null) return;
+
+            foreach (EventSequenceTrigger trigger in eventTriggers)
+            {
+                if (trigger == null || trigger.sequence == null || trigger.eventKey != key) continue;
+
+                if (!trigger.sequence.CanRepeat && IsSequenceCompleted(trigger.sequence.SequenceID))
+                {
+                    LogTrigger(trigger, "skipped, sequence already completed");
+                    continue;
+                }
+
+                if (!RequirementsMet(trigger.requiredCompletedSequences, out string missing))
+                {
+                    LogTrigger(trigger, $"skipped, required sequence '{missing}' not completed yet");
+                    continue;
+                }
+
+                if (activeSequence == trigger.sequence || pendingSequences.Contains(trigger.sequence))
+                {
+                    LogTrigger(trigger, "skipped, already running or queued");
+                    continue;
+                }
+
+                if (IsRunningSequence)
+                {
+                    if (trigger.waitIfBusy) pendingSequences.Add(trigger.sequence);
+                    LogTrigger(trigger, trigger.waitIfBusy ? "queued, another sequence is running" : "skipped, another sequence is running");
+                    continue;
+                }
+
+                bool started = BeginSequence(trigger.sequence);
+                LogTrigger(trigger, started ? "started" : "BeginSequence refused (no steps or already completed)");
+            }
+        }
+
+        private bool RequirementsMet(TutorialSequenceDefinition[] required, out string missing)
+        {
+            missing = null;
+            if (required == null) return true;
+
+            foreach (TutorialSequenceDefinition req in required)
+            {
+                if (req != null && !IsSequenceCompleted(req.SequenceID))
+                {
+                    missing = req.name;
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void LogTrigger(EventSequenceTrigger trigger, string message)
+        {
+            if (debugEventTriggers)
+                Debug.Log($"[TutorialDirector] Trigger '{trigger.eventKey}' -> '{trigger.sequence.name}': {message}", this);
+        }
+
+        private void TryStartPendingSequence()
+        {
+            while (pendingSequences.Count > 0 && !IsRunningSequence)
+            {
+                TutorialSequenceDefinition next = pendingSequences[0];
+                pendingSequences.RemoveAt(0);
+                if (next == null) continue;
+                if (!next.CanRepeat && IsSequenceCompleted(next.SequenceID)) continue;
+
+                BeginSequence(next);
+            }
         }
 
         private void OnDestroy()
         {
             ResumeTime();
             StopReactions();
-            if (Instance == this) UIWindowAnimator.OnAnyShown -= HandleAnyWindowShown;
+            if (Instance == this)
+            {
+                UIWindowAnimator.OnAnyShown -= HandleAnyWindowShown;
+                TutorialEvents.OnRaised -= HandleTriggerEvent;
+            }
         }
 
         public void RegisterExcludedWindow(UIWindowAnimator window)
@@ -72,7 +168,21 @@ namespace Tutorial
         private void HandleAnyWindowShown(UIWindowAnimator window)
         {
             if (excludedWindows.Contains(window)) return;
+
+            RaiseWindowEvents(window);
+
+            if (activeStep != null && activeStep.AllowMenus) return;
             if (IsRunningSequence) AbortActiveSequence();
+        }
+
+        private static void RaiseWindowEvents(UIWindowAnimator window)
+        {
+            if (window == null) return;
+
+            TutorialEvents.Raise(TutorialEvents.WindowOpenedPrefix + window.gameObject.name);
+
+            if (window.GetComponentInParent<InventoryDisplay>(true) != null || window.GetComponentInChildren<InventoryDisplay>(true) != null)
+                TutorialEvents.Raise(TutorialEvents.InventoryOpened);
         }
 
         public bool IsSequenceCompleted(string sequenceID) => completedSequenceIDs.Contains(sequenceID);
@@ -94,6 +204,7 @@ namespace Tutorial
 
         public void ClearCompletedSequences()
         {
+            pendingSequences.Clear();
             completedSequenceIDs.Clear();
             resumeIndices.Clear();
         }
@@ -101,14 +212,21 @@ namespace Tutorial
         public bool BeginSequence(TutorialSequenceDefinition sequence, bool force = false)
         {
             if (sequence == null || sequence.Steps == null || sequence.Steps.Length == 0) return false;
+            if (!force && !sequence.CanRepeat && IsSequenceCompleted(sequence.SequenceID)) return false;
 
             if (IsRunningSequence)
             {
                 if (activeSequence == sequence) return false;
+
+                if (activeSequence.Uninterruptible && !force)
+                {
+                    if (activeSequence.QueueBlockedSequences && !pendingSequences.Contains(sequence))
+                        pendingSequences.Add(sequence);
+                    return false;
+                }
+
                 AbortActiveSequence();
             }
-
-            if (!force && !sequence.CanRepeat && IsSequenceCompleted(sequence.SequenceID)) return false;
 
             int startIndex = resumeIndices.TryGetValue(sequence.SequenceID, out int savedIndex) ? savedIndex : 0;
             sequenceRoutine = StartCoroutine(RunSequence(sequence, startIndex));
@@ -276,12 +394,14 @@ namespace Tutorial
 
             if (markCompleted)
             {
-                if (sequence != null && !sequence.CanRepeat) completedSequenceIDs.Add(sequence.SequenceID);
+                if (sequence != null && !string.IsNullOrEmpty(sequence.SequenceID)) completedSequenceIDs.Add(sequence.SequenceID);
                 if (sequence != null) resumeIndices.Remove(sequence.SequenceID);
             }
             activeSequence = null;
             sequenceRoutine = null;
             OnSequenceCompleted?.Invoke(sequence);
+
+            if (markCompleted) TryStartPendingSequence();
         }
 
         public void SetCutsceneState(bool freezeMovement, bool disableInput)

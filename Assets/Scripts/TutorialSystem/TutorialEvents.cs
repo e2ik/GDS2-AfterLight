@@ -24,6 +24,9 @@ namespace Tutorial
         public const string PlayerHit = "PlayerHit";
         public const string PlayerDroppedThrough = "PlayerDroppedThrough";
 
+        public const string InventoryOpened = "InventoryOpened";
+        public const string WindowOpenedPrefix = "WindowOpened:";
+
         public const string EnemyHit = "EnemyHit";
         public const string EnemyComboFinished = "EnemyComboFinished";
         public const string EnemyCrit = "EnemyCrit";

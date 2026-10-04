@@ -42,6 +42,7 @@ namespace Tutorial
         [SerializeField] private bool freezeMovement;
         [Tooltip("Disables player input handling while this step is active.")]
         [SerializeField] private bool disableInput;
+        [SerializeField] private bool allowMenus;
 
         [Header("Run Requirement")]
         [SerializeField] private TutorialStepRequirement runOnlyIf = TutorialStepRequirement.Always;
@@ -73,6 +74,7 @@ namespace Tutorial
         public bool ShowSuccessOnComplete => showSuccessOnComplete;
         public bool FreezeMovement => freezeMovement;
         public bool DisableInput => disableInput;
+        public bool AllowMenus => allowMenus;
         public TutorialStepConditionType ConditionType => conditionType;
 
         public TutorialStepRequirement RunOnlyIf => runOnlyIf;
