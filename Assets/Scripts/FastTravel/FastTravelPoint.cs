@@ -140,6 +140,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
         isInteracting = true;
 
         StopPlayer(interactingPlayer);
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.FastTravelUsed);
 
         FastTravelManager.Instance?.SetLastInteractedNode(nodeData);
 
@@ -178,9 +179,12 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
         if (MapUIManager.Instance != null)
         {
             MapUIManager.Instance.OpenMap(nodeData);
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.MapOpened);
 
             while (MapUIManager.Instance != null && MapUIManager.Instance.IsMapOpen)
                 yield return null;
+
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.MapClosed);
 
             yield return null;
             yield return null;

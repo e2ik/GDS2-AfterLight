@@ -241,7 +241,7 @@ namespace Tutorial
 
         private IEnumerator AutoHideAfter(float duration)
         {
-            yield return new WaitForSeconds(duration);
+            yield return new WaitForSecondsRealtime(duration);
             Hide();
         }
     }

@@ -19,6 +19,7 @@ public class InputActionPrompt : MonoBehaviour
     [SerializeField] private SpriteRenderer iconRenderer;
     [SerializeField] private TMP_Text keyLabel;
     [SerializeField] private bool upperCaseKeys = true;
+    [SerializeField] private bool resizeWidthToSprite = false;
 
     [Header("Icon Glow")]
     [SerializeField] private Color iconColor = Color.white;
@@ -197,6 +198,9 @@ public class InputActionPrompt : MonoBehaviour
     {
         shownSprite = sprite;
         ApplyGlow();
+
+        if (resizeWidthToSprite && sprite != null && transform is RectTransform rect)
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, rect.rect.height * DisplayAspect);
 
         if (iconImage != null)
         {

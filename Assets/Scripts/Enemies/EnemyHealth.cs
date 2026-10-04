@@ -43,7 +43,9 @@ namespace Enemies
         private void ApplyDamage(DamageInfo info)
         {
             if (CurrentHealth <= 0) return;
-            CurrentHealth = Mathf.Max(0, CurrentHealth - info.Amount);
+
+            int minHealth = Tutorial.TutorialDirector.Instance != null && Tutorial.TutorialDirector.Instance.EnemiesProtected ? 1 : 0;
+            CurrentHealth = Mathf.Max(minHealth, CurrentHealth - info.Amount);
 
             info.Position = transform.position;
 

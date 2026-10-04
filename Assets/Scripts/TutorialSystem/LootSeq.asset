@@ -10,15 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2acefbb5902d7144eba89835c8ff06bf, type: 3}
-  m_Name: WallSlideSeq
+  m_Name: LootSeq
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialSequenceDefinition
-  sequenceID: WallSlideSeq
+  sequenceID: LootSeq
   steps:
-  - {fileID: 11400000, guid: 934aa201a297c794f8451f507c3dd62e, type: 2}
-  - {fileID: 11400000, guid: b575ed568511857408ba362cd722e8bb, type: 2}
+  - {fileID: 11400000, guid: f156ae6d8ae838447b24df70519bcd26, type: 2}
   canRepeat: 0
-  uninterruptible: 0
-  keepEnemiesAlive: 0
-  lockMapCloseUntilCloseStep: 0
-  allowMenus: 0
   reactions: []

@@ -6,6 +6,11 @@ public class MapUIManager : GameUI.UIWindow
     public static MapUIManager Instance { get; private set; }
     public bool IsMapOpen => IsOpen;
 
+    public static bool IsCloseLocked =>
+        Tutorial.TutorialDirector.Instance != null && Tutorial.TutorialDirector.Instance.MapCloseLocked;
+
+    public override bool CanClose => !IsCloseLocked;
+
     [Header("Data References")]
     [SerializeField] private WorldMapStateSO worldMapState;
 
@@ -31,6 +36,15 @@ public class MapUIManager : GameUI.UIWindow
             closeButton.onClick.AddListener(CloseMap);
     }
 
+    private void Update()
+    {
+        if (closeButton != null && IsMapOpen)
+        {
+            bool interactable = !IsCloseLocked;
+            if (closeButton.interactable != interactable) closeButton.interactable = interactable;
+        }
+    }
+
     public void OpenMap(FastTravelNodeSO originNode)
     {
         currentNode = originNode;
@@ -39,6 +53,7 @@ public class MapUIManager : GameUI.UIWindow
 
     public void CloseMap()
     {
+        if (IsCloseLocked) return;
         GameUI.UIManager.Instance.Close(this);
     }
 
@@ -55,6 +70,8 @@ public class MapUIManager : GameUI.UIWindow
 
     protected override void OnWindowClosed()
     {
+        if (closeButton != null) closeButton.interactable = true;
+
         if (GameManager.Instance?.Player?.Controller != null)
         {
             GameManager.Instance.Player.Controller.InputEnabled = true;
@@ -89,6 +106,7 @@ public class MapUIManager : GameUI.UIWindow
 
     private void OnNodeClicked(FastTravelNodeSO targetNode)
     {
+        if (IsCloseLocked) return;
         CloseMap();
         FastTravelManager.Instance.TravelTo(targetNode);
     }
