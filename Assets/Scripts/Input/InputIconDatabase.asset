@@ -13,8 +13,6 @@ MonoBehaviour:
   m_Name: InputIconDatabase
   m_EditorClassIdentifier: Assembly-CSharp::InputIconDatabase
   actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-  keyTextFormat: <sprite name="key_blank"><space=-0.85em>{key}<space=0.35em>
-  upperCaseInlineKeys: 1
   xbox:
     buttonSouth: {fileID: 0}
     buttonEast: {fileID: 0}
@@ -36,9 +34,9 @@ MonoBehaviour:
     dpadLeft: {fileID: 0}
     dpadRight: {fileID: 0}
   playStation:
-    buttonSouth: {fileID: 0}
-    buttonEast: {fileID: 0}
-    buttonWest: {fileID: 0}
+    buttonSouth: {fileID: 21300000, guid: 1daaa89b902572347b5bac94125085a3, type: 3}
+    buttonEast: {fileID: 21300000, guid: 1fa55f4b65753e145ba941d07092f169, type: 3}
+    buttonWest: {fileID: 21300000, guid: 053ebb424f386ad4d81d64f4c8a1f61d, type: 3}
     buttonNorth: {fileID: 21300000, guid: 89a29a385ff811c41967c3b57dae5e93, type: 3}
     leftShoulder: {fileID: 0}
     rightShoulder: {fileID: 0}
@@ -46,8 +44,8 @@ MonoBehaviour:
     rightTrigger: {fileID: 0}
     start: {fileID: 0}
     select: {fileID: 0}
-    leftStick: {fileID: 0}
-    rightStick: {fileID: 0}
+    leftStick: {fileID: 21300000, guid: 9d8ffe4bd53e5a9488258c600d8788f5, type: 3}
+    rightStick: {fileID: 21300000, guid: 5970977195ac6f74fa2aaa4600a41c4b, type: 3}
     leftStickPress: {fileID: 0}
     rightStickPress: {fileID: 0}
     dpad: {fileID: 0}

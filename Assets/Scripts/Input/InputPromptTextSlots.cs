@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -9,6 +10,9 @@ public class InputPromptTextSlots : MonoBehaviour
 {
     [SerializeField] private TMP_Text text;
     [SerializeField] private InputActionPrompt promptPrefab;
+    [SerializeField] private bool autoSlotWidth = true;
+    [SerializeField, Min(0.1f)] private float iconAspect = 1f;
+    [SerializeField, Min(0f)] private float slotPadding = 0.1f;
     [SerializeField] private string slotText = "MM";
     [SerializeField] private string partSeparator = " ";
     [SerializeField] private float promptScale = 1.3f;
@@ -92,7 +96,8 @@ public class InputPromptTextSlots : MonoBehaviour
             rect.localPosition = center;
             rect.localRotation = Quaternion.identity;
             rect.localScale = Vector3.one;
-            rect.sizeDelta = new Vector2(Mathf.Max(height, max.x - min.x), height);
+            float width = autoSlotWidth ? height * iconAspect : Mathf.Max(height, max.x - min.x);
+            rect.sizeDelta = new Vector2(width, height);
 
             prompt.SetAction(action, part);
             activePrompts.Add(prompt);
@@ -185,7 +190,20 @@ public class InputPromptTextSlots : MonoBehaviour
 
     private string SlotLink(string token)
     {
-        return $"<link=\"input:{token}\"><color=#00000000>{slotText}</color></link>";
+        return $"<link=\"input:{token}\"><color=#00000000>{SlotContent()}</color></link>";
+    }
+
+    private string SlotContent()
+    {
+        if (!autoSlotWidth || text == null || text.font == null) return slotText;
+
+        var face = text.font.faceInfo;
+        if (face.pointSize <= 0f) return slotText;
+
+        float lineHeightEm = (face.ascentLine - face.descentLine) / (float)face.pointSize;
+        float widthEm = lineHeightEm * promptScale * iconAspect + slotPadding * 2f;
+
+        return $"<mspace={widthEm.ToString("0.###", CultureInfo.InvariantCulture)}em>M</mspace>";
     }
 
     private InputActionAsset ResolveActions()
