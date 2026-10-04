@@ -13,12 +13,11 @@ public class BlueModifierGemTemplate : SecondaryGemBehaviourDefinition
         Legendary = new Vector2(31f, 40f)
     };
 
-    public override SecondaryGemInstance CreateInstance(ERarity rarity)
+    protected override SecondaryGemInstance CreateInstance(RarityLineRoller roller)
     {
-        SecondaryGemInstance instance = base.CreateInstance(rarity);
+        SecondaryGemInstance instance = base.CreateInstance(roller);
 
-        Vector2 range = reflectAmountByRarity.GetRange(rarity);
-        instance.InstRolledReflectPercent = Random.Range(range.x, range.y) / 100f;
+        instance.InstRolledReflectPercent = roller.RollValue(reflectAmountByRarity) / 100f;
 
         return instance;
     }

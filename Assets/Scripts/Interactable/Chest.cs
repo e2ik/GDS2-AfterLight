@@ -133,11 +133,10 @@ public class Chest : MonoBehaviour, IInteractable
         Vector3 spawnPosition = transform.position + new Vector3(0f, 0.5f, 0f);
 
         WorldItem droppedItem = Instantiate(worldItemPrefab, spawnPosition, Quaternion.identity);
-        ERarity? rarity = null;
-        if (RarityWeights.UsesRarity(lootItem))
-            rarity = useFixedRarity ? fixedRarity : RarityWeights.Roll(overrideRarityOdds, rarityOdds);
+        ERarity? rarity = useFixedRarity ? fixedRarity : (ERarity?)null;
+        RarityWeights odds = overrideRarityOdds ? rarityOdds : null;
 
-        droppedItem.Initialize(lootItem, rarity);
+        droppedItem.Initialize(lootItem, rarity, odds);
 
         float randomX = Random.Range(minHorizontalAngle, maxHorizontalAngle);
         Vector2 popDirection = new Vector2(randomX, 1.0f).normalized;

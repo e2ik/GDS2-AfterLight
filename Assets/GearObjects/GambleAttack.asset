@@ -34,10 +34,10 @@ MonoBehaviour:
     Epic: {x: 0.1, y: 0.15}
     Legendary: {x: 0.15, y: 0.2}
   maxDamageMultByRarity:
-    Common: {x: 1, y: 2}
-    Rare: {x: 2, y: 4}
-    Epic: {x: 4, y: 6}
-    Legendary: {x: 8, y: 10}
+    Common: {x: 1.25, y: 2}
+    Rare: {x: 2, y: 3}
+    Epic: {x: 3, y: 5}
+    Legendary: {x: 5, y: 8}
   whiff:
     chance: 15
     minMult: 0.3

@@ -66,6 +66,7 @@ public class WorldItem : MonoBehaviour
 
     private bool hasRarity;
     private ERarity rarity;
+    private object rolledInstance;
 
     private bool isDropped;
     private AreaSide droppedAreaSide;
@@ -158,7 +159,7 @@ public class WorldItem : MonoBehaviour
         hiddenByArea = hide;
     }
 
-    public void Initialize(InventoryItemBase newItem, ERarity? assignedRarity = null)
+    public void Initialize(InventoryItemBase newItem, ERarity? fixedRarity = null, RarityWeights customOdds = null)
     {
         itemDefinition = newItem;
         CheckUniqueOwnership();
@@ -166,21 +167,42 @@ public class WorldItem : MonoBehaviour
 
         MarkDropped();
 
-        AssignRarity(assignedRarity);
+        AssignRarity(fixedRarity, customOdds);
         InitializeVisuals();
     }
 
-    private void AssignRarity(ERarity? assignedRarity)
+    private void AssignRarity(ERarity? fixedRarity, RarityWeights customOdds = null)
     {
+        rolledInstance = null;
+
         if (!RarityWeights.UsesRarity(itemDefinition))
         {
             hasRarity = false;
             return;
         }
 
-        rarity = assignedRarity ?? RarityWeights.Roll(overrideRarityOdds, rarityOdds);
+        RarityWeights odds = customOdds ?? (overrideRarityOdds ? rarityOdds : null);
+        RarityLineRoller roller = fixedRarity.HasValue
+            ? RarityLineRoller.Fixed(fixedRarity.Value)
+            : new RarityLineRoller(odds);
+
+        rolledInstance = itemDefinition switch
+        {
+            WeaponDefinition weaponDef => weaponDef.Roll(roller),
+            GearDefinition gearDef => gearDef.Roll(roller),
+            SecondaryGemBehaviourDefinition gemDef => gemDef.Roll(roller),
+            _ => null
+        };
+
+        rarity = roller.Final;
         hasRarity = true;
         OnRarityAssigned?.Invoke(rarity);
+    }
+
+    private T GetRolledInstance<T>() where T : class
+    {
+        if (!hasRarity || !(rolledInstance is T)) AssignRarity(null);
+        return rolledInstance as T;
     }
 
     private void CheckUniqueOwnership()
@@ -394,11 +416,6 @@ public class WorldItem : MonoBehaviour
         CollectItem(player);
     }
 
-    private ERarity GetPickupRarity()
-    {
-        if (!hasRarity) AssignRarity(null);
-        return rarity;
-    }
 
     private void CollectItem(Player player)
     {
@@ -408,8 +425,8 @@ public class WorldItem : MonoBehaviour
         {
             case SecondaryGemBehaviourDefinition secondaryDef:
                 {
-                    ERarity secondaryRarity = GetPickupRarity();
-                    SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(secondaryRarity);
+                    SecondaryGemInstance gemLoot = GetRolledInstance<SecondaryGemInstance>();
+                    ERarity secondaryRarity = gemLoot.Rarity;
                     SecondaryGemInstance previouslyEquippedGem = !player.Equipment.IsSecondaryGemSlotEmpty() ? player.Equipment.SecondaryGem : null;
 
                     if (!player.Inventory.AddItemToInventory(gemLoot))
@@ -456,8 +473,8 @@ public class WorldItem : MonoBehaviour
 
             case WeaponDefinition weaponDef:
                 {
-                    ERarity weaponRarity = GetPickupRarity();
-                    WeaponInstance weaponLoot = weaponDef.CreateInstance(weaponRarity);
+                    WeaponInstance weaponLoot = GetRolledInstance<WeaponInstance>();
+                    ERarity weaponRarity = weaponLoot.Rarity;
                     WeaponInstance previouslyEquippedWeapon = player.Equipment.EquippedWeapon;
 
                     if (!player.Inventory.AddItemToInventory(weaponLoot))
@@ -480,8 +497,8 @@ public class WorldItem : MonoBehaviour
 
             case GearDefinition gearDef:
                 {
-                    ERarity gearRarity = GetPickupRarity();
-                    GearInstance gearLoot = gearDef.CreateInstance(gearRarity);
+                    GearInstance gearLoot = GetRolledInstance<GearInstance>();
+                    ERarity gearRarity = gearLoot.Rarity;
                     GearInstance previouslyEquippedGear = player.Equipment.GetEquippedGear(gearDef.Slot);
 
                     if (!player.Inventory.AddItemToInventory(gearLoot))
