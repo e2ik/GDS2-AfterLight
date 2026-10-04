@@ -4,6 +4,13 @@ using FMODUnity;
 
 public class TransitionDoor : MonoBehaviour, IInteractable
 {
+    public enum DoorMode
+    {
+        Normal,
+        RequireKey,
+        Broken
+    }
+
     [SerializeField] private string interactionPrompt = "Enter";
     [SerializeField] private bool canInteract = true;
     [SerializeField] private bool shouldStopPlayer = true;
@@ -17,6 +24,18 @@ public class TransitionDoor : MonoBehaviour, IInteractable
 
     [SerializeField] private SceneAreaState sceneAreaState;
     [SerializeField] private float fadeDuration = 0.5f;
+
+    [Header("Access")]
+    [SerializeField] private DoorMode doorMode = DoorMode.Normal;
+    [SerializeField] private KeyDefinition requiredKey;
+    [SerializeField] private string missingKeyMessage = "I need the [{0}]...";
+    [SerializeField] private Color keyNameColor = new Color(1f, 0.85f, 0.3f);
+    [SerializeField, Min(0f)] private float missingKeyMessageDuration = 2f;
+    [SerializeField] private DialogueEffect missingKeyMessageEffect = DialogueEffect.Default;
+    [SerializeField] private string brokenMessage = "It won't budge...";
+    [SerializeField, Min(0f)] private float brokenMessageDuration = 2f;
+    [SerializeField] private DialogueEffect brokenMessageEffect = DialogueEffect.Default;
+    [SerializeField] private EventReference lockedEvent;
 
     [Header("Door Animation")]
     [SerializeField] private Animator doorAnimator;
@@ -39,7 +58,52 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     public void Interact(Player player)
     {
         if (!CanInteract) return;
+
+        if (doorMode == DoorMode.Broken)
+        {
+            ShowMessage(player, brokenMessage, brokenMessageDuration, brokenMessageEffect);
+            return;
+        }
+
+        if (doorMode == DoorMode.RequireKey && !PlayerHasRequiredKey(player))
+        {
+            string message = missingKeyMessage;
+            if (requiredKey != null)
+            {
+                string coloredName = $"<color=#{ColorUtility.ToHtmlStringRGB(keyNameColor)}>{requiredKey.UIName}</color>";
+                message = string.Format(missingKeyMessage, coloredName);
+            }
+
+            ShowMessage(player, message, missingKeyMessageDuration, missingKeyMessageEffect);
+            return;
+        }
+
         currentTransition = StartCoroutine(TransitionRoutine(player));
+    }
+
+    private void ShowMessage(Player player, string message, float duration, DialogueEffect effect)
+    {
+        AudioManager.PlaySFX(lockedEvent, transform.position);
+
+        if (player != null && player.Controller != null)
+            player.Controller.FreezeMovement(false);
+
+        if (player != null)
+            Tutorial.TutorialSpeechBubblePool.Instance?.Show(message, player.transform, duration, effect);
+    }
+
+    private bool PlayerHasRequiredKey(Player player)
+    {
+        if (requiredKey == null)
+        {
+            Debug.LogWarning($"{name}: Door Mode is Require Key but no Required Key is assigned, allowing entry.", this);
+            return true;
+        }
+
+        PlayerInventorySO inv = player != null && player.Inventory != null ? player.Inventory.currentInventory : null;
+        if (inv == null) return false;
+
+        return inv.KeyInstances != null && inv.KeyInstances.Exists(k => k.InstItemID == requiredKey.ItemID);
     }
 
     private IEnumerator TransitionRoutine(Player player)
