@@ -50,9 +50,31 @@ namespace Enemies
             OnDamaged?.Invoke(info.Amount, CurrentHealth, info.DamageType == EDamageType.Dot);
             OnDamageTaken?.Invoke(info);
             AnyEnemyDamaged?.Invoke(this, info);
+            RaiseTutorialHitEvents(info);
 
             if (CurrentHealth == 0)
+            {
                 OnDeath?.Invoke();
+                Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyKilled);
+            }
+        }
+
+        private static void RaiseTutorialHitEvents(DamageInfo info)
+        {
+            switch (info.DamageType)
+            {
+                case EDamageType.Base:
+                    Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyHit);
+                    if (info.IsComboFinisher) Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyComboFinished);
+                    if (info.IsCrit) Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyCrit);
+                    break;
+                case EDamageType.Skill:
+                    Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemySkillHit);
+                    break;
+                case EDamageType.Reflect:
+                    Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyReflectHit);
+                    break;
+            }
         }
 
         public void ApplyHit(int damage, AttackContext context, bool isCrit = false)

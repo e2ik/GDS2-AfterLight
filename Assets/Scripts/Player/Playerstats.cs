@@ -139,6 +139,7 @@ public class PlayerStats : MonoBehaviour
 
         currentHealth = Mathf.Max(0f, currentHealth - effectiveDamage);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerHit);
 
         AudioManager.PlaySFX(hitEvent, transform.position);
 

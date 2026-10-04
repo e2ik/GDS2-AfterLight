@@ -28,6 +28,11 @@ public class InputActionPrompt : MonoBehaviour
     private Material imageMaterial;
 
     private bool pendingRefresh;
+    private Sprite shownSprite;
+
+    public float DisplayAspect => shownSprite != null && shownSprite.rect.height > 0f
+        ? shownSprite.rect.width / shownSprite.rect.height
+        : 1f;
     private bool warnedMissingIcons;
 
     private void OnEnable()
@@ -141,9 +146,12 @@ public class InputActionPrompt : MonoBehaviour
         bool isMouse;
         string display;
 
+        bool partResolved = false;
+
         if (InputBindingUtility.TryFindBinding(inputAction, wantGamepad, compositePart, out int bindingIndex, out control, out isMouse))
         {
             display = inputAction.GetBindingDisplayString(bindingIndex, InputBinding.DisplayStringOptions.DontIncludeInteractions);
+            partResolved = !string.IsNullOrEmpty(compositePart) && inputAction.bindings[bindingIndex].isPartOfComposite;
         }
         else if (!InputBindingUtility.TryFindResolvedControl(inputAction, wantGamepad, out control, out isMouse, out display))
         {
@@ -153,7 +161,12 @@ public class InputActionPrompt : MonoBehaviour
 
         if (wantGamepad)
         {
-            Sprite sprite = icons.GetGamepadSprite(device, control);
+            Sprite sprite = null;
+
+            if (!partResolved && !string.IsNullOrEmpty(compositePart))
+                sprite = icons.GetGamepadSprite(device, control + "/" + compositePart.ToLowerInvariant());
+
+            if (sprite == null) sprite = icons.GetGamepadSprite(device, control);
             Show(sprite, sprite != null ? string.Empty : display);
             return;
         }
@@ -168,6 +181,13 @@ public class InputActionPrompt : MonoBehaviour
             }
         }
 
+        Sprite keySprite = icons.GetKeySprite(control);
+        if (keySprite != null)
+        {
+            Show(keySprite, string.Empty);
+            return;
+        }
+
         string label = icons.GetKeyLabel(control, display);
         if (upperCaseKeys) label = label.ToUpperInvariant();
         Show(icons.GetKeycap(label), label);
@@ -175,6 +195,7 @@ public class InputActionPrompt : MonoBehaviour
 
     private void Show(Sprite sprite, string label)
     {
+        shownSprite = sprite;
         ApplyGlow();
 
         if (iconImage != null)

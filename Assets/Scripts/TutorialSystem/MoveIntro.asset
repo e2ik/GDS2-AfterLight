@@ -12,12 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b126725b3c352c6458202a11e09a8e71, type: 3}
   m_Name: MoveIntro
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialStepDefinition
-  promptText: Welcome!
-  minimumDisplayDuration: 3
+  promptText: You just woke up... You're body feels different...
+  minimumDisplayDuration: 1.5
+  startDelay: 0
+  showSuccessOnComplete: 0
   freezeMovement: 0
   disableInput: 0
-  conditionType: 1
+  conditionType: 0
   buttonPressAction: {fileID: 0}
   requiredKills: 1
   enemyTagFilter: 
   requiredParries: 1
+  gameEventKey: SwitchUsed
+  requiredEventCount: 1

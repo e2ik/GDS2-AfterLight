@@ -513,6 +513,10 @@ public class GameManager : MonoBehaviour
         if (anchor != null)
         {
             _playerInstance.transform.position = anchor.position;
+
+            PlayerController controller = _playerInstance.GetComponent<PlayerController>();
+            if (controller != null) controller.SnapToGround();
+
             ResetBackgroundParallax();
 
             CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();

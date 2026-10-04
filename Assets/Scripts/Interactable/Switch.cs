@@ -53,6 +53,9 @@ public class Switch : MonoBehaviour, IInteractable
     [SerializeField] private FMODUnity.EventReference onClickEvent;
     [SerializeField] private FMODUnity.EventReference offClickEvent;
 
+    [Header("Tutorial")]
+    [SerializeField] private string tutorialEventKey;
+
     private readonly List<IOnOff> targets = new();
     private Coroutine visualRoutine;
     private bool lastAnyMoving;
@@ -135,6 +138,9 @@ public class Switch : MonoBehaviour, IInteractable
         }
 
         Apply(!IsOn);
+
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.SwitchUsed);
+        Tutorial.TutorialEvents.Raise(tutorialEventKey);
     }
 
     private bool PlayerHasRequiredKey(Player player)

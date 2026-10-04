@@ -31,6 +31,16 @@ namespace Tutorial
         private bool cutsceneMovementLocked;
         private bool cutsceneInputLocked;
 
+        [SerializeField] private bool pauseTimeOnPromptSteps = true;
+        private bool timePausedByStep;
+        private int stepHoldCount;
+        private readonly HashSet<TutorialSequenceDefinition.SequenceReaction> firedReactions = new();
+        private bool listeningForReactions;
+
+        public void AddStepHold() => stepHoldCount++;
+        public void RemoveStepHold() => stepHoldCount = Mathf.Max(0, stepHoldCount - 1);
+        private float pausedTimeScale = 1f;
+
         public bool IsRunningSequence => activeSequence != null;
         public TutorialStepDefinition ActiveStep => activeStep;
 
@@ -49,6 +59,8 @@ namespace Tutorial
 
         private void OnDestroy()
         {
+            ResumeTime();
+            StopReactions();
             if (Instance == this) UIWindowAnimator.OnAnyShown -= HandleAnyWindowShown;
         }
 
@@ -129,6 +141,8 @@ namespace Tutorial
             activeEvaluator?.End();
             activeEvaluator = null;
 
+            ResumeTime();
+
             if (activeStep != null)
             {
                 OnStepEnded?.Invoke(activeStep);
@@ -141,6 +155,8 @@ namespace Tutorial
         private IEnumerator RunSequence(TutorialSequenceDefinition sequence, int startIndex)
         {
             activeSequence = sequence;
+            stepHoldCount = 0;
+            StartReactions();
             OnSequenceBegan?.Invoke(sequence);
 
             Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
@@ -149,6 +165,10 @@ namespace Tutorial
             {
                 var step = sequence.Steps[i];
                 if (step == null) continue;
+
+                while (stepHoldCount > 0) yield return null;
+
+                if (!step.IsRequirementMet(player)) continue;
 
                 activeStepIndex = i;
                 yield return RunStep(step, player);
@@ -161,15 +181,19 @@ namespace Tutorial
         {
             activeStep = step;
 
-            bool needsLock = step.FreezeMovement || step.DisableInput;
-            if (needsLock) SetCutsceneState(step.FreezeMovement, step.DisableInput);
+            bool pauseTime = pauseTimeOnPromptSteps && step.ConditionType == TutorialStepConditionType.Prompt;
+            bool disableInput = step.DisableInput || pauseTime;
+            bool needsLock = step.FreezeMovement || disableInput;
+            bool freezeMovement = step.FreezeMovement || pauseTime;
+            if (needsLock) SetCutsceneState(freezeMovement, disableInput);
+            if (pauseTime) PauseTime();
 
             OnStepBegan?.Invoke(step);
 
             float elapsed = 0f;
             if (step.StartDelay > 0f)
             {
-                yield return new WaitForSeconds(step.StartDelay);
+                yield return new WaitForSecondsRealtime(step.StartDelay);
                 elapsed = step.StartDelay;
             }
 
@@ -179,16 +203,17 @@ namespace Tutorial
 
             while (!complete)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
 
             if (elapsed < step.MinimumDisplayDuration)
-                yield return new WaitForSeconds(step.MinimumDisplayDuration - elapsed);
+                yield return new WaitForSecondsRealtime(step.MinimumDisplayDuration - elapsed);
 
             activeEvaluator.End();
             activeEvaluator = null;
 
+            ResumeTime();
             if (needsLock) SetCutsceneState(false, false);
 
             OnStepCompleted?.Invoke(step);
@@ -196,8 +221,59 @@ namespace Tutorial
             activeStep = null;
         }
 
+        private void PauseTime()
+        {
+            if (timePausedByStep) return;
+            pausedTimeScale = Time.timeScale;
+            Time.timeScale = 0f;
+            timePausedByStep = true;
+        }
+
+        private void ResumeTime()
+        {
+            if (!timePausedByStep) return;
+            Time.timeScale = pausedTimeScale > 0f ? pausedTimeScale : 1f;
+            timePausedByStep = false;
+        }
+
+        private void StartReactions()
+        {
+            firedReactions.Clear();
+            if (listeningForReactions) return;
+            TutorialEvents.OnRaised += HandleReactionEvent;
+            listeningForReactions = true;
+        }
+
+        private void StopReactions()
+        {
+            firedReactions.Clear();
+            if (!listeningForReactions) return;
+            TutorialEvents.OnRaised -= HandleReactionEvent;
+            listeningForReactions = false;
+        }
+
+        private void HandleReactionEvent(string key)
+        {
+            if (activeSequence == null || activeSequence.Reactions == null) return;
+
+            foreach (var reaction in activeSequence.Reactions)
+            {
+                if (reaction == null || reaction.eventKey != key) continue;
+                if (string.IsNullOrEmpty(reaction.speechText)) continue;
+                if (reaction.onlyOnce && firedReactions.Contains(reaction)) continue;
+
+                firedReactions.Add(reaction);
+
+                Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+                if (player != null)
+                    TutorialSpeechBubblePool.Instance?.Show(reaction.speechText, player.transform, reaction.duration, reaction.effect);
+            }
+        }
+
         private void FinishSequence(TutorialSequenceDefinition sequence, bool markCompleted)
         {
+            StopReactions();
+
             if (markCompleted)
             {
                 if (sequence != null && !sequence.CanRepeat) completedSequenceIDs.Add(sequence.SequenceID);

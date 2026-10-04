@@ -10,16 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b126725b3c352c6458202a11e09a8e71, type: 3}
-  m_Name: Movement
+  m_Name: Combat01
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialStepDefinition
-  promptText: Press {Move:up}{Move:left}{Move:down}{Move:right} to move
-  minimumDisplayDuration: 1
-  startDelay: 2
-  showSuccessOnComplete: 1
+  promptText: Enemy ahead, remember how to fight?
+  minimumDisplayDuration: 0
+  startDelay: 0
+  showSuccessOnComplete: 0
   freezeMovement: 0
   disableInput: 0
-  conditionType: 2
-  buttonPressAction: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  conditionType: 0
+  buttonPressAction: {fileID: 0}
   requiredKills: 1
   enemyTagFilter: 
   requiredParries: 1
+  gameEventKey: SwitchUsed
+  requiredEventCount: 1

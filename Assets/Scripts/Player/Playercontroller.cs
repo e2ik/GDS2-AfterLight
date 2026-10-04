@@ -98,6 +98,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Detection Settings")]
     public LayerMask groundLayer;
+    [SerializeField] private bool snapToGroundOnStart = true;
+    [SerializeField, Min(0f)] private float groundSnapMaxDistance = 10f;
     [SerializeField] private float groundCheckDistance = 0.05f;
     [SerializeField] private float groundCheckNormalThreshold = 0.6f;
     [SerializeField] private float wallCheckDistance = 0.05f;
@@ -183,6 +185,39 @@ public class PlayerController : MonoBehaviour
     {
         rb.gravityScale = normGravity;
         lastFacingDirection = FacingDirection;
+
+        if (snapToGroundOnStart) SnapToGround();
+    }
+
+    public bool SnapToGround(float maxDistance = -1f)
+    {
+        if (rb == null) return false;
+        if (maxDistance <= 0f) maxDistance = groundSnapMaxDistance;
+
+        Physics2D.SyncTransforms();
+        Bounds bounds = ComputePlayerBounds();
+
+        Vector2 origin = new Vector2(bounds.center.x, bounds.center.y);
+        float castDistance = bounds.extents.y + maxDistance;
+
+        bool previousStartInColliders = Physics2D.queriesStartInColliders;
+        Physics2D.queriesStartInColliders = false;
+        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, castDistance, groundLayer);
+        Physics2D.queriesStartInColliders = previousStartInColliders;
+
+        if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
+
+        float offset = hit.point.y - bounds.min.y;
+        Vector3 position = transform.position + new Vector3(0f, offset, 0f);
+
+        transform.position = position;
+        rb.position = position;
+        rb.linearVelocity = Vector2.zero;
+
+        Physics2D.SyncTransforms();
+        cachedBounds = ComputePlayerBounds();
+        GroundCheckUpdate();
+        return true;
     }
 
     private void Update()
@@ -199,6 +234,12 @@ public class PlayerController : MonoBehaviour
         {
             inventoryPressed = false;
             healPressed = false;
+        }
+
+        if (!InputEnabled)
+        {
+            jumpPressed = false;
+            dashPressed = false;
         }
     }
 
@@ -226,7 +267,25 @@ public class PlayerController : MonoBehaviour
     public void FreezeMovement(bool freeze)
     {
         movementFreezeCount = freeze ? movementFreezeCount + 1 : Mathf.Max(0, movementFreezeCount - 1);
-        if (freeze) rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+
+        if (freeze)
+        {
+            if (isDashing && !isDashLocked)
+            {
+                CancelInvoke(nameof(StopDashing));
+                StopDashing();
+            }
+
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+            jumpPressed = false;
+            dashPressed = false;
+        }
+        else if (movementFreezeCount == 0)
+        {
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+            jumpPressed = false;
+            dashPressed = false;
+        }
     }
 
     public void SetPhysicsSuspended(bool suspend)
@@ -372,6 +431,7 @@ public class PlayerController : MonoBehaviour
         {
             if (verticalInput < -0.5f && TryPassThroughPlatform())
             {
+                Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerDroppedThrough);
                 ConsumeJumpInput();
                 return;
             }
@@ -389,6 +449,7 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
 
             playerAnimation.TriggerJumpEffect(false);
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerJumped);
 
             ConsumeJumpInput();
             coyoteTimeCounter = 0f;
@@ -423,6 +484,7 @@ public class PlayerController : MonoBehaviour
                 combat.ForceCancelAttack();
                 combat.CancelParry();
                 if (combat.IsSkilling) combat.EndSkill();
+                Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerWallSlid);
             }
 
             isWallSliding = true;
@@ -457,6 +519,7 @@ public class PlayerController : MonoBehaviour
         if (jumpPressed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerWallJumped);
             combat.ForceCancelAttack();
             combat.NotifyJumpInputReceived();
             rb.linearVelocity = Vector2.zero;
@@ -529,6 +592,8 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
 
             playerAnimation.TriggerDashEffect();
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerDashed);
+            if (!IsDirectionalDash) Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerBackDashed);
 
             ConsumeDashInput();
 
@@ -614,6 +679,7 @@ public class PlayerController : MonoBehaviour
     {
         canClimbEdge = false;
         isClimbing = true;
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerClimbed);
         climbStartTime = Time.time;
 
         combat.CancelAllActions();
@@ -725,6 +791,7 @@ public class PlayerController : MonoBehaviour
         isHealing = true;
         rb.linearVelocityX = 0;
         OnHealStarted?.Invoke();
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerHealed);
     }
 
     public void CancelHeal()
@@ -873,7 +940,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputValue value)
     {
-        if (value.isPressed && IsUILocked) return;
+        if (value.isPressed && (IsUILocked || !InputEnabled)) return;
 
         if (value.isPressed)
         {
@@ -884,7 +951,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnDash(InputValue value)
     {
-        if (value.isPressed && IsUILocked) return;
+        if (value.isPressed && (IsUILocked || !InputEnabled)) return;
 
         dashPressed = value.isPressed; dashReleased = !value.isPressed;
     }

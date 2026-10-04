@@ -37,7 +37,11 @@ public class CameraFollow2D : MonoBehaviour
     [SerializeField] private float revealTransitionDuration = 0.75f;
     [SerializeField] private float revealZoomPadding = 1.1f;
 
+    [Header("Time")]
+    [SerializeField] private bool useUnscaledTime = true;
+
     private Camera _cam;
+    private float Dt => useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
     private Vector3 _velocity = Vector3.zero;
     private float _verticalCamTarget;
     private bool _verticalTargetInitialized;
@@ -150,7 +154,8 @@ public class CameraFollow2D : MonoBehaviour
 
         yield return TransitionToBoundsInternal(bounds);
 
-        yield return new WaitForSeconds(holdSeconds);
+        if (useUnscaledTime) yield return new WaitForSecondsRealtime(holdSeconds);
+        else yield return new WaitForSeconds(holdSeconds);
 
         yield return HandOffAndZoomBack();
 
@@ -228,7 +233,7 @@ public class CameraFollow2D : MonoBehaviour
         float t = 0f;
         while (t < duration)
         {
-            t += Time.deltaTime;
+            t += Dt;
             float p = Mathf.Clamp01(t / duration);
             float eased = p * p * (3f - 2f * p);
             _cam.orthographicSize = Mathf.Lerp(fromSize, toSize, eased);
@@ -250,7 +255,7 @@ public class CameraFollow2D : MonoBehaviour
         float t = 0f;
         while (t < duration)
         {
-            t += Time.deltaTime;
+            t += Dt;
             float p = Mathf.Clamp01(t / duration);
             float eased = p * p * (3f - 2f * p);
 
@@ -300,7 +305,7 @@ public class CameraFollow2D : MonoBehaviour
 
         if (_returningFromConversationZoom)
         {
-            _cam.orthographicSize = Mathf.SmoothDamp(_cam.orthographicSize, _baseOrthographicSize, ref _zoomVelocity, conversationZoomSmoothTime);
+            _cam.orthographicSize = Mathf.SmoothDamp(_cam.orthographicSize, _baseOrthographicSize, ref _zoomVelocity, conversationZoomSmoothTime, Mathf.Infinity, Dt);
             if (Mathf.Abs(_cam.orthographicSize - _baseOrthographicSize) < 0.01f)
             {
                 _cam.orthographicSize = _baseOrthographicSize;
@@ -361,7 +366,7 @@ public class CameraFollow2D : MonoBehaviour
             : Mathf.Max(horizontalSmoothTime, verticalSmoothTime);
 
         Vector3 desiredPosition = new Vector3(targetX, _verticalCamTarget, transform.position.z);
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref _velocity, followSmoothTime);
+        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref _velocity, followSmoothTime, Mathf.Infinity, Dt);
     }
 
     private void UpdateLockedConversation()
@@ -384,8 +389,8 @@ public class CameraFollow2D : MonoBehaviour
 
         if (!_returningToLock) return;
 
-        transform.position = Vector3.SmoothDamp(transform.position, _lockedPosition, ref _velocity, conversationZoomSmoothTime);
-        _cam.orthographicSize = Mathf.SmoothDamp(_cam.orthographicSize, _lockedSize, ref _zoomVelocity, conversationZoomSmoothTime);
+        transform.position = Vector3.SmoothDamp(transform.position, _lockedPosition, ref _velocity, conversationZoomSmoothTime, Mathf.Infinity, Dt);
+        _cam.orthographicSize = Mathf.SmoothDamp(_cam.orthographicSize, _lockedSize, ref _zoomVelocity, conversationZoomSmoothTime, Mathf.Infinity, Dt);
 
         if ((transform.position - _lockedPosition).sqrMagnitude < 0.0001f && Mathf.Abs(_cam.orthographicSize - _lockedSize) < 0.01f)
         {
@@ -423,8 +428,8 @@ public class CameraFollow2D : MonoBehaviour
 
         Vector3 desiredPosition = new Vector3(focus.center.x, focus.center.y + conversationFocusOffsetY, transform.position.z);
 
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref _velocity, conversationZoomSmoothTime);
-        _cam.orthographicSize = Mathf.SmoothDamp(_cam.orthographicSize, desiredSize, ref _zoomVelocity, conversationZoomSmoothTime);
+        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref _velocity, conversationZoomSmoothTime, Mathf.Infinity, Dt);
+        _cam.orthographicSize = Mathf.SmoothDamp(_cam.orthographicSize, desiredSize, ref _zoomVelocity, conversationZoomSmoothTime, Mathf.Infinity, Dt);
 
         _lastTargetPosX = target.position.x;
         _smoothedVelocityX = 0f;

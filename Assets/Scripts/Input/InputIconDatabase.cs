@@ -20,6 +20,14 @@ public class InputIconDatabase : ScriptableObject
         public Sprite rightStick;
         public Sprite leftStickPress;
         public Sprite rightStickPress;
+        public Sprite leftStickUp;
+        public Sprite leftStickDown;
+        public Sprite leftStickLeft;
+        public Sprite leftStickRight;
+        public Sprite rightStickUp;
+        public Sprite rightStickDown;
+        public Sprite rightStickLeft;
+        public Sprite rightStickRight;
         public Sprite dpad;
         public Sprite dpadUp;
         public Sprite dpadDown;
@@ -49,6 +57,14 @@ public class InputIconDatabase : ScriptableObject
                 case "dpad/down": return dpadDown != null ? dpadDown : dpad;
                 case "dpad/left": return dpadLeft != null ? dpadLeft : dpad;
                 case "dpad/right": return dpadRight != null ? dpadRight : dpad;
+                case "leftStick/up": return leftStickUp;
+                case "leftStick/down": return leftStickDown;
+                case "leftStick/left": return leftStickLeft;
+                case "leftStick/right": return leftStickRight;
+                case "rightStick/up": return rightStickUp;
+                case "rightStick/down": return rightStickDown;
+                case "rightStick/left": return rightStickLeft;
+                case "rightStick/right": return rightStickRight;
                 default: return null;
             }
         }
@@ -65,6 +81,13 @@ public class InputIconDatabase : ScriptableObject
     [SerializeField] private GamepadIcons genericGamepad = new GamepadIcons();
 
     [System.Serializable]
+    public class KeySpriteOverride
+    {
+        public UnityEngine.InputSystem.Key key;
+        public Sprite sprite;
+    }
+
+    [System.Serializable]
     public class KeyLabelOverride
     {
         public UnityEngine.InputSystem.Key key;
@@ -76,6 +99,7 @@ public class InputIconDatabase : ScriptableObject
     [SerializeField] private Sprite wideKeycap;
     [SerializeField] private int wideKeyMinLength = 2;
     [SerializeField] private KeyLabelOverride[] keyLabelOverrides = new KeyLabelOverride[0];
+    [SerializeField] private KeySpriteOverride[] keySpriteOverrides = new KeySpriteOverride[0];
 
     [Header("Mouse")]
     [SerializeField] private Sprite mouseLeft;
@@ -107,6 +131,21 @@ public class InputIconDatabase : ScriptableObject
             case "middleButton": return mouseMiddle;
             default: return null;
         }
+    }
+
+    public Sprite GetKeySprite(string controlName)
+    {
+        if (string.IsNullOrEmpty(controlName) || keySpriteOverrides == null) return null;
+
+        foreach (KeySpriteOverride entry in keySpriteOverrides)
+        {
+            if (entry == null || entry.sprite == null || entry.key == UnityEngine.InputSystem.Key.None) continue;
+
+            if (string.Equals(KeyControlName(entry.key), controlName, System.StringComparison.OrdinalIgnoreCase))
+                return entry.sprite;
+        }
+
+        return null;
     }
 
     public string GetKeyLabel(string controlName, string displayName)

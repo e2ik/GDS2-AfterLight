@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2acefbb5902d7144eba89835c8ff06bf, type: 3}
+  m_Name: CombatSeq
+  m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialSequenceDefinition
+  sequenceID: CombatSeq
+  steps:
+  - {fileID: 11400000, guid: 81ee964bdd296e441b3c662faf84d6fa, type: 2}
+  - {fileID: 11400000, guid: 5372e30d4b4cf104cbed9a8e7c3179fd, type: 2}
+  - {fileID: 11400000, guid: 8596e778b4fff3346822675052cf0718, type: 2}
+  - {fileID: 11400000, guid: 48177afb1e439914f8397fc3f1dfaab7, type: 2}
+  - {fileID: 11400000, guid: 66ca8be4849e4504facf2062c64f821a, type: 2}
+  - {fileID: 11400000, guid: f83b37b4d3b52214a806e424903cfba8, type: 2}
+  - {fileID: 11400000, guid: 82a315fce73f30343bc42e3b5770dcbf, type: 2}
+  - {fileID: 11400000, guid: c91538e2d1ed2484ca95b6ecf470d43d, type: 2}
+  canRepeat: 0
+  reactions:
+  - eventKey: PlayerHit
+    speechText: Ouch!
+    effect: 2
+    duration: 1
+    onlyOnce: 1
+  - eventKey: EnemyKilled
+    speechText: Thank god...
+    effect: 2
+    duration: 1.5
+    onlyOnce: 1
