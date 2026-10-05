@@ -24,10 +24,19 @@ public class WorldItem : MonoBehaviour
     [SerializeField] private SpriteRenderer itemSpriteRenderer;
     [SerializeField] private TMP_Text nameLabel;
 
+    [Header("Unique Hover")]
+    [SerializeField] private bool hoverWhenUnique = true;
+    [SerializeField] private Transform hoverTarget;
+    [SerializeField, Min(0f)] private float hoverHeight = 0.08f;
+    [SerializeField, Min(0f)] private float hoverSpeed = 1f;
+
     [Header("Pickup")]
     [SerializeField] private float pickupRadius = 0.5f;
     private CircleCollider2D pickupTrigger;
     private bool awaitingLanding;
+    private Transform activeHoverTarget;
+    private Vector3 hoverBaseLocalPosition;
+    private float hoverPhase;
     private Coroutine pickupFallbackRoutine;
 
     [Header("Rarity")]
@@ -61,7 +70,6 @@ public class WorldItem : MonoBehaviour
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
     [SerializeField] private EventReference primaryPickupEvent;
-    [SerializeField] private EventReference secondaryPickupEvent;
     [SerializeField] private string tutorialEventKey;
     [SerializeField, Min(0f)] private float inventoryFullMessageCooldown = 3f;
     [SerializeField] private Color inventoryFullColor = new Color(1f, 0.35f, 0.35f);
@@ -106,10 +114,33 @@ public class WorldItem : MonoBehaviour
         IgnorePlayerCollision(FindPlayer());
         if (!hasRarity) AssignRarity(null);
         InitializeVisuals();
+        SetupHover();
+    }
+
+    private void SetupHover()
+    {
+        if (!hoverWhenUnique || behaviour != WorldItemBehaviour.Unique) return;
+
+        activeHoverTarget = hoverTarget != null
+            ? hoverTarget
+            : itemSpriteRenderer != null ? itemSpriteRenderer.transform : transform;
+
+        hoverBaseLocalPosition = activeHoverTarget.localPosition;
+        hoverPhase = UnityEngine.Random.value * Mathf.PI * 2f;
+    }
+
+    private void UpdateHover()
+    {
+        if (activeHoverTarget == null) return;
+
+        float offset = Mathf.Sin(Time.time * hoverSpeed * Mathf.PI * 2f + hoverPhase) * hoverHeight;
+        activeHoverTarget.localPosition = hoverBaseLocalPosition + new Vector3(0f, offset, 0f);
     }
 
     private void Update()
     {
+        UpdateHover();
+
         if (!isDropped || GameManager.Instance == null) return;
 
         bool shouldHide = GameManager.Instance.CurrentAreaSide != droppedAreaSide;
@@ -491,7 +522,6 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(secondaryDef);
                         break;
                     }
-                    AudioManager.PlaySFX(gemLoot.pickupSound, transform.position);
 
                     if (player.Equipment.IsSecondaryGemSlotEmpty())
                         player.Equipment.EquipSecondaryGem(gemLoot);
