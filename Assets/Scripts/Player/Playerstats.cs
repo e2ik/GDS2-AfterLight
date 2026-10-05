@@ -52,6 +52,7 @@ public class PlayerStats : MonoBehaviour
     public event System.Action<float, float> OnHealthChanged;
     public event System.Action OnStatsRecalculated;
     public event System.Action OnDied;
+    public static event System.Action OnRespawnStarted;
 
     private void Awake()
     {
@@ -247,6 +248,7 @@ public class PlayerStats : MonoBehaviour
     {
         if (isRespawning) return;
         isRespawning = true;
+        OnRespawnStarted?.Invoke();
 
         GameUI.DeathWindow window = GetDeathWindow();
         if (window != null) GameUI.UIManager.Instance.Close(window);

@@ -131,12 +131,20 @@ public class PlayerController : MonoBehaviour
     private Vector2 LastGroundedPos { get; set; }
 
     public bool InputEnabled { get; set; } = true;
+    public bool IsScriptedWalking => scriptedWalkActive;
+
+    private bool scriptedWalkActive;
+    private float scriptedWalkTargetX;
+    private float scriptedWalkSpeed;
+    private float scriptedWalkTimer;
+    private bool scriptedWalkRestoreInput;
+    private System.Action scriptedWalkArrived;
+    private float lastMoveHorizontal;
     public int FacingDirection { get; private set; } = 1;
     public bool IsMovementFrozen => movementFreezeCount > 0;
     public bool IsUILocked =>
         GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.IsInputLocked;
     public bool IsGrounded => isGrounded;
-    private bool wasGrounded;
     public bool IsWallSliding => isWallSliding;
     public bool IsDashing => isDashing;
     private bool isDashLocked;
@@ -270,6 +278,7 @@ public class PlayerController : MonoBehaviour
 
         HandleEdgeClimb();
         HandleStepUp();
+        UpdateScriptedWalk();
         HandleMovement();
         HandleWallSlide();
         HandleJump();
@@ -372,7 +381,7 @@ public class PlayerController : MonoBehaviour
         else UpdateGravity();
     }
 
-    public bool CanMove() => InputEnabled
+    public bool CanMove() => (InputEnabled || scriptedWalkActive)
                              && !IsMovementFrozen
                              && !isWallJumping
                              && !isDashing
@@ -949,9 +958,62 @@ public class PlayerController : MonoBehaviour
         IsUpIntent = raw.y > upIntentThreshold && verticalDominant;
         IsDownIntent = raw.y < -downIntentThreshold && verticalDominant;
 
-        horizontalInput = Mathf.Abs(raw.x) > InputDeadzone
+        lastMoveHorizontal = Mathf.Abs(raw.x) > InputDeadzone
             ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude)
             : 0f;
+
+        if (!scriptedWalkActive) horizontalInput = lastMoveHorizontal;
+    }
+
+    public void StartScriptedWalk(float targetX, System.Action onArrived = null, float speedMultiplier = 1f, float timeout = 3f)
+    {
+        if (scriptedWalkActive) FinishScriptedWalk(false);
+
+        scriptedWalkActive = true;
+        scriptedWalkTargetX = targetX;
+        scriptedWalkSpeed = Mathf.Clamp01(speedMultiplier);
+        scriptedWalkTimer = timeout;
+        scriptedWalkArrived = onArrived;
+        scriptedWalkRestoreInput = InputEnabled;
+
+        InputEnabled = false;
+        jumpPressed = false;
+        dashPressed = false;
+    }
+
+    public void CancelScriptedWalk()
+    {
+        if (scriptedWalkActive) FinishScriptedWalk(false);
+    }
+
+    private void UpdateScriptedWalk()
+    {
+        if (!scriptedWalkActive) return;
+
+        scriptedWalkTimer -= Time.fixedDeltaTime;
+        float dx = scriptedWalkTargetX - rb.position.x;
+
+        if (Mathf.Abs(dx) <= 0.1f || scriptedWalkTimer <= 0f)
+        {
+            FinishScriptedWalk(true);
+            return;
+        }
+
+        horizontalInput = Mathf.Sign(dx) * scriptedWalkSpeed;
+    }
+
+    private void FinishScriptedWalk(bool invokeCallback)
+    {
+        scriptedWalkActive = false;
+        horizontalInput = 0f;
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+
+        if (scriptedWalkRestoreInput) InputEnabled = true;
+        horizontalInput = InputEnabled ? lastMoveHorizontal : 0f;
+
+        System.Action callback = scriptedWalkArrived;
+        scriptedWalkArrived = null;
+        if (invokeCallback) callback?.Invoke();
     }
 
     public void OnJump(InputValue value)
@@ -1036,7 +1098,6 @@ public class PlayerController : MonoBehaviour
 
     private void GroundCheckUpdate()
     {
-        bool groundedLastFrame = isGrounded;
         Bounds bounds = cachedBounds;
         Vector2 leftFoot = new(bounds.min.x + edgeMargin, bounds.min.y + 0.02f);
         Vector2 rightFoot = new(bounds.max.x - edgeMargin, bounds.min.y + 0.02f);
@@ -1073,10 +1134,6 @@ public class PlayerController : MonoBehaviour
         if (isGrounded && leftGrounded && rightGrounded)
         {
             LastGroundedPos = transform.position;
-        }
-        if (!groundedLastFrame && isGrounded)
-        {
-            playerAnimation.TriggerLandingEffect();
         }
     }
 

@@ -10,6 +10,8 @@ namespace Tutorial
         public const string WeaponPickedUp = "WeaponPickedUp";
         public const string GearPickedUp = "GearPickedUp";
         public const string GemPickedUp = "GemPickedUp";
+        public const string PrimaryGemPickedUp = "PrimaryGemPickedUp";
+        public const string SecondaryGemPickedUp = "SecondaryGemPickedUp";
         public const string KeyPickedUp = "KeyPickedUp";
         public const string LorePickedUp = "LorePickedUp";
         public const string PickedUpPrefix = "PickedUp:";

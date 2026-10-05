@@ -484,6 +484,13 @@ MonoBehaviour:
       Data3: 240712608
       Data4: -734359681
     Path: event:/CombatSFXEvents/PlayerParryEvent
+  chargingSkillEvent:
+    Guid:
+      Data1: -1846484341
+      Data2: 1080134328
+      Data3: 1666211216
+      Data4: -1855376757
+    Path: event:/CombatSFXEvents/ChargingSkillEvent
 --- !u!114 &4877809276059888347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -589,6 +596,13 @@ MonoBehaviour:
     InstRolledMaxGambleMult: 0
     LineRarities: 
     IsNew: 1
+    pickupSound:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 
   equippedGearDebug: []
 --- !u!114 &4056446563424932215
 MonoBehaviour:

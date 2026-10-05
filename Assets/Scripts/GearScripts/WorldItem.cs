@@ -61,6 +61,7 @@ public class WorldItem : MonoBehaviour
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
     [SerializeField] private EventReference primaryPickupEvent;
+    [SerializeField] private EventReference secondaryPickupEvent;
     [SerializeField] private string tutorialEventKey;
     [SerializeField, Min(0f)] private float inventoryFullMessageCooldown = 3f;
     [SerializeField] private Color inventoryFullColor = new Color(1f, 0.35f, 0.35f);
@@ -490,6 +491,7 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(secondaryDef);
                         break;
                     }
+                    AudioManager.PlaySFX(gemLoot.pickupSound, transform.position);
 
                     if (player.Equipment.IsSecondaryGemSlotEmpty())
                         player.Equipment.EquipSecondaryGem(gemLoot);
@@ -645,6 +647,11 @@ public class WorldItem : MonoBehaviour
         };
 
         Tutorial.TutorialEvents.Raise(typeKey);
+
+        if (itemDefinition is PrimaryGemBehaviourDefinition)
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PrimaryGemPickedUp);
+        else if (itemDefinition is SecondaryGemBehaviourDefinition)
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.SecondaryGemPickedUp);
 
         if (itemDefinition != null)
             Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PickedUpPrefix + itemDefinition.name);

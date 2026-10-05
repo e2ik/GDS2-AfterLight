@@ -1,3 +1,4 @@
+using FMODUnity;
 using UnityEngine;
 
 public enum ERarity
@@ -28,6 +29,8 @@ public abstract class SecondaryGemBehaviourDefinition : InventoryItemBase, ISeco
 {
     public string TemplateID;
     public SGemType GemType;
+
+    public EventReference basicPickupSound;
 
     [Header("Damage by Rarity")]
     public RarityRange DamageByRarity = new RarityRange
@@ -68,7 +71,8 @@ public abstract class SecondaryGemBehaviourDefinition : InventoryItemBase, ISeco
             InstRolledCritValue = Mathf.RoundToInt(roller.RollValue(CritByRarity) * 100f),
             InstTemplateID = TemplateID,
             InstanceGUID = System.Guid.NewGuid().ToString(),
-            Type = GemType
+            Type = GemType,
+            pickupSound = basicPickupSound
         };
         return newInstance;
     }

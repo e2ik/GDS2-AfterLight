@@ -130,7 +130,7 @@ namespace Enemies
 
             while (t < fadeDuration)
             {
-                t += Time.deltaTime;
+                t += Time.unscaledDeltaTime;
                 canvasGroup.alpha = Mathf.Lerp(start, targetAlpha, t / fadeDuration);
                 yield return null;
             }

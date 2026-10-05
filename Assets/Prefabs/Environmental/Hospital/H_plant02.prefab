@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6408859550529856143}
   - component: {fileID: 2086882834781481306}
   - component: {fileID: 8724128694862624420}
+  - component: {fileID: -4694101839451955030}
   m_Layer: 0
   m_Name: H_plant02
   m_TagString: Untagged
@@ -110,6 +111,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 29192
   triggerOnce: 0
+  useCooldown: 0
+  cooldownDuration: 1
   animatorTriggerName: Activate
   useBoolInstead: 0
   animatorBoolName: IsActive
@@ -181,3 +184,24 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.165196, y: 1.6951153}
   m_EdgeRadius: 0
+--- !u!114 &-4694101839451955030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3004490955946628216}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7fe7e7487b01904b91af8fbf4024183, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationSFXPlayer
+  sfxEntries:
+  - id: PlantRustle
+    sfxEvent:
+      Guid:
+        Data1: -731278468
+        Data2: 1226740345
+        Data3: 1865755034
+        Data4: 1233250036
+      Path: event:/WorldSFX Events/PlantRustleEvent

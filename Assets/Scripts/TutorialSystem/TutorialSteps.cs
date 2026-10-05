@@ -17,14 +17,17 @@ namespace Tutorial
         GameEvent,
         HealthNotFull,
         HealthFull,
-        WallJumpClimb
+        WallJumpClimb,
+        SkillEnergyEnough
     }
 
     public enum TutorialStepRequirement
     {
         Always,
         HealthNotFull,
-        HealthFull
+        HealthFull,
+        SkillEnergyNotEnough,
+        SkillEnergyEnough
     }
 
     [CreateAssetMenu(menuName = "Tutorial/Step", fileName = "New Tutorial Step")]
@@ -84,6 +87,14 @@ namespace Tutorial
         {
             if (runOnlyIf == TutorialStepRequirement.Always) return true;
 
+            if (runOnlyIf == TutorialStepRequirement.SkillEnergyNotEnough || runOnlyIf == TutorialStepRequirement.SkillEnergyEnough)
+            {
+                PlayerCombatController combat = player != null ? player.CombatController : null;
+                if (combat == null) return true;
+                bool enough = combat.HasEnoughSkillEnergy;
+                return runOnlyIf == TutorialStepRequirement.SkillEnergyEnough ? enough : !enough;
+            }
+
             PlayerStats stats = player != null ? player.Stats : null;
             if (stats == null) return true;
 
@@ -117,6 +128,8 @@ namespace Tutorial
                     return new HealthStepEvaluator(waitForFull: true);
                 case TutorialStepConditionType.WallJumpClimb:
                     return new WallJumpClimbStepEvaluator(requiredHeightInPlayerHeights);
+                case TutorialStepConditionType.SkillEnergyEnough:
+                    return new SkillEnergyStepEvaluator();
                 case TutorialStepConditionType.Prompt:
                 default:
                     return new PromptStepEvaluator();
@@ -367,6 +380,42 @@ namespace Tutorial
     }
 
     #endregion
+
+    public class SkillEnergyStepEvaluator : ITutorialStepEvaluator
+    {
+        private Action onComplete;
+        private PlayerCombatController combat;
+        private bool done;
+
+        public void Begin(Player player, Action onComplete)
+        {
+            this.onComplete = onComplete;
+            done = false;
+            combat = player != null ? player.CombatController : null;
+
+            if (combat == null)
+            {
+                Debug.LogWarning("[Tutorial] Skill energy step could not find PlayerCombatController.");
+                return;
+            }
+
+            combat.OnEnergyChanged += HandleEnergyChanged;
+            HandleEnergyChanged(0f, 1f);
+        }
+
+        public void End()
+        {
+            if (combat != null) combat.OnEnergyChanged -= HandleEnergyChanged;
+        }
+
+        private void HandleEnergyChanged(float current, float max)
+        {
+            if (done || combat == null || !combat.HasEnoughSkillEnergy) return;
+
+            done = true;
+            onComplete?.Invoke();
+        }
+    }
 
     #region Wall Jump Climb — must wall jump, then land on ground at least N player-heights above the starting ground
 
