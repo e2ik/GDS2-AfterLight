@@ -1,11 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
-using Enemies.Cutscene;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Tutorial;
-using UnityEngine.Video;
 
 public class GameManager : MonoBehaviour
 {
@@ -45,9 +43,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float startupFadeDuration = 0.5f;
     [SerializeField] private float respawnFadeDuration = 0.5f;
 
-    [Header("Cutscenes")] 
-    [SerializeField] private VideoClip introCutscene;
-    
     [Header("Item Colors")]
     [SerializeField] private Color commonColor = new Color(0.69f, 0.69f, 0.69f);
     [SerializeField] private Color rareColor = new Color(0.56f, 0.76f, 1.0f);
@@ -67,6 +62,9 @@ public class GameManager : MonoBehaviour
 
     [Header("Dev Tools")]
     [SerializeField] private InputActionReference unlockAllFastTravelAction;
+    [SerializeField] private bool disableTutorials = false;
+
+    public bool TutorialsDisabled => disableTutorials;
 
     private void Awake()
     {
@@ -212,8 +210,6 @@ public class GameManager : MonoBehaviour
 
         FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
-        yield return PlayIntroCutscene();
-
         SpawnPlayer();
 
         TutorialDirector.Instance?.AbortActiveSequence();
@@ -353,24 +349,6 @@ public class GameManager : MonoBehaviour
         while (!loadTitle.isDone)
         {
             yield return null;
-        }
-    }
-
-    private IEnumerator PlayIntroCutscene()
-    {
-        if(introCutscene == null || CutscenePlayer.Instance == null) yield break;
-        
-        MusicManager.Instance?.StopMusicForCutscene();
-        if (MusicManager.Instance != null)
-            yield return new WaitForSecondsRealtime(MusicManager.Instance.StopFadeDuration);
-        
-        try
-        {
-            yield return CutscenePlayer.Instance.Play(introCutscene);
-        }
-        finally
-        {
-            MusicManager.Instance?.RestartMusic();
         }
     }
 
