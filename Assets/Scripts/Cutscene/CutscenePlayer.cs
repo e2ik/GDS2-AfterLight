@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Video;
@@ -18,24 +19,60 @@ namespace Enemies.Cutscene
         [SerializeField] private bool allowSkip = true;
         [SerializeField] private float audioFadeOutDuration = 0.7f;
         [SerializeField] private float audioFadeInDuration = 0.7f;
+        [SerializeField] private float prepareTimeout = 10f;
         
         private void Awake() => Instance = this;
         
         public IEnumerator Play(string filename)
         {
-            videoRoot.SetActive(true);
+            ClearTarget();
 
             videoPlayer.source = VideoSource.Url;
-            videoPlayer.url = Application.streamingAssetsPath + "/" + filename;
+            videoPlayer.url = Application.streamingAssetsPath + "/" + ResolveFileName(filename);
             
             videoPlayer.isLooping = false;
             videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
+
+            bool failed = false;
+            VideoPlayer.ErrorEventHandler onError = (vp, msg) =>
+            {
+                Debug.LogError($"[CutscenePlayer] Video error: {msg}");
+                failed = true;
+            };
+
+            videoPlayer.errorReceived += onError;
+            
             videoPlayer.Prepare();
-            while (!videoPlayer.isPrepared) yield return null;
+            float waited = 0f;
+            while (!videoPlayer.isPrepared && !failed && waited < prepareTimeout)
+            {
+                waited += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            if (!videoPlayer.isPrepared)
+            {
+                Debug.LogWarning("[CutscenePlayer] Video failed to prepare, skipping cutscene");
+                videoPlayer.errorReceived -= onError;
+                videoPlayer.Stop();
+                videoRoot.SetActive(false);
+                yield break;
+            }
 
             bool finished = false;
             videoPlayer.loopPointReached += _ => finished = true;
 
+            videoPlayer.Play();
+
+            float frameWait = 0f;
+            while ((!videoPlayer.isPlaying || videoPlayer.frame < 1) && !failed && frameWait < 1f)
+            {
+                frameWait += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            
+            videoRoot.SetActive(true);
+            
             EventInstance audio = default;
             Coroutine fadeIn = null;
             if (!cutsceneAudio.IsNull)
@@ -45,11 +82,13 @@ namespace Enemies.Cutscene
                 audio.start();
                 fadeIn = StartCoroutine(FadeIn(audio, audioFadeInDuration));
             }
-            videoPlayer.Play();
 
             Coroutine endFade = null;
             while (!finished)
             {
+                if (failed)
+                    break;
+                
                 if (allowSkip && Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
                     break;
 
@@ -68,6 +107,8 @@ namespace Enemies.Cutscene
 
             videoPlayer.Stop();
             videoRoot.SetActive(false);
+            ClearTarget();
+            videoPlayer.errorReceived -= onError;
             
             if(fadeIn != null)
                 StopCoroutine(fadeIn);
@@ -102,6 +143,29 @@ namespace Enemies.Cutscene
 
             if (inst.isValid())
                 inst.setVolume(1f);
+        }
+        
+        private void ClearTarget()
+        {
+            RenderTexture rt = videoPlayer.targetTexture;
+            
+            if (rt == null) 
+                return;
+            
+            RenderTexture prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            GL.Clear(true, true, Color.black);
+            RenderTexture.active = prev;
+        }
+
+        private static string ResolveFileName(string filename)
+        {
+            string baseName = Path.GetFileNameWithoutExtension(filename);
+#if UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX
+            return baseName + ".webm";
+#else
+            return baseName + ".mp4";
+#endif
         }
     }
 }
