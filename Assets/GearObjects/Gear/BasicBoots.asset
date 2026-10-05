@@ -23,16 +23,19 @@ MonoBehaviour:
   maxLegendaryValue: 0
   Slot: 1
   TemplateID: B1
+  RollAttack: 0
+  RollDefense: 1
+  RollCrit: 1
   AttackRanges:
     Common: {x: 0, y: 0}
     Rare: {x: 0, y: 0}
     Epic: {x: 0, y: 0}
     Legendary: {x: 0, y: 0}
   DefenseRanges:
-    Common: {x: 0, y: 0}
-    Rare: {x: 0, y: 0}
-    Epic: {x: 0, y: 0}
-    Legendary: {x: 0, y: 0}
+    Common: {x: 5, y: 10}
+    Rare: {x: 10, y: 15}
+    Epic: {x: 15, y: 20}
+    Legendary: {x: 20, y: 30}
   CritRanges:
     Common: {x: 0.03, y: 0.05}
     Rare: {x: 0.05, y: 0.1}

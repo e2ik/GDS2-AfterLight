@@ -26,6 +26,7 @@ public class WallHazard : MonoBehaviour, IOnOff
     [SerializeField] private Transform particleSpawnPoint;
     [SerializeField] private Vector2 particleIntervalRange = new(0.5f, 3f);
     [SerializeField] private bool particlesOnlyWhenOn = true;
+    [SerializeField] private bool stopParticlesWhenInactive = true;
     [SerializeField] private FMODUnity.EventReference sparkEvent;
 
     [Header("Light")]
@@ -45,7 +46,8 @@ public class WallHazard : MonoBehaviour, IOnOff
     private float baseIntensity;
     private float flashAmount;
 
-    public bool IsOn { get; private set; }
+    public bool IsOn => enabled;
+    public bool IsActive { get; private set; }
 
     private void OnEnable()
     {
@@ -61,14 +63,22 @@ public class WallHazard : MonoBehaviour, IOnOff
         flickerRoutine = null;
         particleRoutine = null;
 
-        IsOn = false;
+        IsActive = false;
         if (hazardCollider != null) hazardCollider.enabled = false;
         SetSprite(offSprite);
         flashAmount = 0f;
         ApplyLight();
 
+        StopActiveParticles();
+    }
+
+    private void StopActiveParticles()
+    {
         foreach (var ps in activeParticles)
         {
+            if (ps == null) continue;
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            ps.Clear(true);
             PSpawner.Stop(ps);
         }
         activeParticles.Clear();
@@ -81,7 +91,7 @@ public class WallHazard : MonoBehaviour, IOnOff
 
     private IEnumerator FlickerRoutine()
     {
-        IsOn = false;
+        IsActive = false;
         SetSprite(offSprite);
 
         while (true)
@@ -104,11 +114,12 @@ public class WallHazard : MonoBehaviour, IOnOff
             yield return Wait(transitionHoldRange);
 
             SetSprite(onSprite);
-            IsOn = true;
+            IsActive = true;
             yield return Wait(onHoldRange);
 
             SetSprite(inBetweenSprite);
-            IsOn = false;
+            IsActive = false;
+            if (stopParticlesWhenInactive) StopActiveParticles();
             yield return Wait(transitionHoldRange);
 
             SetSprite(offSprite);
@@ -121,7 +132,7 @@ public class WallHazard : MonoBehaviour, IOnOff
         {
             yield return Wait(particleIntervalRange);
 
-            if (particlesOnlyWhenOn && !IsOn) continue;
+            if (particlesOnlyWhenOn && !IsActive) continue;
 
             Vector3 position = particleSpawnPoint != null ? particleSpawnPoint.position : transform.position;
             ParticleSystem ps = PSpawner.Spawn(particleKey, position);

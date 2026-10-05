@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedModifierGemTemplate
   ItemID: DoTSkillGem
   UIName: DoT On Skill
-  UISprite: {fileID: 21300000, guid: c073c3d2e1e169c47b4885d2dba98c7b, type: 3}
+  UISprite: {fileID: 21300000, guid: 890ed47fd9ef440d4856659fdcfee9f3, type: 3}
   Deletable: 1
   SortOrder: 30
   maxCommonValue: 5
@@ -43,7 +43,7 @@ MonoBehaviour:
   dotTickInterval: 1
   dotDuration: 3
   dotPercentByRarity:
-    Common: {x: 10, y: 15}
-    Rare: {x: 15, y: 20}
-    Epic: {x: 20, y: 25}
-    Legendary: {x: 30, y: 50}
+    Common: {x: 25, y: 35}
+    Rare: {x: 35, y: 45}
+    Epic: {x: 45, y: 60}
+    Legendary: {x: 80, y: 100}

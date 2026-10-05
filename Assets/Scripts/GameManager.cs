@@ -211,6 +211,7 @@ public class GameManager : MonoBehaviour
 
         TutorialDirector.Instance?.AbortActiveSequence();
         TutorialDirector.Instance?.ClearCompletedSequences();
+        LootDropHistory.Clear();
 
         ClearPlayerInventory();
         ClearPlayerEquipment();
@@ -424,6 +425,9 @@ public class GameManager : MonoBehaviour
         PlacePlayerAtAnchor(anchorID);
 
         SaveManager.Instance?.SaveProgressAtLocation(targetScene, anchorID, side);
+        
+        if(MusicManager.Instance != null && MusicManager.Instance.IsBossMusicActive)
+            MusicManager.Instance.ExitBossMusicToPrevious();
 
         onComplete?.Invoke();
 
@@ -444,7 +448,7 @@ public class GameManager : MonoBehaviour
         }
 
         MusicManager musicManager = FindFirstObjectByType<MusicManager>();
-        musicManager.SetState(MusicState.Explore);
+        musicManager.SetTargetIntensity(0.5f);
     }
 
     private IEnumerator LoadSceneAdditive(string sceneName)
@@ -510,6 +514,10 @@ public class GameManager : MonoBehaviour
         if (anchor != null)
         {
             _playerInstance.transform.position = anchor.position;
+
+            PlayerController controller = _playerInstance.GetComponent<PlayerController>();
+            if (controller != null) controller.SnapToGround();
+
             ResetBackgroundParallax();
 
             CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();

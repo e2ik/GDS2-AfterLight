@@ -26,6 +26,8 @@ public struct AttackContext
     public bool HasRoll;
     public float RollQuality;
     public ERollTier RollTier;
+
+    public bool IsComboFinisher;
 }
 
 public enum ERollTier

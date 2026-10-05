@@ -7,12 +7,24 @@ namespace Tutorial
 {
     public class TutorialDirector : MonoBehaviour
     {
+        [System.Serializable]
+        public class EventSequenceTrigger
+        {
+            public string eventKey = TutorialEvents.ItemPickedUp;
+            public TutorialSequenceDefinition sequence;
+            public TutorialSequenceDefinition[] requiredCompletedSequences;
+        }
+
         public static TutorialDirector Instance { get; private set; }
+
+        [SerializeField] private EventSequenceTrigger[] eventTriggers;
+        [SerializeField] private bool debugEventTriggers = false;
 
         public event Action<TutorialSequenceDefinition> OnSequenceBegan;
         public event Action<TutorialSequenceDefinition> OnSequenceCompleted;
         public event Action<TutorialStepDefinition> OnStepBegan;
         public event Action<TutorialStepDefinition> OnStepEnded;
+        public event Action<TutorialStepDefinition> OnStepCompleted;
         public event Action OnCutsceneEntered;
         public event Action OnCutsceneExited;
         public event Action PlayerContinued;
@@ -30,8 +42,31 @@ namespace Tutorial
         private bool cutsceneMovementLocked;
         private bool cutsceneInputLocked;
 
+        [SerializeField] private bool pauseTimeOnPromptSteps = true;
+        private bool timePausedByStep;
+        private int stepHoldCount;
+        private bool menusAllowed;
+        private readonly HashSet<TutorialSequenceDefinition.SequenceReaction> firedReactions = new();
+        private bool listeningForReactions;
+
+        public void AddStepHold() => stepHoldCount++;
+        public void RemoveStepHold() => stepHoldCount = Mathf.Max(0, stepHoldCount - 1);
+        private float pausedTimeScale = 1f;
+
         public bool IsRunningSequence => activeSequence != null;
+
+        public bool EnemiesProtected =>
+            activeSequence != null
+            && activeSequence.KeepEnemiesAlive
+            && (activeStep == null || activeStep.ConditionType != TutorialStepConditionType.DefeatEnemies);
         public TutorialStepDefinition ActiveStep => activeStep;
+
+        public bool MapCloseLocked =>
+            activeSequence != null
+            && activeSequence.LockMapCloseUntilCloseStep
+            && !(activeStep != null
+                 && activeStep.ConditionType == TutorialStepConditionType.GameEvent
+                 && activeStep.GameEventKey == TutorialEvents.MapClosed);
 
         private void Awake()
         {
@@ -44,11 +79,77 @@ namespace Tutorial
             DontDestroyOnLoad(gameObject);
 
             UIWindowAnimator.OnAnyShown += HandleAnyWindowShown;
+            TutorialEvents.OnRaised += HandleTriggerEvent;
+        }
+
+        private void HandleTriggerEvent(string key)
+        {
+            if (eventTriggers == null) return;
+
+            foreach (EventSequenceTrigger trigger in eventTriggers)
+            {
+                if (trigger == null || trigger.sequence == null || trigger.eventKey != key) continue;
+
+                if (!trigger.sequence.CanRepeat && IsSequenceCompleted(trigger.sequence.SequenceID))
+                {
+                    LogTrigger(trigger, "skipped, sequence already completed");
+                    continue;
+                }
+
+                if (!RequirementsMet(trigger.requiredCompletedSequences, out string missing))
+                {
+                    LogTrigger(trigger, $"skipped, required sequence '{missing}' not completed yet");
+                    continue;
+                }
+
+                if (activeSequence == trigger.sequence)
+                {
+                    LogTrigger(trigger, "skipped, already running");
+                    continue;
+                }
+
+                if (IsRunningSequence)
+                {
+                    LogTrigger(trigger, "skipped, another sequence is running");
+                    continue;
+                }
+
+                bool started = BeginSequence(trigger.sequence);
+                LogTrigger(trigger, started ? "started" : "BeginSequence refused (no steps or already completed)");
+            }
+        }
+
+        private bool RequirementsMet(TutorialSequenceDefinition[] required, out string missing)
+        {
+            missing = null;
+            if (required == null) return true;
+
+            foreach (TutorialSequenceDefinition req in required)
+            {
+                if (req != null && !IsSequenceCompleted(req.SequenceID))
+                {
+                    missing = req.name;
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void LogTrigger(EventSequenceTrigger trigger, string message)
+        {
+            if (debugEventTriggers)
+                Debug.Log($"[TutorialDirector] Trigger '{trigger.eventKey}' -> '{trigger.sequence.name}': {message}", this);
         }
 
         private void OnDestroy()
         {
-            if (Instance == this) UIWindowAnimator.OnAnyShown -= HandleAnyWindowShown;
+            ResumeTime();
+            StopReactions();
+            if (Instance == this)
+            {
+                UIWindowAnimator.OnAnyShown -= HandleAnyWindowShown;
+                TutorialEvents.OnRaised -= HandleTriggerEvent;
+            }
         }
 
         public void RegisterExcludedWindow(UIWindowAnimator window)
@@ -59,7 +160,21 @@ namespace Tutorial
         private void HandleAnyWindowShown(UIWindowAnimator window)
         {
             if (excludedWindows.Contains(window)) return;
+
+            RaiseWindowEvents(window);
+
+            if (menusAllowed || (activeSequence != null && activeSequence.AllowMenus)) return;
             if (IsRunningSequence) AbortActiveSequence();
+        }
+
+        private static void RaiseWindowEvents(UIWindowAnimator window)
+        {
+            if (window == null) return;
+
+            TutorialEvents.Raise(TutorialEvents.WindowOpenedPrefix + window.gameObject.name);
+
+            if (window.GetComponentInParent<InventoryDisplay>(true) != null || window.GetComponentInChildren<InventoryDisplay>(true) != null)
+                TutorialEvents.Raise(TutorialEvents.InventoryOpened);
         }
 
         public bool IsSequenceCompleted(string sequenceID) => completedSequenceIDs.Contains(sequenceID);
@@ -88,14 +203,16 @@ namespace Tutorial
         public bool BeginSequence(TutorialSequenceDefinition sequence, bool force = false)
         {
             if (sequence == null || sequence.Steps == null || sequence.Steps.Length == 0) return false;
+            if (!force && !sequence.CanRepeat && IsSequenceCompleted(sequence.SequenceID)) return false;
 
             if (IsRunningSequence)
             {
                 if (activeSequence == sequence) return false;
+
+                if (activeSequence.Uninterruptible && !force) return false;
+
                 AbortActiveSequence();
             }
-
-            if (!force && !sequence.CanRepeat && IsSequenceCompleted(sequence.SequenceID)) return false;
 
             int startIndex = resumeIndices.TryGetValue(sequence.SequenceID, out int savedIndex) ? savedIndex : 0;
             sequenceRoutine = StartCoroutine(RunSequence(sequence, startIndex));
@@ -114,6 +231,8 @@ namespace Tutorial
         public void AbortActiveSequence()
         {
             if (!IsRunningSequence) return;
+            if (debugEventTriggers)
+                Debug.Log($"[TutorialDirector] Aborted '{activeSequence.name}' at step {activeStepIndex}\n{System.Environment.StackTrace}", this);
             if (sequenceRoutine != null) StopCoroutine(sequenceRoutine);
             EndActiveStepAbruptly();
             SetCutsceneState(false, false);
@@ -128,6 +247,8 @@ namespace Tutorial
             activeEvaluator?.End();
             activeEvaluator = null;
 
+            ResumeTime();
+
             if (activeStep != null)
             {
                 OnStepEnded?.Invoke(activeStep);
@@ -140,6 +261,9 @@ namespace Tutorial
         private IEnumerator RunSequence(TutorialSequenceDefinition sequence, int startIndex)
         {
             activeSequence = sequence;
+            stepHoldCount = 0;
+            menusAllowed = false;
+            StartReactions();
             OnSequenceBegan?.Invoke(sequence);
 
             Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
@@ -148,6 +272,10 @@ namespace Tutorial
             {
                 var step = sequence.Steps[i];
                 if (step == null) continue;
+
+                while (stepHoldCount > 0) yield return null;
+
+                if (!step.IsRequirementMet(player)) continue;
 
                 activeStepIndex = i;
                 yield return RunStep(step, player);
@@ -159,40 +287,104 @@ namespace Tutorial
         private IEnumerator RunStep(TutorialStepDefinition step, Player player)
         {
             activeStep = step;
+            menusAllowed = step.AllowMenus;
 
-            bool needsLock = step.FreezeMovement || step.DisableInput;
-            if (needsLock) SetCutsceneState(step.FreezeMovement, step.DisableInput);
+            bool pauseTime = pauseTimeOnPromptSteps && step.ConditionType == TutorialStepConditionType.Prompt;
+            bool disableInput = step.DisableInput || pauseTime;
+            bool needsLock = step.FreezeMovement || disableInput;
+            bool freezeMovement = step.FreezeMovement || pauseTime;
+            if (needsLock) SetCutsceneState(freezeMovement, disableInput);
+            if (pauseTime) PauseTime();
 
             OnStepBegan?.Invoke(step);
+
+            float elapsed = 0f;
+            if (step.StartDelay > 0f)
+            {
+                yield return new WaitForSecondsRealtime(step.StartDelay);
+                elapsed = step.StartDelay;
+            }
 
             bool complete = false;
             activeEvaluator = step.CreateEvaluator();
             activeEvaluator.Begin(player, () => complete = true);
 
-            float elapsed = 0f;
             while (!complete)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
 
             if (elapsed < step.MinimumDisplayDuration)
-                yield return new WaitForSeconds(step.MinimumDisplayDuration - elapsed);
+                yield return new WaitForSecondsRealtime(step.MinimumDisplayDuration - elapsed);
 
             activeEvaluator.End();
             activeEvaluator = null;
 
+            ResumeTime();
             if (needsLock) SetCutsceneState(false, false);
 
+            OnStepCompleted?.Invoke(step);
             OnStepEnded?.Invoke(step);
             activeStep = null;
         }
 
+        private void PauseTime()
+        {
+            if (timePausedByStep) return;
+            pausedTimeScale = Time.timeScale;
+            Time.timeScale = 0f;
+            timePausedByStep = true;
+        }
+
+        private void ResumeTime()
+        {
+            if (!timePausedByStep) return;
+            Time.timeScale = pausedTimeScale > 0f ? pausedTimeScale : 1f;
+            timePausedByStep = false;
+        }
+
+        private void StartReactions()
+        {
+            firedReactions.Clear();
+            if (listeningForReactions) return;
+            TutorialEvents.OnRaised += HandleReactionEvent;
+            listeningForReactions = true;
+        }
+
+        private void StopReactions()
+        {
+            firedReactions.Clear();
+            if (!listeningForReactions) return;
+            TutorialEvents.OnRaised -= HandleReactionEvent;
+            listeningForReactions = false;
+        }
+
+        private void HandleReactionEvent(string key)
+        {
+            if (activeSequence == null || activeSequence.Reactions == null) return;
+
+            foreach (var reaction in activeSequence.Reactions)
+            {
+                if (reaction == null || reaction.eventKey != key) continue;
+                if (string.IsNullOrEmpty(reaction.speechText)) continue;
+                if (reaction.onlyOnce && firedReactions.Contains(reaction)) continue;
+
+                firedReactions.Add(reaction);
+
+                Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+                if (player != null)
+                    TutorialSpeechBubblePool.Instance?.Show(reaction.speechText, player.transform, reaction.duration, reaction.effect);
+            }
+        }
+
         private void FinishSequence(TutorialSequenceDefinition sequence, bool markCompleted)
         {
+            StopReactions();
+
             if (markCompleted)
             {
-                if (sequence != null && !sequence.CanRepeat) completedSequenceIDs.Add(sequence.SequenceID);
+                if (sequence != null && !string.IsNullOrEmpty(sequence.SequenceID)) completedSequenceIDs.Add(sequence.SequenceID);
                 if (sequence != null) resumeIndices.Remove(sequence.SequenceID);
             }
             activeSequence = null;

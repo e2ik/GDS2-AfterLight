@@ -27,6 +27,8 @@ public class WorldItem : MonoBehaviour
     [Header("Pickup")]
     [SerializeField] private float pickupRadius = 0.5f;
     private CircleCollider2D pickupTrigger;
+    private bool awaitingLanding;
+    private Coroutine pickupFallbackRoutine;
 
     [Header("Rarity")]
     [SerializeField] private bool overrideRarityOdds = false;
@@ -37,15 +39,46 @@ public class WorldItem : MonoBehaviour
     [SerializeField] private GameObject epicEffect;
     [SerializeField] private GameObject legendaryEffect;
 
+    [Header("Rarity Glow")]
+    [SerializeField] private ParticleGlow rarityGlow;
+    [SerializeField] private bool useGameManagerRarityColors = true;
+    [SerializeField, ColorUsage(false, false)] private Color commonGlowColor = Color.white;
+    [SerializeField, ColorUsage(false, false)] private Color rareGlowColor = new Color(0.3f, 0.6f, 1f);
+    [SerializeField, ColorUsage(false, false)] private Color epicGlowColor = new Color(0.7f, 0.3f, 1f);
+    [SerializeField, ColorUsage(false, false)] private Color legendaryGlowColor = new Color(1f, 0.75f, 0.2f);
+    [SerializeField, Min(0f)] private float commonGlowIntensity = 1.5f;
+    [SerializeField, Min(0f)] private float rareGlowIntensity = 2f;
+    [SerializeField, Min(0f)] private float epicGlowIntensity = 2.5f;
+    [SerializeField, Min(0f)] private float legendaryGlowIntensity = 3f;
+    [SerializeField, Range(0f, 1f)] private float commonGlowOpacity = 1f;
+    [SerializeField, Range(0f, 1f)] private float rareGlowOpacity = 1f;
+    [SerializeField, Range(0f, 1f)] private float epicGlowOpacity = 1f;
+    [SerializeField, Range(0f, 1f)] private float legendaryGlowOpacity = 1f;
+    [SerializeField] private bool matchItemSorting = true;
+    [SerializeField] private int glowSortingOffset = -1;
+
     private Collider2D itemCollider;
     private Rigidbody2D rb;
     private bool hasBeenPickedUp = false;
     [SerializeField] private EventReference primaryPickupEvent;
     [SerializeField] private EventReference secondaryPickupEvent;
+    [SerializeField] private string tutorialEventKey;
+    [SerializeField, Min(0f)] private float inventoryFullMessageCooldown = 3f;
+    [SerializeField] private Color inventoryFullColor = new Color(1f, 0.35f, 0.35f);
+    private static float nextInventoryFullMessageTime = float.NegativeInfinity;
     private bool markedForDestruction = false;
 
     private bool hasRarity;
     private ERarity rarity;
+    private object rolledInstance;
+
+    private bool isDropped;
+    private AreaSide droppedAreaSide;
+    private bool hiddenByArea;
+    private Renderer[] areaRenderers;
+    private bool[] areaRendererStates;
+    private Behaviour[] areaLights;
+    private bool[] areaLightStates;
 
     public bool HasRarity => hasRarity;
     public ERarity Rarity => rarity;
@@ -55,6 +88,16 @@ public class WorldItem : MonoBehaviour
     {
         EnsureComponentsCached();
         CheckUniqueOwnership();
+        ApplyBehaviourPhysics();
+    }
+
+    private void ApplyBehaviourPhysics()
+    {
+        if (rb == null || behaviour != WorldItemBehaviour.Unique) return;
+
+        rb.linearVelocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+        rb.bodyType = RigidbodyType2D.Kinematic;
     }
 
     private void Start()
@@ -65,27 +108,105 @@ public class WorldItem : MonoBehaviour
         InitializeVisuals();
     }
 
-    public void Initialize(InventoryItemBase newItem, ERarity? assignedRarity = null)
+    private void Update()
+    {
+        if (!isDropped || GameManager.Instance == null) return;
+
+        bool shouldHide = GameManager.Instance.CurrentAreaSide != droppedAreaSide;
+        if (shouldHide != hiddenByArea) SetHiddenByArea(shouldHide);
+    }
+
+    private void MarkDropped()
+    {
+        if (isDropped || GameManager.Instance == null) return;
+
+        isDropped = true;
+        droppedAreaSide = GameManager.Instance.CurrentAreaSide;
+    }
+
+    private void SetHiddenByArea(bool hide)
+    {
+        if (hide)
+        {
+            areaRenderers = GetComponentsInChildren<Renderer>(true);
+            areaRendererStates = new bool[areaRenderers.Length];
+            for (int i = 0; i < areaRenderers.Length; i++)
+            {
+                areaRendererStates[i] = areaRenderers[i].enabled;
+                areaRenderers[i].enabled = false;
+            }
+
+            areaLights = GetComponentsInChildren<UnityEngine.Rendering.Universal.Light2D>(true);
+            areaLightStates = new bool[areaLights.Length];
+            for (int i = 0; i < areaLights.Length; i++)
+            {
+                areaLightStates[i] = areaLights[i].enabled;
+                areaLights[i].enabled = false;
+            }
+        }
+        else
+        {
+            if (areaRenderers != null)
+            {
+                for (int i = 0; i < areaRenderers.Length; i++)
+                    if (areaRenderers[i] != null) areaRenderers[i].enabled = areaRendererStates[i];
+            }
+
+            if (areaLights != null)
+            {
+                for (int i = 0; i < areaLights.Length; i++)
+                    if (areaLights[i] != null) areaLights[i].enabled = areaLightStates[i];
+            }
+        }
+
+        if (rb != null) rb.simulated = !hide;
+        hiddenByArea = hide;
+    }
+
+    public void Initialize(InventoryItemBase newItem, ERarity? fixedRarity = null, RarityWeights customOdds = null)
     {
         itemDefinition = newItem;
         CheckUniqueOwnership();
         if (markedForDestruction) return;
 
-        AssignRarity(assignedRarity);
+        MarkDropped();
+
+        AssignRarity(fixedRarity, customOdds);
         InitializeVisuals();
     }
 
-    private void AssignRarity(ERarity? assignedRarity)
+    private void AssignRarity(ERarity? fixedRarity, RarityWeights customOdds = null)
     {
+        rolledInstance = null;
+
         if (!RarityWeights.UsesRarity(itemDefinition))
         {
             hasRarity = false;
             return;
         }
 
-        rarity = assignedRarity ?? RarityWeights.Roll(overrideRarityOdds, rarityOdds);
+        RarityWeights odds = customOdds ?? (overrideRarityOdds ? rarityOdds : null);
+        RarityLineRoller roller = fixedRarity.HasValue
+            ? RarityLineRoller.Fixed(fixedRarity.Value)
+            : new RarityLineRoller(odds);
+
+        rolledInstance = itemDefinition switch
+        {
+            WeaponDefinition weaponDef => weaponDef.Roll(roller),
+            GearDefinition gearDef => gearDef.Roll(roller),
+            SecondaryGemBehaviourDefinition gemDef => gemDef.Roll(roller),
+            _ => null
+        };
+
+        rarity = roller.Final;
         hasRarity = true;
         OnRarityAssigned?.Invoke(rarity);
+    }
+
+    private T GetRolledInstance<T>() where T : class
+    {
+        if (!hasRarity || !(rolledInstance is T)) AssignRarity(null);
+        return rolledInstance as T;
     }
 
     private void CheckUniqueOwnership()
@@ -190,6 +311,71 @@ public class WorldItem : MonoBehaviour
         SetEffect(rareEffect, hasRarity && rarity == ERarity.Rare);
         SetEffect(epicEffect, hasRarity && rarity == ERarity.Epic);
         SetEffect(legendaryEffect, hasRarity && rarity == ERarity.Legendary);
+        ApplyRarityGlow();
+    }
+
+    private void ApplyRarityGlow()
+    {
+        if (rarityGlow == null) return;
+
+        GameObject glowObject = rarityGlow.gameObject;
+        if (glowObject != gameObject && glowObject.activeSelf != hasRarity)
+            glowObject.SetActive(hasRarity);
+
+        if (!hasRarity) return;
+
+        if (matchItemSorting && itemSpriteRenderer != null && rarityGlow.TryGetComponent(out ParticleSystemRenderer glowRenderer))
+        {
+            glowRenderer.sortingLayerID = itemSpriteRenderer.sortingLayerID;
+            glowRenderer.sortingOrder = itemSpriteRenderer.sortingOrder + glowSortingOffset;
+        }
+
+        Color glowColor = GetGlowColor(rarity);
+        glowColor.a = GetGlowOpacity(rarity);
+        rarityGlow.SetColor(glowColor);
+        rarityGlow.SetIntensity(GetGlowIntensity(rarity));
+
+        if (rarityGlow.TryGetComponent(out ParticleSystem ps))
+        {
+            ps.Clear(true);
+            ps.Play(true);
+        }
+    }
+
+    private Color GetGlowColor(ERarity value)
+    {
+        if (useGameManagerRarityColors && GameManager.Instance != null)
+            return GameManager.Instance.GetRarityColor(value);
+
+        switch (value)
+        {
+            case ERarity.Rare: return rareGlowColor;
+            case ERarity.Epic: return epicGlowColor;
+            case ERarity.Legendary: return legendaryGlowColor;
+            default: return commonGlowColor;
+        }
+    }
+
+    private float GetGlowOpacity(ERarity value)
+    {
+        switch (value)
+        {
+            case ERarity.Rare: return rareGlowOpacity;
+            case ERarity.Epic: return epicGlowOpacity;
+            case ERarity.Legendary: return legendaryGlowOpacity;
+            default: return commonGlowOpacity;
+        }
+    }
+
+    private float GetGlowIntensity(ERarity value)
+    {
+        switch (value)
+        {
+            case ERarity.Rare: return rareGlowIntensity;
+            case ERarity.Epic: return epicGlowIntensity;
+            case ERarity.Legendary: return legendaryGlowIntensity;
+            default: return commonGlowIntensity;
+        }
     }
 
     private static void SetEffect(GameObject effect, bool active)
@@ -200,27 +386,80 @@ public class WorldItem : MonoBehaviour
     public void PopOut(Vector2 forceDirection, float forceMagnitude)
     {
         EnsureComponentsCached();
+        MarkDropped();
 
-        if (rb != null)
+        if (rb != null && behaviour != WorldItemBehaviour.Unique)
         {
             rb.linearVelocity = Vector2.zero;
             rb.AddForce(forceDirection.normalized * forceMagnitude, ForceMode2D.Impulse);
         }
 
-        StartCoroutine(EnablePickupDelay(0.4f));
+        if (rb == null || behaviour == WorldItemBehaviour.Unique) return;
+
+        if (pickupFallbackRoutine != null) StopCoroutine(pickupFallbackRoutine);
+        awaitingLanding = true;
+        if (pickupTrigger != null) pickupTrigger.enabled = false;
+        pickupFallbackRoutine = StartCoroutine(PickupFallbackRoutine());
     }
 
-    private IEnumerator EnablePickupDelay(float delay)
+    private void OnEnable()
     {
-        if (pickupTrigger != null) pickupTrigger.enabled = false;
-        yield return new WaitForSeconds(delay);
+        if (awaitingLanding && pickupFallbackRoutine == null)
+            pickupFallbackRoutine = StartCoroutine(PickupFallbackRoutine());
+    }
+
+    private void OnDisable()
+    {
+        pickupFallbackRoutine = null;
+    }
+
+    private IEnumerator PickupFallbackRoutine()
+    {
+        yield return new WaitForSeconds(1.5f);
+        pickupFallbackRoutine = null;
+        EnablePickupAfterLanding();
+    }
+
+    private void EnablePickupAfterLanding()
+    {
+        if (!awaitingLanding) return;
+        awaitingLanding = false;
+
+        if (pickupFallbackRoutine != null)
+        {
+            StopCoroutine(pickupFallbackRoutine);
+            pickupFallbackRoutine = null;
+        }
+
         if (pickupTrigger != null) pickupTrigger.enabled = true;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         Player player = collision.gameObject.GetComponentInParent<Player>();
-        if (player != null) IgnorePlayerCollision(player);
+        if (player != null)
+        {
+            IgnorePlayerCollision(player);
+            return;
+        }
+
+        if (awaitingLanding && HasGroundContact(collision)) EnablePickupAfterLanding();
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (!awaitingLanding) return;
+        if (collision.gameObject.GetComponentInParent<Player>() != null) return;
+        if (HasGroundContact(collision)) EnablePickupAfterLanding();
+    }
+
+    private static bool HasGroundContact(Collision2D collision)
+    {
+        for (int i = 0; i < collision.contactCount; i++)
+        {
+            if (collision.GetContact(i).normal.y > 0.5f) return true;
+        }
+        return false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -233,11 +472,6 @@ public class WorldItem : MonoBehaviour
         CollectItem(player);
     }
 
-    private ERarity GetPickupRarity()
-    {
-        if (!hasRarity) AssignRarity(null);
-        return rarity;
-    }
 
     private void CollectItem(Player player)
     {
@@ -247,8 +481,8 @@ public class WorldItem : MonoBehaviour
         {
             case SecondaryGemBehaviourDefinition secondaryDef:
                 {
-                    ERarity secondaryRarity = GetPickupRarity();
-                    SecondaryGemInstance gemLoot = secondaryDef.CreateInstance(secondaryRarity);
+                    SecondaryGemInstance gemLoot = GetRolledInstance<SecondaryGemInstance>();
+                    ERarity secondaryRarity = gemLoot.Rarity;
                     SecondaryGemInstance previouslyEquippedGem = !player.Equipment.IsSecondaryGemSlotEmpty() ? player.Equipment.SecondaryGem : null;
 
                     if (!player.Inventory.AddItemToInventory(gemLoot))
@@ -296,8 +530,8 @@ public class WorldItem : MonoBehaviour
 
             case WeaponDefinition weaponDef:
                 {
-                    ERarity weaponRarity = GetPickupRarity();
-                    WeaponInstance weaponLoot = weaponDef.CreateInstance(weaponRarity);
+                    WeaponInstance weaponLoot = GetRolledInstance<WeaponInstance>();
+                    ERarity weaponRarity = weaponLoot.Rarity;
                     WeaponInstance previouslyEquippedWeapon = player.Equipment.EquippedWeapon;
 
                     if (!player.Inventory.AddItemToInventory(weaponLoot))
@@ -320,8 +554,8 @@ public class WorldItem : MonoBehaviour
 
             case GearDefinition gearDef:
                 {
-                    ERarity gearRarity = GetPickupRarity();
-                    GearInstance gearLoot = gearDef.CreateInstance(gearRarity);
+                    GearInstance gearLoot = GetRolledInstance<GearInstance>();
+                    ERarity gearRarity = gearLoot.Rarity;
                     GearInstance previouslyEquippedGear = player.Equipment.GetEquippedGear(gearDef.Slot);
 
                     if (!player.Inventory.AddItemToInventory(gearLoot))
@@ -388,6 +622,7 @@ public class WorldItem : MonoBehaviour
         if (pickedUp)
         {
             hasBeenPickedUp = true;
+            RaisePickupTutorialEvents();
             Destroy(gameObject);
         }
         else
@@ -396,10 +631,41 @@ public class WorldItem : MonoBehaviour
         }
     }
 
+    private void RaisePickupTutorialEvents()
+    {
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.ItemPickedUp);
+
+        string typeKey = itemDefinition switch
+        {
+            WeaponDefinition _ => Tutorial.TutorialEvents.WeaponPickedUp,
+            GearDefinition _ => Tutorial.TutorialEvents.GearPickedUp,
+            SecondaryGemBehaviourDefinition _ => Tutorial.TutorialEvents.GemPickedUp,
+            PrimaryGemBehaviourDefinition _ => Tutorial.TutorialEvents.GemPickedUp,
+            KeyDefinition _ => Tutorial.TutorialEvents.KeyPickedUp,
+            LoreItemDefinition _ => Tutorial.TutorialEvents.LorePickedUp,
+            _ => null
+        };
+
+        Tutorial.TutorialEvents.Raise(typeKey);
+
+        if (itemDefinition is PrimaryGemBehaviourDefinition)
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PrimaryGemPickedUp);
+        else if (itemDefinition is SecondaryGemBehaviourDefinition)
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.SecondaryGemPickedUp);
+
+        if (itemDefinition != null)
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PickedUpPrefix + itemDefinition.name);
+
+        Tutorial.TutorialEvents.Raise(tutorialEventKey);
+    }
+
     private void ShowInventoryFullMessage(InventoryItemBase def)
     {
+        if (Time.unscaledTime < nextInventoryFullMessageTime) return;
+        nextInventoryFullMessageTime = Time.unscaledTime + inventoryFullMessageCooldown;
+
         LootPickupDisplay.Instance?.AddPickup(
-            def.UISprite, "Inventory Full", null,
+            def.UISprite, $"<color=#{ColorUtility.ToHtmlStringRGB(inventoryFullColor)}>Inventory Full</color>", null,
             $"Not enough room for {def.UIName}.");
     }
 }

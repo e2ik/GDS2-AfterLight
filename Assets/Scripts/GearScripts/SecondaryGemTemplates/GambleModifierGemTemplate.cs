@@ -63,15 +63,14 @@ public class GambleModifierGemTemplate : SecondaryGemBehaviourDefinition
         context.RollTier = tier;
         context.RollQuality = (tierStart + t * chosen.chance) / total;
 
-        // Debug.Log($"Rolled {tier} ({adjustedMult:F2}x). Dealing {context.BaseAttackDamage}.");
+        Debug.Log($"Rolled {tier} ({adjustedMult:F2}x). Dealing {context.BaseAttackDamage}.");
     }
 
-    public override SecondaryGemInstance CreateInstance(ERarity rarity)
+    protected override SecondaryGemInstance CreateInstance(RarityLineRoller roller)
     {
-        SecondaryGemInstance instance = base.CreateInstance(rarity);
+        SecondaryGemInstance instance = base.CreateInstance(roller);
 
-        Vector2 range = maxDamageMultByRarity.GetRange(rarity);
-        instance.InstRolledMaxGambleMult = Random.Range(range.x, range.y);
+        instance.InstRolledMaxGambleMult = roller.RollValue(maxDamageMultByRarity);
 
         return instance;
     }

@@ -13,12 +13,11 @@ public class GreenModifierGemTemplate : SecondaryGemBehaviourDefinition
         Legendary = new Vector2(17f, 20f)
     };
 
-    public override SecondaryGemInstance CreateInstance(ERarity rarity)
+    protected override SecondaryGemInstance CreateInstance(RarityLineRoller roller)
     {
-        SecondaryGemInstance instance = base.CreateInstance(rarity);
+        SecondaryGemInstance instance = base.CreateInstance(roller);
 
-        Vector2 range = chargeAmountByRarity.GetRange(rarity);
-        instance.InstRolledChargeAmount = Random.Range(range.x, range.y) / 100f;
+        instance.InstRolledChargeAmount = roller.RollValue(chargeAmountByRarity) / 100f;
 
         return instance;
     }

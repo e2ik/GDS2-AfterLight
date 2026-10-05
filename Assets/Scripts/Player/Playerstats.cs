@@ -19,6 +19,7 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float gearDefenseBonus = 0f;
     [SerializeField] private float gearHumanityBonus = 0f;
     [SerializeField] private float gemAttackBonus = 0f;
+    [SerializeField] private float weaponAttackBonus = 0f;
     [SerializeField] private float gearCritBonus = 0f;
     [SerializeField] private float gemCritBonus = 0f;
 
@@ -51,6 +52,7 @@ public class PlayerStats : MonoBehaviour
     public event System.Action<float, float> OnHealthChanged;
     public event System.Action OnStatsRecalculated;
     public event System.Action OnDied;
+    public static event System.Action OnRespawnStarted;
 
     private void Awake()
     {
@@ -83,7 +85,7 @@ public class PlayerStats : MonoBehaviour
 
     private float UpdateAttackDisplay()
     {
-        return baseAttack + gearAttackBonus + gemAttackBonus;
+        return baseAttack + gearAttackBonus + gemAttackBonus + weaponAttackBonus;
     }
 
     public void RecalculateStats()
@@ -92,6 +94,7 @@ public class PlayerStats : MonoBehaviour
         gearDefenseBonus = 0f;
         gearHumanityBonus = 0f;
         gemAttackBonus = 0f;
+        weaponAttackBonus = 0f;
         gearCritBonus = 0f;
         gemCritBonus = 0f;
 
@@ -107,6 +110,12 @@ public class PlayerStats : MonoBehaviour
                     gearHumanityBonus += gear.InstBonusHumanity;
                     gearCritBonus += gear.InstBonusCrit;
                 }
+            }
+
+            WeaponInstance weapon = player.Equipment.EquippedWeapon;
+            if (weapon != null && !string.IsNullOrEmpty(weapon.InstTemplateID))
+            {
+                weaponAttackBonus = weapon.InstRolledAttack;
             }
 
             var gem = player.Equipment.SecondaryGem;
@@ -131,6 +140,7 @@ public class PlayerStats : MonoBehaviour
 
         currentHealth = Mathf.Max(0f, currentHealth - effectiveDamage);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerHit);
 
         AudioManager.PlaySFX(hitEvent, transform.position);
 
@@ -238,6 +248,7 @@ public class PlayerStats : MonoBehaviour
     {
         if (isRespawning) return;
         isRespawning = true;
+        OnRespawnStarted?.Invoke();
 
         GameUI.DeathWindow window = GetDeathWindow();
         if (window != null) GameUI.UIManager.Instance.Close(window);
@@ -275,6 +286,7 @@ public class PlayerStats : MonoBehaviour
 
         ReviveFull();
         if (player != null && player.Heals != null) player.Heals.ResetHeals();
+        PrefabSpawner.ResetAllDefeated();
         SetInputLocked(false);
         if (player != null) player.Controller.SetPhysicsSuspended(false);
     }

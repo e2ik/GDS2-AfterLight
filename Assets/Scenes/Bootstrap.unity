@@ -307,15 +307,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d495cdc66305ce447af6bb257ca9274b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
-  musicEvent:
+  defaultMusicEvent:
     Guid:
-      Data1: 300044231
-      Data2: 1214001075
-      Data3: 842542756
-      Data4: -412094302
-    Path: event:/HospitalTheme
+      Data1: 1626273885
+      Data2: 1300586119
+      Data3: 1151470465
+      Data4: 998864367
+    Path: event:/TowerTheme
   smoothSpeed: 2
-  decayPerSecond: 0.125
+  decayPerSecond: 0.01
+  decayDelay: 1.5
+  crossfadeDuration: 0.5
+  idleFloor: 0
 --- !u!114 &78526264
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -15,6 +15,10 @@ public class EquipmentSlot : MonoBehaviour
     [Header("Equipped Scale Settings")]
     [SerializeField] private float equippedIconScale = 1.2f;
 
+    [Header("Icon Colour Settings")]
+    [SerializeField] private Color emptySlotColor = Color.white;
+    [SerializeField] private Color equippedItemColor = Color.white;
+
     private Vector3 originalIconScale = Vector3.one;
     private string defaultSlotName;
 
@@ -46,7 +50,7 @@ public class EquipmentSlot : MonoBehaviour
 
             if (activeSprite != null)
             {
-                iconImage.color = Color.white;
+                iconImage.color = hasItem ? equippedItemColor : emptySlotColor;
             }
             iconImage.transform.localScale = hasItem ? originalIconScale * equippedIconScale : originalIconScale;
         }

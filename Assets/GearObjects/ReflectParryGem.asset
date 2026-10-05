@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BlueModifierGemTemplate
   ItemID: ReflectParryGem
   UIName: Reflect On Parry
-  UISprite: {fileID: 21300000, guid: 42085325519bc6e4ab911f60f2006e23, type: 3}
+  UISprite: {fileID: 21300000, guid: 33d4ba2313c6c401e8fa9b32598a2c59, type: 3}
   Deletable: 1
   SortOrder: 0
   maxCommonValue: 0
@@ -42,7 +42,7 @@ MonoBehaviour:
     Epic: {x: 0.1, y: 0.15}
     Legendary: {x: 0.15, y: 0.2}
   reflectAmountByRarity:
-    Common: {x: 35, y: 45}
-    Rare: {x: 45, y: 60}
-    Epic: {x: 60, y: 85}
-    Legendary: {x: 90, y: 125}
+    Common: {x: 50, y: 65}
+    Rare: {x: 65, y: 80}
+    Epic: {x: 80, y: 100}
+    Legendary: {x: 115, y: 150}

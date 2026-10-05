@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -9,6 +10,9 @@ public class InputPromptTextSlots : MonoBehaviour
 {
     [SerializeField] private TMP_Text text;
     [SerializeField] private InputActionPrompt promptPrefab;
+    [SerializeField] private bool autoSlotWidth = true;
+    [SerializeField, Min(0.1f)] private float iconAspect = 1f;
+    [SerializeField, Min(0f)] private float slotPadding = 0.1f;
     [SerializeField] private string slotText = "MM";
     [SerializeField] private string partSeparator = " ";
     [SerializeField] private float promptScale = 1.3f;
@@ -19,6 +23,8 @@ public class InputPromptTextSlots : MonoBehaviour
     private string rawText;
     private readonly List<InputActionPrompt> activePrompts = new List<InputActionPrompt>();
     private readonly Stack<InputActionPrompt> pool = new Stack<InputActionPrompt>();
+    private readonly Dictionary<string, float> tokenAspects = new Dictionary<string, float>();
+    private bool rebuildingForAspect;
 
     private void Awake()
     {
@@ -57,6 +63,7 @@ public class InputPromptTextSlots : MonoBehaviour
 
         text.ForceMeshUpdate();
         TMP_TextInfo info = text.textInfo;
+        bool aspectsChanged = false;
 
         for (int i = 0; i < info.linkCount; i++)
         {
@@ -87,16 +94,39 @@ public class InputPromptTextSlots : MonoBehaviour
             float height = (max.y - min.y) * promptScale;
 
             InputActionPrompt prompt = GetPrompt();
+            prompt.SetAction(action, part);
+
+            float knownAspect = GetTokenAspect(token);
+            float actualAspect = prompt.DisplayAspect;
+            if (autoSlotWidth && Mathf.Abs(actualAspect - knownAspect) > 0.01f)
+            {
+                tokenAspects[token] = actualAspect;
+                aspectsChanged = true;
+            }
+
             RectTransform rect = (RectTransform)prompt.transform;
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
             rect.localPosition = center;
             rect.localRotation = Quaternion.identity;
             rect.localScale = Vector3.one;
-            rect.sizeDelta = new Vector2(Mathf.Max(height, max.x - min.x), height);
+            float width = autoSlotWidth ? height * actualAspect : Mathf.Max(height, max.x - min.x);
+            rect.sizeDelta = new Vector2(width, height);
 
-            prompt.SetAction(action, part);
             activePrompts.Add(prompt);
         }
+
+        if (aspectsChanged && !rebuildingForAspect)
+        {
+            rebuildingForAspect = true;
+            text.text = BuildSlotText(rawText);
+            RebuildPrompts();
+            rebuildingForAspect = false;
+        }
+    }
+
+    private float GetTokenAspect(string token)
+    {
+        return token != null && tokenAspects.TryGetValue(token, out float aspect) ? aspect : iconAspect;
     }
 
     private string BuildSlotText(string raw)
@@ -109,6 +139,9 @@ public class InputPromptTextSlots : MonoBehaviour
         StringBuilder sb = new StringBuilder(raw.Length);
         int lastEnd = 0;
         string lastCollapsedAction = null;
+        int lastCollapsedIndex = 0;
+        int lastCollapsedLength = 0;
+        bool lastCollapsedMerged = false;
 
         foreach (Match match in TokenPattern.Matches(raw))
         {
@@ -134,10 +167,25 @@ public class InputPromptTextSlots : MonoBehaviour
 
                 if (!partFound)
                 {
-                    if (lastCollapsedAction == actionName && string.IsNullOrWhiteSpace(between)) continue;
+                    if (lastCollapsedAction == actionName && string.IsNullOrWhiteSpace(between))
+                    {
+                        if (!lastCollapsedMerged)
+                        {
+                            string whole = SlotLink(actionName);
+                            sb.Remove(lastCollapsedIndex, lastCollapsedLength);
+                            sb.Insert(lastCollapsedIndex, whole);
+                            lastCollapsedLength = whole.Length;
+                            lastCollapsedMerged = true;
+                        }
+                        continue;
+                    }
 
                     sb.Append(between);
-                    sb.Append(SlotLink(actionName));
+                    string partLink = SlotLink(actionName + ":" + part);
+                    lastCollapsedIndex = sb.Length;
+                    lastCollapsedLength = partLink.Length;
+                    lastCollapsedMerged = false;
+                    sb.Append(partLink);
                     lastCollapsedAction = actionName;
                     continue;
                 }
@@ -185,7 +233,20 @@ public class InputPromptTextSlots : MonoBehaviour
 
     private string SlotLink(string token)
     {
-        return $"<link=\"input:{token}\"><color=#00000000>{slotText}</color></link>";
+        return $"<link=\"input:{token}\"><color=#00000000>{SlotContent(token)}</color></link>";
+    }
+
+    private string SlotContent(string token)
+    {
+        if (!autoSlotWidth || text == null || text.font == null) return slotText;
+
+        var face = text.font.faceInfo;
+        if (face.pointSize <= 0f) return slotText;
+
+        float lineHeightEm = (face.ascentLine - face.descentLine) / (float)face.pointSize;
+        float widthEm = lineHeightEm * promptScale * GetTokenAspect(token) + slotPadding * 2f;
+
+        return $"<mspace={widthEm.ToString("0.###", CultureInfo.InvariantCulture)}em>M</mspace>";
     }
 
     private InputActionAsset ResolveActions()

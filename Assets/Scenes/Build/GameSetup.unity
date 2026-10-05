@@ -313,15 +313,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d495cdc66305ce447af6bb257ca9274b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
-  musicEvent:
+  defaultMusicEvent:
     Guid:
-      Data1: 300044231
-      Data2: 1214001075
-      Data3: 842542756
-      Data4: -412094302
-    Path: event:/HospitalTheme
+      Data1: 1626273885
+      Data2: 1300586119
+      Data3: 1151470465
+      Data4: 998864367
+    Path: event:/TowerTheme
   smoothSpeed: 2
   decayPerSecond: 0.125
+  decayDelay: 1.5
+  crossfadeDuration: 1.5
+  idleFloor: 0
 --- !u!114 &78526264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -353,6 +356,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c082fa6a54147c043b550f59a9c836fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialDirector
+  eventTriggers:
+  - eventKey: ItemPickedUp
+    sequence: {fileID: 11400000, guid: 44a60c5ab5476284a8f772c67e5c9a34, type: 2}
+    requiredCompletedSequences:
+    - {fileID: 11400000, guid: 1631a3fff5c7db048bca853201e8496e, type: 2}
+  - eventKey: FastTravelUsed
+    sequence: {fileID: 11400000, guid: 40faba29a39be0140aaf8831fe9cace1, type: 2}
+    requiredCompletedSequences: []
+  - eventKey: PrimaryGemPickedUp
+    sequence: {fileID: 11400000, guid: 8ec1a9fd94e536340b2f2be96eedbfdf, type: 2}
+    requiredCompletedSequences: []
+  debugEventTriggers: 0
+  pauseTimeOnPromptSteps: 1
 --- !u!114 &78526266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -410,10 +426,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_NormalColor: {r: 0.77254903, g: 0.7137255, b: 0.5411765, a: 1}
+    m_HighlightedColor: {r: 1, g: 0.49700117, b: 0, a: 1}
+    m_PressedColor: {r: 0.8867924, g: 0.6329343, b: 0.42108688, a: 1}
+    m_SelectedColor: {r: 0.9056604, g: 0.81949663, b: 0.5667497, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -446,7 +462,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.7735849, g: 0.7140344, b: 0.54248244, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -480,7 +496,7 @@ RectTransform:
   m_GameObject: {fileID: 215098120}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 231758890}
@@ -488,7 +504,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -76}
+  m_AnchoredPosition: {x: 0, y: -175}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &231758889
@@ -550,8 +566,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Button
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2caf916d51a264dbba559afef366c187, type: 2}
+  m_sharedMaterial: {fileID: 5256162471703705019, guid: 2caf916d51a264dbba559afef366c187, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -668,10 +684,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_NormalColor: {r: 0.77254903, g: 0.7137255, b: 0.5411765, a: 1}
+    m_HighlightedColor: {r: 1, g: 0.49700117, b: 0, a: 1}
+    m_PressedColor: {r: 0.8867924, g: 0.6329343, b: 0.42108688, a: 1}
+    m_SelectedColor: {r: 0.9056604, g: 0.81949663, b: 0.5667497, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -704,7 +720,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.7735849, g: 0.7140344, b: 0.54248244, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -738,7 +754,7 @@ RectTransform:
   m_GameObject: {fileID: 238272516}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2030779159}
@@ -746,7 +762,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -160}
+  m_AnchoredPosition: {x: 0, y: -224}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &519420028
@@ -909,7 +925,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &586667861
 RectTransform:
   m_ObjectHideFlags: 0
@@ -926,7 +942,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 148}
+  m_AnchoredPosition: {x: 246, y: -135}
   m_SizeDelta: {x: 0, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &586667862
@@ -949,19 +965,17 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Project AfterLight:
-
-    Systems Prototype'
+  m_text: Test Build
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b4e0a4890c578ee4aa5d9447ffda6e37, type: 2}
+  m_sharedMaterial: {fileID: 5256162471703705019, guid: b4e0a4890c578ee4aa5d9447ffda6e37, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4282301922
+  m_fontColor: {r: 0.8867924, g: 0.73969054, b: 0.24261291, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -978,13 +992,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 70
-  m_fontSizeBase: 70
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 1
+  m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
@@ -1181,12 +1195,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: e88cf3603fc6641448400d791450d7f0, type: 3}
+  m_Sprite: {fileID: 21300000, guid: c7eb7b18fd1879d4082f3590c2a1d91c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 10.24, y: 5.59}
+  m_Size: {x: 21.588842, y: 12.849999}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -1200,8 +1214,8 @@ Transform:
   m_GameObject: {fileID: 1034679151}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.15, y: -0.21, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalPosition: {x: -0.0155, y: -0.3669, z: 0}
+  m_LocalScale: {x: 0.86284155, y: 0.8534114, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1387,7 +1401,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.EventSystems.EventSystem
-  m_FirstSelected: {fileID: 0}
+  m_FirstSelected: {fileID: 215098120}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
 --- !u!4 &1903205255
@@ -1437,6 +1451,9 @@ MonoBehaviour:
   materialsToWarm:
   - {fileID: 2100000, guid: 15c4c1982bbd35d40b3050d0b06a9e29, type: 2}
   - {fileID: 2100000, guid: 3777f4d643ba84c59ab92c3122bad925, type: 2}
+  - {fileID: 2100000, guid: a8e68e8dcb1786f41a237abe9af72c6e, type: 2}
+  - {fileID: 2100000, guid: b0d90b5219f95224ba6ffe30774f0e19, type: 2}
+  - {fileID: 2100000, guid: 025e3814ef71b0f44a464a5f245dd14e, type: 2}
 --- !u!4 &1958938305
 Transform:
   m_ObjectHideFlags: 0
@@ -1511,8 +1528,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Button
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2caf916d51a264dbba559afef366c187, type: 2}
+  m_sharedMaterial: {fileID: 5256162471703705019, guid: 2caf916d51a264dbba559afef366c187, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

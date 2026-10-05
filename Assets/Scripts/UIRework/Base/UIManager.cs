@@ -64,12 +64,18 @@ namespace GameUI
                 CancelRelease();
                 Time.timeScale = window.BlocksPlayerInput ? 0f : 1f;
                 BlockPlayerInteraction();
+
+                if (window.BlocksPlayerInput)
+                {
+                    MusicManager.Instance?.SetPaused(true);
+                }
             }
         }
 
         public void Close(UIWindow window)
         {
             if (window == null || !window.IsOpen) { return; }
+            if (!window.CanClose) { return; }
 
             if (openWindows.Count == 0 || openWindows.Peek() != window)
             {
@@ -144,6 +150,7 @@ namespace GameUI
 
         private IEnumerator ReleasePlayerRoutine()
         {
+            MusicManager.Instance.SetPaused(false);
             while (AnyClosing()) { yield return null; }
             FinishRelease();
         }

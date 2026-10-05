@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
@@ -5,6 +6,31 @@ public static class ItemTooltipTextBuilder
 {
     private const string PositiveDiffColor = "#4CD964";
     private const string NegativeDiffColor = "#FF5252";
+    private const string StatLabelColor = "#F5C542";
+
+    private const int WeaponDamageLine = 0;
+    private const int WeaponRangeLine = 1;
+    private const int WeaponCritLine = 2;
+    private const int WeaponAttackLine = 3;
+
+    private const int GearAttackLine = 0;
+    private const int GearDefenseLine = 1;
+    private const int GearCritLine = 2;
+
+    private const int GemDamageLine = 0;
+    private const int GemCritLine = 1;
+    private const int GemEffectLine = 2;
+
+    private static string Label(string label) => $"<color={StatLabelColor}>{label}:</color>";
+
+    private static string Label(string label, List<ERarity> lineRarities, int lineIndex)
+    {
+        if (lineRarities == null || lineIndex < 0 || lineIndex >= lineRarities.Count || GameManager.Instance == null)
+            return Label(label);
+
+        Color color = GameManager.Instance.GetRarityColor(lineRarities[lineIndex]);
+        return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{label}:</color>";
+    }
 
     public static string ColorizeByRarity(string text, ERarity rarity)
     {
@@ -53,15 +79,15 @@ public static class ItemTooltipTextBuilder
             return $"You looted [{itemName}]";
         }
 
-        string coloredLabel = ColorizeByRarity($"{rarity.Value} {itemName}", rarity.Value);
+        string coloredLabel = ColorizeByRarity(itemName, rarity.Value);
         return $"You looted [{coloredLabel}]";
     }
 
     public static string BuildGearTooltip(GearInstance gear, string slotName, GearInstance equippedComparison = null)
     {
         StringBuilder sb = new StringBuilder();
-        sb.AppendLine($"Slot: {slotName}");
-        sb.AppendLine(ColorizeByRarity($"Rarity: {gear.Rarity}", gear.Rarity));
+        string gearRarity = ColorizeByRarity(gear.Rarity.ToString(), gear.Rarity);
+        sb.AppendLine(string.IsNullOrEmpty(slotName) ? gearRarity : $"{gearRarity}, {slotName}");
 
         int attack = (int)gear.InstBonusAttack;
         int defense = (int)gear.InstBonusDefense;
@@ -73,10 +99,10 @@ public static class ItemTooltipTextBuilder
         float? eqHumanity = equippedComparison != null ? (float?)equippedComparison.InstBonusHumanity : null;
         float? eqCrit = equippedComparison != null ? (float?)(equippedComparison.InstBonusCrit * 100f) : null;
 
-        if (attack > 0) sb.AppendLine($"Attack: +{attack}{BuildDiffSuffix(attack, eqAttack)}");
-        if (defense > 0) sb.AppendLine($"Defense: +{defense}{BuildDiffSuffix(defense, eqDefense)}");
-        if (humanity > 0) sb.AppendLine($"Humanity: +{humanity}{BuildDiffSuffix(humanity, eqHumanity)}");
-        if (crit > 0) sb.AppendLine($"Crit: +{crit * 100f:F1}%{BuildDiffSuffix(crit * 100f, eqCrit, "F1", "%")}");
+        if (attack > 0) sb.AppendLine($"{Label("Attack", gear.LineRarities, GearAttackLine)} +{attack}{BuildDiffSuffix(attack, eqAttack)}");
+        if (defense > 0) sb.AppendLine($"{Label("Defense", gear.LineRarities, GearDefenseLine)} +{defense}{BuildDiffSuffix(defense, eqDefense)}");
+        if (humanity > 0) sb.AppendLine($"{Label("Humanity")} +{humanity}{BuildDiffSuffix(humanity, eqHumanity)}");
+        if (crit > 0) sb.AppendLine($"{Label("Crit", gear.LineRarities, GearCritLine)} +{crit * 100f:F1}%{BuildDiffSuffix(crit * 100f, eqCrit, "F1", "%")}");
 
         return sb.ToString().TrimEnd();
     }
@@ -84,17 +110,15 @@ public static class ItemTooltipTextBuilder
     public static string BuildSecondaryGemTooltip(SecondaryGemInstance gem, SecondaryGemInstance equippedComparison = null)
     {
         StringBuilder sb = new StringBuilder();
-        sb.AppendLine("Type: Secondary Gem");
-        sb.AppendLine(ColorizeByRarity($"Rarity: {gem.Rarity}", gem.Rarity));
-
+        string rarityText = ColorizeByRarity(gem.Rarity.ToString(), gem.Rarity);
         string trigger = TriggerLabel(gem.Type);
-        if (trigger != null) sb.AppendLine($"Trigger: {trigger}");
+        sb.AppendLine(trigger != null ? $"{rarityText}, {trigger}" : rarityText);
 
         float? eqDamage = equippedComparison != null ? (float?)equippedComparison.InstRolledDamageValue : null;
         float? eqCrit = equippedComparison != null ? (float?)equippedComparison.InstRolledCritValue : null;
 
-        if (gem.InstRolledDamageValue > 0) sb.AppendLine($"DMG: +{gem.InstRolledDamageValue}{BuildDiffSuffix(gem.InstRolledDamageValue, eqDamage)}");
-        if (gem.InstRolledCritValue > 0) sb.AppendLine($"CRIT: +{gem.InstRolledCritValue}%{BuildDiffSuffix(gem.InstRolledCritValue, eqCrit, "0", "%")}");
+        if (gem.InstRolledDamageValue > 0) sb.AppendLine($"{Label("DMG", gem.LineRarities, GemDamageLine)} +{gem.InstRolledDamageValue}{BuildDiffSuffix(gem.InstRolledDamageValue, eqDamage)}");
+        if (gem.InstRolledCritValue > 0) sb.AppendLine($"{Label("CRIT", gem.LineRarities, GemCritLine)} +{gem.InstRolledCritValue}%{BuildDiffSuffix(gem.InstRolledCritValue, eqCrit, "0", "%")}");
 
         SecondaryGemInstance effectComparison = equippedComparison != null && equippedComparison.Type == gem.Type
             ? equippedComparison
@@ -106,7 +130,7 @@ public static class ItemTooltipTextBuilder
                 ? (float?)effectComparison.InstRolledDotPercent
                 : null;
 
-            sb.AppendLine($"BLEED: {gem.InstRolledDotPercent}%{BuildDiffSuffix(gem.InstRolledDotPercent, eqDot, "0", "%")} of hit");
+            sb.AppendLine($"{Label("BLEED", gem.LineRarities, GemEffectLine)} {gem.InstRolledDotPercent}%{BuildDiffSuffix(gem.InstRolledDotPercent, eqDot, "0", "%")} of hit");
         }
 
         if (gem.InstRolledChargeAmount > 0f)
@@ -116,7 +140,7 @@ public static class ItemTooltipTextBuilder
                 ? (float?)(effectComparison.InstRolledChargeAmount * 100f)
                 : null;
 
-            sb.AppendLine($"ENERGY: +{charge:F0}{BuildDiffSuffix(charge, eqCharge, "F0")}");
+            sb.AppendLine($"{Label("ENERGY", gem.LineRarities, GemEffectLine)} +{charge:F0}{BuildDiffSuffix(charge, eqCharge, "F0")}");
         }
 
         if (gem.InstRolledReflectPercent > 0f)
@@ -126,7 +150,7 @@ public static class ItemTooltipTextBuilder
                 ? (float?)(effectComparison.InstRolledReflectPercent * 100f)
                 : null;
 
-            sb.AppendLine($"REFLECT: {reflect:F1}%{BuildDiffSuffix(reflect, eqReflect, "F1", "%")} of incoming damage");
+            sb.AppendLine($"{Label("REFLECT", gem.LineRarities, GemEffectLine)} {reflect:F1}%{BuildDiffSuffix(reflect, eqReflect, "F1", "%")} dmg taken");
         }
 
         if (gem.InstRolledMaxGambleMult > 0f)
@@ -135,7 +159,7 @@ public static class ItemTooltipTextBuilder
                 ? (float?)effectComparison.InstRolledMaxGambleMult
                 : null;
 
-            sb.AppendLine($"GAMBLE: up to {gem.InstRolledMaxGambleMult:F2}x{BuildDiffSuffix(gem.InstRolledMaxGambleMult, eqGamble, "F2", "x")} damage");
+            sb.AppendLine($"{Label("GAMBLE", gem.LineRarities, GemEffectLine)} {gem.InstRolledMaxGambleMult:F1}x dmg{BuildDiffSuffix(gem.InstRolledMaxGambleMult, eqGamble, "F1", "x")}");
         }
 
         return sb.ToString().TrimEnd();
@@ -144,22 +168,21 @@ public static class ItemTooltipTextBuilder
     public static string BuildWeaponTooltip(WeaponInstance weapon, WeaponInstance equippedComparison = null)
     {
         StringBuilder sb = new StringBuilder();
-        sb.AppendLine(ColorizeByRarity($"Rarity: {weapon.Rarity}", weapon.Rarity));
+        sb.AppendLine($"{ColorizeByRarity(weapon.Rarity.ToString(), weapon.Rarity)}, Weapon");
 
         float? eqDamage = equippedComparison != null ? (float?)equippedComparison.InstRolledDamage : null;
-        float? eqRange = equippedComparison != null ? (float?)equippedComparison.InstRolledRange : null;
         float? eqCrit = equippedComparison != null ? (float?)(equippedComparison.InstRolledCrit * 100f) : null;
+        float? eqAttack = equippedComparison != null ? (float?)equippedComparison.InstRolledAttack : null;
 
-        if (weapon.InstRolledDamage > 0) sb.AppendLine($"Damage: {weapon.InstRolledDamage:F1}{BuildDiffSuffix(weapon.InstRolledDamage, eqDamage, "F1")}");
-        if (weapon.InstRolledRange > 0) sb.AppendLine($"Range: {weapon.InstRolledRange:F1}{BuildDiffSuffix(weapon.InstRolledRange, eqRange, "F1")}");
-        if (weapon.InstRolledCrit > 0) sb.AppendLine($"Crit: {weapon.InstRolledCrit * 100f:F1}%{BuildDiffSuffix(weapon.InstRolledCrit * 100f, eqCrit, "F1", "%")}");
+        if (weapon.InstRolledDamage > 0) sb.AppendLine($"{Label("Damage", weapon.LineRarities, WeaponDamageLine)} {weapon.InstRolledDamage:F1}{BuildDiffSuffix(weapon.InstRolledDamage, eqDamage, "F1")}");
+        if (weapon.InstRolledAttack > 0) sb.AppendLine($"{Label("Attack", weapon.LineRarities, WeaponAttackLine)} +{weapon.InstRolledAttack:F0}{BuildDiffSuffix(weapon.InstRolledAttack, eqAttack)}");
+        if (weapon.InstRolledCrit > 0) sb.AppendLine($"{Label("Crit", weapon.LineRarities, WeaponCritLine)} {weapon.InstRolledCrit * 100f:F1}%{BuildDiffSuffix(weapon.InstRolledCrit * 100f, eqCrit, "F1", "%")}");
 
         return sb.ToString().TrimEnd();
     }
 
     public static string BuildPrimaryGemTooltip(PrimaryGemBehaviourDefinition def)
     {
-        // Primary gems don't roll rarity or instance stats — just show the attack description.
         return def.GemAttackDescription;
     }
 }

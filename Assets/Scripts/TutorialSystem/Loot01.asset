@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b126725b3c352c6458202a11e09a8e71, type: 3}
+  m_Name: Loot01
+  m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialStepDefinition
+  promptText: You picked up loot! Use {Inventory} to open up Inventory.
+  minimumDisplayDuration: 0
+  startDelay: 0
+  showSuccessOnComplete: 0
+  freezeMovement: 0
+  disableInput: 0
+  allowMenus: 1
+  runOnlyIf: 0
+  conditionType: 5
+  buttonPressAction: {fileID: 247586721346189777, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  requiredKills: 1
+  enemyTagFilter: 
+  requiredParries: 1
+  gameEventKey: InventoryOpened
+  requiredEventCount: 1
+  requiredHeightInPlayerHeights: 3
