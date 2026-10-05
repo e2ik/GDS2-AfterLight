@@ -27,9 +27,9 @@ namespace Enemies
 
         private Enemy activeBossEnemy;
         private Transform engagedPlayer;
-        private bool playerEnteredArena;
         private bool cameraLocked;
         private bool doorsLockedByThis;
+        private bool deathSequenceRunning;
 
         private static int engagedTriggerCount;
         public static bool AnyBossEngaged => engagedTriggerCount > 0;
@@ -42,22 +42,10 @@ namespace Enemies
 
         private void Update()
         {
-            if (activeBossEnemy == null) return;
+            if (activeBossEnemy == null || deathSequenceRunning) return;
 
             bool bossGone = !activeBossEnemy.isActiveAndEnabled;
-            bool playerInside = engagedPlayer != null && (arenaBounds == null || IsInsideArena(engagedPlayer.position));
-
-            if (playerInside) playerEnteredArena = true;
-            bool playerLeft = engagedPlayer == null || (playerEnteredArena && !playerInside);
-
-            if (bossGone || playerLeft) Disengage();
-        }
-
-        private bool IsInsideArena(Vector2 point)
-        {
-            Bounds arena = arenaBounds.WorldBounds;
-            return point.x >= arena.min.x && point.x <= arena.max.x
-                && point.y >= arena.min.y && point.y <= arena.max.y;
+            if (bossGone || engagedPlayer == null) Disengage();
         }
 
         private void OnEnable()
@@ -236,6 +224,9 @@ namespace Enemies
 
             if (activeBossEnemy != null)
             {
+                if (!deathSequenceRunning)
+                    activeBossEnemy.Context.Health.DeferDeath = false;
+
                 if (onBossDamaged != null)
                     activeBossEnemy.Context.Health.OnDamaged -= onBossDamaged;
 
@@ -248,7 +239,6 @@ namespace Enemies
 
             activeBossEnemy = null;
             engagedPlayer = null;
-            playerEnteredArena = false;
             onBossDamaged = null;
             onBossDeath = null;
             onHealthDepleted = null;
@@ -256,6 +246,7 @@ namespace Enemies
 
         private IEnumerator PlayDeathDialogueThenFinalize(Enemy bossyEnemy, Player player)
         {
+            deathSequenceRunning = true;
             bossyEnemy.FreezeForDeathSequence();
             
             player.Controller.FreezeMovement(true);
@@ -270,7 +261,8 @@ namespace Enemies
             }
             
             player.Controller.FreezeMovement(false);
-            
+
+            deathSequenceRunning = false;
             bossyEnemy.Context.Health.FinalizeDeath();
         }
         

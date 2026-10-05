@@ -61,22 +61,28 @@ namespace GameUI
             DisableNavigation(controllerTabButton);
         }
 
-        private void OnEnable()
+        private void OnDisable()
         {
+            UnsubscribeTabActions();
+        }
+
+        private void SubscribeTabActions()
+        {
+            UnsubscribeTabActions();
             SubscribeTabAction(previousTabAction, HandlePreviousTab);
             SubscribeTabAction(nextTabAction, HandleNextTab);
         }
 
-        private void OnDisable()
+        private void UnsubscribeTabActions()
         {
-            if (previousTabAction != null) previousTabAction.action.performed -= HandlePreviousTab;
-            if (nextTabAction != null) nextTabAction.action.performed -= HandleNextTab;
+            if (previousTabAction != null && previousTabAction.action != null) previousTabAction.action.performed -= HandlePreviousTab;
+            if (nextTabAction != null && nextTabAction.action != null) nextTabAction.action.performed -= HandleNextTab;
         }
 
         private static void SubscribeTabAction(InputActionReference reference, System.Action<InputAction.CallbackContext> handler)
         {
             if (reference == null || reference.action == null) return;
-            if (!reference.action.enabled) reference.action.Enable();
+            reference.action.Enable();
             reference.action.performed += handler;
         }
 
@@ -157,11 +163,14 @@ namespace GameUI
                 slider.SetValueWithoutNotify(currentVolume);
             }
 
+            SubscribeTabActions();
             ShowAudioTab();
         }
 
         protected override void OnWindowClosed()
         {
+            UnsubscribeTabActions();
+
             foreach (RebindButton button in GetComponentsInChildren<RebindButton>(true))
             {
                 button.CancelIfRebinding();

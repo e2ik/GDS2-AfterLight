@@ -30,6 +30,7 @@ namespace Enemies.ModuleScripts.Movement
         [SerializeField] private string teleportOutStateName = "TeleportOut";
         [SerializeField] private string teleportInStateName = "TeleportIn";
         [SerializeField] private float hiddenDuration = 1.5f;
+        [SerializeField, Min(0.1f)] private float animationTimeout = 2f;
 
 
         public void Begin(EnemyContext ctx)
@@ -40,6 +41,7 @@ namespace Enemies.ModuleScripts.Movement
 
             ctx.Animator.SetTrigger(teleportOutTrigger);
             ctx.TeleportPhase = TeleportPhase.TeleportingOut;
+            ctx.TeleportTimer = animationTimeout;
         }
 
         public override void Tick(EnemyContext ctx, float deltaTime)
@@ -50,7 +52,8 @@ namespace Enemies.ModuleScripts.Movement
             switch (ctx.TeleportPhase)
             {
                 case TeleportPhase.TeleportingOut:
-                    if (state.IsName(teleportOutStateName) && state.normalizedTime >= 1f)
+                    ctx.TeleportTimer -= deltaTime;
+                    if ((state.IsName(teleportOutStateName) && state.normalizedTime >= 1f) || ctx.TeleportTimer <= 0f)
                     {
                         SetHidden(ctx, true);
                         ctx.Self.position = ctx.TeleportDestination;
@@ -66,12 +69,15 @@ namespace Enemies.ModuleScripts.Movement
                         SetHidden(ctx, false);
                         ctx.Animator.SetTrigger(teleportInTrigger);
                         ctx.TeleportPhase = TeleportPhase.TeleportingIn;
+                        ctx.TeleportTimer = animationTimeout;
                     }
                     break;
 
                 case TeleportPhase.TeleportingIn:
-                    if (state.IsName(teleportInStateName) && state.normalizedTime >= 0.9f)
+                    ctx.TeleportTimer -= deltaTime;
+                    if ((state.IsName(teleportInStateName) && state.normalizedTime >= 0.9f) || ctx.TeleportTimer <= 0f)
                     {
+                        SetHidden(ctx, false);
                         ctx.TeleportPhase = TeleportPhase.Finished;
                         MarkUsed(ctx);
                     }
