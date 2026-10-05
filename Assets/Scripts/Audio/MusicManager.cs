@@ -196,6 +196,12 @@ public class MusicManager : MonoBehaviour
         RuntimeManager.StudioSystem.setParameterByID(_pauseParamId, paused ? 1f : 0f);
     }
 
+    public void SetMusicSuspended(bool suspended)
+    {
+        if (_instance.isValid())
+            _instance.setPaused(suspended);
+    }
+
     public void SetTargetIntensity(float normalized, bool instant = false)
     {
         if (_bossMode)
