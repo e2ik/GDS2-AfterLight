@@ -13,6 +13,7 @@ namespace GameUI
         public string displayLabel;
         [Tooltip("Only show this entry on the Keyboard tab (e.g. Move, which uses the stick on gamepad).")]
         public bool keyboardOnly;
+        public bool allowSharedBinding = true;
     }
 
     public class RebindListBuilder : MonoBehaviour
@@ -68,6 +69,7 @@ namespace GameUI
                 row.RebindButton.Initialize(
                     entry.action, index, entry.displayLabel, sharedWaitingPrompt,
                     useGamepad ? RebindButton.RebindDevice.Gamepad : RebindButton.RebindDevice.Keyboard);
+                row.RebindButton.AllowSharedBinding = entry.allowSharedBinding;
                 row.gameObject.SetActive(true);
             }
         }

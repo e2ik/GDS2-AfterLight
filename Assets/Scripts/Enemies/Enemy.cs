@@ -39,6 +39,7 @@ namespace Enemies
 
         [Header("Stagger")]
         [SerializeField] private bool isStaggerImmune = false;
+        [SerializeField] private bool staggerOnlyOnComboFinisher = true;
         [SerializeField] private float staggerImmunityDuration = 2f;
         [SerializeField] private float staggerStunDuration = 0.5f;
         [SerializeField] private float postStaggerAttackDelay = 0.5f;
@@ -147,7 +148,7 @@ namespace Enemies
                 Context.TargetVisible = false;
             }
 
-            if (IsBoss && Context.Target != null && !IsInsideBossBounds(Context.Target.position))
+            if (IsBoss && canDropAggro && Context.Target != null && !IsInsideBossBounds(Context.Target.position))
                 DropAggro();
 
             bool isTargetingPlayer = Context.TargetVisible;
@@ -194,12 +195,14 @@ namespace Enemies
             {
                 attack.Tick(Context, Time.deltaTime);
 
-                if (attack.InRange) anyAttackInRange = true;
+                if (attack.ManualOnly) continue;
+
+                if (attack.InRangeIfUsable) anyAttackInRange = true;
 
                 if (!attack.OnCooldown)
                 {
                     allAttacksOnCooldown = false;
-                    if (attack.InRange) usableAttackInRange = true;
+                    if (attack.InRangeIfUsable) usableAttackInRange = true;
                 }
 
                 if (!IsAttacking && attackCooldownTimer <= 0 && Context.CanReachTarget && attack.IsValid)
@@ -294,7 +297,7 @@ namespace Enemies
             selected = null;
             if (IsAttacking) return false;
 
-            float totalWeight = attacks.Where(a => a.IsValid).Sum(a => a.Weight);
+            float totalWeight = attacks.Where(a => a.IsValid && !a.ManualOnly).Sum(a => a.Weight);
             if (totalWeight <= 0f) return false;
 
             float roll = UnityEngine.Random.value * totalWeight;
@@ -302,7 +305,7 @@ namespace Enemies
 
             foreach (AttackInstance attack in attacks)
             {
-                if (!attack.IsValid) continue;
+                if (!attack.IsValid || attack.ManualOnly) continue;
                 cumulative += attack.Weight;
 
                 if (roll <= cumulative)
@@ -315,6 +318,16 @@ namespace Enemies
             return false;
         }
 
+        public bool TryGetAttackInstance(EnemyAttackSO attackSO, out AttackInstance instance)
+        {
+            instance = null;
+            if (IsAttacking || attackSO == null)
+                return false;
+
+            instance = attacks.FirstOrDefault(a => a.Attack == attackSO);
+            return instance != null;
+        }
+        
         private void UpdateUnreachableGiveUp()
         {
             if (!canDropAggro || IsBoss)
@@ -428,7 +441,7 @@ namespace Enemies
 
             if (isDot) return;
 
-            if (isStaggerImmune)
+            if (isStaggerImmune || (staggerOnlyOnComboFinisher && !info.IsComboFinisher))
             {
                 PSpawner.Spawn("EnemyHit", transform.position);
                 return;

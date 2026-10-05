@@ -395,6 +395,9 @@ MonoBehaviour:
   perfectDodgeWindow: 0.035
   enemyBodyCollisionKnockback: 1
   enemyBodyCollisionForce: 1
+  enemyBodyAirKnockbackForce: 10
+  enemyBodyAirStaggerDuration: 0.15
+  enemyBodyAirKnockbackAngle: 25
   hazardousKnockbackForce: 8
   hazardousStaggerDuration: 0.3
   bounceDuration: 0.25
@@ -436,14 +439,14 @@ MonoBehaviour:
   successfulParryVisualDuration: 0.15
   parryWindowExtension: 0.1
   attackOrigin: {fileID: 6444912443510829891}
-  damageScalingExponent: 0.8
+  damageScalingExponent: 0.5
   enemyLayer:
     serializedVersion: 2
     m_Bits: 6656
-  critDamageMultiplier: 1.33
-  counterAttackMultiplier: 1.2
-  plungeDmgMaxMultiplier: 3.4028235e+38
-  plungeAdjustedDmg: 1
+  critDamageMultiplier: 1.5
+  counterAttackMultiplier: 1.5
+  plungeDmgMaxMultiplier: 10
+  plungeAdjustedDmg: 3
   plungeGraceWindow: 0.15
   plungeBounceForce: 15
   plungeRecoveryDuration: 1
@@ -459,8 +462,10 @@ MonoBehaviour:
   comboResetDelay: 1
   comboDamageMultipliers:
   - 1
-  - 1.25
-  - 1.5
+  - 1.4
+  - 1.75
+  dashAttackMultiplier: 2
+  airAttackMultiplier: 1.5
   dashAttackConflictWindow: 0.03
   jumpAttackConflictWindow: 0.03
   skillMeterAlwaysFull: 0
@@ -509,14 +514,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   maxHealth: 100
   currentHealth: 0
-  baseAttack: 10
-  baseDefense: 5
+  baseAttack: 35
+  baseDefense: 10
   baseHumanity: 10
-  defenseMitigationPerPoint: 0.02
+  defenseMitigationPerPoint: 0.005
   gearAttackBonus: 0
   gearDefenseBonus: 0
   gearHumanityBonus: 0
   gemAttackBonus: 0
+  weaponAttackBonus: 0
   gearCritBonus: 0
   gemCritBonus: 0
   hitEvent:
@@ -564,6 +570,8 @@ MonoBehaviour:
     InstRolledDamage: 0
     InstRolledRange: 0
     InstRolledCrit: 0
+    InstRolledAttack: 0
+    LineRarities: 
     PickupOrder: 0
     IsNew: 1
   specialAttackDef: {fileID: 0}
@@ -579,6 +587,7 @@ MonoBehaviour:
     InstRolledChargeAmount: 0
     InstRolledReflectPercent: 0
     InstRolledMaxGambleMult: 0
+    LineRarities: 
     IsNew: 1
   equippedGearDebug: []
 --- !u!114 &4056446563424932215
@@ -598,6 +607,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   raycastOriginOffset: {x: 0, y: 0}
+  boxSize: {x: 0.5, y: 1}
+  bodyCollider: {fileID: 1978134003100231202}
 --- !u!50 &3384368436107685213
 Rigidbody2D:
   serializedVersion: 5

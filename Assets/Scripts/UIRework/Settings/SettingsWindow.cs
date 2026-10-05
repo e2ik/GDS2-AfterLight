@@ -1,5 +1,6 @@
 using FMOD.Studio;
 using FMODUnity;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -21,18 +22,24 @@ namespace GameUI
 
         [Header("Audio")]
         [SerializeField] private Slider masterVolumeSlider;
+        [SerializeField] private Slider musicVolumeSlider;
+        [SerializeField] private Slider sfxVolumeSlider;
+        [SerializeField] private Slider uiVolumeSlider;
+
+        private readonly List<(Slider slider, Bus bus)> audioChannels = new List<(Slider, Bus)>();
 
         [Header("Shared")]
         [SerializeField] private Button backButton;
 
-        private Bus masterBus;
-
         protected override void Awake()
         {
             base.Awake();
-            masterBus = RuntimeManager.GetBus("bus:/");
             backButton.onClick.AddListener(HandleBackClicked);
-            masterVolumeSlider.onValueChanged.AddListener(HandleMasterVolumeChanged);
+
+            RegisterAudioChannel(masterVolumeSlider, "bus:/");
+            RegisterAudioChannel(musicVolumeSlider, "bus:/Music");
+            RegisterAudioChannel(sfxVolumeSlider, "bus:/SFX");
+            RegisterAudioChannel(uiVolumeSlider, "bus:/UI");
 
             audioTabButton.onClick.AddListener(HandleAudioTabClicked);
             keyboardTabButton.onClick.AddListener(HandleKeyboardTabClicked);
@@ -41,8 +48,11 @@ namespace GameUI
 
         protected override void OnWindowOpened()
         {
-            masterBus.getVolume(out float currentVolume);
-            masterVolumeSlider.SetValueWithoutNotify(currentVolume);
+            foreach ((Slider slider, Bus bus) in audioChannels)
+            {
+                bus.getVolume(out float currentVolume);
+                slider.SetValueWithoutNotify(currentVolume);
+            }
 
             ShowAudioTab();
         }
@@ -76,8 +86,6 @@ namespace GameUI
             controllerPanel.SetActive(true);
         }
 
-        private void HandleMasterVolumeChanged(float value) => masterBus.setVolume(value);
-
         private void HandleAudioTabClicked()
         {
             UISFX.PlayClick();
@@ -100,6 +108,23 @@ namespace GameUI
         {
             UISFX.PlayClick();
             UIManager.Instance.Close(this);
+        }
+
+        private void RegisterAudioChannel(Slider slider, string busPath)
+        {
+            if (slider == null) return;
+
+            try
+            {
+                Bus bus = RuntimeManager.GetBus(busPath);
+                audioChannels.Add((slider, bus));
+                slider.onValueChanged.AddListener(value => bus.setVolume(value));
+            }
+            catch (BusNotFoundException)
+            {
+                Debug.LogWarning($"[SettingsWindow] FMOD bus '{busPath}' not found - slider '{slider.name}' will do nothing", this);
+                slider.interactable = false;
+            }
         }
     }
 }

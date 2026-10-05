@@ -59,6 +59,8 @@ public class PlayerCombatController : MonoBehaviour
     private bool comboQueued = false;
     private float comboResetTimer;
     [SerializeField] private float[] comboDamageMultipliers = { 1.0f, 1.25f, 1.5f };
+    [SerializeField] private float dashAttackMultiplier = 1.25f;
+    [SerializeField] private float airAttackMultiplier = 1.1f;
     public int CurrentComboIndex => currentComboIndex;
 
     [Header("Input Conflict Settings")]
@@ -75,6 +77,7 @@ public class PlayerCombatController : MonoBehaviour
     private bool isAttacking;
     private bool attackStartedGrounded;
     private bool isCounterAttacking;
+    private bool isDashAttack;
     private bool isPlunging;
     private float plungeGraceTimer;
     private float plungeRecoveryTimer;
@@ -133,6 +136,17 @@ public class PlayerCombatController : MonoBehaviour
         currentSkillDef != null
         && skillTimer <= 0f
         && (skillMeterAlwaysFull || SkillMeter >= SkillActivationCost);
+
+    public bool HasSkillEquipped => player != null && player.Equipment != null && player.Equipment.SpecialAttackDef != null;
+
+    public bool HasEnoughSkillEnergy
+    {
+        get
+        {
+            if (!HasSkillEquipped) return false;
+            return skillMeterAlwaysFull || SkillMeter >= player.Equipment.SpecialAttackDef.SkillCost;
+        }
+    }
 
     private float _skillMeter;
     public float SkillMeter
@@ -487,6 +501,7 @@ public class PlayerCombatController : MonoBehaviour
 
             isAttacking = true;
             attackStartedGrounded = movement.IsGrounded;
+            isDashAttack = movement.IsDashing;
             attackDurationTimer = attackDuration;
 
             enemiesHitThisAttack.Clear();
@@ -651,6 +666,13 @@ public class PlayerCombatController : MonoBehaviour
     private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
     {
         float attackDamage = context.BaseAttackDamage * GetComboMultiplier();
+        context.IsComboFinisher = plungeDmgMult <= 0f && currentComboIndex >= maxComboCount;
+
+        if (plungeDmgMult <= 0f)
+        {
+            if (isDashAttack) attackDamage *= dashAttackMultiplier;
+            if (!attackStartedGrounded) attackDamage *= airAttackMultiplier;
+        }
 
         foreach (var col in enemiesInRange)
         {

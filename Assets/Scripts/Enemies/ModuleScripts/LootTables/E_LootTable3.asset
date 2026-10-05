@@ -13,12 +13,47 @@ MonoBehaviour:
   m_Name: E_LootTable3
   m_EditorClassIdentifier: Assembly-CSharp::LootTableDefinitionSO
   possibleDrops:
-  - lootItem: {fileID: 11400000, guid: e83c70c081f33b94aa34171d181e2947, type: 2}
+  - lootItem: {fileID: 11400000, guid: ad79a8a955122ef0b95b5db5ec727976, type: 2}
     worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
     weight: 0.5
-  - lootItem: {fileID: 11400000, guid: 02f999b411a3cb90890f65e7c4aef9db, type: 2}
+  - lootItem: {fileID: 11400000, guid: e83c70c081f33b94aa34171d181e2947, type: 2}
     worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
     weight: 0.7
   - lootItem: {fileID: 11400000, guid: ae07d389e77286142a0aa67cc25ee205, type: 2}
     worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
     weight: 1
+  - lootItem: {fileID: 11400000, guid: 7b8773f36d0b8a148929c5d52955a42b, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1
+  - lootItem: {fileID: 11400000, guid: 14cafacdf5f57eed19576977769f0367, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1
+  - lootItem: {fileID: 11400000, guid: ba55e8e3426bf7747ba3a8f1237480c4, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1
+  - lootItem: {fileID: 11400000, guid: 1102d0c7f5836d14c9fc09f1b9a12ad0, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1
+  - lootItem: {fileID: 11400000, guid: 29dfae1ea4a96d875b57f74f1fc9ca5e, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1
+  - lootItem: {fileID: 11400000, guid: e216697a235d3ff4cae3328dfa3e739f, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1
+  - lootItem: {fileID: 11400000, guid: 0e6408a80eb85c34a8dae751f99bf196, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1
+  - lootItem: {fileID: 11400000, guid: 0e6408a80eb85c34a8dae751f99bf196, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1
+  nothingWeight: 0
+  avoidRepeat: 1
+  cycleThroughTable: 1
+  overrideRarityOdds: 0
+  rarityOdds:
+    common: 50
+    rare: 35
+    epic: 10
+    legendary: 5
+  popForce: 4
+  popSpreadX: 0.1

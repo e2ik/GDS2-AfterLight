@@ -15,6 +15,8 @@ public class MasterNavMeshController : MonoBehaviour
     private bool hasCurrentScene;
     private bool dirty;
     private Transform playerTransform;
+    private bool subscribedToAreaSide;
+    private bool subscribedToStreamer;
 
     void Awake()
     {
@@ -33,6 +35,8 @@ public class MasterNavMeshController : MonoBehaviour
 
     void Start()
     {
+        TrySubscribe();
+
         // Auto-initialize to the active gameplay scene on startup if not already set
         if (!hasCurrentScene)
         {
@@ -46,28 +50,43 @@ public class MasterNavMeshController : MonoBehaviour
 
     void OnEnable()
     {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.OnAreaSideChanged += HandleAreaSideChanged;
-        }
-
-        if (WorldStreamer.Instance != null)
-        {
-            WorldStreamer.Instance.OnSceneStreamed += HandleSceneStreamed;
-        }
+        TrySubscribe();
     }
 
     void OnDisable()
     {
-        if (GameManager.Instance != null)
+        if (subscribedToAreaSide && GameManager.Instance != null)
         {
             GameManager.Instance.OnAreaSideChanged -= HandleAreaSideChanged;
         }
 
-        if (WorldStreamer.Instance != null)
+        if (subscribedToStreamer && WorldStreamer.Instance != null)
         {
             WorldStreamer.Instance.OnSceneStreamed -= HandleSceneStreamed;
         }
+
+        subscribedToAreaSide = false;
+        subscribedToStreamer = false;
+    }
+
+    private void TrySubscribe()
+    {
+        if (!subscribedToAreaSide && GameManager.Instance != null)
+        {
+            GameManager.Instance.OnAreaSideChanged += HandleAreaSideChanged;
+            subscribedToAreaSide = true;
+        }
+
+        if (!subscribedToStreamer && WorldStreamer.Instance != null)
+        {
+            WorldStreamer.Instance.OnSceneStreamed += HandleSceneStreamed;
+            subscribedToStreamer = true;
+        }
+    }
+
+    private static bool IsUsable(Scene scene)
+    {
+        return scene.IsValid() && scene.isLoaded;
     }
 
     private void HandleSceneStreamed(Scene streamedScene)
@@ -77,6 +96,13 @@ public class MasterNavMeshController : MonoBehaviour
 
     void Update()
     {
+        if (!subscribedToAreaSide || !subscribedToStreamer) TrySubscribe();
+
+        if (hasCurrentScene && !IsUsable(currentScene))
+        {
+            hasCurrentScene = false;
+        }
+
         if (playerTransform == null)
         {
             Player player = FindFirstObjectByType<Player>();
@@ -90,7 +116,7 @@ public class MasterNavMeshController : MonoBehaviour
         if (!isOnNavMesh || !hasCurrentScene)
         {
             Scene detectedScene = DetectSceneByPlayerPosition();
-            if (detectedScene.IsValid() && (!hasCurrentScene || detectedScene != currentScene))
+            if (IsUsable(detectedScene) && (!hasCurrentScene || detectedScene != currentScene))
             {
                 SetActiveScene(detectedScene);
             }
@@ -122,11 +148,12 @@ public class MasterNavMeshController : MonoBehaviour
                 }
             }
         }
-        return currentScene;
+        return hasCurrentScene ? currentScene : default;
     }
 
     public void SetActiveScene(Scene scene)
     {
+        if (!IsUsable(scene)) return;
         if (hasCurrentScene && scene == currentScene) return;
 
         currentScene = scene;
@@ -136,11 +163,16 @@ public class MasterNavMeshController : MonoBehaviour
 
     void LateUpdate()
     {
-        if (dirty && hasCurrentScene)
+        if (!dirty || !hasCurrentScene) return;
+
+        if (!IsUsable(currentScene))
         {
-            ProcessLayerAndBake(currentScene);
-            dirty = false;
+            hasCurrentScene = false;
+            return;
         }
+
+        ProcessLayerAndBake(currentScene);
+        dirty = false;
     }
 
     private void HandleAreaSideChanged(AreaSide areaSide)
@@ -150,7 +182,7 @@ public class MasterNavMeshController : MonoBehaviour
 
     private void ProcessLayerAndBake(Scene scene)
     {
-        if (!scene.IsValid())
+        if (!IsUsable(scene))
         {
             Debug.LogWarning("[MasterNavMeshController] Tried to bake an invalid scene.");
             return;

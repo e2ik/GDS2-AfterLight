@@ -347,6 +347,22 @@ public class PlayerAnimation : MonoBehaviour
         }
     }
 
+    public void TriggerLandingEffect()
+    {
+        if (player == null || player.Controller == null) return;
+
+        Vector2 groundPoint = player.Controller.LastHitPoint;
+        Collider2D playerCollider = player.GetComponent<Collider2D>();
+
+        Vector2 spawnPosition = new Vector2(playerCollider.bounds.center.x,groundPoint.y);
+        Vector2 normal = player.Controller.CurrentSurfaceNormal;
+
+        float angle = Mathf.Atan2(normal.y, -normal.x) * Mathf.Rad2Deg - 90f;
+        Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
+
+        PSpawner.Spawn("JumpDust", spawnPosition, rotation);
+    }
+
     #region Helper Methods
 
     private void SyncParryAcrossGroundChange(bool isParrying, bool groundedNow)

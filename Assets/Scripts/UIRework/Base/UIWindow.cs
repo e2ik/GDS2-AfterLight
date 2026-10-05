@@ -14,6 +14,7 @@ namespace GameUI
 
         public bool BlocksPlayerInput => blocksPlayerInput;
         public bool IsOpen { get; private set; }
+        public virtual bool CanClose => true;
 
         protected virtual void Awake()
         {

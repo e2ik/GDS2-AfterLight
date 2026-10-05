@@ -15,17 +15,17 @@ namespace Enemies
             if (!_targetingEnemies.Add(enemy)) return;
             
             if(wasEmpty)
-                MusicManager.Instance?.SetState(MusicState.Combat);
+                MusicManager.Instance?.SetTargetIntensity(0.8f);
             else
-                MusicManager.AddIntensity(2f);
+                MusicManager.AddIntensity(0.1f);
         }
 
         public static void EnemyStoppedTargeting(Enemy enemy)
         {
             if (!_targetingEnemies.Remove(enemy)) return;
-            
-            if(_targetingEnemies.Count == 0)
-                MusicManager.Instance?.SetState(MusicState.Explore);
+
+            if (_targetingEnemies.Count == 0)
+                MusicManager.Instance?.SetTargetIntensity(0.5f);
         }
     }
 }

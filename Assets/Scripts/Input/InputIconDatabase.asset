@@ -13,8 +13,6 @@ MonoBehaviour:
   m_Name: InputIconDatabase
   m_EditorClassIdentifier: Assembly-CSharp::InputIconDatabase
   actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-  keyTextFormat: <sprite name="key_blank"><space=-0.85em>{key}<space=0.35em>
-  upperCaseInlineKeys: 1
   xbox:
     buttonSouth: {fileID: 0}
     buttonEast: {fileID: 0}
@@ -30,15 +28,23 @@ MonoBehaviour:
     rightStick: {fileID: 0}
     leftStickPress: {fileID: 0}
     rightStickPress: {fileID: 0}
+    leftStickUp: {fileID: 0}
+    leftStickDown: {fileID: 0}
+    leftStickLeft: {fileID: 0}
+    leftStickRight: {fileID: 0}
+    rightStickUp: {fileID: 0}
+    rightStickDown: {fileID: 0}
+    rightStickLeft: {fileID: 0}
+    rightStickRight: {fileID: 0}
     dpad: {fileID: 0}
     dpadUp: {fileID: 0}
     dpadDown: {fileID: 0}
     dpadLeft: {fileID: 0}
     dpadRight: {fileID: 0}
   playStation:
-    buttonSouth: {fileID: 0}
-    buttonEast: {fileID: 0}
-    buttonWest: {fileID: 0}
+    buttonSouth: {fileID: 21300000, guid: 1daaa89b902572347b5bac94125085a3, type: 3}
+    buttonEast: {fileID: 21300000, guid: 1fa55f4b65753e145ba941d07092f169, type: 3}
+    buttonWest: {fileID: 21300000, guid: 053ebb424f386ad4d81d64f4c8a1f61d, type: 3}
     buttonNorth: {fileID: 21300000, guid: 89a29a385ff811c41967c3b57dae5e93, type: 3}
     leftShoulder: {fileID: 0}
     rightShoulder: {fileID: 0}
@@ -46,15 +52,23 @@ MonoBehaviour:
     rightTrigger: {fileID: 0}
     start: {fileID: 0}
     select: {fileID: 0}
-    leftStick: {fileID: 0}
-    rightStick: {fileID: 0}
+    leftStick: {fileID: 21300000, guid: 9d8ffe4bd53e5a9488258c600d8788f5, type: 3}
+    rightStick: {fileID: 21300000, guid: 5970977195ac6f74fa2aaa4600a41c4b, type: 3}
     leftStickPress: {fileID: 0}
     rightStickPress: {fileID: 0}
+    leftStickUp: {fileID: 0}
+    leftStickDown: {fileID: 21300000, guid: a3ed581e6344a4144816427062505293, type: 3}
+    leftStickLeft: {fileID: 21300000, guid: f2ab8e62b0ff3824599e707cb4d913d4, type: 3}
+    leftStickRight: {fileID: 21300000, guid: 734fc2ec489f1844e9c894ab0f8f33a1, type: 3}
+    rightStickUp: {fileID: 21300000, guid: 59e50a5af9dfecc439a203295b3baabc, type: 3}
+    rightStickDown: {fileID: 0}
+    rightStickLeft: {fileID: 0}
+    rightStickRight: {fileID: 0}
     dpad: {fileID: 0}
-    dpadUp: {fileID: 0}
-    dpadDown: {fileID: 0}
-    dpadLeft: {fileID: 0}
-    dpadRight: {fileID: 0}
+    dpadUp: {fileID: 21300000, guid: 69de4cb7372fe7a4d98a639600e180cf, type: 3}
+    dpadDown: {fileID: 21300000, guid: 3a6b0b30187210040b370503dcb48113, type: 3}
+    dpadLeft: {fileID: 21300000, guid: 33165a9e98a61a74ca6fe7d60f6ac523, type: 3}
+    dpadRight: {fileID: 21300000, guid: 530a0d94d4d9b274881445b7800a91c5, type: 3}
   nintendoSwitch:
     buttonSouth: {fileID: 0}
     buttonEast: {fileID: 0}
@@ -70,6 +84,14 @@ MonoBehaviour:
     rightStick: {fileID: 0}
     leftStickPress: {fileID: 0}
     rightStickPress: {fileID: 0}
+    leftStickUp: {fileID: 0}
+    leftStickDown: {fileID: 0}
+    leftStickLeft: {fileID: 0}
+    leftStickRight: {fileID: 0}
+    rightStickUp: {fileID: 0}
+    rightStickDown: {fileID: 0}
+    rightStickLeft: {fileID: 0}
+    rightStickRight: {fileID: 0}
     dpad: {fileID: 0}
     dpadUp: {fileID: 0}
     dpadDown: {fileID: 0}
@@ -90,6 +112,14 @@ MonoBehaviour:
     rightStick: {fileID: 0}
     leftStickPress: {fileID: 0}
     rightStickPress: {fileID: 0}
+    leftStickUp: {fileID: 0}
+    leftStickDown: {fileID: 0}
+    leftStickLeft: {fileID: 0}
+    leftStickRight: {fileID: 0}
+    rightStickUp: {fileID: 0}
+    rightStickDown: {fileID: 0}
+    rightStickLeft: {fileID: 0}
+    rightStickRight: {fileID: 0}
     dpad: {fileID: 0}
     dpadUp: {fileID: 0}
     dpadDown: {fileID: 0}
@@ -109,6 +139,19 @@ MonoBehaviour:
     label: S
   - key: 18
     label: D
+  keySpriteOverrides:
+  - key: 51
+    sprite: {fileID: 21300000, guid: 04fa60b7d583ffc4c88e4254ca0db5b2, type: 3}
+  - key: 52
+    sprite: {fileID: 21300000, guid: 04fa60b7d583ffc4c88e4254ca0db5b2, type: 3}
+  - key: 2
+    sprite: {fileID: 21300000, guid: 2351ab1fb745231439d3b60a8224562b, type: 3}
+  - key: 1
+    sprite: {fileID: 21300000, guid: 22fa3d077cf611641a0e49ce74872fa2, type: 3}
+  - key: 71
+    sprite: {fileID: 21300000, guid: 489ccf0d9b1537b449af8f1905bc5724, type: 3}
+  - key: 3
+    sprite: {fileID: 21300000, guid: 758c0a8b45e63aa46b119360a3424984, type: 3}
   mouseLeft: {fileID: 0}
   mouseRight: {fileID: 0}
   mouseMiddle: {fileID: 0}

@@ -48,11 +48,27 @@ MonoBehaviour:
   - name: Sky
     sprite: {fileID: 3190498582075020912, guid: 21d4c8cad09fd5645a17a13ce309fb34, type: 3}
     material: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
-    color: {r: 0.9245283, g: 0.6264593, b: 0.39248833, a: 1}
-    followCamera: {x: 0, y: 0.75}
+    color: {r: 0.8616352, g: 0.5936293, b: 0.3820457, a: 1}
+    source: 0
+    followCamera: {x: 1, y: 1}
     autoScroll: {x: 0, y: 0}
     offset: {x: 0, y: 0}
-    scale: 0
+    scale: 1
+    fitToCameraHeight: 1
+    tileX: 1
+    tileY: 0
+    sortingLayer: 
+    orderInLayer: -101
+    useAreaTint: 1
+  - name: Sky
+    sprite: {fileID: 21300000, guid: d4aff19d8c726da4b8fb0facc3c9b46e, type: 3}
+    material: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+    color: {r: 0.49993074, g: 0.44772744, b: 0.61635214, a: 0.57254905}
+    source: 0
+    followCamera: {x: 1, y: 1}
+    autoScroll: {x: 0, y: 0}
+    offset: {x: 0, y: -25}
+    scale: 1.5
     fitToCameraHeight: 0
     tileX: 1
     tileY: 0
@@ -62,9 +78,10 @@ MonoBehaviour:
   - name: CloudsBack
     sprite: {fileID: 21300000, guid: 67adee56a3f623649a4b0da81c393892, type: 3}
     material: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
-    color: {r: 1, g: 0.8691346, b: 0.49999988, a: 0.8156863}
-    followCamera: {x: 0.15, y: 0.75}
-    autoScroll: {x: 1, y: 0}
+    color: {r: 0.8930817, g: 0.60354495, b: 0.3622878, a: 0.8156863}
+    source: 0
+    followCamera: {x: 0.95, y: 0.75}
+    autoScroll: {x: -1, y: 0}
     offset: {x: 0, y: 5}
     scale: 1.5
     fitToCameraHeight: 0
@@ -73,7 +90,52 @@ MonoBehaviour:
     sortingLayer: 
     orderInLayer: -99
     useAreaTint: 1
+  - name: CloudsFront
+    sprite: {fileID: 21300000, guid: ed3f5293f2eac8b42b9be6aeeb4fd7ca, type: 3}
+    material: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+    color: {r: 1, g: 0.80704165, b: 0.6194968, a: 1}
+    source: 0
+    followCamera: {x: 0.85, y: 0.8}
+    autoScroll: {x: -0.25, y: 0}
+    offset: {x: 0, y: 3}
+    scale: 1.5
+    fitToCameraHeight: 0
+    tileX: 1
+    tileY: 0
+    sortingLayer: 
+    orderInLayer: -98
+    useAreaTint: 1
+  - name: LandscapeBack
+    sprite: {fileID: 21300000, guid: 157feb58dd6dc3c4d89b80786e9f06b3, type: 3}
+    material: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+    color: {r: 0.59119487, g: 0.34289518, b: 0.14686906, a: 1}
+    source: 0
+    followCamera: {x: 0.75, y: 0.75}
+    autoScroll: {x: 0, y: 0}
+    offset: {x: 0, y: -6}
+    scale: 1
+    fitToCameraHeight: 0
+    tileX: 1
+    tileY: 0
+    sortingLayer: 
+    orderInLayer: -97
+    useAreaTint: 1
+  - name: LandscapeBack2
+    sprite: {fileID: 21300000, guid: ea2edab2c8e0ecb41916172abd20961c, type: 3}
+    material: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+    color: {r: 0.9254902, g: 0.627451, b: 0.39215687, a: 0.29803923}
+    source: 0
+    followCamera: {x: 0.75, y: 0.75}
+    autoScroll: {x: -0.4, y: 0}
+    offset: {x: 0, y: -5.5}
+    scale: 1
+    fitToCameraHeight: 0
+    tileX: 1
+    tileY: 0
+    sortingLayer: 
+    orderInLayer: -96
+    useAreaTint: 1
   exteriorTint: {r: 1, g: 1, b: 1, a: 1}
   interiorTint: {r: 0, g: 0, b: 0, a: 1}
+  worldOrigin: {x: 0, y: 0}
   onlyVisibleInGame: 1
-  snapResetDistance: 15

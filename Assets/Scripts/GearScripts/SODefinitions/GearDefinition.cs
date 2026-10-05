@@ -14,6 +14,11 @@ public class GearDefinition : InventoryItemBase
     public EGearSlot Slot;
     public string TemplateID;
 
+    [Header("Rolled Stats")]
+    public bool RollAttack = true;
+    public bool RollDefense = true;
+    public bool RollCrit = true;
+
     [Header("Attack by Rarity")]
     public RarityRange AttackRanges = new RarityRange
     {
@@ -41,23 +46,34 @@ public class GearDefinition : InventoryItemBase
         Legendary = new Vector2(0.15f, 0.20f)
     };
 
-    public GearInstance CreateInstance(ERarity rarity)
+    public GearInstance CreateInstance(ERarity rarity) => Roll(RarityLineRoller.Fixed(rarity));
+
+    public GearInstance Roll(RarityLineRoller roller)
     {
-        Vector2 atkRange = AttackRanges.GetRange(rarity);
-        Vector2 defRange = DefenseRanges.GetRange(rarity);
-        Vector2 critRange = CritRanges.GetRange(rarity);
+        ERarity attackRarity = ERarity.Common;
+        ERarity defenseRarity = ERarity.Common;
+        ERarity critRarity = ERarity.Common;
 
         GearInstance newInstance = new GearInstance
         {
             InstanceGUID = System.Guid.NewGuid().ToString(),
             InstTemplateID = TemplateID,
-            Rarity = rarity,
-            InstBonusAttack = Random.Range(atkRange.x, atkRange.y),
-            InstBonusDefense = Random.Range(defRange.x, defRange.y),
-            InstBonusCrit = Random.Range(critRange.x, critRange.y),
+            InstBonusAttack = RollAttack ? RollLine(roller, AttackRanges, out attackRarity) : 0f,
+            InstBonusDefense = RollDefense ? RollLine(roller, DefenseRanges, out defenseRarity) : 0f,
+            InstBonusCrit = RollCrit ? RollLine(roller, CritRanges, out critRarity) : 0f,
         };
 
-        // Debug.Log($"Created Gear Instance: {UIName} [{rarity}]");
+        newInstance.Rarity = roller.Final;
+        newInstance.LineRarities = new System.Collections.Generic.List<ERarity> { attackRarity, defenseRarity, critRarity };
+
+        // Debug.Log($"Created Gear Instance: {UIName} [{newInstance.Rarity}]");
         return newInstance;
+    }
+
+    private static float RollLine(RarityLineRoller roller, RarityRange range, out ERarity lineRarity)
+    {
+        lineRarity = roller.Next();
+        Vector2 minMax = range.GetRange(lineRarity);
+        return Random.Range(minMax.x, minMax.y);
     }
 }

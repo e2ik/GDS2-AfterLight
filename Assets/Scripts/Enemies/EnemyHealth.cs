@@ -12,6 +12,7 @@ namespace Enemies
         public bool HasRoll;
         public float RollQuality;
         public ERollTier RollTier;
+        public bool IsComboFinisher;
         public Vector3 Position;
     }
 
@@ -19,6 +20,7 @@ namespace Enemies
     {
         [SerializeField] private int maxHealth = 10;
         public int CurrentHealth { get; private set; }
+        public int MaxHealth => maxHealth;
 
         public event Action<int, int, bool> OnDamaged; // amount, currentHealth, isDot
         public event Action<DamageInfo> OnDamageTaken;
@@ -41,16 +43,40 @@ namespace Enemies
         private void ApplyDamage(DamageInfo info)
         {
             if (CurrentHealth <= 0) return;
-            CurrentHealth = Mathf.Max(0, CurrentHealth - info.Amount);
+
+            int minHealth = Tutorial.TutorialDirector.Instance != null && Tutorial.TutorialDirector.Instance.EnemiesProtected ? 1 : 0;
+            CurrentHealth = Mathf.Max(minHealth, CurrentHealth - info.Amount);
 
             info.Position = transform.position;
 
             OnDamaged?.Invoke(info.Amount, CurrentHealth, info.DamageType == EDamageType.Dot);
             OnDamageTaken?.Invoke(info);
             AnyEnemyDamaged?.Invoke(this, info);
+            RaiseTutorialHitEvents(info);
 
             if (CurrentHealth == 0)
+            {
                 OnDeath?.Invoke();
+                Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyKilled);
+            }
+        }
+
+        private static void RaiseTutorialHitEvents(DamageInfo info)
+        {
+            switch (info.DamageType)
+            {
+                case EDamageType.Base:
+                    Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyHit);
+                    if (info.IsComboFinisher) Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyComboFinished);
+                    if (info.IsCrit) Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyCrit);
+                    break;
+                case EDamageType.Skill:
+                    Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemySkillHit);
+                    break;
+                case EDamageType.Reflect:
+                    Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyReflectHit);
+                    break;
+            }
         }
 
         public void ApplyHit(int damage, AttackContext context, bool isCrit = false)
@@ -62,7 +88,8 @@ namespace Enemies
                 IsCrit = isCrit,
                 HasRoll = context.HasRoll,
                 RollQuality = context.RollQuality,
-                RollTier = context.RollTier
+                RollTier = context.RollTier,
+                IsComboFinisher = context.IsComboFinisher
             });
 
             if (CurrentHealth <= 0) return;

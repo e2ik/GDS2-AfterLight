@@ -111,10 +111,45 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4616
   invertSides: 1
+  accessMode: 0
+  requiredKey: {fileID: 0}
+  missingKeyMessage: I need the {0}...
+  keyNameColor: {r: 0.7882353, g: 0.50550747, b: 0.047058832, a: 1}
+  missingKeyMessageDuration: 3
+  missingKeyMessageEffect: 0
+  missingKeyMessageCooldown: 5
   openLeftState: OpenLeft
   openRightState: OpenRight
   closeLeftState: CloseLeft
   closeRightState: CloseRight
+  openEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  closeEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  unlockEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  lockedEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
 --- !u!95 &1458589010954450671
 Animator:
   serializedVersion: 7

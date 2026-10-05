@@ -11,8 +11,8 @@ namespace Enemies.ModuleScripts.Attacks
         [SerializeField] private int damage = 1;
         [SerializeField] private float launchAngleDegrees = 55f;
         [SerializeField] private float launchSpeed = 8f;
-        [SerializeField] private int shotCount = 1;
         [SerializeField] private float shotSpacingDegrees = 12f;
+        [SerializeField] protected int shotCount = 1;
  
         [SerializeField] private AnimationClip clip;
         [SerializeField] private string placeholderClipName = "AttackPlaceholder";

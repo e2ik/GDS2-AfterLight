@@ -100,6 +100,6 @@ public class PlayerStatsDisplay : MonoBehaviour
             humanityText.text = $"{totalHumanity:F0}";
 
         if (critText != null) 
-            critText.text = $"{totalCrit * 100f:F1}%";
+            critText.text = $"{totalCrit * 100f:F1}";
     }
 }

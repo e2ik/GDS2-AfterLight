@@ -63,6 +63,9 @@ public class PlayerController : MonoBehaviour
     [Header("Knockback Settings")]
     [SerializeField] private bool enemyBodyCollisionKnockback = true;
     [SerializeField] private AttackForce enemyBodyCollisionForce = AttackForce.Light;
+    [SerializeField] private float enemyBodyAirKnockbackForce = 8f;
+    [SerializeField] private float enemyBodyAirStaggerDuration = 0.1f;
+    [SerializeField, Range(0f, 90f)] private float enemyBodyAirKnockbackAngle = 45f;
     [SerializeField] private float hazardousKnockbackForce = 12f;
     [SerializeField] private float hazardousStaggerDuration = 0.3f;
     [SerializeField] private float bounceDuration = 0.2f;
@@ -95,6 +98,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Detection Settings")]
     public LayerMask groundLayer;
+    [SerializeField] private bool snapToGroundOnStart = true;
+    [SerializeField, Min(0f)] private float groundSnapMaxDistance = 10f;
     [SerializeField] private float groundCheckDistance = 0.05f;
     [SerializeField] private float groundCheckNormalThreshold = 0.6f;
     [SerializeField] private float wallCheckDistance = 0.05f;
@@ -126,6 +131,15 @@ public class PlayerController : MonoBehaviour
     private Vector2 LastGroundedPos { get; set; }
 
     public bool InputEnabled { get; set; } = true;
+    public bool IsScriptedWalking => scriptedWalkActive;
+
+    private bool scriptedWalkActive;
+    private float scriptedWalkTargetX;
+    private float scriptedWalkSpeed;
+    private float scriptedWalkTimer;
+    private bool scriptedWalkRestoreInput;
+    private System.Action scriptedWalkArrived;
+    private float lastMoveHorizontal;
     public int FacingDirection { get; private set; } = 1;
     public bool IsMovementFrozen => movementFreezeCount > 0;
     public bool IsUILocked =>
@@ -180,6 +194,54 @@ public class PlayerController : MonoBehaviour
     {
         rb.gravityScale = normGravity;
         lastFacingDirection = FacingDirection;
+
+        if (snapToGroundOnStart) SnapToGround();
+    }
+
+    public bool SnapToGround(float maxDistance = -1f)
+    {
+        if (rb == null) return false;
+        if (maxDistance <= 0f) maxDistance = groundSnapMaxDistance;
+
+        bool restoreDisabledColliders = physicsSuspended;
+        if (restoreDisabledColliders) SetCollidersEnabled(true);
+
+        try
+        {
+            return SnapToGroundInternal(maxDistance);
+        }
+        finally
+        {
+            if (restoreDisabledColliders) SetCollidersEnabled(false);
+        }
+    }
+
+    private bool SnapToGroundInternal(float maxDistance)
+    {
+        Physics2D.SyncTransforms();
+        Bounds bounds = ComputePlayerBounds();
+
+        Vector2 origin = new Vector2(bounds.center.x, bounds.center.y);
+        float castDistance = bounds.extents.y + maxDistance;
+
+        bool previousStartInColliders = Physics2D.queriesStartInColliders;
+        Physics2D.queriesStartInColliders = false;
+        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, castDistance, groundLayer);
+        Physics2D.queriesStartInColliders = previousStartInColliders;
+
+        if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
+
+        float offset = hit.point.y - bounds.min.y;
+        Vector3 position = transform.position + new Vector3(0f, offset, 0f);
+
+        transform.position = position;
+        rb.position = position;
+        rb.linearVelocity = Vector2.zero;
+
+        Physics2D.SyncTransforms();
+        cachedBounds = ComputePlayerBounds();
+        GroundCheckUpdate();
+        return true;
     }
 
     private void Update()
@@ -191,6 +253,17 @@ public class PlayerController : MonoBehaviour
         {
             PerformInventoryAction(); 
             HandleHeal();
+        }
+        else
+        {
+            inventoryPressed = false;
+            healPressed = false;
+        }
+
+        if (!InputEnabled)
+        {
+            jumpPressed = false;
+            dashPressed = false;
         }
     }
 
@@ -205,6 +278,7 @@ public class PlayerController : MonoBehaviour
 
         HandleEdgeClimb();
         HandleStepUp();
+        UpdateScriptedWalk();
         HandleMovement();
         HandleWallSlide();
         HandleJump();
@@ -218,7 +292,25 @@ public class PlayerController : MonoBehaviour
     public void FreezeMovement(bool freeze)
     {
         movementFreezeCount = freeze ? movementFreezeCount + 1 : Mathf.Max(0, movementFreezeCount - 1);
-        if (freeze) rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+
+        if (freeze)
+        {
+            if (isDashing && !isDashLocked)
+            {
+                CancelInvoke(nameof(StopDashing));
+                StopDashing();
+            }
+
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+            jumpPressed = false;
+            dashPressed = false;
+        }
+        else if (movementFreezeCount == 0)
+        {
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+            jumpPressed = false;
+            dashPressed = false;
+        }
     }
 
     public void SetPhysicsSuspended(bool suspend)
@@ -289,7 +381,7 @@ public class PlayerController : MonoBehaviour
         else UpdateGravity();
     }
 
-    public bool CanMove() => InputEnabled
+    public bool CanMove() => (InputEnabled || scriptedWalkActive)
                              && !IsMovementFrozen
                              && !isWallJumping
                              && !isDashing
@@ -364,6 +456,7 @@ public class PlayerController : MonoBehaviour
         {
             if (verticalInput < -0.5f && TryPassThroughPlatform())
             {
+                Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerDroppedThrough);
                 ConsumeJumpInput();
                 return;
             }
@@ -377,10 +470,11 @@ public class PlayerController : MonoBehaviour
             combat.ForceCancelAttack();
             combat.NotifyJumpInputReceived();
 
-            if (!isGrounded) rb.linearVelocityY = 0f;
+            if (!isGrounded || rb.linearVelocityY < 0f) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
 
             playerAnimation.TriggerJumpEffect(false);
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerJumped);
 
             ConsumeJumpInput();
             coyoteTimeCounter = 0f;
@@ -415,6 +509,7 @@ public class PlayerController : MonoBehaviour
                 combat.ForceCancelAttack();
                 combat.CancelParry();
                 if (combat.IsSkilling) combat.EndSkill();
+                Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerWallSlid);
             }
 
             isWallSliding = true;
@@ -449,6 +544,7 @@ public class PlayerController : MonoBehaviour
         if (jumpPressed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerWallJumped);
             combat.ForceCancelAttack();
             combat.NotifyJumpInputReceived();
             rb.linearVelocity = Vector2.zero;
@@ -521,6 +617,8 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
 
             playerAnimation.TriggerDashEffect();
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerDashed);
+            if (!IsDirectionalDash) Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerBackDashed);
 
             ConsumeDashInput();
 
@@ -606,6 +704,7 @@ public class PlayerController : MonoBehaviour
     {
         canClimbEdge = false;
         isClimbing = true;
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerClimbed);
         climbStartTime = Time.time;
 
         combat.CancelAllActions();
@@ -717,6 +816,7 @@ public class PlayerController : MonoBehaviour
         isHealing = true;
         rb.linearVelocityX = 0;
         OnHealStarted?.Invoke();
+        Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerHealed);
     }
 
     public void CancelHeal()
@@ -763,11 +863,30 @@ public class PlayerController : MonoBehaviour
             _ => new KnockbackData(0f, 0f)
         };
 
-        Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
-        rb.linearVelocity = Vector2.zero;
-        rb.AddForce(dir * data.Force, ForceMode2D.Impulse);
+        PushAway(sourcePosition, data.Force, data.StaggerDuration, applyStagger);
+    }
 
-        if (applyStagger) StartHitStagger(data.StaggerDuration);
+    public void ApplyKnockback(Vector2 sourcePosition, float force, float staggerDuration, bool applyStagger = true, bool playHurtAnimation = true, Vector2? directionOverride = null)
+    {
+        if (physicsSuspended) return;
+
+        CancelClimb();
+        CancelHeal();
+        combat.ForceCancelAttack();
+        if (applyStagger && playHurtAnimation) playerAnimation.PlayHurtAnimation();
+
+        PushAway(sourcePosition, force, staggerDuration, applyStagger, directionOverride);
+    }
+
+    private void PushAway(Vector2 sourcePosition, float force, float staggerDuration, bool applyStagger, Vector2? directionOverride = null)
+    {
+        Vector2 dir = directionOverride.HasValue
+            ? directionOverride.Value.normalized
+            : ((Vector2)transform.position - sourcePosition).normalized;
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce(dir * force, ForceMode2D.Impulse);
+
+        if (applyStagger && staggerDuration > 0f) StartHitStagger(staggerDuration);
     }
 
     private void StartHitStagger(float duration)
@@ -839,14 +958,67 @@ public class PlayerController : MonoBehaviour
         IsUpIntent = raw.y > upIntentThreshold && verticalDominant;
         IsDownIntent = raw.y < -downIntentThreshold && verticalDominant;
 
-        horizontalInput = Mathf.Abs(raw.x) > InputDeadzone
+        lastMoveHorizontal = Mathf.Abs(raw.x) > InputDeadzone
             ? Mathf.Sign(raw.x) * Mathf.Clamp01(raw.magnitude)
             : 0f;
+
+        if (!scriptedWalkActive) horizontalInput = lastMoveHorizontal;
+    }
+
+    public void StartScriptedWalk(float targetX, System.Action onArrived = null, float speedMultiplier = 1f, float timeout = 3f)
+    {
+        if (scriptedWalkActive) FinishScriptedWalk(false);
+
+        scriptedWalkActive = true;
+        scriptedWalkTargetX = targetX;
+        scriptedWalkSpeed = Mathf.Clamp01(speedMultiplier);
+        scriptedWalkTimer = timeout;
+        scriptedWalkArrived = onArrived;
+        scriptedWalkRestoreInput = InputEnabled;
+
+        InputEnabled = false;
+        jumpPressed = false;
+        dashPressed = false;
+    }
+
+    public void CancelScriptedWalk()
+    {
+        if (scriptedWalkActive) FinishScriptedWalk(false);
+    }
+
+    private void UpdateScriptedWalk()
+    {
+        if (!scriptedWalkActive) return;
+
+        scriptedWalkTimer -= Time.fixedDeltaTime;
+        float dx = scriptedWalkTargetX - rb.position.x;
+
+        if (Mathf.Abs(dx) <= 0.1f || scriptedWalkTimer <= 0f)
+        {
+            FinishScriptedWalk(true);
+            return;
+        }
+
+        horizontalInput = Mathf.Sign(dx) * scriptedWalkSpeed;
+    }
+
+    private void FinishScriptedWalk(bool invokeCallback)
+    {
+        scriptedWalkActive = false;
+        horizontalInput = 0f;
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+
+        if (scriptedWalkRestoreInput) InputEnabled = true;
+        horizontalInput = InputEnabled ? lastMoveHorizontal : 0f;
+
+        System.Action callback = scriptedWalkArrived;
+        scriptedWalkArrived = null;
+        if (invokeCallback) callback?.Invoke();
     }
 
     public void OnJump(InputValue value)
     {
-        if (value.isPressed && IsUILocked) return;
+        if (value.isPressed && (IsUILocked || !InputEnabled)) return;
 
         if (value.isPressed)
         {
@@ -857,12 +1029,16 @@ public class PlayerController : MonoBehaviour
 
     public void OnDash(InputValue value)
     {
-        if (value.isPressed && IsUILocked) return;
+        if (value.isPressed && (IsUILocked || !InputEnabled)) return;
 
         dashPressed = value.isPressed; dashReleased = !value.isPressed;
     }
 
-    public void OnInventory() => inventoryPressed = true;
+    public void OnInventory()
+    {
+        if (!InputEnabled) return;
+        inventoryPressed = true;
+    }
 
     private void ConsumeJumpInput()
     {
@@ -876,7 +1052,11 @@ public class PlayerController : MonoBehaviour
         dashReleased = false;
     }
     
-    private void OnHeal() => healPressed = true;
+    private void OnHeal()
+    {
+        if (!InputEnabled) return;
+        healPressed = true;
+    }
 
     #endregion
 
@@ -1072,7 +1252,8 @@ public class PlayerController : MonoBehaviour
 
         if (inventoryDisplay != null && GameUI.UIGlobalInput.Instance != null)
         {
-            if (inventoryDisplay.IsOpen && InputManager.IsUsingGamepad) return;
+            bool anyPanelOpen = GameUI.UIManager.Instance != null && GameUI.UIManager.Instance.HasOpenWindows;
+            if (anyPanelOpen && InputManager.IsUsingGamepad) return;
             GameUI.UIGlobalInput.Instance.ToggleWindow(inventoryDisplay);
         }
     }
@@ -1088,7 +1269,15 @@ public class PlayerController : MonoBehaviour
         if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
         if (!col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
 
-        ApplyKnockback(col.transform.position, enemyBodyCollisionForce, applyStagger: true, playHurtAnimation: false);
+        if (isGrounded)
+            ApplyKnockback(col.transform.position, enemyBodyCollisionForce, applyStagger: true, playHurtAnimation: false);
+        else
+        {
+            float away = transform.position.x >= col.transform.position.x ? 1f : -1f;
+            float radians = enemyBodyAirKnockbackAngle * Mathf.Deg2Rad;
+            Vector2 airDirection = new Vector2(away * Mathf.Cos(radians), Mathf.Sin(radians));
+            ApplyKnockback(col.transform.position, enemyBodyAirKnockbackForce, enemyBodyAirStaggerDuration, applyStagger: true, playHurtAnimation: false, directionOverride: airDirection);
+        }
     }
 
     public bool ApplyHazardKnockback(Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null)

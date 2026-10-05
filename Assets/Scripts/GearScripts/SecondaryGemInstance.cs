@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
@@ -18,5 +19,6 @@ public class SecondaryGemInstance
     public float InstRolledReflectPercent; // 0 - 1f
 
     public float InstRolledMaxGambleMult;
+    public List<ERarity> LineRarities = new List<ERarity>();
     public bool IsNew = true;
 }

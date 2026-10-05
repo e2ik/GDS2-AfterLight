@@ -29,6 +29,7 @@ namespace Tutorial
 
         [Tooltip("If > 0, aborts the active sequence once the player moves this far from the volume. 0 = disabled.")]
         [SerializeField] private float maxDistanceFromPlayer = 0f;
+        [SerializeField] private bool completeWhenOutOfRange = false;
 
         [TextArea(2, 4)]
         [SerializeField] private string speechBubbleText;
@@ -38,6 +39,8 @@ namespace Tutorial
         [Tooltip("SpeechBubble mode only. If any lines are set here, they play one after another (each shown for Speech Bubble Duration, each with its own effect) instead of the single Speech Bubble Text above. Leave empty to just use the single line as before.")]
         [SerializeField] private SpeechLine[] speechBubbleLines;
 
+        [SerializeField] private bool hideVisualsOnStart = true;
+
         private bool sequenceActiveFromThisVolume;
 
         private bool UsesSequence => uiMode == TutorialTriggerUIMode.TutorialUI || uiMode == TutorialTriggerUIMode.Both;
@@ -46,7 +49,7 @@ namespace Tutorial
         private bool IsCompleted(string id) =>
             !string.IsNullOrEmpty(id) && TutorialDirector.Instance != null && TutorialDirector.Instance.IsSequenceCompleted(id);
 
-        private bool SequenceDone => sequence == null || IsCompleted(sequence.SequenceID);
+        private bool SequenceDone => sequence == null || (!sequence.CanRepeat && IsCompleted(sequence.SequenceID));
         private bool BubbleDone => string.IsNullOrEmpty(triggerID) ? false : IsCompleted(triggerID);
 
         private void Reset()
@@ -76,6 +79,18 @@ namespace Tutorial
             }
         }
 #endif
+
+        private void Awake()
+        {
+            if (!hideVisualsOnStart) return;
+
+            foreach (SpriteRenderer sr in GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                Color c = sr.color;
+                c.a = 0f;
+                sr.color = c;
+            }
+        }
 
         private void OnEnable()
         {
@@ -112,7 +127,8 @@ namespace Tutorial
             float sqrDistance = (player.position - transform.position).sqrMagnitude;
             if (sqrDistance > maxDistanceFromPlayer * maxDistanceFromPlayer)
             {
-                TutorialDirector.Instance?.AbortActiveSequence();
+                if (completeWhenOutOfRange) TutorialDirector.Instance?.SkipActiveSequence();
+                else TutorialDirector.Instance?.AbortActiveSequence();
                 sequenceActiveFromThisVolume = false;
             }
         }
@@ -164,7 +180,7 @@ namespace Tutorial
                 if (string.IsNullOrEmpty(line.text)) continue;
 
                 TutorialSpeechBubblePool.Instance.Show(line.text, target, speechBubbleDuration, line.effect);
-                yield return new WaitForSeconds(speechBubbleDuration);
+                yield return new WaitForSecondsRealtime(speechBubbleDuration);
             }
         }
     }
