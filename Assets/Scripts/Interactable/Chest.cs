@@ -22,6 +22,7 @@ public class Chest : MonoBehaviour, IInteractable
     [Header("Loot Configuration")]
     [SerializeField] private InventoryItemBase lootItem;
     [SerializeField] private WorldItem worldItemPrefab;
+    [SerializeField] private LootTableDefinitionSO lootTable;
 
     [Header("Rarity")]
     [SerializeField] private bool useFixedRarity = false;
@@ -112,7 +113,7 @@ public class Chest : MonoBehaviour, IInteractable
 
     public void Interact(Player player)
     {
-        if (lootItem == null)
+        if (lootItem == null && lootTable == null)
         {
             Debug.LogWarning($"[Chest] Chest '{chestID}' opened, but no loot item is assigned!");
             CompleteOpening();
@@ -125,7 +126,29 @@ public class Chest : MonoBehaviour, IInteractable
 
     private void SpawnAndPopLoot()
     {
-        if (worldItemPrefab == null)
+        InventoryItemBase itemToDrop = lootItem;
+        WorldItem prefabToUse = worldItemPrefab;
+        RarityWeights odds = overrideRarityOdds ? rarityOdds : null;
+
+        if (lootTable != null)
+        {
+            LootTableDefinitionSO.LootEntry entry = lootTable.PickEntry();
+            if (entry == null || entry.lootItem == null)
+            {
+                AudioManager.PlaySFX(chestOpen, transform.position);
+                return;
+            }
+
+            itemToDrop = entry.lootItem;
+            if (entry.worldItem != null) prefabToUse = entry.worldItem;
+            if (!overrideRarityOdds && lootTable.overrideRarityOdds) odds = lootTable.rarityOdds;
+        }
+        else
+        {
+            LootDropHistory.Record(lootItem);
+        }
+
+        if (prefabToUse == null)
         {
             Debug.LogError($"[Chest] WorldItemPrefab is not assigned on Chest '{chestID}'!");
             return;
@@ -133,11 +156,10 @@ public class Chest : MonoBehaviour, IInteractable
 
         Vector3 spawnPosition = transform.position + new Vector3(0f, 0.5f, 0f);
 
-        WorldItem droppedItem = Instantiate(worldItemPrefab, spawnPosition, Quaternion.identity);
+        WorldItem droppedItem = Instantiate(prefabToUse, spawnPosition, Quaternion.identity);
         ERarity? rarity = useFixedRarity ? fixedRarity : (ERarity?)null;
-        RarityWeights odds = overrideRarityOdds ? rarityOdds : null;
 
-        droppedItem.Initialize(lootItem, rarity, odds);
+        droppedItem.Initialize(itemToDrop, rarity, odds);
 
         float randomX = Random.Range(minHorizontalAngle, maxHorizontalAngle);
         Vector2 popDirection = new Vector2(randomX, 1.0f).normalized;

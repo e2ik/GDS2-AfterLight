@@ -211,6 +211,7 @@ public class GameManager : MonoBehaviour
 
         TutorialDirector.Instance?.AbortActiveSequence();
         TutorialDirector.Instance?.ClearCompletedSequences();
+        LootDropHistory.Clear();
 
         ClearPlayerInventory();
         ClearPlayerEquipment();

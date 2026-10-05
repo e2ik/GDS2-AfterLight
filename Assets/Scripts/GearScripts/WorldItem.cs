@@ -27,6 +27,8 @@ public class WorldItem : MonoBehaviour
     [Header("Pickup")]
     [SerializeField] private float pickupRadius = 0.5f;
     private CircleCollider2D pickupTrigger;
+    private bool awaitingLanding;
+    private Coroutine pickupFallbackRoutine;
 
     [Header("Rarity")]
     [SerializeField] private bool overrideRarityOdds = false;
@@ -391,20 +393,72 @@ public class WorldItem : MonoBehaviour
             rb.AddForce(forceDirection.normalized * forceMagnitude, ForceMode2D.Impulse);
         }
 
-        StartCoroutine(EnablePickupDelay(0.4f));
+        if (rb == null || behaviour == WorldItemBehaviour.Unique) return;
+
+        if (pickupFallbackRoutine != null) StopCoroutine(pickupFallbackRoutine);
+        awaitingLanding = true;
+        if (pickupTrigger != null) pickupTrigger.enabled = false;
+        pickupFallbackRoutine = StartCoroutine(PickupFallbackRoutine());
     }
 
-    private IEnumerator EnablePickupDelay(float delay)
+    private void OnEnable()
     {
-        if (pickupTrigger != null) pickupTrigger.enabled = false;
-        yield return new WaitForSeconds(delay);
+        if (awaitingLanding && pickupFallbackRoutine == null)
+            pickupFallbackRoutine = StartCoroutine(PickupFallbackRoutine());
+    }
+
+    private void OnDisable()
+    {
+        pickupFallbackRoutine = null;
+    }
+
+    private IEnumerator PickupFallbackRoutine()
+    {
+        yield return new WaitForSeconds(1.5f);
+        pickupFallbackRoutine = null;
+        EnablePickupAfterLanding();
+    }
+
+    private void EnablePickupAfterLanding()
+    {
+        if (!awaitingLanding) return;
+        awaitingLanding = false;
+
+        if (pickupFallbackRoutine != null)
+        {
+            StopCoroutine(pickupFallbackRoutine);
+            pickupFallbackRoutine = null;
+        }
+
         if (pickupTrigger != null) pickupTrigger.enabled = true;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         Player player = collision.gameObject.GetComponentInParent<Player>();
-        if (player != null) IgnorePlayerCollision(player);
+        if (player != null)
+        {
+            IgnorePlayerCollision(player);
+            return;
+        }
+
+        if (awaitingLanding && HasGroundContact(collision)) EnablePickupAfterLanding();
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (!awaitingLanding) return;
+        if (collision.gameObject.GetComponentInParent<Player>() != null) return;
+        if (HasGroundContact(collision)) EnablePickupAfterLanding();
+    }
+
+    private static bool HasGroundContact(Collision2D collision)
+    {
+        for (int i = 0; i < collision.contactCount; i++)
+        {
+            if (collision.GetContact(i).normal.y > 0.5f) return true;
+        }
+        return false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)

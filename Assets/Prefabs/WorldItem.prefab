@@ -113,6 +113,7 @@ MonoBehaviour:
   itemSpriteRenderer: {fileID: 0}
   nameLabel: {fileID: 0}
   pickupRadius: 0.5
+  pickupDelay: 1.5
   overrideRarityOdds: 0
   rarityOdds:
     common: 50
@@ -147,6 +148,9 @@ MonoBehaviour:
       Data3: -100455012
       Data4: -386350290
     Path: event:/WorldSFX Events/PrimaryGemPickupEvent
+  tutorialEventKey: 
+  inventoryFullMessageCooldown: 3
+  inventoryFullColor: {r: 1, g: 0.35, b: 0.35, a: 1}
 --- !u!58 &1408756311625240854
 CircleCollider2D:
   m_ObjectHideFlags: 0
