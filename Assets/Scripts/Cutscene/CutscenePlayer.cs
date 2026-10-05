@@ -21,10 +21,13 @@ namespace Enemies.Cutscene
         
         private void Awake() => Instance = this;
         
-        public IEnumerator Play(VideoClip clip)
+        public IEnumerator Play(string filename)
         {
             videoRoot.SetActive(true);
-            videoPlayer.clip = clip;
+
+            videoPlayer.source = VideoSource.Url;
+            videoPlayer.url = Application.streamingAssetsPath + "/" + filename;
+            
             videoPlayer.isLooping = false;
             videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
             videoPlayer.Prepare();

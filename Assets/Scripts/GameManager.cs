@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Enemies.Cutscene;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -43,6 +44,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float startupFadeDuration = 0.5f;
     [SerializeField] private float respawnFadeDuration = 0.5f;
 
+    [Header("Cutscenes")] [SerializeField] private string introCutsceneFile = "IntroCutscene.mp4";
+    
     [Header("Item Colors")]
     [SerializeField] private Color commonColor = new Color(0.69f, 0.69f, 0.69f);
     [SerializeField] private Color rareColor = new Color(0.56f, 0.76f, 1.0f);
@@ -210,6 +213,8 @@ public class GameManager : MonoBehaviour
 
         FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
+        yield return PlayIntroCutscene();
+        
         SpawnPlayer();
 
         TutorialDirector.Instance?.AbortActiveSequence();
@@ -350,6 +355,22 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
+    }
+
+    private IEnumerator PlayIntroCutscene()
+    {
+        if(string.IsNullOrEmpty(introCutsceneFile) || CutscenePlayer.Instance == null)
+            yield break;
+
+        if (MusicManager.Instance != null)
+        {
+            MusicManager.Instance.StopMusicForCutscene();
+            yield return new WaitForSecondsRealtime(MusicManager.Instance.StopFadeDuration);
+        }
+
+        yield return CutscenePlayer.Instance.Play(introCutsceneFile);
+        
+        MusicManager.Instance?.RestartMusic();
     }
 
     #endregion
