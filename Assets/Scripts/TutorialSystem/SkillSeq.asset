@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2acefbb5902d7144eba89835c8ff06bf, type: 3}
+  m_Name: SkillSeq
+  m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialSequenceDefinition
+  sequenceID: SkillSeq
+  steps:
+  - {fileID: 11400000, guid: 0c10b609a34b8ed40903ecb77f799ed4, type: 2}
+  - {fileID: 11400000, guid: 21ffd1ad13257584198bc7d95296612f, type: 2}
+  - {fileID: 11400000, guid: 96f1c1137ff73d543a485f5f8ee22157, type: 2}
+  - {fileID: 11400000, guid: 5a0f99db1ebf7a643981bb9ecfaf1513, type: 2}
+  canRepeat: 0
+  uninterruptible: 1
+  keepEnemiesAlive: 0
+  lockMapCloseUntilCloseStep: 0
+  allowMenus: 0
+  reactions: []

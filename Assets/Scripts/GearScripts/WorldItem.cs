@@ -646,6 +646,11 @@ public class WorldItem : MonoBehaviour
 
         Tutorial.TutorialEvents.Raise(typeKey);
 
+        if (itemDefinition is PrimaryGemBehaviourDefinition)
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PrimaryGemPickedUp);
+        else if (itemDefinition is SecondaryGemBehaviourDefinition)
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.SecondaryGemPickedUp);
+
         if (itemDefinition != null)
             Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PickedUpPrefix + itemDefinition.name);
 

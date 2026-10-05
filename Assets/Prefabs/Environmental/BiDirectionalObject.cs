@@ -28,6 +28,12 @@ public class BiDirectionalObject : MonoBehaviour
     [SerializeField] private DialogueEffect missingKeyMessageEffect = DialogueEffect.Default;
     [SerializeField, Min(0f)] private float missingKeyMessageCooldown = 1f;
 
+    [Header("Boss Lock")]
+    [SerializeField] private bool lockDuringBossFights = true;
+    [SerializeField] private string bossLockedMessage = "";
+    [SerializeField] private FMODUnity.EventReference bossLockEvent;
+    [SerializeField] private FMODUnity.EventReference bossUnlockEvent;
+
     [Header("Animator State Names")]
     [SerializeField] private string openLeftState = "OpenLeft";
     [SerializeField] private string openRightState = "OpenRight";
@@ -44,9 +50,12 @@ public class BiDirectionalObject : MonoBehaviour
     private Side openedFromSide = Side.None;
     private readonly HashSet<Collider2D> occupants = new HashSet<Collider2D>();
     private bool isLocked;
+    private bool bossLocked;
+    private bool solidPending;
     private float nextMissingKeyMessageTime = float.NegativeInfinity;
 
-    public bool IsLocked => isLocked;
+    public bool IsLocked => isLocked || bossLocked;
+    public bool IsBossLocked => bossLocked;
 
     private void Reset()
     {
@@ -64,8 +73,20 @@ public class BiDirectionalObject : MonoBehaviour
         SetLocked(accessMode == AccessMode.RequireKey);
     }
 
+    private void OnEnable()
+    {
+        Enemies.BossTrigger.OnBossEngagementChanged += HandleBossEngagementChanged;
+        if (lockDuringBossFights && box != null) SetBossLocked(Enemies.BossTrigger.AnyBossEngaged);
+    }
+
+    private void HandleBossEngagementChanged(bool engaged)
+    {
+        if (lockDuringBossFights) SetBossLocked(engaged);
+    }
+
     private void OnDisable()
     {
+        Enemies.BossTrigger.OnBossEngagementChanged -= HandleBossEngagementChanged;
         occupants.Clear();
         openedFromSide = Side.None;
     }
@@ -73,7 +94,31 @@ public class BiDirectionalObject : MonoBehaviour
     private void SetLocked(bool locked)
     {
         isLocked = locked;
-        box.isTrigger = !locked;
+        ApplyColliderState();
+    }
+
+    public void SetBossLocked(bool locked)
+    {
+        if (bossLocked == locked) return;
+
+        bossLocked = locked;
+        ApplyColliderState();
+        AudioManager.PlaySFX(locked ? bossLockEvent : bossUnlockEvent, transform.position);
+    }
+
+    private void ApplyColliderState()
+    {
+        bool solid = isLocked || bossLocked;
+
+        if (solid && occupants.Count > 0)
+        {
+            solidPending = true;
+            box.isTrigger = true;
+            return;
+        }
+
+        solidPending = false;
+        box.isTrigger = !solid;
     }
 
     public void Unlock()
@@ -86,13 +131,19 @@ public class BiDirectionalObject : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (!isLocked) return;
+        if (!isLocked && !bossLocked) return;
 
         Collider2D other = collision.collider;
         if (!IsOnPlayerLayer(other)) return;
 
         Player player = other.GetComponentInParent<Player>();
         if (player == null) return;
+
+        if (bossLocked)
+        {
+            ShowBossLockedMessage(player);
+            return;
+        }
 
         if (PlayerHasRequiredKey(player))
         {
@@ -105,7 +156,7 @@ public class BiDirectionalObject : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (isLocked) return;
+        if (isLocked || bossLocked) return;
         if (!IsOnPlayerLayer(other)) return;
 
         occupants.Add(other);
@@ -122,6 +173,7 @@ public class BiDirectionalObject : MonoBehaviour
         if (!occupants.Remove(other)) return;
 
         if (occupants.Count > 0) return;
+        if (solidPending) ApplyColliderState();
         if (openedFromSide == Side.None) return;
 
         if (!gameObject.activeInHierarchy)
@@ -166,6 +218,17 @@ public class BiDirectionalObject : MonoBehaviour
         }
 
         Tutorial.TutorialSpeechBubblePool.Instance?.Show(message, player.transform, missingKeyMessageDuration, missingKeyMessageEffect);
+    }
+
+    private void ShowBossLockedMessage(Player player)
+    {
+        if (Time.time < nextMissingKeyMessageTime) return;
+        nextMissingKeyMessageTime = Time.time + missingKeyMessageDuration + missingKeyMessageCooldown;
+
+        AudioManager.PlaySFX(lockedEvent, transform.position);
+
+        if (!string.IsNullOrEmpty(bossLockedMessage))
+            Tutorial.TutorialSpeechBubblePool.Instance?.Show(bossLockedMessage, player.transform, missingKeyMessageDuration, missingKeyMessageEffect);
     }
 
     private bool IsOnPlayerLayer(Collider2D other)

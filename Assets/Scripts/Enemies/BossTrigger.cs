@@ -14,6 +14,9 @@ namespace Enemies
         [SerializeField] private string playerTag = "Player";
         [SerializeField] private string bossID = "boss_intro_unique_id";
 
+        [Header("Camera")]
+        [SerializeField] private bool lockCameraToArena = true;
+
         [Header("Music")] 
         [SerializeField] private EventReference bossMusicEvent;
         [SerializeField] private EventReference postBossMusicEvent;
@@ -22,11 +25,71 @@ namespace Enemies
         private bool bossDefeated;
 
         private Enemy activeBossEnemy;
+        private Transform engagedPlayer;
+        private bool playerEnteredArena;
+        private bool cameraLocked;
+        private bool doorsLockedByThis;
+
+        private static int engagedTriggerCount;
+        public static bool AnyBossEngaged => engagedTriggerCount > 0;
+        public static event Action<bool> OnBossEngagementChanged;
+        private CameraFollow2D lockedCamera;
+        private PlayerStats engagedStats;
         private Action<int, int, bool> onBossDamaged;
         private Action onBossDeath;
 
+        private void Update()
+        {
+            if (activeBossEnemy == null) return;
+
+            bool bossGone = !activeBossEnemy.isActiveAndEnabled;
+            bool playerInside = engagedPlayer != null && (arenaBounds == null || IsInsideArena(engagedPlayer.position));
+
+            if (playerInside) playerEnteredArena = true;
+            bool playerLeft = engagedPlayer == null || (playerEnteredArena && !playerInside);
+
+            if (bossGone || playerLeft) Disengage();
+        }
+
+        private bool IsInsideArena(Vector2 point)
+        {
+            Bounds arena = arenaBounds.WorldBounds;
+            return point.x >= arena.min.x && point.x <= arena.max.x
+                && point.y >= arena.min.y && point.y <= arena.max.y;
+        }
+
+        private void OnEnable()
+        {
+            PlayerStats.OnRespawnStarted += HandleRespawnStarted;
+        }
+
+        private void OnDisable()
+        {
+            PlayerStats.OnRespawnStarted -= HandleRespawnStarted;
+            if (activeBossEnemy != null) Disengage();
+        }
+
+        private void HandleRespawnStarted()
+        {
+            if (activeBossEnemy != null) Disengage();
+        }
+
+        private void Disengage()
+        {
+            ReleaseCamera();
+            SetDoorsLocked(false);
+            BossHealthBarUI.Instance?.Hide();
+
+            if (MusicManager.Instance != null && MusicManager.Instance.IsBossMusicActive)
+                MusicManager.Instance.ExitBossMusicToPrevious();
+
+            CleanupFightSubscriptions();
+            hasTriggered = false;
+        }
+
         private void OnTriggerEnter2D(Collider2D other)
         {
+            if (activeBossEnemy != null) return;
             if (hasTriggered) return;
             if (bossDefeated) return;
             if (!other.CompareTag(playerTag)) return;
@@ -83,6 +146,12 @@ namespace Enemies
                 BossHealthBarUI.Instance?.Initialize(bossEnemy.Context.Health.CurrentHealth, bossEnemy.Context.Health.MaxHealth);
 
                 activeBossEnemy = bossEnemy;
+                engagedPlayer = player.transform;
+                engagedStats = player.Stats;
+                if (engagedStats != null) engagedStats.OnDied += HandlePlayerDied;
+
+                LockCamera();
+                SetDoorsLocked(true);
 
                 onBossDamaged = (amount, currentHealth, isCrit) =>
                 {
@@ -93,6 +162,8 @@ namespace Enemies
                 onBossDeath = () => 
                 {
                     bossDefeated = true;
+                    ReleaseCamera();
+                    SetDoorsLocked(false);
                     MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
                     BossHealthBarUI.Instance?.Hide();
                     CleanupFightSubscriptions();
@@ -106,8 +177,48 @@ namespace Enemies
         }
         
 
+        private void HandlePlayerDied()
+        {
+            ReleaseCamera();
+            SetDoorsLocked(false);
+        }
+
+        private void SetDoorsLocked(bool locked)
+        {
+            if (locked == doorsLockedByThis) return;
+            doorsLockedByThis = locked;
+
+            bool wasEngaged = AnyBossEngaged;
+            engagedTriggerCount = Mathf.Max(0, engagedTriggerCount + (locked ? 1 : -1));
+
+            if (AnyBossEngaged != wasEngaged) OnBossEngagementChanged?.Invoke(AnyBossEngaged);
+        }
+
+        private void LockCamera()
+        {
+            if (!lockCameraToArena || arenaBounds == null) return;
+
+            lockedCamera = FindFirstObjectByType<CameraFollow2D>();
+            if (lockedCamera == null) return;
+
+            lockedCamera.LockToBounds(arenaBounds.WorldBounds);
+            cameraLocked = true;
+        }
+
+        private void ReleaseCamera()
+        {
+            if (!cameraLocked) return;
+            cameraLocked = false;
+
+            if (lockedCamera != null) lockedCamera.ReturnToNormalFollow();
+            lockedCamera = null;
+        }
+
         private void CleanupFightSubscriptions()
         {
+            if (engagedStats != null) engagedStats.OnDied -= HandlePlayerDied;
+            engagedStats = null;
+
             if (activeBossEnemy != null)
             {
                 if (onBossDamaged != null)
@@ -118,6 +229,8 @@ namespace Enemies
             }
 
             activeBossEnemy = null;
+            engagedPlayer = null;
+            playerEnteredArena = false;
             onBossDamaged = null;
             onBossDeath = null;
         }

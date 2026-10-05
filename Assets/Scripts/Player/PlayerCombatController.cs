@@ -137,6 +137,17 @@ public class PlayerCombatController : MonoBehaviour
         && skillTimer <= 0f
         && (skillMeterAlwaysFull || SkillMeter >= SkillActivationCost);
 
+    public bool HasSkillEquipped => player != null && player.Equipment != null && player.Equipment.SpecialAttackDef != null;
+
+    public bool HasEnoughSkillEnergy
+    {
+        get
+        {
+            if (!HasSkillEquipped) return false;
+            return skillMeterAlwaysFull || SkillMeter >= player.Equipment.SpecialAttackDef.SkillCost;
+        }
+    }
+
     private float _skillMeter;
     public float SkillMeter
     {
