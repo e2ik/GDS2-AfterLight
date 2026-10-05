@@ -9,6 +9,7 @@ namespace Enemies
     public class BossTrigger : MonoBehaviour
     {
         [SerializeField] private DialogueData introDialogue;
+        [SerializeField] private DialogueData deathDialogue;
         [SerializeField] private PrefabSpawner bossSpawner;
         [SerializeField] private BossBounds arenaBounds;
         [SerializeField] private string playerTag = "Player";
@@ -37,6 +38,7 @@ namespace Enemies
         private PlayerStats engagedStats;
         private Action<int, int, bool> onBossDamaged;
         private Action onBossDeath;
+        private Action onHealthDepleted;
 
         private void Update()
         {
@@ -153,6 +155,10 @@ namespace Enemies
                 LockCamera();
                 SetDoorsLocked(true);
 
+                bossEnemy.Context.Health.DeferDeath = true;
+                onHealthDepleted = () => StartCoroutine(PlayDeathDialogueThenFinalize(bossEnemy, player));
+                bossEnemy.Context.Health.OnHealthDepleted += onHealthDepleted;
+
                 onBossDamaged = (amount, currentHealth, isCrit) =>
                 {
                     MusicManager.Instance?.SetBossIntensity((float)currentHealth / bossEnemy.Context.Health.MaxHealth);
@@ -226,6 +232,9 @@ namespace Enemies
 
                 if (onBossDeath != null)
                     activeBossEnemy.Context.Health.OnDeath -= onBossDeath;
+
+                if (onHealthDepleted != null)
+                    activeBossEnemy.Context.Health.OnHealthDepleted -= onHealthDepleted;
             }
 
             activeBossEnemy = null;
@@ -233,6 +242,27 @@ namespace Enemies
             playerEnteredArena = false;
             onBossDamaged = null;
             onBossDeath = null;
+            onHealthDepleted = null;
+        }
+
+        private IEnumerator PlayDeathDialogueThenFinalize(Enemy bossyEnemy, Player player)
+        {
+            bossyEnemy.FreezeForDeathSequence();
+            
+            player.Controller.FreezeMovement(true);
+
+            if (deathDialogue != null && DialogueManager.Instance != null)
+            {
+                DialogueManager.Instance.StartDialogue(deathDialogue, player);
+                
+
+                if (DialogueManager.Instance.IsDialogueActive)
+                    yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
+            }
+            
+            player.Controller.FreezeMovement(false);
+            
+            bossyEnemy.Context.Health.FinalizeDeath();
         }
         
     }

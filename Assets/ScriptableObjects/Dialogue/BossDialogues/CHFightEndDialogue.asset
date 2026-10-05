@@ -10,51 +10,57 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c09c11e19b6b44a68868910cee0b3520, type: 3}
-  m_Name: CannedHeatIntroDialogue
+  m_Name: CHFightEndDialogue
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   lines:
   - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
-    text: What are you?
+    text: Tell me the name of my prey
     overrideTextSpeed: 0
     textSpeed: 0
     effect: 0
-  - speaker: {fileID: 11400000, guid: 0f51b95460b3a114da7a85e28a688f31, type: 2}
-    text: Are you talking to me?
-    overrideTextSpeed: 0
-    textSpeed: 0
-    effect: 0
-  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
-    text: What are you?
-    overrideTextSpeed: 0
-    textSpeed: 0
-    effect: 0
-  - speaker: {fileID: 11400000, guid: 0f51b95460b3a114da7a85e28a688f31, type: 2}
-    text: I dont understand
-    overrideTextSpeed: 0
-    textSpeed: 0
-    effect: 0
-  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
-    text: WHAT ARE YOU?
-    overrideTextSpeed: 0
-    textSpeed: 0
-    effect: 1
   - speaker: {fileID: 11400000, guid: 0f51b95460b3a114da7a85e28a688f31, type: 2}
     text: I...
     overrideTextSpeed: 0
     textSpeed: 0
     effect: 2
   - speaker: {fileID: 11400000, guid: 0f51b95460b3a114da7a85e28a688f31, type: 2}
-    text: I AM HUMAN
+    text: I don't...
     overrideTextSpeed: 0
     textSpeed: 0
     effect: 2
   - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
-    text: I am Canned Heat
+    text: I see...
     overrideTextSpeed: 0
     textSpeed: 0
     effect: 0
   - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
-    text: Prepare yourself
+    text: John Doe you are an interesting one
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: But you're not quite ready to be my prey
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: You are too...
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: Conflicted
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 2
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: If you want to know who you are, in the tower outside, there lives a Hive
+      Mind
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: He may be able to give you the answers you seek
     overrideTextSpeed: 0
     textSpeed: 0
     effect: 0
