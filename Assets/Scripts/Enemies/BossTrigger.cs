@@ -179,7 +179,16 @@ namespace Enemies
                 bossEnemy.Context.Health.OnDeath += onBossDeath;
             }
             else
-                Debug.LogWarning("[BossTrigger] No spawned boss Enemy found to trigger lock-on");
+            {
+                if (bossSpawner != null && bossSpawner.IsDefeated)
+                {
+                    bossDefeated = true;
+                }
+                else
+                {
+                    Debug.LogWarning("[BossTrigger] No spawned boss Enemy found to trigger lock-on");
+                }
+            }
         }
         
 
