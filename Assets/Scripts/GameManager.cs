@@ -360,15 +360,17 @@ public class GameManager : MonoBehaviour
     {
         if(introCutscene == null || CutscenePlayer.Instance == null) yield break;
         
-        MusicManager.Instance?.SetMusicSuspended(true);
-
+        MusicManager.Instance?.StopMusicForCutscene();
+        if (MusicManager.Instance != null)
+            yield return new WaitForSecondsRealtime(MusicManager.Instance.StopFadeDuration);
+        
         try
         {
             yield return CutscenePlayer.Instance.Play(introCutscene);
         }
         finally
         {
-            MusicManager.Instance?.SetMusicSuspended(false);
+            MusicManager.Instance?.RestartMusic();
         }
     }
 

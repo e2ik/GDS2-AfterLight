@@ -16,6 +16,8 @@ namespace Enemies.Cutscene
         [SerializeField] private GameObject videoRoot;
         [SerializeField] private EventReference cutsceneAudio;
         [SerializeField] private bool allowSkip = true;
+        [SerializeField] private float audioFadeOutDuration = 0.7f;
+        [SerializeField] private float audioFadeInDuration = 0.7f;
         
         private void Awake() => Instance = this;
         
@@ -32,27 +34,71 @@ namespace Enemies.Cutscene
             videoPlayer.loopPointReached += _ => finished = true;
 
             EventInstance audio = default;
+            Coroutine fadeIn = null;
             if (!cutsceneAudio.IsNull)
             {
                 audio = RuntimeManager.CreateInstance(cutsceneAudio);
+                audio.setVolume(0f);
                 audio.start();
+                fadeIn = StartCoroutine(FadeIn(audio, audioFadeInDuration));
             }
             videoPlayer.Play();
 
+            Coroutine endFade = null;
             while (!finished)
             {
                 if (allowSkip && Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
                     break;
+
+                if (endFade == null && audio.isValid() && MusicManager.Instance != null &&
+                    videoPlayer.length > audioFadeOutDuration &&
+                    videoPlayer.length - videoPlayer.time <= audioFadeOutDuration)
+                {
+                    if(fadeIn != null)
+                        StopCoroutine(fadeIn);
+
+                    endFade = StartCoroutine(MusicManager.Instance.FadeOutAndRelease(audio, audioFadeOutDuration));
+                } 
+                
                 yield return null;
             }
 
             videoPlayer.Stop();
-            if (audio.isValid())
+            videoRoot.SetActive(false);
+            
+            if(fadeIn != null)
+                StopCoroutine(fadeIn);
+
+            if (endFade != null)
             {
-                audio.stop(STOP_MODE.ALLOWFADEOUT);
+                yield return endFade;
+            }
+            else if (MusicManager.Instance != null && audio.isValid())
+            {
+                yield return MusicManager.Instance.FadeOutAndRelease(audio, audioFadeOutDuration);
+            }
+            else if (audio.isValid())
+            {
+                audio.stop(STOP_MODE.IMMEDIATE);
                 audio.release();
             }
-            videoRoot.SetActive(false);
+        }
+
+        private IEnumerator FadeIn(EventInstance inst, float duration)
+        {
+            float t = 0f;
+            while (t < duration)
+            {
+                if (!inst.isValid())
+                    yield break;
+
+                t += Time.unscaledDeltaTime;
+                inst.setVolume(Mathf.Clamp01(t / duration));
+                yield return null;
+            }
+
+            if (inst.isValid())
+                inst.setVolume(1f);
         }
     }
 }

@@ -16,8 +16,10 @@ public class MusicManager : MonoBehaviour
     [SerializeField] private float decayPerSecond = 0.125f;
     [SerializeField] private float decayDelay = 1.5f;
     [SerializeField] private float crossfadeDuration = 1.5f;
+    [SerializeField] private float stopFadeDuration = 0.7f;
     [SerializeField, Range(0f, 1f)] private float idleFloor = 0f;
-
+    public float StopFadeDuration => stopFadeDuration;
+    
     private EventInstance _instance;
     public bool IsBossMusicActive => _bossMode;
 
@@ -44,6 +46,7 @@ public class MusicManager : MonoBehaviour
     private bool _hasCurrentEvent;
     private EventReference _preBossEvent;
     private bool _hasPreBossEvent;
+    private bool _holdMusic;
 
     private void Awake()
     {
@@ -184,8 +187,36 @@ public class MusicManager : MonoBehaviour
     {
         if (!_instance.isValid()) return;
 
-        _instance.stop(fadeout ? STOP_MODE.ALLOWFADEOUT : STOP_MODE.IMMEDIATE);
+        if (fadeout && stopFadeDuration > 0f)
+        {
+            StartCoroutine(FadeOutAndRelease(_instance, stopFadeDuration));
+            _instance = default;
+            return;
+        }
+
+        _instance.stop(STOP_MODE.IMMEDIATE);
         _instance.release();
+    }
+    
+    public IEnumerator FadeOutAndRelease(EventInstance inst, float duration)
+    {
+        if (!inst.isValid()) yield break;
+
+        inst.getVolume(out float startVolume);
+        float t = 0f;
+        while (t < duration)
+        {
+            if (!inst.isValid()) yield break;
+            t += Time.unscaledDeltaTime;
+            inst.setVolume(startVolume * (1f - Mathf.Clamp01(t / duration)));
+            yield return null;
+        }
+
+        if (inst.isValid())
+        {
+            inst.stop(STOP_MODE.IMMEDIATE);
+            inst.release();
+        }
     }
 
     public void SetPaused(bool paused)
@@ -196,10 +227,31 @@ public class MusicManager : MonoBehaviour
         RuntimeManager.StudioSystem.setParameterByID(_pauseParamId, paused ? 1f : 0f);
     }
 
-    public void SetMusicSuspended(bool suspended)
+    public void StopMusicForCutscene()
     {
-        if (_instance.isValid())
-            _instance.setPaused(suspended);
+        _holdMusic = true;
+
+        if (_crossfadeRoutine != null)
+        {
+            StopCoroutine(_crossfadeRoutine);
+            _crossfadeRoutine = null;
+        }
+        
+        StopMusic(fadeout: true);
+    }
+
+    public void RestartMusic()
+    {
+        _holdMusic = false;
+
+        EventReference toPlay = _hasCurrentEvent ? _currentEvent : defaultMusicEvent;
+        PlayMusic(toPlay, fadeOutPrevious: false);
+        _currentEvent = toPlay;
+        _hasCurrentEvent = true;
+        
+#if UNITY_WEBGL
+        _hasUnlockedAudio = true;
+#endif
     }
 
     public void SetTargetIntensity(float normalized, bool instant = false)
@@ -254,7 +306,7 @@ public class MusicManager : MonoBehaviour
     private void Update()
     {
 #if UNITY_WEBGL
-        if (!_hasUnlockedAudio && Input.anyKeyDown)
+        if (!_hasUnlockedAudio && !_holdMusic && Input.anyKeyDown)
         {
             _hasUnlockedAudio = true;
             PlayMusic(_pendingEvent);
