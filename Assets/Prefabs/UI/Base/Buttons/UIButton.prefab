@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.41568628, g: 0.4509804, b: 0.6117647, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -235,9 +235,25 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 2caf916d51a264dbba559afef366c187, type: 2}
     - target: {fileID: 5157551094058059715, guid: e8924f77c6f3a5949afdc066fd5be9f5, type: 3}
+      propertyPath: m_fontColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5157551094058059715, guid: e8924f77c6f3a5949afdc066fd5be9f5, type: 3}
+      propertyPath: m_fontColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5157551094058059715, guid: e8924f77c6f3a5949afdc066fd5be9f5, type: 3}
+      propertyPath: m_fontColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5157551094058059715, guid: e8924f77c6f3a5949afdc066fd5be9f5, type: 3}
       propertyPath: m_sharedMaterial
       value: 
       objectReference: {fileID: 5256162471703705019, guid: 2caf916d51a264dbba559afef366c187, type: 2}
+    - target: {fileID: 5157551094058059715, guid: e8924f77c6f3a5949afdc066fd5be9f5, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4294967295
+      objectReference: {fileID: 0}
     - target: {fileID: 5157551094058059715, guid: e8924f77c6f3a5949afdc066fd5be9f5, type: 3}
       propertyPath: m_hasFontAssetChanged
       value: 0

@@ -11,6 +11,7 @@ namespace GameUI
         [SerializeField] private Selectable firstSelected;
 
         private UIWindowAnimator animator;
+        private GameObject lastSelected;
 
         public bool BlocksPlayerInput => blocksPlayerInput;
         public bool IsOpen { get; private set; }
@@ -25,6 +26,7 @@ namespace GameUI
         internal void HandleOpened()
         {
             IsOpen = true;
+            lastSelected = null;
 
             OnWindowOpened();
             animator.Show();
@@ -42,12 +44,31 @@ namespace GameUI
 
         internal void SetInteractable(bool interactable)
         {
+            if (!interactable) RememberSelection();
             animator.SetInteractable(interactable);
         }
 
         internal void Reselect()
         {
+            if (lastSelected != null && lastSelected.activeInHierarchy)
+            {
+                Selectable selectable = lastSelected.GetComponent<Selectable>();
+                if (selectable == null || selectable.IsInteractable())
+                {
+                    EventSystem.current?.SetSelectedGameObject(lastSelected);
+                    lastSelected = null;
+                    return;
+                }
+            }
+
+            lastSelected = null;
             SelectInitial();
+        }
+
+        private void RememberSelection()
+        {
+            GameObject current = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            lastSelected = current != null && current.transform.IsChildOf(transform) ? current : null;
         }
 
         // need this because some windows are not selectable and they need their own implementation

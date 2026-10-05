@@ -714,46 +714,57 @@ MonoBehaviour:
     compositePart: 
     displayLabel: Jump
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: up
     displayLabel: Up
     keyboardOnly: 1
+    allowSharedBinding: 1
   - action: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: down
     displayLabel: Down
     keyboardOnly: 1
+    allowSharedBinding: 1
   - action: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: left
     displayLabel: Left
     keyboardOnly: 1
+    allowSharedBinding: 1
   - action: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: right
     displayLabel: Right
     keyboardOnly: 1
+    allowSharedBinding: 1
   - action: {fileID: 1120369429361536294, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Attack
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: 1781555164194001046, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Interact
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: -7471211009204490832, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Dash
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: -4060923160753726069, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Special
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: 247586721346189777, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Inventory
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: -8536845815939033917, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Parry
     keyboardOnly: 0
+    allowSharedBinding: 1
   startInGamepadMode: 0
   resetButton: {fileID: 3066163007772877224}
   confirmWindow: {fileID: 0}
@@ -1155,7 +1166,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4915053597219267674}
-  - component: {fileID: 4415083954553609825}
+  - component: {fileID: 518850952778563168}
   m_Layer: 5
   m_Name: Footer
   m_TagString: Untagged
@@ -1176,6 +1187,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5867264605774877086}
+  - {fileID: 7370380504444077598}
   m_Father: {fileID: 1065654002245959900}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1183,7 +1195,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &4415083954553609825
+--- !u!114 &518850952778563168
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1192,16 +1204,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 6096427266918171709}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.HorizontalLayoutGroup
   m_Padding:
-    m_Left: 20
-    m_Right: 20
-    m_Top: 0
+    m_Left: 50
+    m_Right: 50
+    m_Top: -30
     m_Bottom: 30
-  m_ChildAlignment: 1
-  m_Spacing: 15
+  m_ChildAlignment: 4
+  m_Spacing: 40
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
@@ -1634,46 +1646,57 @@ MonoBehaviour:
     compositePart: 
     displayLabel: Jump
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Up
     keyboardOnly: 1
+    allowSharedBinding: 1
   - action: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Down
     keyboardOnly: 1
+    allowSharedBinding: 1
   - action: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Left
     keyboardOnly: 1
+    allowSharedBinding: 1
   - action: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Right
     keyboardOnly: 1
+    allowSharedBinding: 1
   - action: {fileID: 1120369429361536294, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Attack
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: 1781555164194001046, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Interact
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: -7471211009204490832, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Dash
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: -4060923160753726069, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Special
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: 247586721346189777, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Inventory
     keyboardOnly: 0
+    allowSharedBinding: 1
   - action: {fileID: -8536845815939033917, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     compositePart: 
     displayLabel: Parry
     keyboardOnly: 0
+    allowSharedBinding: 1
   startInGamepadMode: 1
   resetButton: {fileID: 5348105418713562098}
   confirmWindow: {fileID: 0}
@@ -1708,7 +1731,6 @@ RectTransform:
   m_Children:
   - {fileID: 1043150691264492802}
   - {fileID: 8929567613279779346}
-  - {fileID: 7370380504444077598}
   m_Father: {fileID: 6110671832713856430}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
@@ -3060,6 +3082,11 @@ MonoBehaviour:
   audioPanel: {fileID: 687447274246022002}
   keyboardPanel: {fileID: 8453096425875334795}
   controllerPanel: {fileID: 4302336001987074570}
+  activeTabColor: {r: 1, g: 1, b: 1, a: 1}
+  inactiveTabColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
+  tintTabText: 1
+  previousTabAction: {fileID: 0}
+  nextTabAction: {fileID: 0}
   masterVolumeSlider: {fileID: 2337301087230355453}
   musicVolumeSlider: {fileID: 4534955987653419160}
   sfxVolumeSlider: {fileID: 5854954255964833161}
@@ -4024,7 +4051,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 6806601712599604787}
+    m_TransformParent: {fileID: 4915053597219267674}
     m_Modifications:
     - target: {fileID: 1857754205536766391, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
       propertyPath: m_FlexibleWidth
@@ -4060,7 +4087,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1988254532824687443, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 64
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1988254532824687443, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4122,7 +4149,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6619750840436716520, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
       propertyPath: m_hasFontAssetChanged
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

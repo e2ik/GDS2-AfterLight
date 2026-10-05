@@ -183,7 +183,6 @@ MonoBehaviour:
   saveManager: {fileID: 78526259}
   startupFadeDuration: 0.5
   respawnFadeDuration: 0.5
-  introCutscene: {fileID: 32900000, guid: 657d05c7bb9e2fc4da51d187aa163b27, type: 3}
   commonColor: {r: 0.69, g: 0.69, b: 0.69, a: 1}
   rareColor: {r: 0.56, g: 0.76, b: 1, a: 1}
   epicColor: {r: 0.78, g: 0.61, b: 1, a: 1}
@@ -197,6 +196,7 @@ MonoBehaviour:
     epic: 10
     legendary: 5
   unlockAllFastTravelAction: {fileID: 7163206889840615523, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  disableTutorials: 0
   backgroundPrefab: {fileID: 3327786354979037545, guid: f6bdba2aea3bb1741a687ba8d5d96a43, type: 3}
 --- !u!4 &78526258
 Transform:
@@ -325,6 +325,7 @@ MonoBehaviour:
   decayPerSecond: 0.125
   decayDelay: 1.5
   crossfadeDuration: 1.5
+  stopFadeDuration: 0.7
   idleFloor: 0
 --- !u!114 &78526264
 MonoBehaviour:

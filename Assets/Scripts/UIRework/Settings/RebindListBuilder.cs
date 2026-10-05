@@ -24,21 +24,38 @@ namespace GameUI
         [SerializeField] private List<RebindEntry> entries;
         [SerializeField] private bool startInGamepadMode;
 
-        [Header("Reset to Default")]
-        [SerializeField] private Button resetButton;
-        [SerializeField] private ConfirmWindow confirmWindow;
-
         private bool currentlyGamepad;
+
+        public static event System.Action OnBindingsReset;
+
+        public static void NotifyBindingsReset() => OnBindingsReset?.Invoke();
+
+        public InputActionAsset ActionAsset
+        {
+            get
+            {
+                if (entries == null) return null;
+                foreach (RebindEntry entry in entries)
+                {
+                    if (entry != null && entry.action != null && entry.action.action != null)
+                        return entry.action.action.actionMap.asset;
+                }
+                return null;
+            }
+        }
 
         private void Awake()
         {
-            if (resetButton != null)
-            {
-                resetButton.onClick.AddListener(HandleResetClicked);
-            }
-
+            OnBindingsReset += HandleBindingsReset;
             PopulateRows(useGamepad: startInGamepadMode);
         }
+
+        private void OnDestroy()
+        {
+            OnBindingsReset -= HandleBindingsReset;
+        }
+
+        private void HandleBindingsReset() => PopulateRows(currentlyGamepad);
 
         public void ShowKeyboard() => PopulateRows(useGamepad: false);
         public void ShowGamepad() => PopulateRows(useGamepad: true);
@@ -72,47 +89,6 @@ namespace GameUI
                 row.RebindButton.AllowSharedBinding = entry.allowSharedBinding;
                 row.gameObject.SetActive(true);
             }
-        }
-
-        private void HandleResetClicked()
-        {
-            UISFX.PlayClick();
-
-            string deviceName = currentlyGamepad ? "controller" : "keyboard";
-            string message = $"Reset all {deviceName} bindings to their defaults? This cannot be undone.";
-
-            if (confirmWindow != null)
-            {
-                confirmWindow.Show(message, ResetToDefault);
-            }
-            else
-            {
-                ResetToDefault();
-            }
-        }
-
-        private void ResetToDefault()
-        {
-            InputActionAsset asset = null;
-
-            foreach (RebindEntry entry in entries)
-            {
-                if (entry == null || entry.action == null || entry.action.action == null) continue;
-                if (currentlyGamepad && entry.keyboardOnly) continue;
-
-                int index = FindBindingIndex(entry, currentlyGamepad ? "Gamepad" : "Keyboard");
-                if (index < 0) continue;
-
-                entry.action.action.RemoveBindingOverride(index);
-                if (asset == null) asset = entry.action.action.actionMap.asset;
-            }
-
-            if (asset != null)
-            {
-                InputRebindSaver.Save(asset);
-            }
-
-            PopulateRows(currentlyGamepad);
         }
 
         private static int FindBindingIndex(RebindEntry entry, string layoutName)
