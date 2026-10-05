@@ -522,7 +522,7 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(secondaryDef);
                         break;
                     }
-
+                    AudioManager.PlaySFX(gemLoot.pickupSound, transform.position);
                     if (player.Equipment.IsSecondaryGemSlotEmpty())
                         player.Equipment.EquipSecondaryGem(gemLoot);
 
