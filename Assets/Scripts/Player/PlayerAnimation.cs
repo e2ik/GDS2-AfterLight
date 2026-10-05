@@ -217,7 +217,7 @@ public class PlayerAnimation : MonoBehaviour
     {
         animator.SetTrigger(IsHurtHash);
         FlashRedOnHit();
-        CamControls.Shake(0.1f, 0.5f);
+        CamControls.Shake(0.1f, 0.8f);
     }
 
     public void FlashRedOnHit()
@@ -249,7 +249,7 @@ public class PlayerAnimation : MonoBehaviour
         }
 
         PSpawner.Spawn("spark", spawnPosition);
-        CamControls.Shake(0.15f, 0.1f);
+        CamControls.Shake(0.15f, 0.3f);
     }
 
     #endregion

@@ -3013,11 +3013,11 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
+  m_VertexColorAlwaysGammaSpace: 1
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 999
+  m_SortingOrder: 9999
   m_TargetDisplay: 0
 --- !u!224 &1298946180
 RectTransform:
@@ -4816,7 +4816,7 @@ Camera:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 1
+    width: 0.9997651
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
@@ -6969,7 +6969,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2460971783503414339, guid: c4e4ecf358592904882e8ce7f5a3a006, type: 3}
       propertyPath: orthographic size
-      value: 9
+      value: 8.866667
       objectReference: {fileID: 0}
     - target: {fileID: 7132419878304221177, guid: c4e4ecf358592904882e8ce7f5a3a006, type: 3}
       propertyPath: m_Name
