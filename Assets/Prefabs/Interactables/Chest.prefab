@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4350122532025951858}
   - component: {fileID: 7789788328523748256}
   - component: {fileID: 4348363927236017147}
+  - component: {fileID: 7640087272198285541}
   - component: {fileID: 4521098625128912410}
   - component: {fileID: 8851293876535323906}
   m_Layer: 0
@@ -131,6 +132,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Chest
   lootItem: {fileID: 11400000, guid: 7b8773f36d0b8a148929c5d52955a42b, type: 2}
   worldItemPrefab: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+  lootTable: {fileID: 0}
   useFixedRarity: 0
   fixedRarity: 1
   overrideRarityOdds: 0
@@ -166,6 +168,44 @@ MonoBehaviour:
       Data3: 640843426
       Data4: 1117178154
     Path: event:/WorldSFX Events/ChestOpenEvent
+  tutorialEventKey: 
+--- !u!114 &7640087272198285541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3103605441073713388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3afe3e1ddcc90c4a981be5303ea2bea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChestShine
+  chestRenderer: {fileID: 4350122532025951858}
+  shineMaterial: {fileID: 2100000, guid: e472afa9e2823c74a8433aaccf3763b1, type: 2}
+  sortingOrderOffset: 1
+  overrideColor: 1
+  shineColor: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 2
+  additive: 0.15
+  fillAmount: 1
+  coreWidth: 3
+  fringeWidth: 2
+  flipDirection: 0
+  checkerLow: 0.579
+  checkerSize: 1
+  showOutline: 1
+  outlineSide: 0
+  outlineAlwaysOn: 0
+  outlineAmount: 1
+  outlineWidth: 1
+  outlineAdditive: 0.584
+  sweepFrom: -32
+  sweepTo: 32
+  duration: 1
+  delay: 0.5
+  timeOffset: 0
+  fadeOutDuration: 0.25
 --- !u!61 &4521098625128912410
 BoxCollider2D:
   m_ObjectHideFlags: 0

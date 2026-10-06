@@ -114,6 +114,22 @@ MonoBehaviour:
   promptCollider: {fileID: 2766027008674284887}
   sceneAreaState: {fileID: 0}
   fadeDuration: 0.25
+  doorMode: 0
+  requiredKey: {fileID: 0}
+  missingKeyMessage: I need the [{0}]...
+  keyNameColor: {r: 1, g: 0.85, b: 0.3, a: 1}
+  missingKeyMessageDuration: 2
+  missingKeyMessageEffect: 0
+  brokenMessage: It won't budge...
+  brokenMessageDuration: 2
+  brokenMessageEffect: 0
+  lockedEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
   doorAnimator: {fileID: 3977532196199449150}
   openTriggerName: Open
   doorIdleState: Idle
@@ -206,7 +222,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpriteOutlineToggle
   outlineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  outlineThickness: 0.5
+  outlineThickness: 1
+  outlineIntensity: 1.4
   pulseOnHighlight: 1
   highlightPulseSpeed: 15
   highlightMinAlpha: 0.2
