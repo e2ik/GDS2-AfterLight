@@ -75,8 +75,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4288059030
-  m_fontColor: {r: 0.5882353, g: 0.5882353, b: 0.5882353, a: 1}
+    rgba: 4283908151
+  m_fontColor: {r: 0.2168031, g: 0.25119492, b: 0.33962262, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -309,8 +309,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4288256409
-  m_fontColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+    rgba: 4285980927
+  m_fontColor: {r: 1, g: 0.876647, b: 0.46226406, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -494,7 +494,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.5019975, g: 0.5601343, b: 0.61635214, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -519,6 +519,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1071080063847907059}
     m_Modifications:
+    - target: {fileID: 775638828553698455, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1857754205536766391, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
       propertyPath: m_PreferredHeight
       value: 40
@@ -607,6 +611,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIButton
       objectReference: {fileID: 0}
+    - target: {fileID: 6619750840436716520, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
+      propertyPath: m_text
+      value: Rebind
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -656,3 +664,5 @@ MonoBehaviour:
   waitingForInputPrompt: {fileID: 0}
   unboundLabel: '-'
   bindingIcon: {fileID: 6404159439556452895}
+  allowSharedBinding: 1
+  waitingLabel: ??

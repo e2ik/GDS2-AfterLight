@@ -9,6 +9,7 @@ namespace Enemies
     public class BossTrigger : MonoBehaviour
     {
         [SerializeField] private DialogueData introDialogue;
+        [SerializeField] private DialogueData deathDialogue;
         [SerializeField] private PrefabSpawner bossSpawner;
         [SerializeField] private BossBounds arenaBounds;
         [SerializeField] private string playerTag = "Player";
@@ -26,9 +27,9 @@ namespace Enemies
 
         private Enemy activeBossEnemy;
         private Transform engagedPlayer;
-        private bool playerEnteredArena;
         private bool cameraLocked;
         private bool doorsLockedByThis;
+        private bool deathSequenceRunning;
 
         private static int engagedTriggerCount;
         public static bool AnyBossEngaged => engagedTriggerCount > 0;
@@ -37,25 +38,14 @@ namespace Enemies
         private PlayerStats engagedStats;
         private Action<int, int, bool> onBossDamaged;
         private Action onBossDeath;
+        private Action onHealthDepleted;
 
         private void Update()
         {
-            if (activeBossEnemy == null) return;
+            if (activeBossEnemy == null || deathSequenceRunning) return;
 
             bool bossGone = !activeBossEnemy.isActiveAndEnabled;
-            bool playerInside = engagedPlayer != null && (arenaBounds == null || IsInsideArena(engagedPlayer.position));
-
-            if (playerInside) playerEnteredArena = true;
-            bool playerLeft = engagedPlayer == null || (playerEnteredArena && !playerInside);
-
-            if (bossGone || playerLeft) Disengage();
-        }
-
-        private bool IsInsideArena(Vector2 point)
-        {
-            Bounds arena = arenaBounds.WorldBounds;
-            return point.x >= arena.min.x && point.x <= arena.max.x
-                && point.y >= arena.min.y && point.y <= arena.max.y;
+            if (bossGone || engagedPlayer == null) Disengage();
         }
 
         private void OnEnable()
@@ -153,6 +143,10 @@ namespace Enemies
                 LockCamera();
                 SetDoorsLocked(true);
 
+                bossEnemy.Context.Health.DeferDeath = true;
+                onHealthDepleted = () => StartCoroutine(PlayDeathDialogueThenFinalize(bossEnemy, player));
+                bossEnemy.Context.Health.OnHealthDepleted += onHealthDepleted;
+
                 onBossDamaged = (amount, currentHealth, isCrit) =>
                 {
                     MusicManager.Instance?.SetBossIntensity((float)currentHealth / bossEnemy.Context.Health.MaxHealth);
@@ -173,7 +167,16 @@ namespace Enemies
                 bossEnemy.Context.Health.OnDeath += onBossDeath;
             }
             else
-                Debug.LogWarning("[BossTrigger] No spawned boss Enemy found to trigger lock-on");
+            {
+                if (bossSpawner != null && bossSpawner.IsDefeated)
+                {
+                    bossDefeated = true;
+                }
+                else
+                {
+                    Debug.LogWarning("[BossTrigger] No spawned boss Enemy found to trigger lock-on");
+                }
+            }
         }
         
 
@@ -221,18 +224,46 @@ namespace Enemies
 
             if (activeBossEnemy != null)
             {
+                if (!deathSequenceRunning)
+                    activeBossEnemy.Context.Health.DeferDeath = false;
+
                 if (onBossDamaged != null)
                     activeBossEnemy.Context.Health.OnDamaged -= onBossDamaged;
 
                 if (onBossDeath != null)
                     activeBossEnemy.Context.Health.OnDeath -= onBossDeath;
+
+                if (onHealthDepleted != null)
+                    activeBossEnemy.Context.Health.OnHealthDepleted -= onHealthDepleted;
             }
 
             activeBossEnemy = null;
             engagedPlayer = null;
-            playerEnteredArena = false;
             onBossDamaged = null;
             onBossDeath = null;
+            onHealthDepleted = null;
+        }
+
+        private IEnumerator PlayDeathDialogueThenFinalize(Enemy bossyEnemy, Player player)
+        {
+            deathSequenceRunning = true;
+            bossyEnemy.FreezeForDeathSequence();
+            
+            player.Controller.FreezeMovement(true);
+
+            if (deathDialogue != null && DialogueManager.Instance != null)
+            {
+                DialogueManager.Instance.StartDialogue(deathDialogue, player);
+                
+
+                if (DialogueManager.Instance.IsDialogueActive)
+                    yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
+            }
+            
+            player.Controller.FreezeMovement(false);
+
+            deathSequenceRunning = false;
+            bossyEnemy.Context.Health.FinalizeDeath();
         }
         
     }

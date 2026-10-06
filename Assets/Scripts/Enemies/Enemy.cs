@@ -70,6 +70,13 @@ namespace Enemies
         private float teleportCooldownTimer;
         private float outOfRangeTimer;
 
+        [Header("Death")] 
+        [SerializeField] private bool hasDeathAnimation = false;
+
+        [SerializeField] private string deathTrigger = "Death";
+        [SerializeField] private string deathStateName = "Death";
+        [SerializeField] private float deathAnimationTimeout = 5f;
+
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
         public bool AttackReady { get; private set; }
@@ -468,6 +475,35 @@ namespace Enemies
             Debug.Log($"Enemy hath died. Rip {name}");
 
             lootTable?.SpawnInstance(transform.position);
+            
+            FreezeForDeathSequence();
+
+            if (hasDeathAnimation && animator != null)
+            {
+                animator.SetTrigger(deathTrigger);
+                StartCoroutine(PlayDeathAnimationThenDeactivate());
+            }
+            else
+            {
+                gameObject.SetActive(false);
+            }
+        }
+        
+        private IEnumerator PlayDeathAnimationThenDeactivate()
+        {
+            float elapsed = 0f;
+
+            while (elapsed < deathAnimationTimeout)
+            {
+                AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
+                
+                if(state.IsName(deathStateName) && state.normalizedTime >= 1f)
+                    break;
+
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            
             gameObject.SetActive(false);
         }
 
@@ -494,6 +530,16 @@ namespace Enemies
             Context.TargetPosition = target.position;
             Context.LastKnownTargetPosition = target.position;
             Context.TimeSinceTargetSeen = 0f;
+        }
+
+        public void FreezeForDeathSequence()
+        {
+            if (behaviorAgent != null)
+                behaviorAgent.enabled = false;
+
+            rb2D.linearVelocity = Vector2.zero;
+            IsAttacking = false;
+            Context.IsAttacking = false;
         }
 
 #if UNITY_EDITOR

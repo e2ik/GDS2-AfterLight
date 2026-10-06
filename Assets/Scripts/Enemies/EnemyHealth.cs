@@ -25,6 +25,10 @@ namespace Enemies
         public event Action<int, int, bool> OnDamaged; // amount, currentHealth, isDot
         public event Action<DamageInfo> OnDamageTaken;
         public event Action OnDeath;
+        public event Action OnHealthDepleted;
+        
+        public bool DeferDeath { get; set; }
+        private bool deathFinalized;
 
         public static event Action<EnemyHealth, DamageInfo> AnyEnemyDamaged;
 
@@ -56,9 +60,22 @@ namespace Enemies
 
             if (CurrentHealth == 0)
             {
-                OnDeath?.Invoke();
-                Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyKilled);
+                OnHealthDepleted?.Invoke();
+
+                if (!DeferDeath)
+                    FinalizeDeath();
             }
+        }
+
+        public void FinalizeDeath()
+        {
+            if (deathFinalized)
+                return;
+
+            deathFinalized = true;
+            
+            OnDeath?.Invoke();
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyKilled);
         }
 
         private static void RaiseTutorialHitEvents(DamageInfo info)

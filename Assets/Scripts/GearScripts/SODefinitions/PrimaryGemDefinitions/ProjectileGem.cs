@@ -17,7 +17,7 @@ public class ProjectileGem : PrimaryGemBehaviourDefinition
             Debug.Log("player not found in skill execution");
             return;
         }
-
+        AudioManager.PlaySFX(skillEvent);
         context.Runner.StartCoroutine(DelayedFire(context, player, baseDamage));
     }
 

@@ -1,4 +1,5 @@
 using System;
+using FMODUnity;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,4 +22,6 @@ public class SecondaryGemInstance
     public float InstRolledMaxGambleMult;
     public List<ERarity> LineRarities = new List<ERarity>();
     public bool IsNew = true;
+
+    public EventReference pickupSound;
 }

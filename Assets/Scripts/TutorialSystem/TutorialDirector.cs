@@ -200,8 +200,16 @@ namespace Tutorial
             resumeIndices.Clear();
         }
 
+        public static bool TutorialsDisabled => GameManager.Instance != null && GameManager.Instance.TutorialsDisabled;
+
+        private void LateUpdate()
+        {
+            if (TutorialsDisabled && IsRunningSequence) AbortActiveSequence();
+        }
+
         public bool BeginSequence(TutorialSequenceDefinition sequence, bool force = false)
         {
+            if (TutorialsDisabled) return false;
             if (sequence == null || sequence.Steps == null || sequence.Steps.Length == 0) return false;
             if (!force && !sequence.CanRepeat && IsSequenceCompleted(sequence.SequenceID)) return false;
 

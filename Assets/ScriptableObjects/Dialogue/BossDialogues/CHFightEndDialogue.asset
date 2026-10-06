@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c09c11e19b6b44a68868910cee0b3520, type: 3}
+  m_Name: CHFightEndDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  lines:
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: Tell me the name of my prey
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 0f51b95460b3a114da7a85e28a688f31, type: 2}
+    text: I...
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 2
+  - speaker: {fileID: 11400000, guid: 0f51b95460b3a114da7a85e28a688f31, type: 2}
+    text: I don't...
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 2
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: I see...
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: John Doe you are an interesting one
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: But you're not quite ready to be my prey
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: You are too...
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: Conflicted
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 2
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: If you want to know who you are, in the tower outside, there lives a Hive
+      Mind
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0
+  - speaker: {fileID: 11400000, guid: 5c4fc42747594ab458e2d6f4a70e4d2b, type: 2}
+    text: He may be able to give you the answers you seek
+    overrideTextSpeed: 0
+    textSpeed: 0
+    effect: 0

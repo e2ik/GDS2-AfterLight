@@ -24,6 +24,7 @@ namespace GameUI
         [SerializeField] private string unboundLabel = "-";
         [SerializeField] private Image bindingIcon;
         [SerializeField] private bool allowSharedBinding = true;
+        [SerializeField] private string waitingLabel = "??";
 
         public Button Button => rebindButton;
 
@@ -34,6 +35,10 @@ namespace GameUI
         }
 
         private static readonly List<RebindButton> activeButtons = new List<RebindButton>();
+        private static int rebindingCount;
+        private static int lastRebindFinishFrame = -10;
+        public static bool AnyRebinding => rebindingCount > 0 || Time.frameCount - lastRebindFinishFrame <= 1;
+        private bool isRebinding;
 
         private RebindingOperation rebindingOperation;
 
@@ -107,7 +112,10 @@ namespace GameUI
         private void StartRebind()
         {
             rebindButton.interactable = false;
+            isRebinding = true;
+            rebindingCount++;
             SetPromptVisible(true);
+            ShowWaitingLabel();
             InputAction action = actionReference.action;
             action.Disable();
             UIManager.Instance.SuppressCancel = true;
@@ -186,6 +194,13 @@ namespace GameUI
 
         private void FinishCleanup()
         {
+            if (isRebinding)
+            {
+                isRebinding = false;
+                rebindingCount = Mathf.Max(0, rebindingCount - 1);
+                lastRebindFinishFrame = Time.frameCount;
+            }
+
             actionReference.action.Enable();
             rebindButton.interactable = true;
             SetPromptVisible(false);
@@ -193,6 +208,17 @@ namespace GameUI
             InputRebindSaver.Save(actionReference.action.actionMap.asset);
             EventSystem.current?.SetSelectedGameObject(rebindButton.gameObject);
             UIManager.Instance.SuppressCancel = false;
+        }
+
+        private void ShowWaitingLabel()
+        {
+            if (bindingIcon != null) bindingIcon.enabled = false;
+
+            if (bindingDisplayText != null)
+            {
+                bindingDisplayText.text = waitingLabel;
+                bindingDisplayText.enabled = true;
+            }
         }
 
         private void SetPromptVisible(bool visible)

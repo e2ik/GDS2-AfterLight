@@ -14,7 +14,7 @@ public class SwordAOEGem : PrimaryGemBehaviourDefinition
             Debug.Log("player not found in skill execution");
             return;
         }
-
+        AudioManager.PlaySFX(skillEvent);
         PlayerCombatController pCombat = player.GetComponent<PlayerCombatController>();
         Vector2 center = player.transform.position;
         Collider2D[] enemiesInRange = Physics2D.OverlapCircleAll(center, SkillRange, pCombat.enemyLayer);

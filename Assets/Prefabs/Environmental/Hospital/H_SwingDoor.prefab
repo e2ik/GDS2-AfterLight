@@ -118,24 +118,40 @@ MonoBehaviour:
   missingKeyMessageDuration: 3
   missingKeyMessageEffect: 0
   missingKeyMessageCooldown: 5
+  lockDuringBossFights: 1
+  bossLockedMessage: 
+  bossLockEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  bossUnlockEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
   openLeftState: OpenLeft
   openRightState: OpenRight
   closeLeftState: CloseLeft
   closeRightState: CloseRight
   openEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: -531146322
+      Data2: 1188633155
+      Data3: 706808227
+      Data4: 638004311
+    Path: event:/WorldSFX Events/WoodenDoorOpenEvent
   closeEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: 667992996
+      Data2: 1333665057
+      Data3: 612844195
+      Data4: -1991315595
+    Path: event:/WorldSFX Events/WoodenDoorCloseEvent
   unlockEvent:
     Guid:
       Data1: 0

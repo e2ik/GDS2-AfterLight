@@ -1,11 +1,16 @@
+using System;
 using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
+[DefaultExecutionOrder(1000)]
 public class CamControls : MonoBehaviour
 {
     public static CamControls Instance { get; private set; }
     private Transform targetCameraTransform;
     private Coroutine shakeCoroutine;
+    private Vector3 appliedOffset;
+    private Vector3 pendingOffset;
 
     private void Awake()
     {
@@ -55,21 +60,21 @@ public class CamControls : MonoBehaviour
 
             float x = (Mathf.PerlinNoise(sampleX, 0f) - 0.5f) * 2f * currentMagnitude;
             float y = (Mathf.PerlinNoise(0f, sampleY) - 0.5f) * 2f * currentMagnitude;
-
+            
+            /*
             Vector3 basePosition = targetCameraTransform.parent != null 
                 ? targetCameraTransform.parent.position 
                 : targetCameraTransform.position;
 
-            targetCameraTransform.position = new Vector3(basePosition.x + x, basePosition.y + y, targetCameraTransform.position.z);
+            targetCameraTransform.position = new Vector3(basePosition.x + x, basePosition.y + y, targetCameraTransform.position.z); */
+
+            pendingOffset = new Vector3(x, y, 0f);
 
             elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
 
-        if (targetCameraTransform.parent != null)
-        {
-            targetCameraTransform.localPosition = new Vector3(0f, 0f, targetCameraTransform.localPosition.z);
-        }
+        pendingOffset = Vector3.zero;
 
         shakeCoroutine = null;
     }
@@ -80,5 +85,26 @@ public class CamControls : MonoBehaviour
         {
             targetCameraTransform = Camera.main.transform;
         }
+    }
+    
+    private void RemoveOffset()
+    {
+        if (targetCameraTransform != null)
+            targetCameraTransform.position -= appliedOffset;
+
+        appliedOffset = Vector3.zero;
+    }
+
+    private void Update()
+    {
+        RemoveOffset();
+    }
+
+    private void LateUpdate()
+    {
+        if (targetCameraTransform == null) return;
+
+        appliedOffset = pendingOffset;
+        targetCameraTransform.position += appliedOffset;
     }
 }

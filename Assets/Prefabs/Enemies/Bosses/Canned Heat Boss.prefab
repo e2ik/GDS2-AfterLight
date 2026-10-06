@@ -310,6 +310,10 @@ MonoBehaviour:
   canTeleport: 1
   teleportToTargetWhenOutOfRange: 1
   outOfRangeTeleportDelay: 1
+  hasDeathAnimation: 1
+  deathTrigger: Death
+  deathStateName: Death
+  deathAnimationTimeout: 2
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0

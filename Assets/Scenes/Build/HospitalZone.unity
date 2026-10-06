@@ -32390,6 +32390,10 @@ PrefabInstance:
       propertyPath: m_SortingOrder
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 958846461209207828, guid: 9232baa4c1b61e54988b571977b4ca07, type: 3}
+      propertyPath: nodeData
+      value: 
+      objectReference: {fileID: 11400000, guid: 4a306f44da82efe48a1ed49ec0c2ef8a, type: 2}
     - target: {fileID: 3446185256280729333, guid: 9232baa4c1b61e54988b571977b4ca07, type: 3}
       propertyPath: m_LocalPosition.x
       value: 252.19559
@@ -41242,11 +41246,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7524548885933876918, guid: 402426ace4565ff4e8272ad569ec1327, type: 3}
       propertyPath: m_Size.x
-      value: 6.8423615
+      value: 4.62204
       objectReference: {fileID: 0}
     - target: {fileID: 7524548885933876918, guid: 402426ace4565ff4e8272ad569ec1327, type: 3}
       propertyPath: m_Offset.x
-      value: 2.9211807
+      value: 5.479782
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -60570,9 +60574,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: CH Boss Fight
       objectReference: {fileID: 0}
+    - target: {fileID: 4023906617089591661, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.96
+      objectReference: {fileID: 0}
     - target: {fileID: 5544713734480100453, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: size.x
-      value: 28
+      propertyPath: size.y
+      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
       propertyPath: m_LocalPosition.x
