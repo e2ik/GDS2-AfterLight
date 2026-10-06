@@ -4816,7 +4816,7 @@ Camera:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 0.9997651
+    width: 1
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
@@ -5026,6 +5026,10 @@ PrefabInstance:
     - target: {fileID: 605459579509993946, guid: 65136da18c7324e689931a86e96c911e, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 676506556538657532, guid: 65136da18c7324e689931a86e96c911e, type: 3}
+      propertyPath: hideEquippedWeapons
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1371297510796299236, guid: 65136da18c7324e689931a86e96c911e, type: 3}
       propertyPath: m_AnchorMax.y
@@ -6349,6 +6353,7 @@ MonoBehaviour:
   allowSkip: 0
   audioFadeOutDuration: 0.7
   audioFadeInDuration: 0.7
+  prepareTimeout: 10
 --- !u!114 &2046453922 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2337301087230355453, guid: adfc91a2933814544855a46195c04b88, type: 3}
@@ -6969,7 +6974,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2460971783503414339, guid: c4e4ecf358592904882e8ce7f5a3a006, type: 3}
       propertyPath: orthographic size
-      value: 8.866667
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 7132419878304221177, guid: c4e4ecf358592904882e8ce7f5a3a006, type: 3}
       propertyPath: m_Name

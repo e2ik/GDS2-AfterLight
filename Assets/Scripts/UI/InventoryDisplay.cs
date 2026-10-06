@@ -39,6 +39,12 @@ public class InventoryDisplay : GameUI.UIWindow
     [SerializeField] private InputActionReference prevFilterAction;
     [SerializeField] private InputActionReference nextFilterAction;
 
+    [Header("Equipped Items")]
+    [SerializeField] private bool hideEquippedGear = true;
+    [SerializeField] private bool hideEquippedWeapons = false;
+    [SerializeField] private bool hideEquippedGems = true;
+    [SerializeField] private bool hideEquippedSkills = true;
+
     [Header("Navigation")]
     [SerializeField] private bool wrapNavigation = true;
 
@@ -556,7 +562,26 @@ public class InventoryDisplay : GameUI.UIWindow
 
         foreach (T item in items)
         {
-            if (item != null) into.Add(BuildDisplayItem(item, pickupOrderSelector(item)));
+            if (item == null) continue;
+
+            DisplayItem entry = BuildDisplayItem(item, pickupOrderSelector(item));
+            if (IsHiddenEquipped(entry)) continue;
+
+            into.Add(entry);
+        }
+    }
+
+    private bool IsHiddenEquipped(DisplayItem entry)
+    {
+        if (!entry.IsEquipped) return false;
+
+        switch (entry.Item)
+        {
+            case GearInstance _: return hideEquippedGear;
+            case WeaponInstance _: return hideEquippedWeapons;
+            case SecondaryGemInstance _: return hideEquippedGems;
+            case PrimaryGemInstance _: return hideEquippedSkills;
+            default: return false;
         }
     }
 
