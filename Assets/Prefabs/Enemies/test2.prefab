@@ -294,7 +294,8 @@ MonoBehaviour:
       Data4: 0
     Path: 
   spriteRenderer: {fileID: 5107996575365250629}
-  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  hitFlash: {fileID: 3995612085123234234}
+  flashColor: {r: 2.3784142, g: 0, b: 0, a: 1}
   flashDuration: 0.15
   bossBounds: {fileID: 0}
   attacksPerTeleport: 3
@@ -302,6 +303,10 @@ MonoBehaviour:
   canTeleport: 0
   teleportToTargetWhenOutOfRange: 1
   outOfRangeTeleportDelay: 4
+  hasDeathAnimation: 0
+  deathTrigger: Death
+  deathStateName: Death
+  deathAnimationTimeout: 5
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -408,6 +413,8 @@ GameObject:
   - component: {fileID: 1943101255374262222}
   - component: {fileID: 2769822166128368776}
   - component: {fileID: 327413178282637274}
+  - component: {fileID: 1830594110896471678}
+  - component: {fileID: 3995612085123234234}
   m_Layer: 12
   m_Name: Graphics
   m_TagString: Untagged
@@ -551,6 +558,70 @@ MonoBehaviour:
         Data3: -261085565
         Data4: -1791523683
       Path: event:/CombatSFXEvents/HammerAttackEvent
+--- !u!114 &1830594110896471678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e03e55a74b3100642a9152c2a71c9216, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MultiplyOutline
+  outlineMaterial: {fileID: 2100000, guid: edb9203f7655d31448a43b9003f3f6bb, type: 2}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  strength: 0.565
+  falloff: 0.29
+  rings: 2
+  pixelSize: 3
+  checkerContrast: 1
+  sortingOrderOffset: -1
+--- !u!114 &3995612085123234234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36a3c13139e219041a3ed714c67b80bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HitFlash
+  flashMaterial: {fileID: 2100000, guid: e211826df2aab5e47af454561951383b, type: 2}
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 1
+  duration: 0.5
+  fadeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  checkerLowOpacity: 0.724
+  pixelSize: 3
+  useUnscaledTime: 1
+  sortingOrderOffset: 1
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0
@@ -649,6 +720,9 @@ MonoBehaviour:
       Data3: 295247018
       Data4: 2098668369
     Path: event:/CombatSFXEvents/Parry Warning Event
+  flashOnAnticipation: 1
+  hitFlash: {fileID: 3995612085123234234}
+  flashIntensity: 1.25
 --- !u!1 &7731191844363344220
 GameObject:
   m_ObjectHideFlags: 0

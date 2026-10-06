@@ -204,6 +204,8 @@ GameObject:
   - component: {fileID: 1978134003100231202}
   - component: {fileID: 7665356309269939156}
   - component: {fileID: 3239858076674932586}
+  - component: {fileID: 340676937458263144}
+  - component: {fileID: -6613351761212177417}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -415,6 +417,8 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
+  snapToGroundOnStart: 1
+  groundSnapMaxDistance: 10
   groundCheckDistance: 0.2
   groundCheckNormalThreshold: 0.6
   wallCheckDistance: 0.2
@@ -507,6 +511,10 @@ MonoBehaviour:
   skillChargeParticleSystem: {fileID: 2201935112284764111}
   airParryState: p_airparry
   groundParryState: p_parry
+  hitFlash: {fileID: -6613351761212177417}
+  hitFlashColor: {r: 1.9093418, g: 0.28640127, b: 0.28640127, a: 1}
+  parryFlashColor: {r: 1.7814789, g: 1.2174239, b: 0, a: 1}
+  healFlashColor: {r: 0, g: 1.5706509, b: 0.09659664, a: 1}
 --- !u!114 &6264206310521610964
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -784,6 +792,70 @@ MonoBehaviour:
         Data3: 1926001838
         Data4: 449639858
       Path: event:/PlayerMovementSFX Events/Footstep
+--- !u!114 &340676937458263144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6310612592100663882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e03e55a74b3100642a9152c2a71c9216, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MultiplyOutline
+  outlineMaterial: {fileID: 2100000, guid: edb9203f7655d31448a43b9003f3f6bb, type: 2}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  strength: 0.565
+  falloff: 0.29
+  rings: 2
+  pixelSize: 3
+  checkerContrast: 1
+  sortingOrderOffset: -1
+--- !u!114 &-6613351761212177417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6310612592100663882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36a3c13139e219041a3ed714c67b80bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HitFlash
+  flashMaterial: {fileID: 2100000, guid: e211826df2aab5e47af454561951383b, type: 2}
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  intensity: 1
+  duration: 0.5
+  fadeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  checkerLowOpacity: 0.85
+  pixelSize: 3
+  useUnscaledTime: 1
+  sortingOrderOffset: 1
 --- !u!1 &8291432046283232270
 GameObject:
   m_ObjectHideFlags: 0

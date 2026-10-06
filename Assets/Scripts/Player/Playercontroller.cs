@@ -828,6 +828,7 @@ public class PlayerController : MonoBehaviour
         if (!isHealing) return;
         heals.TryUseHeal();
         isHealing = false;
+        if (playerAnimation != null) playerAnimation.FlashOnHeal();
     }
 
     #endregion

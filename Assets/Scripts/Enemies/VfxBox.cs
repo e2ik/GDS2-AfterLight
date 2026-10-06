@@ -7,18 +7,31 @@ namespace Enemies
     public class VfxBox : MonoBehaviour
     {
         [SerializeField] private EventReference warningEvent;
-        
+
+        [Header("Anticipation Flash")]
+        [SerializeField] private bool flashOnAnticipation = true;
+        [SerializeField] private HitFlash hitFlash;
+        [SerializeField] private HitFlash.FlashMode flashMode = HitFlash.FlashMode.Edge;
+        [SerializeField, Min(0f)] private float flashIntensity = 2f;
+        [SerializeField, ColorUsage(false, true)] private Color zeroColor = Color.white;
+        [SerializeField, ColorUsage(false, true)] private Color lightColor = Color.cyan;
+        [SerializeField, ColorUsage(false, true)] private Color mediumColor = Color.yellow;
+        [SerializeField, ColorUsage(false, true)] private Color heavyColor = Color.red;
+
         private Collider2D col;
         private ParticleSystem activeParticleSystem; // Track the current effect
-
-        private static readonly Color ZeroColor = Color.white;
-        private static readonly Color LightColor = Color.cyan;
-        private static readonly Color MediumColor = Color.yellow;
-        private static readonly Color HeavyColor = Color.red;
 
         private void Awake()
         {
             col = GetComponent<Collider2D>();
+
+            if (hitFlash == null)
+            {
+                Enemy enemy = GetComponentInParent<Enemy>();
+                hitFlash = enemy != null
+                    ? enemy.GetComponentInChildren<HitFlash>(true)
+                    : GetComponentInParent<HitFlash>();
+            }
         }
 
         private void OnDisable()
@@ -37,26 +50,30 @@ namespace Enemies
             {
                 PSpawner.Kill(activeParticleSystem);
             }
-            
+
             AudioManager.PlaySFXAttached(warningEvent, gameObject);
+
+            Color color = GetColorForForce(attackForce);
+
+            if (flashOnAnticipation && hitFlash != null)
+                hitFlash.Flash(color, flashIntensity, flashMode);
 
             activeParticleSystem = PSpawner.Spawn("anticipation", col.bounds.center, Quaternion.identity);
             if (activeParticleSystem == null) return;
 
-            Color color = GetColorForForce(attackForce);
             var main = activeParticleSystem.main;
             main.startColor = color;
         }
 
-        private static Color GetColorForForce(AttackForce force)
+        private Color GetColorForForce(AttackForce force)
         {
             switch (force)
             {
-                case AttackForce.Zero:   return ZeroColor;
-                case AttackForce.Light:  return LightColor;
-                case AttackForce.Medium: return MediumColor;
-                case AttackForce.Heavy:  return HeavyColor;
-                default:                 return ZeroColor;
+                case AttackForce.Zero:   return zeroColor;
+                case AttackForce.Light:  return lightColor;
+                case AttackForce.Medium: return mediumColor;
+                case AttackForce.Heavy:  return heavyColor;
+                default:                 return zeroColor;
             }
         }
     }

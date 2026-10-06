@@ -54,7 +54,8 @@ namespace Enemies
 
         [Header("Damage Flash")]
         [SerializeField] private SpriteRenderer spriteRenderer;
-        [SerializeField] private Color flashColor = Color.red;
+        [SerializeField] private HitFlash hitFlash;
+        [SerializeField, ColorUsage(false, true)] private Color flashColor = Color.red;
         [SerializeField] private float flashDuration = 0.15f;
         private Coroutine flashRoutine;
         private Color baseColor;
@@ -139,6 +140,9 @@ namespace Enemies
                 Debug.LogError($"{name}: no sprite renderer found");
             else
                 baseColor = spriteRenderer.color;
+
+            if (hitFlash == null && spriteRenderer != null)
+                hitFlash = spriteRenderer.GetComponent<HitFlash>();
 
         }
 
@@ -442,9 +446,16 @@ namespace Enemies
 
             AudioManager.PlaySFXAttached(hitEvent, gameObject);
 
-            if (flashRoutine != null)
-                StopCoroutine(flashRoutine);
-            flashRoutine = StartCoroutine(FlashRed());
+            if (hitFlash != null)
+            {
+                hitFlash.Flash(flashColor);
+            }
+            else
+            {
+                if (flashRoutine != null)
+                    StopCoroutine(flashRoutine);
+                flashRoutine = StartCoroutine(FlashRed());
+            }
 
             if (isDot) return;
 

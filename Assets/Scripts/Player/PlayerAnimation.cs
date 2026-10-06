@@ -45,6 +45,10 @@ public class PlayerAnimation : MonoBehaviour
 
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
+    [SerializeField] private HitFlash hitFlash;
+    [SerializeField, ColorUsage(false, true)] private Color hitFlashColor = new Color(2f, 0.3f, 0.3f, 1f);
+    [SerializeField, ColorUsage(false, true)] private Color parryFlashColor = new Color(0.3f, 2f, 0.6f, 1f);
+    [SerializeField, ColorUsage(false, true)] private Color healFlashColor = new Color(0.4f, 1.5f, 2f, 1f);
     private bool wasInvulnerable;
     private bool wasDeadLastFrame;
 
@@ -222,7 +226,24 @@ public class PlayerAnimation : MonoBehaviour
 
     public void FlashRedOnHit()
     {
+        if (ResolveHitFlash() != null)
+        {
+            hitFlash.Flash(hitFlashColor);
+            return;
+        }
+
         StartFlashColor(Color.red, 0.1f);
+    }
+
+    public void FlashOnHeal()
+    {
+        if (ResolveHitFlash() != null) hitFlash.Flash(healFlashColor);
+    }
+
+    private HitFlash ResolveHitFlash()
+    {
+        if (hitFlash == null && sr != null) hitFlash = sr.GetComponent<HitFlash>();
+        return hitFlash;
     }
 
     #endregion
@@ -231,7 +252,8 @@ public class PlayerAnimation : MonoBehaviour
 
     public void FlashGreenOnParrySuccess()
     {
-        StartFlashColor(Color.green, 0.15f);
+        if (ResolveHitFlash() != null) hitFlash.Flash(parryFlashColor);
+        else StartFlashColor(Color.green, 0.15f);
 
         Collider2D playerCollider = player.GetComponent<Collider2D>();
         Vector2 spawnPosition = transform.position;

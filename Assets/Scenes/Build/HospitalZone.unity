@@ -2438,7 +2438,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &124264256
 Transform:
   m_ObjectHideFlags: 0
@@ -19116,6 +19116,10 @@ PrefabInstance:
     - target: {fileID: 6951506134984558407, guid: ec8744feefe551e4685a7eb70f207531, type: 3}
       propertyPath: mode
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6951506134984558407, guid: ec8744feefe551e4685a7eb70f207531, type: 3}
+      propertyPath: darken
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 6951506134984558407, guid: ec8744feefe551e4685a7eb70f207531, type: 3}
       propertyPath: onSwitchMode
