@@ -509,6 +509,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimation
   wallSlideParticleSystem: {fileID: 8438840527263229074}
   skillChargeParticleSystem: {fileID: 2201935112284764111}
+  chargeColorStart: {r: 1, g: 0.3576877, b: 0, a: 1}
+  chargeColorEnd: {r: 1, g: 0.8893104, b: 0.015723169, a: 1}
+  chargeGlowProperty: _Intensity
+  chargeGlowStart: 2
+  chargeGlowEnd: 4
   airParryState: p_airparry
   groundParryState: p_parry
   hitFlash: {fileID: -6613351761212177417}
@@ -854,6 +859,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   checkerLowOpacity: 0.85
   pixelSize: 3
+  defaultMode: 0
+  edgeWidth: 1
   useUnscaledTime: 1
   sortingOrderOffset: 1
 --- !u!1 &8291432046283232270
@@ -1157,16 +1164,28 @@ PrefabInstance:
       value: SkillCharge
       objectReference: {fileID: 0}
     - target: {fileID: 5497425098577746589, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
+      propertyPath: ColorModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5497425098577746589, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
       propertyPath: ShapeModule.radius.value
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5497425098577746589, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
       propertyPath: InitialModule.maxNumParticles
-      value: 20
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 5497425098577746589, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
       propertyPath: InitialModule.startSize.scalar
-      value: 0.5
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5497425098577746589, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
+      propertyPath: EmissionModule.rateOverTime.scalar
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 5497425098577746589, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.a
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8488492540890644507, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
       propertyPath: m_LocalPosition.x

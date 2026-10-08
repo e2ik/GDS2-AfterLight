@@ -35,6 +35,18 @@ public class PlayerAnimation : MonoBehaviour
     [SerializeField] private ParticleSystem wallSlideParticleSystem;
     [SerializeField] private ParticleSystem skillChargeParticleSystem;
 
+    [Header("Skill Charge Glow")]
+    [SerializeField] private Color chargeColorStart = Color.cyan;
+    [SerializeField] private Color chargeColorEnd = Color.yellow;
+    [SerializeField] private string chargeGlowProperty = "_Intensity";
+    [SerializeField, Min(0f)] private float chargeGlowStart = 1f;
+    [SerializeField, Min(0f)] private float chargeGlowEnd = 4f;
+
+    private ParticleSystemRenderer skillChargeRenderer;
+    private MaterialPropertyBlock chargeGlowBlock;
+    private int chargeGlowPropertyId;
+    private float chargeBaseAlpha = 1f;
+
     [Header("Parry Animation Sync")]
     [SerializeField] private string airParryState = "AirParry";
     [SerializeField] private string groundParryState = "GroundParry";
@@ -63,6 +75,9 @@ public class PlayerAnimation : MonoBehaviour
             if (sr != null) ogColor = sr.color;
         }
 
+        chargeGlowBlock = new MaterialPropertyBlock();
+        chargeGlowPropertyId = Shader.PropertyToID(chargeGlowProperty);
+
         airParryHash = Animator.StringToHash(airParryState);
         groundParryHash = Animator.StringToHash(groundParryState);
 
@@ -82,6 +97,12 @@ public class PlayerAnimation : MonoBehaviour
             {
                 skillChargeParticleSystem = skillChargeTransform.GetComponent<ParticleSystem>();
             }
+        }
+
+        if (skillChargeParticleSystem != null)
+        {
+            skillChargeRenderer = skillChargeParticleSystem.GetComponent<ParticleSystemRenderer>();
+            chargeBaseAlpha = skillChargeParticleSystem.main.startColor.color.a;
         }
     }
 
@@ -474,20 +495,33 @@ public class PlayerAnimation : MonoBehaviour
                 skillChargeParticleSystem.Play();
             }
 
-            float progress = Mathf.Clamp01(player.CombatController.ChargingSkillTimer / 1.5f);
+            float maxDur = Mathf.Max(0.01f, player.CombatController.ChargingSkillMaxDur);
+            float progress = Mathf.Clamp01(player.CombatController.ChargingSkillTimer / maxDur);
 
             var main = skillChargeParticleSystem.main;
-            main.startSize = Mathf.Lerp(0.1f, 0.25f, progress);
             main.simulationSpeed = Mathf.Lerp(1f, 4f, progress);
-            main.startColor = Color.Lerp(Color.cyan, Color.yellow, progress);
+            Color chargeColor = Color.Lerp(chargeColorStart, chargeColorEnd, progress);
+            chargeColor.a = chargeBaseAlpha;
+            main.startColor = chargeColor;
 
             var emission = skillChargeParticleSystem.emission;
             emission.rateOverTime = Mathf.Lerp(1f, 25f, progress);
+
+            SetChargeGlow(Mathf.Lerp(chargeGlowStart, chargeGlowEnd, progress));
         }
         else
         {
             skillChargeParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         }
+    }
+
+    private void SetChargeGlow(float intensity)
+    {
+        if (skillChargeRenderer == null) return;
+
+        skillChargeRenderer.GetPropertyBlock(chargeGlowBlock);
+        chargeGlowBlock.SetFloat(chargeGlowPropertyId, intensity);
+        skillChargeRenderer.SetPropertyBlock(chargeGlowBlock);
     }
 
     #endregion

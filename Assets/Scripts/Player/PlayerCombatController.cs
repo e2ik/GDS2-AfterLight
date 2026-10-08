@@ -891,10 +891,7 @@ public class PlayerCombatController : MonoBehaviour
         isSkilling = isChargingSkill = skillButtonHeld = false;
         CurrentSkillGemName = string.Empty;
         movement.SetSkillGravityZero(false);
-        if (chargingEventInstance.isValid())
-        {
-            AudioManager.StopandReleaseVariableLengthSFX(chargingEventInstance);
-        }
+        StopChargingSound();
     }
 
     public void CancelSkillStates()
@@ -908,6 +905,7 @@ public class PlayerCombatController : MonoBehaviour
         CurrentSkillGemName = string.Empty;
 
         CancelInvoke(nameof(AutoFireAtMaxCharge));
+        StopChargingSound();
 
         movement.SetSkillCharging(false);
         movement.SetSkillGravityZero(false);
@@ -1057,6 +1055,7 @@ public class PlayerCombatController : MonoBehaviour
             }
 
             isChargingSkill = true;
+            StopChargingSound();
             chargingEventInstance = AudioManager.StartVariableLengthSFX(chargingSkillEvent,gameObject);
             singleSkillCostTick = specialDef.SkillCost / chargingSkillMaxDur;
             CancelInvoke(nameof(AutoFireAtMaxCharge));
@@ -1114,6 +1113,15 @@ public class PlayerCombatController : MonoBehaviour
     {
         movement.SetSkillCharging(false);
         CancelInvoke(nameof(AutoFireAtMaxCharge));
+        StopChargingSound();
+    }
+
+    private void StopChargingSound()
+    {
+        if (!chargingEventInstance.isValid()) return;
+
+        AudioManager.StopandReleaseVariableLengthSFX(chargingEventInstance);
+        chargingEventInstance = default;
     }
 
     public void ForceCancelAttack()
@@ -1141,6 +1149,11 @@ public class PlayerCombatController : MonoBehaviour
     }
 
     #endregion
+
+    private void OnDisable()
+    {
+        StopChargingSound();
+    }
 
     private void OnDrawGizmosSelected()
     {
