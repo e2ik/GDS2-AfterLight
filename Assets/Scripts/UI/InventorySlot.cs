@@ -17,6 +17,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [Header("Equipped Colors")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color equippedColor = Color.green;
+    [SerializeField] private bool colorButtonByRarity = true;
 
     [Header("Border")]
     [SerializeField] private Color noRarityBorderColor = Color.white;
@@ -25,12 +26,19 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [SerializeField] private Graphic selectionGraphic;
     [SerializeField] private Color selectedColor = Color.yellow;
     [SerializeField] private Color unselectedColor = new Color(1f, 1f, 1f, 0f);
+    [SerializeField] private bool hideWhenUnselected = true;
+    [SerializeField] private bool pulseWhenSelected = true;
+    [SerializeField, Min(1f)] private float pulseScale = 1.2f;
+    [SerializeField, Min(0.01f)] private float pulseSpeed = 1.5f;
 
     [Header("Tooltip")]
     [SerializeField, Min(0f)] private float controllerTooltipDelay = 0.5f;
 
     [Header("New Item Badge")]
     [SerializeField] private GameObject newBadge;
+    [SerializeField] private bool pulseNewBadge = true;
+    [SerializeField, Min(0.01f)] private float badgePulseSpeed = 1.5f;
+    [SerializeField, Range(0f, 1f)] private float badgeMinOpacity = 0.4f;
 
     [Header("Lore Set Progress")]
     [SerializeField] private TextMeshProUGUI progressText;
@@ -42,6 +50,9 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private bool isSelected;
     private bool isPointerOver;
     private bool tooltipWanted;
+    private Vector3 selectionBaseScale = Vector3.one;
+    private float pulseTime;
+    private CanvasGroup badgeGroup;
 
     private readonly struct SlotContext
     {
@@ -75,8 +86,20 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         if (iconImage != null) iconImage.raycastTarget = false;
         if (nameText != null) nameText.raycastTarget = false;
-        if (selectionGraphic != null) selectionGraphic.raycastTarget = false;
+        if (selectionGraphic != null)
+        {
+            selectionGraphic.raycastTarget = false;
+            selectionBaseScale = selectionGraphic.rectTransform.localScale;
+        }
         if (progressText != null) progressText.raycastTarget = false;
+
+        if (newBadge != null)
+        {
+            badgeGroup = newBadge.GetComponent<CanvasGroup>();
+            if (badgeGroup == null) badgeGroup = newBadge.AddComponent<CanvasGroup>();
+            badgeGroup.interactable = false;
+            badgeGroup.blocksRaycasts = false;
+        }
 
         if (actionButton != null)
         {
@@ -98,6 +121,9 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             ApplySelectionVisual();
             if (isSelected) Display?.OnSlotFocused(currentItem);
         }
+
+        UpdateSelectionPulse();
+        UpdateBadgePulse();
 
         UpdateTooltipState();
         UpdateNewBadgeIfLookedAt();
@@ -132,7 +158,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         SetSlotDisplay(ctx.Value.Sprite, ctx.Value.Name);
         SetBorderColor(ctx.Value.Rarity);
-        UpdateEquippedVisuals(ctx.Value.IsEquipped);
+        UpdateEquippedVisuals(ctx.Value.IsEquipped, ctx.Value.Rarity);
         SetNewBadgeVisible(GetIsNew(currentItem));
         UpdateProgressText();
     }
@@ -205,7 +231,23 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private void SetNewBadgeVisible(bool visible)
     {
-        if (newBadge != null) newBadge.SetActive(visible);
+        if (newBadge == null) return;
+
+        newBadge.SetActive(visible);
+        if (!visible) ResetBadgePulse();
+    }
+
+    private void UpdateBadgePulse()
+    {
+        if (!pulseNewBadge || newBadge == null || !newBadge.activeSelf) return;
+
+        float t = (1f - Mathf.Cos(Time.unscaledTime * badgePulseSpeed * Mathf.PI * 2f)) * 0.5f;
+        if (badgeGroup != null) badgeGroup.alpha = Mathf.Lerp(badgeMinOpacity, 1f, t);
+    }
+
+    private void ResetBadgePulse()
+    {
+        if (badgeGroup != null) badgeGroup.alpha = 1f;
     }
 
     private void UpdateProgressText()
@@ -254,7 +296,12 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         if (borderImage == null) return;
 
-        borderImage.color = currentItem switch
+        borderImage.color = GetSlotColor(rarity);
+    }
+
+    private Color GetSlotColor(ERarity? rarity)
+    {
+        return currentItem switch
         {
             KeyInstance when GameManager.Instance != null => GameManager.Instance.KeyItemColor,
             LoreItemInstance when GameManager.Instance != null => GameManager.Instance.LoreItemColor,
@@ -268,6 +315,19 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         if (selectionGraphic == null) return;
         selectionGraphic.color = isSelected ? selectedColor : unselectedColor;
+        selectionGraphic.enabled = isSelected || !hideWhenUnselected;
+
+        pulseTime = 0f;
+        selectionGraphic.rectTransform.localScale = selectionBaseScale;
+    }
+
+    private void UpdateSelectionPulse()
+    {
+        if (selectionGraphic == null || !pulseWhenSelected || !isSelected) return;
+
+        pulseTime += Time.unscaledDeltaTime * pulseSpeed;
+        float t = (1f - Mathf.Cos(pulseTime * Mathf.PI * 2f)) * 0.5f;
+        selectionGraphic.rectTransform.localScale = selectionBaseScale * Mathf.Lerp(1f, pulseScale, t);
     }
 
     private void ClearDisplay()
@@ -318,16 +378,20 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (display != null) display.RefreshUI();
     }
 
-    private void UpdateEquippedVisuals(bool isEquipped)
+    private void UpdateEquippedVisuals(bool isEquipped, ERarity? rarity)
     {
         if (actionButton == null || actionButton.image == null) return;
 
-        Color targetColor = isEquipped ? equippedColor : normalColor;
+        Color targetColor = isEquipped
+            ? equippedColor
+            : colorButtonByRarity ? GetSlotColor(rarity) : normalColor;
+
         actionButton.image.color = targetColor;
 
         ColorBlock cb = actionButton.colors;
-        cb.normalColor = targetColor;
-        cb.selectedColor = targetColor;
+        Color tint = actionButton.transition == Selectable.Transition.ColorTint ? Color.white : targetColor;
+        cb.normalColor = tint;
+        cb.selectedColor = tint;
         actionButton.colors = cb;
     }
 

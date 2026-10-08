@@ -45,7 +45,9 @@ public static class ItemTooltipTextBuilder
     {
         if (!equippedValue.HasValue) return string.Empty;
 
-        float diff = newValue - equippedValue.Value;
+        int decimals = DecimalsFor(format);
+        float diff = RoundTo(newValue, decimals) - RoundTo(equippedValue.Value, decimals);
+        diff = RoundTo(diff, decimals);
         if (Mathf.Approximately(diff, 0f)) return string.Empty;
 
         string sign = diff > 0f ? "+" : "-";
@@ -53,6 +55,23 @@ public static class ItemTooltipTextBuilder
         string color = diff > 0f ? PositiveDiffColor : NegativeDiffColor;
 
         return $" <color={color}>({diffText})</color>";
+    }
+
+    private static int DecimalsFor(string format)
+    {
+        if (string.IsNullOrEmpty(format)) return 0;
+
+        if ((format[0] == 'F' || format[0] == 'f') && int.TryParse(format.Substring(1), out int fixedDecimals))
+            return fixedDecimals;
+
+        int dot = format.IndexOf('.');
+        return dot >= 0 ? format.Length - dot - 1 : 0;
+    }
+
+    private static float RoundTo(float value, int decimals)
+    {
+        float scale = Mathf.Pow(10f, decimals);
+        return Mathf.Round(value * scale) / scale;
     }
 
     private static string TriggerLabel(SGemType type)
@@ -94,9 +113,9 @@ public static class ItemTooltipTextBuilder
         int humanity = (int)gear.InstBonusHumanity;
         float crit = gear.InstBonusCrit;
 
-        float? eqAttack = equippedComparison != null ? (float?)equippedComparison.InstBonusAttack : null;
-        float? eqDefense = equippedComparison != null ? (float?)equippedComparison.InstBonusDefense : null;
-        float? eqHumanity = equippedComparison != null ? (float?)equippedComparison.InstBonusHumanity : null;
+        float? eqAttack = equippedComparison != null ? (float?)(int)equippedComparison.InstBonusAttack : null;
+        float? eqDefense = equippedComparison != null ? (float?)(int)equippedComparison.InstBonusDefense : null;
+        float? eqHumanity = equippedComparison != null ? (float?)(int)equippedComparison.InstBonusHumanity : null;
         float? eqCrit = equippedComparison != null ? (float?)(equippedComparison.InstBonusCrit * 100f) : null;
 
         if (attack > 0) sb.AppendLine($"{Label("Attack", gear.LineRarities, GearAttackLine)} +{attack}{BuildDiffSuffix(attack, eqAttack)}");
