@@ -16,6 +16,12 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
     [SerializeField]
     private GameObject testVisPrefab;
 
+    [Header("Projectile Animation")]
+    [SerializeField] private AnimationClip projectileClip;
+    [SerializeField, Min(1f)] private float animSamplesUncharged = 40f;
+    [SerializeField, Min(1f)] private float animSamplesFullCharge = 15f;
+    [SerializeField] private string chargeAnimatorParameter = "";
+
     private Vector2 direction;
 
     public override void Execute(AttackContext context, float baseDamage, float chargeAmount = 0f)
@@ -41,6 +47,7 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
         var enemiesHit = new HashSet<Collider2D>();
         var testVis = Instantiate(testVisPrefab, context.OriginPoint, Quaternion.identity);
         FlipVisual(testVis, direction);
+        ApplyChargeToAnimation(testVis, chargeAmount);
 
         float skillDamage = baseDamage * (SkillDamageModifier + context.SkillModifierBonus);
         float skillRange = SkillRange + chargeRangeBonus * chargeAmount;
@@ -69,6 +76,29 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
             yield return null;
         }
         Destroy(testVis);
+    }
+
+    private void ApplyChargeToAnimation(GameObject proj, float chargeAmount)
+    {
+        if (proj == null) return;
+
+        Animator animator = proj.GetComponentInChildren<Animator>();
+        if (animator == null) return;
+
+        float charge = Mathf.Clamp01(chargeAmount);
+
+        AnimationClip clip = projectileClip;
+        if (clip == null && animator.runtimeAnimatorController != null && animator.runtimeAnimatorController.animationClips.Length > 0)
+            clip = animator.runtimeAnimatorController.animationClips[0];
+
+        if (clip != null && clip.frameRate > 0f)
+        {
+            float targetSamples = Mathf.Lerp(animSamplesUncharged, animSamplesFullCharge, charge);
+            animator.speed = targetSamples / clip.frameRate;
+        }
+
+        if (!string.IsNullOrEmpty(chargeAnimatorParameter))
+            animator.SetFloat(chargeAnimatorParameter, charge);
     }
 
     private void UpdateVisual(GameObject proj, Vector2 pos)

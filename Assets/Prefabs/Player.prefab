@@ -400,6 +400,7 @@ MonoBehaviour:
   dashCoolDown: 0.2
   dashSkillEnergyCost: 0.1
   neutralDashInvulnExtension: 0.1
+  directionalDashInvulnerable: 1
   perfectDodgeWindow: 0.035
   enemyBodyCollisionKnockback: 1
   enemyBodyCollisionForce: 1
@@ -539,8 +540,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimation
   wallSlideParticleSystem: {fileID: 8438840527263229074}
   skillChargeParticleSystem: {fileID: 2201935112284764111}
-  chargeColorStart: {r: 1, g: 0.3576877, b: 0, a: 1}
-  chargeColorEnd: {r: 1, g: 0.8893104, b: 0.015723169, a: 1}
+  chargeColorStart: {r: 0, g: 0.6476264, b: 1, a: 0.58431375}
+  chargeColorEnd: {r: 0.015686274, g: 0.96335423, b: 1, a: 1}
   chargeGlowProperty: _Intensity
   chargeGlowStart: 2
   chargeGlowEnd: 4
@@ -572,13 +573,13 @@ MonoBehaviour:
     checkerSize: 1
   plungeGlow:
     enabled: 1
-    color: {r: 1, g: 1, b: 1, a: 1}
-    intensity: 4
-    checkerLow: 0.5
+    color: {r: 1, g: 0.8482716, b: 0, a: 1}
+    intensity: 4.5
+    checkerLow: 0.2
     checkerSize: 1
-  hitFlashColor: {r: 1.9093418, g: 0.28640127, b: 0.28640127, a: 1}
-  parryFlashColor: {r: 1.7814789, g: 1.2174239, b: 0, a: 1}
-  healFlashColor: {r: 0, g: 1.5706509, b: 0.09659664, a: 1}
+  hitFlashColor: {r: 1.6055586, g: 0.2408338, b: 0.2408338, a: 1}
+  parryFlashColor: {r: 1.6055586, g: 1.097204, b: 0, a: 1}
+  healFlashColor: {r: 0, g: 1.4980392, b: 0.09213095, a: 1}
 --- !u!114 &6264206310521610964
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -778,8 +779,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.05343598, y: -0.14684248}
-  m_Size: {x: 0.8069464, y: 2.7636852}
+  m_Offset: {x: -0.05343598, y: -0.15353727}
+  m_Size: {x: 0.8069464, y: 2.7770748}
   m_Direction: 0
 --- !u!61 &7665356309269939156
 BoxCollider2D:
@@ -961,7 +962,7 @@ Transform:
   m_GameObject: {fileID: 8844592283841214288}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.03, y: 0.02, z: 0}
+  m_LocalPosition: {x: 0.77, y: -0.75, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

@@ -214,6 +214,7 @@ public class PlayerCombatController : MonoBehaviour
 
         if (movement.IsWallSliding)
         {
+            RefundChargeCost();
             skillButtonHeld = false;
             isChargingSkill = false;
             skillFiredThisHold = true;
@@ -243,28 +244,37 @@ public class PlayerCombatController : MonoBehaviour
     {
         if (skillMeterAlwaysFull || !isChargingSkill) return;
 
-        float maxCost = currentSkillDef.SkillCost;
-        float availableCost = SkillMeter - maxCost;
+        float remaining = currentSkillDef.SkillCost - singleSkillChargeCost;
+        if (remaining <= 0f) return;
 
-        if (availableCost <= 0f || singleSkillChargeCost >= maxCost)
-        {
-            FireChargedSkill(true, chargingSkillTimer);
-            return;
-        }
-
-        float amount = singleSkillCostTick * Time.deltaTime;
-        amount = Mathf.Min(amount, maxCost - singleSkillChargeCost);
+        float amount = Mathf.Min(singleSkillCostTick * Time.deltaTime, remaining, SkillMeter);
+        if (amount <= 0f) return;
 
         SkillMeter -= amount;
         singleSkillChargeCost += amount;
         RaiseEnergyChanged();
+    }
 
-        if (SkillMeter <= maxCost)
-        {
-            SkillMeter = currentSkillDef.SkillCost;
-            RaiseEnergyChanged();
-            FireChargedSkill(true, chargingSkillTimer);
-        }
+    private void PayRemainingSkillCost()
+    {
+        float remaining = Mathf.Max(0f, SkillActivationCost - singleSkillChargeCost);
+        singleSkillChargeCost = 0f;
+
+        if (skillMeterAlwaysFull) return;
+
+        SkillMeter = Mathf.Max(0f, SkillMeter - remaining);
+        RaiseEnergyChanged();
+    }
+
+    private void RefundChargeCost()
+    {
+        if (singleSkillChargeCost <= 0f) return;
+
+        float refund = singleSkillChargeCost;
+        singleSkillChargeCost = 0f;
+
+        if (skillMeterAlwaysFull) return;
+        ChargeSkillMeter(refund);
     }
 
     private static float Tick(float timer, float dt) => timer > 0f ? timer - dt : timer;
@@ -744,7 +754,8 @@ public class PlayerCombatController : MonoBehaviour
     private void HandleSkill()
     {
         SkillActivationCost = currentSkillDef != null ? currentSkillDef.SkillCost : 0f;
-        bool isReadyToFire = skillMeterAlwaysFull || SkillMeter >= SkillActivationCost;
+        float requiredEnergy = Mathf.Max(0f, SkillActivationCost - singleSkillChargeCost);
+        bool isReadyToFire = skillMeterAlwaysFull || SkillMeter >= requiredEnergy;
         if (skillBufferTimer > 0f && CanReleaseSkill() && isReadyToFire)
         {
             ExecuteSkill();
@@ -809,7 +820,7 @@ public class PlayerCombatController : MonoBehaviour
         {
             if (specialDef.SkillType == SkillType.Single)
             {
-                PerformSingleSkill(specialDef, chargeRatio, chargeDamageMultiplier, wasCharged);
+                PerformSingleSkill(specialDef, chargeRatio, chargeDamageMultiplier);
             }
             else if (specialDef.SkillType == SkillType.Timed)
             {
@@ -818,13 +829,9 @@ public class PlayerCombatController : MonoBehaviour
         }
     }
 
-    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float chargePercentage, float multiplier, bool alreadyPaidViaCharge = false)
+    private void PerformSingleSkill(PrimaryGemBehaviourDefinition def, float chargePercentage, float multiplier)
     {
-        if (!alreadyPaidViaCharge)
-        {
-            SkillMeter -= SkillActivationCost;
-            RaiseEnergyChanged();
-        }
+        PayRemainingSkillCost();
         AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: false);
         context.DamageType = EDamageType.Skill;
         context.SkillModifierBonus = GetSkillModifierBonus();
@@ -838,11 +845,7 @@ public class PlayerCombatController : MonoBehaviour
         bool isHeld = def.SkillExecutionType == SkillExecutionType.Held;
         float energyCostPerTick = tick / chargingSkillMaxDur;
 
-        if (!isHeld && !skillMeterAlwaysFull)
-        {
-            SkillMeter -= SkillActivationCost;
-            RaiseEnergyChanged();
-        }
+        if (!isHeld) PayRemainingSkillCost();
 
         while (isSkilling && (skillMeterAlwaysFull || (isHeld ? SkillMeter > 0f : true)))
         {
@@ -897,6 +900,7 @@ public class PlayerCombatController : MonoBehaviour
     public void CancelSkillStates()
     {
         StopSkillCoroutine();
+        RefundChargeCost();
 
         isChargingSkill = false;
         isSkilling = false;
@@ -1038,11 +1042,13 @@ public class PlayerCombatController : MonoBehaviour
             if (movement.IsHealing || isPlunging || movement.IsUILocked || movement.IsClimbing) return;
             if (movement.IsWallSliding) return;
             if (specialDef == null) return;
+
+            RefundChargeCost();
             if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;
+            if (!skillMeterAlwaysFull && specialDef.SkillExecutionType != SkillExecutionType.Held && SkillMeter < specialDef.SkillCost) return;
 
             skillButtonHeld = true;
             chargingSkillTimer = 0f;
-            singleSkillChargeCost = 0f;
             skillFiredThisHold = false;
 
             CancelParry();

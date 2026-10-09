@@ -146,7 +146,7 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 32
-        width: 32
+        width: 64
         height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -166,9 +166,9 @@ TextureImporter:
       name: p_AirAttack_1
       rect:
         serializedVersion: 2
-        x: 32
+        x: 64
         y: 32
-        width: 32
+        width: 64
         height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -188,9 +188,9 @@ TextureImporter:
       name: p_AirAttack_2
       rect:
         serializedVersion: 2
-        x: 64
+        x: 128
         y: 32
-        width: 32
+        width: 64
         height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -210,9 +210,9 @@ TextureImporter:
       name: p_AirAttack_3
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 32
+        x: 192
+        y: 32
+        width: 64
         height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -232,9 +232,9 @@ TextureImporter:
       name: p_AirAttack_4
       rect:
         serializedVersion: 2
-        x: 32
+        x: 0
         y: 0
-        width: 32
+        width: 64
         height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -256,7 +256,7 @@ TextureImporter:
         serializedVersion: 2
         x: 64
         y: 0
-        width: 32
+        width: 64
         height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -268,6 +268,28 @@ TextureImporter:
       bones: []
       spriteID: 19f716cb60ebb2130800000000000000
       internalID: 3543134467996614545
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: p_AirAttack_6
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b4bfc6e76decbb04b8d85dec5452da08
+      internalID: 1070574387
       vertices: []
       indices: 
       edges: []
@@ -286,7 +308,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       p_AirAttack_0: -1897127994770084481
       p_AirAttack_1: -7849447088502378438
@@ -294,6 +316,7 @@ TextureImporter:
       p_AirAttack_3: 7656905292005335957
       p_AirAttack_4: 5491589120613209068
       p_AirAttack_5: 3543134467996614545
+      p_AirAttack_6: 1070574387
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

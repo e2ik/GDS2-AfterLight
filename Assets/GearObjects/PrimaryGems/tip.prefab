@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1297532662306441220}
   - component: {fileID: 7736251945156580378}
+  - component: {fileID: 5187542725460522239}
   - component: {fileID: -8236519879248891801}
   m_Layer: 0
   m_Name: tip
@@ -28,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -80,10 +81,10 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 5
+  m_SortingOrder: 30
   m_MaskInteraction: 0
   m_Sprite: {fileID: -7423089928081421889, guid: 569538e0b1fa5a047b8f4146a4690e74, type: 3}
-  m_Color: {r: 0.9527873, g: 1, b: 0, a: 0.5411765}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -92,6 +93,29 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &5187542725460522239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8155712458646908664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 552c61b0b3d01574a9c690c9cfa647a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorGlow
+  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  startActive: 1
+  matchColor: {r: 1, g: 1, b: 1, a: 1}
+  matchTolerance: 0.1
+  glowColor: {r: 0, g: 1, b: 0.9425032, a: 1}
+  intensity: 3
+  checkerLow: 0.5
+  checkerSize: 1
+  fadeDuration: 0.08
+  useUnscaledTime: 0
+  sortingOrderOffset: 1
 --- !u!95 &-8236519879248891801
 Animator:
   serializedVersion: 7

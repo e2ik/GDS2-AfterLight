@@ -291,7 +291,7 @@ MonoBehaviour:
     Path: 
   spriteRenderer: {fileID: 5107996575365250629}
   hitFlash: {fileID: 4849572205173769118}
-  flashColor: {r: 2.3784142, g: 0, b: 0, a: 1}
+  flashColor: {r: 1.6621785, g: 0, b: 0, a: 1}
   flashDuration: 0.15
   bossBounds: {fileID: 0}
   attacksPerTeleport: 3
@@ -578,6 +578,16 @@ MonoBehaviour:
   lineStrength: 0.5
   lineDiagonals: 0
   sortingOrderOffset: -1
+  glowColor: 0
+  glowMaterial: {fileID: 0}
+  matchColor: {r: 1, g: 1, b: 1, a: 1}
+  matchTolerance: 0.1
+  replaceColor: {r: 1, g: 1, b: 1, a: 1}
+  glowIntensity: 2
+  glowCheckerLow: 0.5
+  glowCheckerSize: 1
+  glowFadeDuration: 0.08
+  glowSortingOrderOffset: 1
 --- !u!114 &4849572205173769118
 MonoBehaviour:
   m_ObjectHideFlags: 0
