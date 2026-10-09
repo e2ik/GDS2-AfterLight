@@ -14,6 +14,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed = 8f;
     [SerializeField] private float jumpForce = 15f;
     [SerializeField] private float tapJumpMultiplier = 0.2f;
+    [SerializeField, Min(0.02f)] private float jumpBufferTime = 0.1f;
+    [SerializeField, Min(0f)] private float jumpEffectHoldTime = 0.08f;
+    [SerializeField, Min(0f)] private float turnEffectHoldTime = 0.08f;
+    [SerializeField, Min(0f)] private float turnEffectMinSpeed = 2f;
+    [SerializeField, Min(0f)] private float turnEffectCooldown = 0.3f;
+    [SerializeField, Min(0f)] private float turnEffectMinDistance = 0.5f;
     [SerializeField] private float acceleration = 8f;
     [SerializeField] private float deceleration = 8f;
     [SerializeField] private float velocityPower = 1.2f;
@@ -116,8 +122,19 @@ public class PlayerController : MonoBehaviour
     private Collider2D currentPassThroughPlatform;
 
     private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer, wallContactTimer;
-    private float dashTimer, dashDirection, wallJumpDirection;
+    private float dashTimer, dashDirection, wallJumpDirection, wallSide;
     private bool wasWallSliding;
+    private float jumpBufferTimer;
+    private bool jumpHeld;
+    private bool jumpEffectPending;
+    private float jumpEffectTimer;
+    private Vector2 jumpEffectPosition;
+    private Vector2 jumpEffectNormal;
+    private bool turnEffectPending;
+    private float turnEffectTimer;
+    private int turnEffectDirection;
+    private float lastTurnEffectTime = float.NegativeInfinity;
+    private float lastTurnEffectX = float.PositiveInfinity;
     private int movementFreezeCount;
 
     private PlayerAnimation playerAnimation;
@@ -252,6 +269,7 @@ public class PlayerController : MonoBehaviour
         if (neutralDashInvulnTimer > 0f) neutralDashInvulnTimer -= Time.deltaTime;
 
         if (!IsUILocked && CanMove()) Flip();
+        UpdatePendingTurnEffect();
         if (InputEnabled && !IsMovementFrozen)
         {
             PerformInventoryAction(); 
@@ -275,6 +293,14 @@ public class PlayerController : MonoBehaviour
         if (physicsSuspended) return;
 
         cachedBounds = ComputePlayerBounds();
+
+        if (jumpPressed)
+        {
+            jumpBufferTimer -= Time.fixedDeltaTime;
+            if (jumpBufferTimer < 0f) jumpPressed = false;
+        }
+
+        UpdatePendingJumpEffect();
 
         GroundCheckUpdate();
         WallCheckUpdate();
@@ -476,7 +502,7 @@ public class PlayerController : MonoBehaviour
             if (!isGrounded || rb.linearVelocityY < 0f) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
 
-            playerAnimation.TriggerJumpEffect(false);
+            QueueJumpEffect();
             Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerJumped);
 
             ConsumeJumpInput();
@@ -491,6 +517,74 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void QueueJumpEffect()
+    {
+        if (!jumpHeld) return;
+
+        Bounds bounds = cachedBounds;
+        jumpEffectPosition = new Vector2(bounds.center.x, bounds.min.y);
+        jumpEffectNormal = currentSurfaceNormal;
+        jumpEffectTimer = jumpEffectHoldTime;
+        jumpEffectPending = true;
+
+        if (jumpEffectHoldTime <= 0f) UpdatePendingJumpEffect();
+    }
+
+    private void UpdatePendingJumpEffect()
+    {
+        if (!jumpEffectPending) return;
+
+        if (!jumpHeld)
+        {
+            jumpEffectPending = false;
+            return;
+        }
+
+        jumpEffectTimer -= Time.fixedDeltaTime;
+        if (jumpEffectTimer > 0f) return;
+
+        jumpEffectPending = false;
+        playerAnimation.TriggerJumpEffectAt(jumpEffectPosition, jumpEffectNormal);
+    }
+
+    private void QueueTurnEffect()
+    {
+        turnEffectPending = false;
+        if (Mathf.Abs(rb.linearVelocityX) < turnEffectMinSpeed) return;
+
+        turnEffectDirection = FacingDirection;
+        turnEffectTimer = turnEffectHoldTime;
+        turnEffectPending = true;
+
+        if (turnEffectHoldTime <= 0f) UpdatePendingTurnEffect();
+    }
+
+    private void UpdatePendingTurnEffect()
+    {
+        if (!turnEffectPending) return;
+
+        bool stillTurned = FacingDirection == turnEffectDirection
+                           && isGrounded
+                           && Mathf.Abs(horizontalInput) > InputDeadzone;
+        if (!stillTurned)
+        {
+            turnEffectPending = false;
+            return;
+        }
+
+        turnEffectTimer -= Time.deltaTime;
+        if (turnEffectTimer > 0f) return;
+
+        turnEffectPending = false;
+
+        if (Time.time - lastTurnEffectTime < turnEffectCooldown) return;
+        if (Mathf.Abs(rb.position.x - lastTurnEffectX) < turnEffectMinDistance) return;
+
+        lastTurnEffectTime = Time.time;
+        lastTurnEffectX = rb.position.x;
+        playerAnimation.TriggerTurnDustEffect(turnEffectDirection);
+    }
+
     private void HandleWallSlide()
     {
         if (IsFrozenOrSkillLocked || combat.IsAttacking || isClimbing)
@@ -502,13 +596,20 @@ public class PlayerController : MonoBehaviour
 
         wallCoyoteTimer = (onWall && !isGrounded && Mathf.Abs(horizontalInput) > InputDeadzone) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
 
-        bool touchingWall = onWall && !isGrounded && wallCoyoteTimer > 0f;
+        bool wallJustLeft = isWallJumping && wallSide == -wallJumpDirection;
+        bool touchingWall = onWall && !isGrounded && wallCoyoteTimer > 0f && !wallJustLeft;
         wallContactTimer = touchingWall ? wallContactTimer + Time.fixedDeltaTime : 0f;
 
         if (touchingWall && wallContactTimer >= wallSlideGracePeriod)
         {
             if (!isWallSliding)
             {
+                if (FacingDirection != (int)wallSide)
+                {
+                    FacingDirection = (int)wallSide;
+                    transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
+                }
+
                 combat.ForceCancelAttack();
                 combat.CancelParry();
                 if (combat.IsSkilling) combat.EndSkill();
@@ -533,7 +634,7 @@ public class PlayerController : MonoBehaviour
         if (isWallSliding)
         {
             isWallJumping = false;
-            if (!wasWallSliding) wallJumpDirection = -FacingDirection;
+            if (!wasWallSliding) wallJumpDirection = -wallSide;
             wallJumpTimer = wallJumpBufferTime;
             CancelInvoke(nameof(StopWallJumping));
         }
@@ -1029,8 +1130,16 @@ public class PlayerController : MonoBehaviour
         if (value.isPressed)
         {
             combat.CancelParry();
+            jumpPressed = true;
+            jumpReleased = false;
+            jumpHeld = true;
+            jumpBufferTimer = jumpBufferTime;
         }
-        jumpPressed = value.isPressed; jumpReleased = !value.isPressed;
+        else
+        {
+            jumpReleased = true;
+            jumpHeld = false;
+        }
     }
 
     public void OnDash(InputValue value)
@@ -1080,7 +1189,7 @@ public class PlayerController : MonoBehaviour
 
                 if (isGrounded)
                 {
-                    playerAnimation.TriggerTurnDustEffect(FacingDirection);
+                    QueueTurnEffect();
                 }
                 lastFacingDirection = FacingDirection;
                 transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
@@ -1183,7 +1292,11 @@ public class PlayerController : MonoBehaviour
         if (CheckWallRay(chest, dir, rayLen)) hits++;
         if (CheckWallRay(waist, dir, rayLen)) hits++;
 
-        if (hits >= 3) onWall = true;
+        if (hits >= 3)
+        {
+            onWall = true;
+            wallSide = dir;
+        }
     }
 
     private bool CheckWallRay(Vector2 origin, float dir, float len)

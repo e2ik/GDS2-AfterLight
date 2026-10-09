@@ -364,6 +364,12 @@ MonoBehaviour:
   moveSpeed: 8
   jumpForce: 20
   tapJumpMultiplier: 0.2
+  jumpBufferTime: 0.1
+  jumpEffectHoldTime: 0.05
+  turnEffectHoldTime: 0.05
+  turnEffectMinSpeed: 3
+  turnEffectCooldown: 0.3
+  turnEffectMinDistance: 0.5
   acceleration: 8
   deceleration: 8
   velocityPower: 1.2
@@ -423,6 +429,9 @@ MonoBehaviour:
   groundCheckNormalThreshold: 0.6
   wallCheckDistance: 0.2
   edgeMargin: 0.05
+  bodyCollider: {fileID: 0}
+  boundsIgnoreTriggers: 0
+  drawDetectionGizmos: 1
   fadeDuration: 0.2
   healDuration: 0.1
 --- !u!114 &3547647608137716798
@@ -719,8 +728,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.06411791, y: -0.11657703}
-  m_Size: {x: 0.8211889, y: 2.4539096}
+  m_Offset: {x: -0.05343598, y: -0.14684248}
+  m_Size: {x: 0.8069464, y: 2.7636852}
   m_Direction: 0
 --- !u!61 &7665356309269939156
 BoxCollider2D:
@@ -756,17 +765,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.05790332, y: -1.2734358}
+  m_Offset: {x: -0.065024585, y: -1.40874}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 7.111111, y: 3.5555556}
+    oldSize: {x: 8, y: 4}
     newSize: {x: 1, y: 2}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.5608296, y: 0.11066437}
+  m_Size: {x: 0.63916355, y: 0.20324099}
   m_EdgeRadius: 0
 --- !u!114 &3239858076674932586
 MonoBehaviour:
@@ -1067,8 +1076,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.082692385, y: 0.024472833}
-  m_Size: {x: 0.8068929, y: 2.4117382}
+  m_Offset: {x: 0.082692385, y: 0.0031090975}
+  m_Size: {x: 0.8068929, y: 2.7321951}
   m_Direction: 0
 --- !u!114 &2800973266562923561
 MonoBehaviour:

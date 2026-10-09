@@ -332,6 +332,12 @@ public class PlayerAnimation : MonoBehaviour
         PSpawner.Spawn("JumpDust", spawnPosition, rotation);
     }
 
+    public void TriggerJumpEffectAt(Vector2 position, Vector2 normal)
+    {
+        float angle = Mathf.Atan2(normal.y, -normal.x) * Mathf.Rad2Deg - 90f;
+        PSpawner.Spawn("JumpDust", position, Quaternion.Euler(0f, 0f, angle));
+    }
+
     public void TriggerDashEffect()
     {
         if (player == null || player.Controller == null) return;
