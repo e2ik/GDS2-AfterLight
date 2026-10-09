@@ -614,6 +614,7 @@ public class PlayerCombatController : MonoBehaviour
                 isPlunging = false;
                 plungeGraceTimer = plungeGraceWindow;
                 plungeRecoveryTimer = plungeRecoveryDuration;
+                if (player.Animation != null) player.Animation.TriggerPlungeLandEffect();
             }
 
             yield return null;

@@ -47,6 +47,9 @@ public class PlayerAnimation : MonoBehaviour
     private int chargeGlowPropertyId;
     private float chargeBaseAlpha = 1f;
 
+    [Header("Plunge Land Effect")]
+    [SerializeField] private string plungeLandEffect = "JumpDust";
+
     [Header("Healing Effect")]
     [SerializeField] private ParticleSystem healingParticleSystem;
     [SerializeField, Min(0f)] private float healingEffectDuration = 1f;
@@ -78,6 +81,12 @@ public class PlayerAnimation : MonoBehaviour
     };
     [SerializeField] private MultiplyOutline.GlowStyle skillGlow = new MultiplyOutline.GlowStyle();
     [SerializeField] private MultiplyOutline.GlowStyle plungeGlow = new MultiplyOutline.GlowStyle();
+    [SerializeField] private MultiplyOutline.GlowStyle chargeGlow = new MultiplyOutline.GlowStyle();
+    [SerializeField] private bool chargeGlowUsesChargeColor = true;
+    [SerializeField] private bool chargeGlowRamps = true;
+    [SerializeField, Range(0f, 10f)] private float chargeGlowFullIntensity = 4f;
+
+    private readonly MultiplyOutline.GlowStyle chargeGlowRuntime = new MultiplyOutline.GlowStyle();
     [SerializeField, ColorUsage(false, true)] private Color hitFlashColor = new Color(2f, 0.3f, 0.3f, 1f);
     [SerializeField, ColorUsage(false, true)] private Color parryFlashColor = new Color(0.3f, 2f, 0.6f, 1f);
     [SerializeField, ColorUsage(false, true)] private Color healFlashColor = new Color(0.4f, 1.5f, 2f, 1f);
@@ -227,9 +236,34 @@ public class PlayerAnimation : MonoBehaviour
 
         if (combat.IsPlunging) style = plungeGlow;
         else if (combat.IsSkilling) style = skillGlow;
+        else if (combat.IsChargeInputHeld) style = ChargeGlow(combat);
         else if (combat.IsAttacking) style = ComboGlow(combat.CurrentComboIndex);
 
         SetAttackGlow(style);
+    }
+
+    private MultiplyOutline.GlowStyle ChargeGlow(PlayerCombatController combat)
+    {
+        if (chargeGlow == null) return null;
+
+        float maxDur = Mathf.Max(0.01f, combat.ChargingSkillMaxDur);
+        float progress = Mathf.Clamp01(combat.ChargingSkillTimer / maxDur);
+
+        Color color = chargeGlow.color;
+        if (chargeGlowUsesChargeColor)
+        {
+            color = Color.Lerp(chargeColorStart, chargeColorEnd, progress);
+            color.a = 1f;
+        }
+
+        chargeGlowRuntime.enabled = chargeGlow.enabled;
+        chargeGlowRuntime.color = color;
+        chargeGlowRuntime.intensity = chargeGlowRamps
+            ? Mathf.Lerp(chargeGlow.intensity, chargeGlowFullIntensity, progress)
+            : chargeGlow.intensity;
+        chargeGlowRuntime.checkerLow = chargeGlow.checkerLow;
+        chargeGlowRuntime.checkerSize = chargeGlow.checkerSize;
+        return chargeGlowRuntime;
     }
 
     private MultiplyOutline.GlowStyle ComboGlow(int comboIndex)
@@ -533,6 +567,19 @@ public class PlayerAnimation : MonoBehaviour
         Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
 
         PSpawner.Spawn("JumpDust", spawnPosition, rotation);
+    }
+
+    public void TriggerPlungeLandEffect()
+    {
+        if (player == null || player.Controller == null || string.IsNullOrEmpty(plungeLandEffect)) return;
+
+        Collider2D playerCollider = player.GetComponent<Collider2D>();
+        Vector2 groundPoint = player.Controller.LastHitPoint;
+        float x = playerCollider != null ? playerCollider.bounds.center.x : transform.position.x;
+        Vector2 normal = player.Controller.CurrentSurfaceNormal;
+
+        float angle = Mathf.Atan2(normal.y, -normal.x) * Mathf.Rad2Deg - 90f;
+        PSpawner.Spawn(plungeLandEffect, new Vector2(x, groundPoint.y), Quaternion.Euler(0f, 0f, angle));
     }
 
     #region Helper Methods
