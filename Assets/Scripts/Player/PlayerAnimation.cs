@@ -47,6 +47,15 @@ public class PlayerAnimation : MonoBehaviour
     private int chargeGlowPropertyId;
     private float chargeBaseAlpha = 1f;
 
+    [Header("Healing Effect")]
+    [SerializeField] private ParticleSystem healingParticleSystem;
+    [SerializeField, Min(0f)] private float healingEffectDuration = 1f;
+    [SerializeField] private bool ignoreRespawnRefill = true;
+
+    private Coroutine healingEffectRoutine;
+    private float lastHealth;
+    private bool hasLastHealth;
+
     [Header("Parry Animation Sync")]
     [SerializeField] private string airParryState = "AirParry";
     [SerializeField] private string groundParryState = "GroundParry";
@@ -110,11 +119,79 @@ public class PlayerAnimation : MonoBehaviour
             }
         }
 
+        if (healingParticleSystem == null && player != null)
+        {
+            foreach (ParticleSystem ps in player.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                if (ps.name == "HealingEffect")
+                {
+                    healingParticleSystem = ps;
+                    break;
+                }
+            }
+        }
+
         if (skillChargeParticleSystem != null)
         {
             skillChargeRenderer = skillChargeParticleSystem.GetComponent<ParticleSystemRenderer>();
             chargeBaseAlpha = skillChargeParticleSystem.main.startColor.color.a;
         }
+    }
+
+    private void Start()
+    {
+        if (player != null && player.Stats != null)
+            player.Stats.OnHealthChanged += HandleHealthChanged;
+    }
+
+    private void OnDestroy()
+    {
+        if (player != null && player.Stats != null)
+            player.Stats.OnHealthChanged -= HandleHealthChanged;
+    }
+
+    private void HandleHealthChanged(float current, float max)
+    {
+        if (!hasLastHealth)
+        {
+            lastHealth = current;
+            hasLastHealth = true;
+            return;
+        }
+
+        bool gained = current > lastHealth;
+        bool respawnRefill = ignoreRespawnRefill && lastHealth <= 0f;
+        lastHealth = current;
+
+        if (gained && !respawnRefill) PlayHealingEffect();
+    }
+
+    public void PlayHealingEffect()
+    {
+        if (healingParticleSystem == null) return;
+
+        if (!healingParticleSystem.isEmitting) healingParticleSystem.Play(true);
+
+        if (healingEffectRoutine != null) StopCoroutine(healingEffectRoutine);
+        healingEffectRoutine = StartCoroutine(StopHealingEffectAfter(healingEffectDuration));
+    }
+
+    private IEnumerator StopHealingEffectAfter(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        StopHealingEffect();
+    }
+
+    private void StopHealingEffect()
+    {
+        if (healingEffectRoutine != null)
+        {
+            StopCoroutine(healingEffectRoutine);
+            healingEffectRoutine = null;
+        }
+
+        if (healingParticleSystem != null)
+            healingParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
     }
 
     private void LateUpdate()
@@ -130,6 +207,7 @@ public class PlayerAnimation : MonoBehaviour
                 wallSlideParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             if (skillChargeParticleSystem != null)
                 skillChargeParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            if (healingEffectRoutine != null) StopHealingEffect();
             return;
         }
 

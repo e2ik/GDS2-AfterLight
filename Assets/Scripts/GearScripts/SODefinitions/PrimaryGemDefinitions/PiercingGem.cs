@@ -21,6 +21,7 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
     [SerializeField, Min(1f)] private float animSamplesUncharged = 40f;
     [SerializeField, Min(1f)] private float animSamplesFullCharge = 15f;
     [SerializeField] private string chargeAnimatorParameter = "";
+    [SerializeField, Min(0f)] private float projectileLifetimeBuffer = 1f;
 
     private Vector2 direction;
 
@@ -51,6 +52,9 @@ public class PiercingGem : PrimaryGemBehaviourDefinition
 
         float skillDamage = baseDamage * (SkillDamageModifier + context.SkillModifierBonus);
         float skillRange = SkillRange + chargeRangeBonus * chargeAmount;
+
+        if (testVis != null && travelSpeed > 0f)
+            Destroy(testVis, skillRange / travelSpeed + projectileLifetimeBuffer);
         while (distanceTravelled < skillRange)
         {
             float step = travelSpeed * Time.deltaTime;

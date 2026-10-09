@@ -232,6 +232,7 @@ Transform:
   - {fileID: 1943994828536701991}
   - {fileID: 1604156247398408345}
   - {fileID: 586254552491020709}
+  - {fileID: 1352409348931277479}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5837685772460609055
@@ -545,6 +546,9 @@ MonoBehaviour:
   chargeGlowProperty: _Intensity
   chargeGlowStart: 2
   chargeGlowEnd: 4
+  healingParticleSystem: {fileID: 7597425522677704758}
+  healingEffectDuration: 1.5
+  ignoreRespawnRefill: 1
   airParryState: p_airparry
   groundParryState: p_parry
   hitFlash: {fileID: -6613351761212177417}
@@ -1053,6 +1057,77 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHurtBox
   stats: {fileID: 6264206310521610964}
   combatController: {fileID: 3547647608137716798}
+--- !u!1001 &3344711430213882532
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8579385553579684227}
+    m_Modifications:
+    - target: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5117697838115371666, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6349807083689678282, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+      propertyPath: m_Name
+      value: HealingEffect
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+--- !u!4 &1352409348931277479 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4372560312942002179, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+  m_PrefabInstance: {fileID: 3344711430213882532}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &7597425522677704758 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 5117697838115371666, guid: fa5e56016da6ef640a484b2dae5268f6, type: 3}
+  m_PrefabInstance: {fileID: 3344711430213882532}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4131507023382248975
 PrefabInstance:
   m_ObjectHideFlags: 0
