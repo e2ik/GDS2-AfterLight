@@ -62,6 +62,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashCoolDown = 0.2f;
     [SerializeField] private float dashSkillEnergyCost = 0.1f;
     [SerializeField] private float neutralDashInvulnExtension = 0.1f;
+    [SerializeField] private bool directionalDashInvulnerable = true;
     [SerializeField] private float perfectDodgeWindow = 0.1f;
     private float neutralDashStartTime = float.NegativeInfinity;
     private float neutralDashInvulnTimer;
@@ -86,6 +87,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Vector2 climbStartOffset;
     [Tooltip("Where the player ends up when the climb finishes, relative to the ledge corner (x is mirrored by facing).")]
     [SerializeField] private Vector2 climbEndOffset;
+    [SerializeField] private bool climbEndFeetOnLedge = true;
+    [SerializeField, Min(0f)] private float climbEndClearance = 0.01f;
     [Tooltip("Safety net: finishes the climb if the Climb animation event hasn't fired after this long (e.g. the animation got interrupted). Set it a little above the climb clip's length.")]
     [SerializeField] private float climbTimeout = 1.5f;
     [Tooltip("Delay after a climb ends or is cancelled before another climb can start.")]
@@ -175,7 +178,9 @@ public class PlayerController : MonoBehaviour
     public bool IsBouncing => isBouncing;
     public bool IsNeutralDash => isDashing && !IsDirectionalDash;
     public bool IsInPerfectDodgeWindow => IsNeutralDash && !isDashLocked && Time.time - neutralDashStartTime <= perfectDodgeWindow;
-    public bool IsInvulnerable => IsNeutralDash || neutralDashInvulnTimer > 0f;
+    public bool IsNeutralDashInvulnerable => IsNeutralDash || neutralDashInvulnTimer > 0f;
+    public bool IsDirectionalDashInvulnerable => directionalDashInvulnerable && isDashing && IsDirectionalDash && !isDashLocked;
+    public bool IsInvulnerable => IsNeutralDashInvulnerable || IsDirectionalDashInvulnerable;
     public bool IsClimbing => isClimbing;
     public bool IsHealing => isHealing;
     private bool IsSkillBaseLocked =>
@@ -829,6 +834,12 @@ public class PlayerController : MonoBehaviour
         climbStartPos = corner + new Vector2(climbStartOffset.x * dir, climbStartOffset.y);
         climbEndPos = corner + new Vector2(climbEndOffset.x * dir, climbEndOffset.y);
 
+        if (climbEndFeetOnLedge)
+        {
+            float feetOffset = rb.position.y - cachedBounds.min.y;
+            climbEndPos.y = corner.y + feetOffset + climbEndClearance;
+        }
+
         rb.linearVelocity = Vector2.zero;
         rb.gravityScale = 0f;
         TeleportTo(climbStartPos);
@@ -1370,11 +1381,14 @@ public class PlayerController : MonoBehaviour
         if (playerColliders == null || playerColliders.Length == 0)
             playerColliders = GetComponentsInChildren<Collider2D>(true);
 
+        PlayerEdgeDetection detector = GetComponentInChildren<PlayerEdgeDetection>(true);
+        Transform detectorRoot = detector != null && detector.gameObject != gameObject ? detector.transform : null;
+
         List<Collider2D> result = new List<Collider2D>();
         foreach (Collider2D col in playerColliders)
         {
             if (col == null) continue;
-            if (col.GetComponentInParent<PlayerEdgeDetection>(true) != null) continue;
+            if (detectorRoot != null && col.transform.IsChildOf(detectorRoot)) continue;
             if (boundsIgnoreTriggers && col.isTrigger) continue;
             result.Add(col);
         }

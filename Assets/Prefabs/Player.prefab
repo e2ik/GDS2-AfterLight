@@ -194,6 +194,7 @@ GameObject:
   - component: {fileID: 7617347761851408306}
   - component: {fileID: 2301400823228123696}
   - component: {fileID: 3547647608137716798}
+  - component: {fileID: 6610225860324666358}
   - component: {fileID: 4877809276059888347}
   - component: {fileID: 6264206310521610964}
   - component: {fileID: 7383012226346758473}
@@ -228,7 +229,6 @@ Transform:
   m_Children:
   - {fileID: 6444912443510829891}
   - {fileID: 525738138254406830}
-  - {fileID: 4661048152942335856}
   - {fileID: 1943994828536701991}
   - {fileID: 1604156247398408345}
   - {fileID: 586254552491020709}
@@ -288,7 +288,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 2}
+  m_Size: {x: 8, y: 5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -394,9 +394,9 @@ MonoBehaviour:
   maxStepHeight: 0.3
   stepCheckDistance: 0.15
   stepSmoothSpeed: 6
-  dashVelocity: 15
+  dashVelocity: 20
   backDashMultiplier: 0.5
-  dashDuration: 0.2
+  dashDuration: 0.25
   dashCoolDown: 0.2
   dashSkillEnergyCost: 0.1
   neutralDashInvulnExtension: 0.1
@@ -417,6 +417,8 @@ MonoBehaviour:
   heavyStaggerDuration: 0.4
   climbStartOffset: {x: -1, y: -1.1}
   climbEndOffset: {x: 0.5, y: 1}
+  climbEndFeetOnLedge: 1
+  climbEndClearance: 0.01
   climbTimeout: 1.5
   climbCooldown: 0.1
   onEdge: 0
@@ -472,7 +474,7 @@ MonoBehaviour:
   passiveEnergyRegenMult: 0.2
   passiveEnergyCap: 0.5
   maxComboCount: 3
-  comboResetDelay: 1
+  comboResetDelay: 1.5
   comboDamageMultipliers:
   - 1
   - 1.4
@@ -504,6 +506,25 @@ MonoBehaviour:
       Data3: 1666211216
       Data4: -1855376757
     Path: event:/CombatSFXEvents/ChargingSkillEvent
+--- !u!114 &6610225860324666358
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6310612592100663882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74eda1ac4de37cc40b2bea57b660a904, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  detectionEnabled: 1
+  grabZoneTopFraction: 0.2
+  grabZoneBottomFraction: 0.3
+  reachFraction: 0.5
+  ledgeTopNormalThreshold: 0.7
+  wallNormalThreshold: 0.7
+  clearanceScale: 0.9
 --- !u!114 &4877809276059888347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -526,6 +547,35 @@ MonoBehaviour:
   airParryState: p_airparry
   groundParryState: p_parry
   hitFlash: {fileID: -6613351761212177417}
+  attackGlowOutline: {fileID: 340676937458263144}
+  comboGlows:
+  - enabled: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 4
+    checkerLow: 0.5
+    checkerSize: 1
+  - enabled: 1
+    color: {r: 1, g: 0.37448022, b: 0.027450979, a: 1}
+    intensity: 5
+    checkerLow: 0.5
+    checkerSize: 1
+  - enabled: 1
+    color: {r: 1, g: 0.8482716, b: 0, a: 1}
+    intensity: 4.5
+    checkerLow: 0.5
+    checkerSize: 1
+  skillGlow:
+    enabled: 1
+    color: {r: 0, g: 0.9967532, b: 1, a: 1}
+    intensity: 4
+    checkerLow: 0.5
+    checkerSize: 1
+  plungeGlow:
+    enabled: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 4
+    checkerLow: 0.5
+    checkerSize: 1
   hitFlashColor: {r: 1.9093418, g: 0.28640127, b: 0.28640127, a: 1}
   parryFlashColor: {r: 1.7814789, g: 1.2174239, b: 0, a: 1}
   healFlashColor: {r: 0, g: 1.5706509, b: 0.09659664, a: 1}
@@ -770,7 +820,7 @@ BoxCollider2D:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 8, y: 4}
-    newSize: {x: 1, y: 2}
+    newSize: {x: 8, y: 5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
@@ -830,6 +880,16 @@ MonoBehaviour:
   lineStrength: 0.5
   lineDiagonals: 0
   sortingOrderOffset: -1
+  glowColor: 1
+  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  matchColor: {r: 1, g: 1, b: 1, a: 1}
+  matchTolerance: 0.1
+  replaceColor: {r: 1, g: 1, b: 1, a: 1}
+  glowIntensity: 5.17
+  glowCheckerLow: 0.5
+  glowCheckerSize: 1
+  glowFadeDuration: 0.08
+  glowSortingOrderOffset: 1
 --- !u!114 &-6613351761212177417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -876,107 +936,6 @@ MonoBehaviour:
   edgeWidth: 1
   useUnscaledTime: 1
   sortingOrderOffset: 1
---- !u!1 &8291432046283232270
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4661048152942335856}
-  - component: {fileID: 9189989156411824580}
-  - component: {fileID: 1098441284187602602}
-  m_Layer: 3
-  m_Name: EdgeCheck
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4661048152942335856
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8291432046283232270}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.67, y: 0.927, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8579385553579684227}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9189989156411824580
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8291432046283232270}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74eda1ac4de37cc40b2bea57b660a904, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  detectionEnabled: 1
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  grabZoneBottom: -0.4
-  grabZoneTop: 0.3
-  reach: 0.2
-  ledgeTopNormalThreshold: 0.7
-  wallNormalThreshold: 0.7
-  clearanceScale: 0.9
---- !u!61 &1098441284187602602
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8291432046283232270}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0.026799202, y: 0.25857738}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.9842627, y: 0.52599186}
-  m_EdgeRadius: 0
 --- !u!1 &8844592283841214288
 GameObject:
   m_ObjectHideFlags: 0

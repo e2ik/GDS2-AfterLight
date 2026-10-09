@@ -58,6 +58,17 @@ public class PlayerAnimation : MonoBehaviour
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
     [SerializeField] private HitFlash hitFlash;
+
+    [Header("Attack Glow")]
+    [SerializeField] private MultiplyOutline attackGlowOutline;
+    [SerializeField] private MultiplyOutline.GlowStyle[] comboGlows =
+    {
+        new MultiplyOutline.GlowStyle(),
+        new MultiplyOutline.GlowStyle(),
+        new MultiplyOutline.GlowStyle()
+    };
+    [SerializeField] private MultiplyOutline.GlowStyle skillGlow = new MultiplyOutline.GlowStyle();
+    [SerializeField] private MultiplyOutline.GlowStyle plungeGlow = new MultiplyOutline.GlowStyle();
     [SerializeField, ColorUsage(false, true)] private Color hitFlashColor = new Color(2f, 0.3f, 0.3f, 1f);
     [SerializeField, ColorUsage(false, true)] private Color parryFlashColor = new Color(0.3f, 2f, 0.6f, 1f);
     [SerializeField, ColorUsage(false, true)] private Color healFlashColor = new Color(0.4f, 1.5f, 2f, 1f);
@@ -114,6 +125,7 @@ public class PlayerAnimation : MonoBehaviour
 
         if (player.Stats.IsDead)
         {
+            SetAttackGlow(null);
             if (wallSlideParticleSystem != null)
                 wallSlideParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             if (skillChargeParticleSystem != null)
@@ -125,6 +137,39 @@ public class PlayerAnimation : MonoBehaviour
         HandleInvulnerabilityVisuals();
         HandleWallSlideVisuals();
         HandleSkillChargeVisuals();
+        HandleAttackGlow();
+    }
+
+    private void HandleAttackGlow()
+    {
+        if (player.CombatController == null) return;
+
+        PlayerCombatController combat = player.CombatController;
+        MultiplyOutline.GlowStyle style = null;
+
+        if (combat.IsPlunging) style = plungeGlow;
+        else if (combat.IsSkilling) style = skillGlow;
+        else if (combat.IsAttacking) style = ComboGlow(combat.CurrentComboIndex);
+
+        SetAttackGlow(style);
+    }
+
+    private MultiplyOutline.GlowStyle ComboGlow(int comboIndex)
+    {
+        if (comboGlows == null || comboGlows.Length == 0) return null;
+        return comboGlows[Mathf.Clamp(comboIndex - 1, 0, comboGlows.Length - 1)];
+    }
+
+    private void SetAttackGlow(MultiplyOutline.GlowStyle style)
+    {
+        if (attackGlowOutline == null)
+        {
+            if (sr != null) attackGlowOutline = sr.GetComponent<MultiplyOutline>();
+            if (attackGlowOutline == null) attackGlowOutline = GetComponentInParent<MultiplyOutline>();
+            if (attackGlowOutline == null) return;
+        }
+
+        attackGlowOutline.SetColorGlow(style);
     }
 
     private void UpdateAnimationParameters()
@@ -451,7 +496,7 @@ public class PlayerAnimation : MonoBehaviour
     {
         if (sr == null || player == null || player.Controller == null) return;
 
-        bool isInvuln = player.Controller.IsInvulnerable;
+        bool isInvuln = player.Controller.IsNeutralDashInvulnerable;
 
         if (flashColorCoroutine != null) return;
 

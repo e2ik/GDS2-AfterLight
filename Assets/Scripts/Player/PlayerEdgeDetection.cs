@@ -6,12 +6,11 @@ public class PlayerEdgeDetection : MonoBehaviour
 {
     [FormerlySerializedAs("enabled")]
     [SerializeField] private bool detectionEnabled = true;
-    [SerializeField] private LayerMask groundLayer;
 
-    [Header("Grab Zone (relative to the top of the player's body)")]
-    [SerializeField] private float grabZoneBottom = -0.4f;
-    [SerializeField] private float grabZoneTop = 0.3f;
-    [SerializeField, Min(0.01f)] private float reach = 0.2f;
+    [Header("Grab Zone (fractions of the player's bounds)")]
+    [SerializeField, Range(0f, 1f)] private float grabZoneTopFraction = 0.15f;
+    [SerializeField, Range(0f, 1f)] private float grabZoneBottomFraction = 0.25f;
+    [SerializeField, Range(0.05f, 2f)] private float reachFraction = 0.5f;
 
     [Header("Surface Checks")]
     [SerializeField, Range(0f, 1f)] private float ledgeTopNormalThreshold = 0.7f;
@@ -20,6 +19,8 @@ public class PlayerEdgeDetection : MonoBehaviour
 
     private const float Skin = 0.02f;
     private const float WallProbeDepth = 0.05f;
+
+    private LayerMask groundLayer;
 
     private ContactFilter2D filter;
     private readonly List<RaycastHit2D> rayHits = new();
@@ -38,6 +39,9 @@ public class PlayerEdgeDetection : MonoBehaviour
 
     private void BuildFilter()
     {
+        PlayerController controller = GetComponentInParent<PlayerController>();
+        if (controller != null) groundLayer = controller.groundLayer;
+
         filter = new ContactFilter2D { useTriggers = false };
         filter.SetLayerMask(groundLayer);
     }
@@ -54,9 +58,10 @@ public class PlayerEdgeDetection : MonoBehaviour
 
         if (!detectionEnabled || dir == 0) return false;
 
+        float reach = Reach(body);
         float front = dir > 0 ? body.max.x : body.min.x;
-        float zoneTopY = body.max.y + grabZoneTop;
-        float zoneBottomY = body.max.y + grabZoneBottom;
+        float zoneTopY = body.max.y + body.size.y * grabZoneTopFraction;
+        float zoneBottomY = body.max.y - body.size.y * grabZoneBottomFraction;
 
         Vector2 topOrigin = new(front + dir * reach, zoneTopY);
         if (!CastClosest(topOrigin, Vector2.down, zoneTopY - zoneBottomY, out RaycastHit2D top)) return false;
@@ -82,6 +87,8 @@ public class PlayerEdgeDetection : MonoBehaviour
         lastCorner = corner;
         return true;
     }
+
+    private float Reach(Bounds body) => Mathf.Max(0.01f, body.extents.x * reachFraction);
 
     private bool CastClosest(Vector2 origin, Vector2 direction, float distance, out RaycastHit2D closest)
     {
@@ -116,10 +123,12 @@ public class PlayerEdgeDetection : MonoBehaviour
         if (!hasLastQuery || lastDir == 0) return;
 
         float front = lastDir > 0 ? lastBody.max.x : lastBody.min.x;
-        float x = front + lastDir * reach;
+        float x = front + lastDir * Reach(lastBody);
+        float top = lastBody.max.y + lastBody.size.y * grabZoneTopFraction;
+        float bottom = lastBody.max.y - lastBody.size.y * grabZoneBottomFraction;
 
         Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(new Vector3(x, lastBody.max.y + grabZoneTop), new Vector3(x, lastBody.max.y + grabZoneBottom));
+        Gizmos.DrawLine(new Vector3(x, top), new Vector3(x, bottom));
 
         if (lastStandSize != Vector2.zero)
         {
