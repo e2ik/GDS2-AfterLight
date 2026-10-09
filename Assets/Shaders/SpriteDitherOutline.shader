@@ -9,6 +9,10 @@ Shader "Custom/Sprite Dither Outline"
         _Rings ("Rings", Range(1, 8)) = 3
         _PixelSize ("Pixel Size (art pixels)", Range(0.25, 4)) = 1
         _Checker ("Checker Contrast", Range(0, 1)) = 1
+        [Toggle] _LineEnabled ("Line Enabled", Float) = 0
+        _LineColor ("Line Color", Color) = (0, 0, 0, 1)
+        _LineStrength ("Line Strength", Range(0, 1)) = 1
+        [Toggle] _LineDiagonals ("Line Diagonals", Float) = 1
     }
 
     SubShader
@@ -56,6 +60,10 @@ Shader "Custom/Sprite Dither Outline"
             float _Rings;
             float _PixelSize;
             half _Checker;
+            half _LineEnabled;
+            half4 _LineColor;
+            half _LineStrength;
+            half _LineDiagonals;
         CBUFFER_END
 
         Varyings vert(Attributes input)
@@ -72,12 +80,39 @@ Shader "Custom/Sprite Dither Outline"
             return SAMPLE_TEXTURE2D_LOD(_MainTex, sampler_MainTex, uv, 0).a;
         }
 
+        half SampleNeighbour(float2 center, float2 offset)
+        {
+            float2 uv = center + _MainTex_TexelSize.xy * offset;
+            if (any(uv < 0.0) || any(uv > 1.0)) return 0.0;
+            return SampleAlphaLod(uv);
+        }
+
+        bool IsLinePixel(float2 uv)
+        {
+            float2 center = (floor(uv * _MainTex_TexelSize.zw) + 0.5) * _MainTex_TexelSize.xy;
+
+            half sides = max(max(SampleNeighbour(center, float2(-1, 0)), SampleNeighbour(center, float2(1, 0))),
+                             max(SampleNeighbour(center, float2(0, -1)), SampleNeighbour(center, float2(0, 1))));
+            if (sides > 0.5) return true;
+            if (_LineDiagonals < 0.5) return false;
+
+            half corners = max(max(SampleNeighbour(center, float2(-1, -1)), SampleNeighbour(center, float2(1, -1))),
+                               max(SampleNeighbour(center, float2(-1, 1)), SampleNeighbour(center, float2(1, 1))));
+            return corners > 0.5;
+        }
+
         half4 frag(Varyings input) : SV_Target
         {
             float2 uvDx = ddx(input.uv);
             float2 uvDy = ddy(input.uv);
 
             if (SampleAlphaLod(input.uv) > 0.5) return half4(1, 1, 1, 1);
+
+            if (_LineEnabled > 0.5 && IsLinePixel(input.uv))
+            {
+                half lineStrength = _LineStrength * _LineColor.a * input.color.a;
+                return half4(lerp(half3(1, 1, 1), _LineColor.rgb, lineStrength), 1);
+            }
 
             float uvPerScreenPixel = max(1e-6, length(float2(uvDx.x, uvDy.x)));
             float screenPixelsPerArtPixel = 1.0 / (uvPerScreenPixel * _MainTex_TexelSize.z);

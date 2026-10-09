@@ -56,7 +56,7 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    public void Setup(LootPickupDisplay owner, Sprite icon, string itemName, ERarity? rarity, string tooltipBody, float holdDuration, float fadeDuration, object item = null)
+    public void Setup(LootPickupDisplay owner, Sprite icon, string itemName, ERarity? rarity, string tooltipBody, float holdDuration, float fadeDuration, object item = null, Color? borderColor = null)
     {
         this.owner = owner;
         this.itemName = itemName;
@@ -88,7 +88,7 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 : ItemTooltipTextBuilder.BuildLootLineText(itemName, rarity, overrideColor);
         }
 
-        SetBorderColor(rarity);
+        SetBorderColor(rarity, borderColor);
 
         canvasGroup.alpha = 1f;
         gameObject.SetActive(true);
@@ -121,9 +121,15 @@ public class LootPickupEntry : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    private void SetBorderColor(ERarity? rarity)
+    private void SetBorderColor(ERarity? rarity, Color? overrideColor)
     {
         if (borderImage == null) return;
+
+        if (overrideColor.HasValue)
+        {
+            borderImage.color = overrideColor.Value;
+            return;
+        }
 
         borderImage.color = item switch
         {

@@ -104,6 +104,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundCheckNormalThreshold = 0.6f;
     [SerializeField] private float wallCheckDistance = 0.05f;
     [SerializeField] private float edgeMargin = 0.05f;
+    [SerializeField] private Collider2D bodyCollider;
+    [SerializeField] private bool boundsIgnoreTriggers = false;
+    [SerializeField] private bool drawDetectionGizmos = true;
 
     private bool jumpPressed, jumpReleased, isGrounded, onWall, isWallSliding, isWallJumping;
     private bool dashPressed, dashReleased, isDashing, isStaggered, isBouncing;
@@ -226,7 +229,7 @@ public class PlayerController : MonoBehaviour
 
         bool previousStartInColliders = Physics2D.queriesStartInColliders;
         Physics2D.queriesStartInColliders = false;
-        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, castDistance, groundLayer);
+        RaycastHit2D hit = RaycastIgnoringSelf(origin, Vector2.down, castDistance);
         Physics2D.queriesStartInColliders = previousStartInColliders;
 
         if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
@@ -428,11 +431,11 @@ public class PlayerController : MonoBehaviour
         float dir = Mathf.Sign(horizontalInput);
 
         Vector2 lowOrigin = new(bounds.center.x + dir * bounds.extents.x, bounds.min.y + 0.05f);
-        RaycastHit2D lowHit = Physics2D.Raycast(lowOrigin, Vector2.right * dir, stepCheckDistance, groundLayer);
+        RaycastHit2D lowHit = RaycastIgnoringSelf(lowOrigin, Vector2.right * dir, stepCheckDistance);
         if (lowHit.collider == null) return;
 
         Vector2 highOrigin = new(lowOrigin.x, bounds.min.y + maxStepHeight);
-        RaycastHit2D highHit = Physics2D.Raycast(highOrigin, Vector2.right * dir, stepCheckDistance, groundLayer);
+        RaycastHit2D highHit = RaycastIgnoringSelf(highOrigin, Vector2.right * dir, stepCheckDistance);
         if (highHit.collider != null) return;
 
         rb.position += new Vector2(0f, stepSmoothSpeed * Time.fixedDeltaTime);
@@ -554,6 +557,8 @@ public class PlayerController : MonoBehaviour
             playerAnimation.TriggerJumpEffect(true, wallJumpDirection);
 
             wallJumpTimer = 0f;
+            wallContactTimer = 0f;
+            isWallSliding = false;
             ConsumeJumpInput();
 
             if (FacingDirection != wallJumpDirection)
@@ -1083,9 +1088,31 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private readonly RaycastHit2D[] raycastBuffer = new RaycastHit2D[8];
+
+    private RaycastHit2D RaycastIgnoringSelf(Vector2 origin, Vector2 direction, float distance)
+    {
+        int count = Physics2D.RaycastNonAlloc(origin, direction, raycastBuffer, distance, groundLayer);
+
+        RaycastHit2D closest = default;
+        float closestDistance = float.MaxValue;
+
+        for (int i = 0; i < count; i++)
+        {
+            RaycastHit2D hit = raycastBuffer[i];
+            if (hit.collider == null || hit.collider.transform.IsChildOf(transform)) continue;
+            if (hit.distance >= closestDistance) continue;
+
+            closest = hit;
+            closestDistance = hit.distance;
+        }
+
+        return closest;
+    }
+
     private bool RaycastGroundAt(Vector2 origin, float distance, out RaycastHit2D hit)
     {
-        hit = Physics2D.Raycast(origin, Vector2.down, distance, groundLayer);
+        hit = RaycastIgnoringSelf(origin, Vector2.down, distance);
         if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
         if (hit.collider == currentPassThroughPlatform) return false;
         if (rb.linearVelocityY > 0f && hit.collider.GetComponent<PlatformEffector2D>() != null)
@@ -1161,7 +1188,7 @@ public class PlayerController : MonoBehaviour
 
     private bool CheckWallRay(Vector2 origin, float dir, float len)
     {
-        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.right * dir, len, groundLayer);
+        RaycastHit2D hit = RaycastIgnoringSelf(origin, Vector2.right * dir, len);
         if (hit.collider == null || Mathf.Abs(hit.normal.x) <= wallCheckNormalThreshold) return false;
         if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
             return false;
@@ -1169,6 +1196,37 @@ public class PlayerController : MonoBehaviour
         currentSurfaceNormal = hit.normal;
         lastHitPoint = hit.point;
         return true;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (!drawDetectionGizmos || !Application.isPlaying) return;
+
+        Bounds bounds = cachedBounds;
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(bounds.center, bounds.size);
+
+        float dir = Mathf.Abs(horizontalInput) > InputDeadzone ? Mathf.Sign(horizontalInput) : FacingDirection;
+        float rayLen = bounds.extents.x + wallCheckDistance;
+
+        Vector2 head = new(bounds.center.x, bounds.max.y - (bounds.size.y * 0.1f));
+        Vector2 chest = new(bounds.center.x, bounds.center.y + (bounds.extents.y * 0.2f));
+        Vector2 waist = new(bounds.center.x, bounds.min.y + (bounds.size.y * 0.3f));
+
+        DrawWallRayGizmo(head, dir, rayLen);
+        DrawWallRayGizmo(chest, dir, rayLen);
+        DrawWallRayGizmo(waist, dir, rayLen);
+    }
+
+    private void DrawWallRayGizmo(Vector2 origin, float dir, float len)
+    {
+        RaycastHit2D hit = RaycastIgnoringSelf(origin, Vector2.right * dir, len);
+        bool valid = hit.collider != null && Mathf.Abs(hit.normal.x) > wallCheckNormalThreshold;
+
+        Gizmos.color = valid ? Color.green : (hit.collider != null ? new Color(1f, 0.5f, 0f) : Color.red);
+        Vector2 end = hit.collider != null ? hit.point : origin + Vector2.right * dir * len;
+        Gizmos.DrawLine(origin, end);
+        Gizmos.DrawWireSphere(end, 0.03f);
     }
 
     public bool IsAboutToLand(out RaycastHit2D hitInfo, float lookAheadDistance = 0.5f)
@@ -1194,6 +1252,8 @@ public class PlayerController : MonoBehaviour
     // ground and step-up checks. Built once, since the collider setup doesn't change.
     private Collider2D[] BuildBoundsColliders()
     {
+        if (bodyCollider != null) return new[] { bodyCollider };
+
         if (playerColliders == null || playerColliders.Length == 0)
             playerColliders = GetComponentsInChildren<Collider2D>(true);
 
@@ -1202,6 +1262,7 @@ public class PlayerController : MonoBehaviour
         {
             if (col == null) continue;
             if (col.GetComponentInParent<PlayerEdgeDetection>(true) != null) continue;
+            if (boundsIgnoreTriggers && col.isTrigger) continue;
             result.Add(col);
         }
 
@@ -1214,15 +1275,31 @@ public class PlayerController : MonoBehaviour
         if (boundsColliders.Length == 0) return new Bounds(transform.position, Vector3.one);
 
         //filtering out edge detection collider, I'm pretty sure I needed this for something else
-        Bounds b = boundsColliders[0].bounds;
-        for (int i = 1; i < boundsColliders.Length; i++) b.Encapsulate(boundsColliders[i].bounds);
-        return b;
+        bool found = false;
+        Bounds b = new Bounds(transform.position, Vector3.zero);
+
+        foreach (Collider2D col in boundsColliders)
+        {
+            if (col == null || !col.enabled || !col.gameObject.activeInHierarchy) continue;
+
+            if (!found)
+            {
+                b = col.bounds;
+                found = true;
+            }
+            else
+            {
+                b.Encapsulate(col.bounds);
+            }
+        }
+
+        return found ? b : new Bounds(transform.position, Vector3.one);
     }
 
     private bool TryPassThroughPlatform()
     {
         Bounds bounds = cachedBounds;
-        RaycastHit2D hit = Physics2D.Raycast(bounds.center, Vector2.down, bounds.extents.y + 0.2f, groundLayer);
+        RaycastHit2D hit = RaycastIgnoringSelf(bounds.center, Vector2.down, bounds.extents.y + 0.2f);
 
         if (hit.collider != null && hit.collider.GetComponent<PlatformEffector2D>() != null)
         {

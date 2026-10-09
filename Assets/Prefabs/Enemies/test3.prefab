@@ -573,6 +573,10 @@ MonoBehaviour:
   rings: 2
   pixelSize: 3
   checkerContrast: 1
+  showLine: 1
+  lineColor: {r: 0, g: 0, b: 0, a: 1}
+  lineStrength: 0.5
+  lineDiagonals: 0
   sortingOrderOffset: -1
 --- !u!114 &4849572205173769118
 MonoBehaviour:
@@ -616,6 +620,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   checkerLowOpacity: 0.644
   pixelSize: 3
+  defaultMode: 0
+  edgeWidth: 1
   useUnscaledTime: 1
   sortingOrderOffset: 1
 --- !u!1 &6227203108546427660
@@ -834,4 +840,9 @@ MonoBehaviour:
     Path: event:/CombatSFXEvents/Parry Warning Event
   flashOnAnticipation: 1
   hitFlash: {fileID: 4849572205173769118}
+  flashMode: 1
   flashIntensity: 1.25
+  zeroColor: {r: 1, g: 1, b: 1, a: 1}
+  lightColor: {r: 0, g: 1, b: 1, a: 1}
+  mediumColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  heavyColor: {r: 1, g: 0, b: 0, a: 1}

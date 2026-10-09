@@ -267,7 +267,7 @@ public class LootPickupDisplay : MonoBehaviour
     }
 #endif
 
-    public void AddPickup(Sprite icon, string itemName, ERarity? rarity, string tooltipBody, object item = null)
+    public void AddPickup(Sprite icon, string itemName, ERarity? rarity, string tooltipBody, object item = null, Color? borderColor = null)
     {
         if (entryPrefab == null || contentParent == null)
         {
@@ -278,7 +278,7 @@ public class LootPickupDisplay : MonoBehaviour
         LootPickupEntry entry = GetPooledEntry();
         entry.transform.SetParent(contentParent, false);
         entry.transform.SetAsLastSibling();
-        entry.Setup(this, icon, itemName, rarity, tooltipBody, holdDuration, fadeDuration, item);
+        entry.Setup(this, icon, itemName, rarity, tooltipBody, holdDuration, fadeDuration, item, borderColor);
 
         entryData[entry] = new PickupData(itemName, tooltipBody);
         activeEntries.Insert(0, entry);

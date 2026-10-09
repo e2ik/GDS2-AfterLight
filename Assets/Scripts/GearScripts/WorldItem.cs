@@ -651,7 +651,7 @@ public class WorldItem : MonoBehaviour
         nextInventoryFullMessageTime = Time.unscaledTime + inventoryFullMessageCooldown;
 
         LootPickupDisplay.Instance?.AddPickup(
-            def.UISprite, $"<color=#{ColorUtility.ToHtmlStringRGB(inventoryFullColor)}>Inventory Full</color>", null,
-            $"Not enough room for {def.UIName}.");
+            null, $"<b><color=#{ColorUtility.ToHtmlStringRGB(inventoryFullColor)}>Inventory Full</color></b>", null,
+            $"Not enough room for {def.UIName}.", null, inventoryFullColor);
     }
 }

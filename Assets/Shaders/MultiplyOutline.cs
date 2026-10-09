@@ -13,6 +13,13 @@ public class MultiplyOutline : MonoBehaviour
     [SerializeField, Range(1, 8)] private int rings = 3;
     [SerializeField] private PixelScale pixelSize = PixelScale.Full;
     [SerializeField, Range(0f, 1f)] private float checkerContrast = 1f;
+
+    [Header("Line")]
+    [SerializeField] private bool showLine = true;
+    [SerializeField] private Color lineColor = Color.black;
+    [SerializeField, Range(0f, 1f)] private float lineStrength = 1f;
+    [SerializeField] private bool lineDiagonals = true;
+
     [SerializeField] private int sortingOrderOffset = -1;
 
     private static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
@@ -21,6 +28,10 @@ public class MultiplyOutline : MonoBehaviour
     private static readonly int RingsId = Shader.PropertyToID("_Rings");
     private static readonly int PixelSizeId = Shader.PropertyToID("_PixelSize");
     private static readonly int CheckerId = Shader.PropertyToID("_Checker");
+    private static readonly int LineEnabledId = Shader.PropertyToID("_LineEnabled");
+    private static readonly int LineColorId = Shader.PropertyToID("_LineColor");
+    private static readonly int LineStrengthId = Shader.PropertyToID("_LineStrength");
+    private static readonly int LineDiagonalsId = Shader.PropertyToID("_LineDiagonals");
 
     private const string ChildName = "MultiplyOutline";
 
@@ -112,6 +123,10 @@ public class MultiplyOutline : MonoBehaviour
         block.SetFloat(RingsId, rings);
         block.SetFloat(PixelSizeId, PixelSizeValue(pixelSize));
         block.SetFloat(CheckerId, checkerContrast);
+        block.SetFloat(LineEnabledId, showLine ? 1f : 0f);
+        block.SetColor(LineColorId, lineColor);
+        block.SetFloat(LineStrengthId, lineStrength);
+        block.SetFloat(LineDiagonalsId, lineDiagonals ? 1f : 0f);
         outline.SetPropertyBlock(block);
     }
 }
