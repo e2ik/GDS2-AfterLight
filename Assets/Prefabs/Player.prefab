@@ -289,7 +289,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 8, y: 5}
+  m_Size: {x: 8, y: 4}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -489,6 +489,7 @@ MonoBehaviour:
   skillCoolDown: 0.2
   chargingSkillMinDur: 0.4
   chargingSkillMaxDur: 1.5
+  heldSkillFastestTickMultiplier: 0.7
   fullChargeDamageMultiplier: 2.5
   skillHoldThreshold: 0.12
   skillReleaseBufferTime: 0.08
@@ -546,6 +547,7 @@ MonoBehaviour:
   chargeGlowProperty: _Intensity
   chargeGlowStart: 2
   chargeGlowEnd: 4
+  plungeLandEffect: JumpDust
   healingParticleSystem: {fileID: 7597425522677704758}
   healingEffectDuration: 1.5
   ignoreRespawnRefill: 1
@@ -581,6 +583,17 @@ MonoBehaviour:
     intensity: 4.5
     checkerLow: 0.2
     checkerSize: 1
+  chargeGlow:
+    enabled: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 2
+    checkerLow: 0.5
+    checkerSize: 1
+  chargeGlowUsesChargeColor: 1
+  chargeGlowRamps: 1
+  chargeGlowFullIntensity: 4
+  heldSkillUsesChargeColor: 1
+  heldSkillMaxAnimSpeed: 1.75
   hitFlashColor: {r: 1.6055586, g: 0.2408338, b: 0.2408338, a: 1}
   parryFlashColor: {r: 1.6055586, g: 1.097204, b: 0, a: 1}
   healFlashColor: {r: 0, g: 1.4980392, b: 0.09213095, a: 1}
@@ -825,7 +838,7 @@ BoxCollider2D:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 8, y: 4}
-    newSize: {x: 8, y: 5}
+    newSize: {x: 8, y: 4}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0

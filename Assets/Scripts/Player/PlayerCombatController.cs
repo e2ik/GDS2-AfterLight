@@ -91,6 +91,9 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float skillCoolDown = 0.2f;
     [SerializeField] private float chargingSkillMinDur = 0.4f;
     [SerializeField] private float chargingSkillMaxDur = 1.5f;
+    [SerializeField, Range(0.1f, 1f)] private float heldSkillFastestTickMultiplier = 0.7f;
+    [SerializeField, Min(0.01f)] private float heldSkillRampDuration = 0.6f;
+    private float heldRampStartTime = -1f;
     [SerializeField] private float fullChargeDamageMultiplier = 1.5f;
     [SerializeField] private float skillHoldThreshold = 0.12f;
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
@@ -132,6 +135,9 @@ public class PlayerCombatController : MonoBehaviour
     public bool IsParrySuccess => isParrySuccess;
     public bool IsSkilling => isSkilling;
     public bool IsSkillingWithMovementLock => isSkilling && activeSkillExecutionType != SkillExecutionType.Held;
+    public bool IsHeldSkillActive => isSkilling && activeSkillExecutionType == SkillExecutionType.Held;
+    public float HeldSkillRamp => heldRampStartTime < 0f ? 0f : Mathf.Clamp01((Time.time - heldRampStartTime) / heldSkillRampDuration);
+    public float HeldSkillTickMultiplier => Mathf.Lerp(1f, heldSkillFastestTickMultiplier, HeldSkillRamp);
     public bool IsChargeInputHeld => isChargingSkill;
     public string CurrentSkillGemName { get; private set; }
     public float ChargingSkillTimer => chargingSkillTimer;
@@ -844,24 +850,30 @@ public class PlayerCombatController : MonoBehaviour
         float tick = def.EnergyDrainTick > 0f ? def.EnergyDrainTick : DefaultEnergyDrainTick;
 
         bool isHeld = def.SkillExecutionType == SkillExecutionType.Held;
-        float energyCostPerTick = tick / chargingSkillMaxDur;
 
         if (!isHeld) PayRemainingSkillCost();
+        heldRampStartTime = -1f;
+        bool firstTickDone = false;
 
-        while (isSkilling && (skillMeterAlwaysFull || (isHeld ? SkillMeter > 0f : true)))
+        while (isSkilling)
         {
+            if (isHeld && !skillMeterAlwaysFull && SkillMeter < def.SkillCost) break;
+
             float dynamicRampMultiplier = fixedChargeMultiplier;
             float currentChargePercentage = chargePercentage;
+            float currentTick = tick;
 
             if (isHeld)
             {
+                float chargeRatio = HeldSkillRamp;
+                currentTick = tick * Mathf.Lerp(1f, heldSkillFastestTickMultiplier, chargeRatio);
+
                 if (!skillMeterAlwaysFull)
                 {
-                    SkillMeter = Mathf.Clamp01(SkillMeter - energyCostPerTick);
+                    SkillMeter = Mathf.Max(0f, SkillMeter - def.SkillCost);
                     RaiseEnergyChanged();
                 }
 
-                float chargeRatio = Mathf.InverseLerp(chargingSkillMinDur, chargingSkillMaxDur, chargingSkillTimer);
                 dynamicRampMultiplier = Mathf.Lerp(1f, fullChargeDamageMultiplier, chargeRatio);
                 currentChargePercentage = chargeRatio;
             }
@@ -873,7 +885,13 @@ public class PlayerCombatController : MonoBehaviour
             float currentTickDamage = context.BaseAttackDamage * dynamicRampMultiplier;
             def.Execute(context, currentTickDamage, currentChargePercentage);
 
-            yield return new WaitForSeconds(tick);
+            yield return new WaitForSeconds(currentTick);
+
+            if (isHeld && !firstTickDone)
+            {
+                firstTickDone = true;
+                heldRampStartTime = Time.time;
+            }
         }
 
         EndSkill();
@@ -893,6 +911,7 @@ public class PlayerCombatController : MonoBehaviour
         StopSkillCoroutine();
 
         isSkilling = isChargingSkill = skillButtonHeld = false;
+        heldRampStartTime = -1f;
         CurrentSkillGemName = string.Empty;
         movement.SetSkillGravityZero(false);
         StopChargingSound();
@@ -902,6 +921,7 @@ public class PlayerCombatController : MonoBehaviour
     {
         StopSkillCoroutine();
         RefundChargeCost();
+        heldRampStartTime = -1f;
 
         isChargingSkill = false;
         isSkilling = false;
@@ -1045,8 +1065,7 @@ public class PlayerCombatController : MonoBehaviour
             if (specialDef == null) return;
 
             RefundChargeCost();
-            if (!skillMeterAlwaysFull && SkillMeter <= 0f) return;
-            if (!skillMeterAlwaysFull && specialDef.SkillExecutionType != SkillExecutionType.Held && SkillMeter < specialDef.SkillCost) return;
+            if (!skillMeterAlwaysFull && SkillMeter < specialDef.SkillCost) return;
 
             skillButtonHeld = true;
             chargingSkillTimer = 0f;

@@ -85,6 +85,12 @@ public class PlayerAnimation : MonoBehaviour
     [SerializeField] private bool chargeGlowUsesChargeColor = true;
     [SerializeField] private bool chargeGlowRamps = true;
     [SerializeField, Range(0f, 10f)] private float chargeGlowFullIntensity = 4f;
+    [SerializeField] private bool heldSkillUsesChargeColor = true;
+    [SerializeField] private bool syncHeldAnimToTicks = true;
+    [SerializeField, Min(0.01f)] private float heldSkillMaxAnimSpeed = 1.3f;
+
+    private readonly MultiplyOutline.GlowStyle heldSkillGlowRuntime = new MultiplyOutline.GlowStyle();
+    private bool heldSkillSpeedApplied;
 
     private readonly MultiplyOutline.GlowStyle chargeGlowRuntime = new MultiplyOutline.GlowStyle();
     [SerializeField, ColorUsage(false, true)] private Color hitFlashColor = new Color(2f, 0.3f, 0.3f, 1f);
@@ -217,6 +223,11 @@ public class PlayerAnimation : MonoBehaviour
             if (skillChargeParticleSystem != null)
                 skillChargeParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             if (healingEffectRoutine != null) StopHealingEffect();
+            if (heldSkillSpeedApplied)
+            {
+                animator.speed = 1f;
+                heldSkillSpeedApplied = false;
+            }
             return;
         }
 
@@ -225,6 +236,7 @@ public class PlayerAnimation : MonoBehaviour
         HandleWallSlideVisuals();
         HandleSkillChargeVisuals();
         HandleAttackGlow();
+        HandleHeldSkillSpeed();
     }
 
     private void HandleAttackGlow()
@@ -235,11 +247,48 @@ public class PlayerAnimation : MonoBehaviour
         MultiplyOutline.GlowStyle style = null;
 
         if (combat.IsPlunging) style = plungeGlow;
-        else if (combat.IsSkilling) style = skillGlow;
+        else if (combat.IsSkilling) style = combat.IsHeldSkillActive && heldSkillUsesChargeColor ? HeldSkillGlow(combat) : skillGlow;
         else if (combat.IsChargeInputHeld) style = ChargeGlow(combat);
         else if (combat.IsAttacking) style = ComboGlow(combat.CurrentComboIndex);
 
         SetAttackGlow(style);
+    }
+
+    private MultiplyOutline.GlowStyle HeldSkillGlow(PlayerCombatController combat)
+    {
+        if (skillGlow == null) return null;
+
+        float progress = combat.HeldSkillRamp;
+        Color color = Color.Lerp(chargeColorStart, chargeColorEnd, progress);
+        color.a = 1f;
+
+        heldSkillGlowRuntime.enabled = skillGlow.enabled;
+        heldSkillGlowRuntime.color = color;
+        heldSkillGlowRuntime.intensity = chargeGlowRamps
+            ? Mathf.Lerp(skillGlow.intensity, chargeGlowFullIntensity, progress)
+            : skillGlow.intensity;
+        heldSkillGlowRuntime.checkerLow = skillGlow.checkerLow;
+        heldSkillGlowRuntime.checkerSize = skillGlow.checkerSize;
+        return heldSkillGlowRuntime;
+    }
+
+    private void HandleHeldSkillSpeed()
+    {
+        PlayerCombatController combat = player.CombatController;
+        bool held = combat != null && combat.IsHeldSkillActive;
+
+        if (held)
+        {
+            animator.speed = syncHeldAnimToTicks
+                ? 1f / Mathf.Max(0.01f, combat.HeldSkillTickMultiplier)
+                : Mathf.Lerp(1f, heldSkillMaxAnimSpeed, combat.HeldSkillRamp);
+            heldSkillSpeedApplied = true;
+        }
+        else if (heldSkillSpeedApplied)
+        {
+            animator.speed = 1f;
+            heldSkillSpeedApplied = false;
+        }
     }
 
     private MultiplyOutline.GlowStyle ChargeGlow(PlayerCombatController combat)
