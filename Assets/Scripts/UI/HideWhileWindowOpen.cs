@@ -6,6 +6,7 @@ public class HideWhileWindowOpen : MonoBehaviour
     [SerializeField] private GameUI.UIWindow[] onlyForWindows;
     [SerializeField, Min(0f)] private float fadeDuration = 0.15f;
     [SerializeField] private bool blockRaycastsWhileHidden = true;
+    [SerializeField] private bool hideDuringDialogue = true;
 
     private CanvasGroup canvasGroup;
     private bool originalBlocksRaycasts;
@@ -37,6 +38,8 @@ public class HideWhileWindowOpen : MonoBehaviour
 
     private bool ShouldHide()
     {
+        if (hideDuringDialogue && DialogueManager.Instance != null && DialogueManager.Instance.IsDialogueActive) return true;
+
         if (onlyForWindows != null && onlyForWindows.Length > 0)
         {
             foreach (GameUI.UIWindow window in onlyForWindows)

@@ -1033,6 +1033,7 @@ MonoBehaviour:
   onlyForWindows: []
   fadeDuration: 0.15
   blockRaycastsWhileHidden: 1
+  hideDuringDialogue: 1
 --- !u!225 &374868303
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -2449,6 +2450,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UISelectionKeeper
   onlyWhenMenuOpen: 1
   stickThreshold: 0.5
+  restrictToTopWindow: 1
+  logEscapedSelections: 0
 --- !u!1 &1191974786
 GameObject:
   m_ObjectHideFlags: 0
@@ -4526,6 +4529,10 @@ PrefabInstance:
     - target: {fileID: 6506928392761627182, guid: 65136da18c7324e689931a86e96c911e, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6765400047394065560, guid: 65136da18c7324e689931a86e96c911e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6908695886405763378, guid: 65136da18c7324e689931a86e96c911e, type: 3}
       propertyPath: m_AnchorMax.x

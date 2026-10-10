@@ -12,15 +12,25 @@ public class DialogueManager : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private Image characterPortrait;
+    [SerializeField] private Image characterPortraitRight;
     [SerializeField] private TMP_Text characterNameText;
     [SerializeField] private TMP_Text dialogueText;
     [SerializeField] private GameObject nextDialogueIndicator;
     [SerializeField] private DialogueEffects dialogueEffects;
 
+    [Header("Portrait Sides")]
+    [SerializeField] private Object playerSpeaker;
+    [SerializeField] private bool defaultPlayerOnLeft = true;
+    [SerializeField] private bool flipRightPortrait = true;
+    [SerializeField] private bool hideInactivePortrait = false;
+    [SerializeField] private Color activePortraitColor = Color.white;
+    [SerializeField] private Color inactivePortraitColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
     [Header("Dialogue Box Animation")]
     [SerializeField] private RectTransform dialoguePanelRect;
-    [SerializeField] private float slideOffsetY = -200f;
     [SerializeField] private float slideDuration = 0.25f;
+    [SerializeField] private float slideOutDuration = 0.2f;
+    [SerializeField, Min(0f)] private float slideOffscreenMargin = 20f;
 
     [Header("Hold To Skip")]
     [SerializeField] private float holdSkipDuration = 1.5f;
@@ -40,6 +50,7 @@ public class DialogueManager : MonoBehaviour
     private bool isTyping;
     private bool inputLocked;
     private Vector2 dialoguePanelRestPosition;
+    private bool playerOnLeft = true;
     private bool waitingForInitialInteractRelease;
     public bool IsDialogueActive { get; private set; }
     public NPCDialogue CurrentNPC => currentNPC;
@@ -169,6 +180,8 @@ public class DialogueManager : MonoBehaviour
         }
 
         ResetHoldSkip();
+        playerOnLeft = DeterminePlayerOnLeft();
+        ResetPortraits();
         dialoguePanel.SetActive(true);
 
         PlaySlideIn();
@@ -251,21 +264,13 @@ public class DialogueManager : MonoBehaviour
         if (line.Speaker != null)
         {
             characterNameText.text = line.Speaker.CharacterName;
-
-            if (line.Speaker.Portrait != null)
-            {
-                characterPortrait.sprite = line.Speaker.Portrait;
-                characterPortrait.gameObject.SetActive(true);
-            }
-            else
-            {
-                characterPortrait.gameObject.SetActive(false);
-            }
+            ShowSpeakerPortrait(line.Speaker, line.Speaker.Portrait);
         }
         else
         {
             characterNameText.text = "";
-            characterPortrait.gameObject.SetActive(false);
+            SetPortraitInactive(characterPortrait);
+            SetPortraitInactive(characterPortraitRight);
         }
 
         if (nextDialogueIndicator != null)
@@ -279,6 +284,64 @@ public class DialogueManager : MonoBehaviour
         }
 
         typingCoroutine = StartCoroutine(TypeLine(line));
+    }
+
+    private bool DeterminePlayerOnLeft()
+    {
+        if (currentPlayer == null || currentNPC == null) return defaultPlayerOnLeft;
+
+        float playerX = currentPlayer.transform.position.x;
+        float npcX = currentNPC.transform.position.x;
+        if (Mathf.Approximately(playerX, npcX)) return defaultPlayerOnLeft;
+
+        return playerX < npcX;
+    }
+
+    private void ResetPortraits()
+    {
+        if (characterPortrait != null) characterPortrait.gameObject.SetActive(false);
+
+        if (characterPortraitRight != null)
+        {
+            characterPortraitRight.gameObject.SetActive(false);
+
+            Vector3 scale = characterPortraitRight.rectTransform.localScale;
+            scale.x = Mathf.Abs(scale.x) * (flipRightPortrait ? -1f : 1f);
+            characterPortraitRight.rectTransform.localScale = scale;
+        }
+    }
+
+    private void ShowSpeakerPortrait(Object speaker, Sprite portrait)
+    {
+        bool isPlayer = playerSpeaker != null && speaker == playerSpeaker;
+        bool onLeft = characterPortraitRight == null || (isPlayer ? playerOnLeft : !playerOnLeft);
+
+        Image active = onLeft ? characterPortrait : characterPortraitRight;
+        Image other = onLeft ? characterPortraitRight : characterPortrait;
+
+        if (active != null)
+        {
+            if (portrait != null)
+            {
+                active.sprite = portrait;
+                active.color = activePortraitColor;
+                active.gameObject.SetActive(true);
+            }
+            else
+            {
+                active.gameObject.SetActive(false);
+            }
+        }
+
+        SetPortraitInactive(other);
+    }
+
+    private void SetPortraitInactive(Image portrait)
+    {
+        if (portrait == null || !portrait.gameObject.activeSelf) return;
+
+        if (hideInactivePortrait) portrait.gameObject.SetActive(false);
+        else portrait.color = inactivePortraitColor;
     }
 
     private IEnumerator TypeLine(DialogueLine line)
@@ -358,8 +421,10 @@ public class DialogueManager : MonoBehaviour
 
     private IEnumerator SlideInRoutine()
     {
+        dialoguePanelRect.anchoredPosition = dialoguePanelRestPosition;
+
         Vector2 startPosition =
-            dialoguePanelRestPosition + new Vector2(0f, slideOffsetY);
+            dialoguePanelRestPosition - new Vector2(0f, GetOffscreenOffset());
 
         dialoguePanelRect.anchoredPosition = startPosition;
 
@@ -387,6 +452,61 @@ public class DialogueManager : MonoBehaviour
         slideCoroutine = null;
     }
 
+    private float GetOffscreenOffset()
+    {
+        Canvas canvas = dialoguePanelRect.GetComponentInParent<Canvas>();
+        if (canvas == null) return 0f;
+
+        RectTransform canvasRect = canvas.rootCanvas.transform as RectTransform;
+        if (canvasRect == null) return 0f;
+
+        Bounds bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(canvasRect, dialoguePanelRect);
+        float offsetInCanvas = bounds.max.y - canvasRect.rect.yMin + slideOffscreenMargin;
+
+        Transform parent = dialoguePanelRect.parent;
+        float parentScale = parent != null ? parent.lossyScale.y : 1f;
+        float ratio = Mathf.Approximately(parentScale, 0f) ? 1f : canvasRect.lossyScale.y / parentScale;
+
+        return Mathf.Max(0f, offsetInCanvas * ratio);
+    }
+
+    private void PlaySlideOut()
+    {
+        if (slideCoroutine != null)
+        {
+            StopCoroutine(slideCoroutine);
+            slideCoroutine = null;
+        }
+
+        if (dialoguePanelRect == null || slideOutDuration <= 0f || !dialoguePanel.activeInHierarchy)
+        {
+            dialoguePanel.SetActive(false);
+            return;
+        }
+
+        slideCoroutine = StartCoroutine(SlideOutRoutine());
+    }
+
+    private IEnumerator SlideOutRoutine()
+    {
+        Vector2 startPosition = dialoguePanelRect.anchoredPosition;
+        Vector2 endPosition = startPosition - new Vector2(0f, GetOffscreenOffset());
+
+        float elapsed = 0f;
+
+        while (elapsed < slideOutDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / slideOutDuration);
+            dialoguePanelRect.anchoredPosition = Vector2.Lerp(startPosition, endPosition, t);
+            yield return null;
+        }
+
+        dialoguePanelRect.anchoredPosition = dialoguePanelRestPosition;
+        dialoguePanel.SetActive(false);
+        slideCoroutine = null;
+    }
+
     public void EndDialogue()
     {
         if (!IsDialogueActive)
@@ -403,7 +523,7 @@ public class DialogueManager : MonoBehaviour
 
         ResetHoldSkip();
         if (dialogueEffects != null) dialogueEffects.StopEffects(); // stop effects
-        dialoguePanel.SetActive(false);
+        PlaySlideOut();
 
         FinishDialogueState();
     }
