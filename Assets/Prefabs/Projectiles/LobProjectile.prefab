@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 5186317559378152056}
   - component: {fileID: 6208654720218976255}
   - component: {fileID: 287847599752517}
+  - component: {fileID: 3255912963686258950}
   m_Layer: 13
   m_Name: LobProjectile
   m_TagString: Untagged
@@ -89,7 +90,7 @@ SpriteRenderer:
   m_SortingOrder: 20
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1520756748, guid: 96ff7ad3f1e3c4631bb78f3ba7d921a4, type: 3}
-  m_Color: {r: 0.7735849, g: 0.14217365, b: 0, a: 1}
+  m_Color: {r: 1, g: 0.41182125, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -241,6 +242,29 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &3255912963686258950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2052626741653218015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 552c61b0b3d01574a9c690c9cfa647a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorGlow
+  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  startActive: 1
+  matchColor: {r: 0.7764706, g: 0.77254903, b: 0.77815354, a: 1}
+  matchTolerance: 0.345
+  glowColor: {r: 1, g: 0.31029347, b: 0, a: 1}
+  intensity: 3.5
+  checkerLow: 0.493
+  checkerSize: 1
+  fadeDuration: 0.08
+  useUnscaledTime: 0
+  sortingOrderOffset: 1
 --- !u!1 &4107188041399619664
 GameObject:
   m_ObjectHideFlags: 0
@@ -252,6 +276,7 @@ GameObject:
   - component: {fileID: 3967356657219901738}
   - component: {fileID: 6857744198706239590}
   - component: {fileID: 910149577348308544}
+  - component: {fileID: 859923036692937528}
   m_Layer: 0
   m_Name: Trail
   m_TagString: Untagged
@@ -462,9 +487,9 @@ ParticleSystem:
         m_RotationOrder: 4
     startColor:
       serializedVersion: 2
-      minMaxState: 0
-      minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.8238993, g: 0.50003946, b: 0.50003946, a: 1}
+      minMaxState: 2
+      minColor: {r: 1, g: 0.4566905, b: 0, a: 1}
+      maxColor: {r: 1, g: 0.88358676, b: 0, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -1217,7 +1242,7 @@ ParticleSystem:
     m_BurstCount: 0
     m_Bursts: []
   SizeModule:
-    enabled: 1
+    enabled: 0
     curve:
       serializedVersion: 2
       minMaxState: 1
@@ -1549,8 +1574,8 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 1, g: 1, b: 1, a: 1}
-        key1: {r: 1, g: 1, b: 1, a: 0}
+        key0: {r: 1, g: 0.89853513, b: 0, a: 1}
+        key1: {r: 1, g: 0.06950663, b: 0, a: 0}
         key2: {r: 0, g: 0, b: 0, a: 0}
         key3: {r: 0, g: 0, b: 0, a: 0}
         key4: {r: 0, g: 0, b: 0, a: 0}
@@ -5023,7 +5048,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 1cdc67d865dd771489caebe39f577084, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5044,7 +5069,7 @@ ParticleSystemRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 19
   m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
@@ -5077,3 +5102,19 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!114 &859923036692937528
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4107188041399619664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f1b057f72264a945ad1c7b0f7e382f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleGlow
+  glowMaterial: {fileID: 2100000, guid: 1cdc67d865dd771489caebe39f577084, type: 2}
+  intensity: 1.5
+  setStartColor: 0
+  color: {r: 0.8235294, g: 0.5019608, b: 0.5019608, a: 1}

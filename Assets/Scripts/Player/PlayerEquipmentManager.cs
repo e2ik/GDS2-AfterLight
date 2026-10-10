@@ -21,6 +21,13 @@ public class PlayerEquipmentManager : MonoBehaviour
     [SerializeField] private PrimaryGemBehaviourDefinition specialAttackDef;
     [SerializeField] private SecondaryGemInstance secondaryGem = new SecondaryGemInstance();
 
+    [Header("Equip Sounds")]
+    [SerializeField] private FMODUnity.EventReference equipSound;
+    [SerializeField] private FMODUnity.EventReference weaponEquipSound;
+    [SerializeField] private FMODUnity.EventReference gearEquipSound;
+    [SerializeField] private FMODUnity.EventReference skillEquipSound;
+    [SerializeField] private FMODUnity.EventReference gemEquipSound;
+
     [Header("Inspector Debug View (Read-Only)")]
     [SerializeField] private List<GearSlotDebugView> equippedGearDebug = new List<GearSlotDebugView>();
 
@@ -121,6 +128,24 @@ public class PlayerEquipmentManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void PlayEquipSound(object item)
+    {
+        FMODUnity.EventReference sound = item switch
+        {
+            WeaponInstance => weaponEquipSound,
+            GearInstance => gearEquipSound,
+            PrimaryGemInstance => skillEquipSound,
+            SecondaryGemInstance => gemEquipSound,
+            _ => equipSound
+        };
+
+        if (sound.IsNull) sound = equipSound;
+        if (sound.IsNull) return;
+
+        GameUI.UISFXWatcher.SuppressSelectSound();
+        AudioManager.PlaySFX(sound, this);
     }
 
     public bool IsWeaponSlotEmpty() => equippedWeapon == null;

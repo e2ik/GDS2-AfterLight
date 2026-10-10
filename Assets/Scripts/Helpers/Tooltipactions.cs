@@ -251,7 +251,12 @@ public static class ItemActionFactory
             case WeaponInstance weapon:
                 equip.EquipWeapon(weapon);
                 break;
+
+            default:
+                return;
         }
+
+        equip.PlayEquipSound(item);
     }
 
     private static void UnequipItem(object item, PlayerEquipmentManager equip)

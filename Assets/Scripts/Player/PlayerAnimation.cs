@@ -33,6 +33,7 @@ public class PlayerAnimation : MonoBehaviour
 
     [Header("particle prefabs")]
     [SerializeField] private ParticleSystem wallSlideParticleSystem;
+    [SerializeField] private ParticleSystem[] wallSlideExtraParticleSystems;
     [SerializeField] private ParticleSystem skillChargeParticleSystem;
 
     [Header("Skill Charge Glow")]
@@ -220,6 +221,7 @@ public class PlayerAnimation : MonoBehaviour
             SetAttackGlow(null);
             if (wallSlideParticleSystem != null)
                 wallSlideParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            SetWallSlideExtras(false);
             if (skillChargeParticleSystem != null)
                 skillChargeParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             if (healingEffectRoutine != null) StopHealingEffect();
@@ -695,9 +697,12 @@ public class PlayerAnimation : MonoBehaviour
 
     private void HandleWallSlideVisuals()
     {
-        if (wallSlideParticleSystem == null || player.Controller == null) return;
+        if (player.Controller == null) return;
 
         bool isWallSliding = player.Controller.IsWallSliding;
+        SetWallSlideExtras(isWallSliding);
+
+        if (wallSlideParticleSystem == null) return;
 
         if (isWallSliding)
         {
@@ -706,9 +711,35 @@ public class PlayerAnimation : MonoBehaviour
                 wallSlideParticleSystem.Play();
             }
         }
-        else
+        else if (wallSlideParticleSystem.isEmitting)
         {
             wallSlideParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
+    }
+
+    public void StopWallSlideEffect()
+    {
+        if (wallSlideParticleSystem != null && wallSlideParticleSystem.isEmitting)
+            wallSlideParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        SetWallSlideExtras(false);
+    }
+
+    private void SetWallSlideExtras(bool active)
+    {
+        if (wallSlideExtraParticleSystems == null) return;
+
+        foreach (ParticleSystem ps in wallSlideExtraParticleSystems)
+        {
+            if (ps == null) continue;
+
+            if (active)
+            {
+                if (!ps.isEmitting) ps.Play();
+            }
+            else if (ps.isEmitting)
+            {
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
         }
     }
 

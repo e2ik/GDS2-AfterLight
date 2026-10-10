@@ -70,6 +70,11 @@ public class GameManager : MonoBehaviour
 
     public bool TutorialsDisabled => disableTutorials;
 
+    [Header("Parry")]
+    [SerializeField] private bool projectilesIgnoreParryDirection = false;
+
+    public bool ProjectilesIgnoreParryDirection => projectilesIgnoreParryDirection;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

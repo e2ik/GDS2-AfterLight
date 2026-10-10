@@ -64,8 +64,10 @@ public class PlayerHurtBox : MonoBehaviour
         playerController.CancelHeal();
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
         bool isUnparryable = hitbox.AttackForce == AttackForce.Heavy;
+        bool ignoreParryDirection = GameManager.Instance != null && GameManager.Instance.ProjectilesIgnoreParryDirection
+                                    && hitbox.GetComponent<Enemies.ProjectileScripts.Projectile>() != null;
 
-        if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection))
+        if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection, ignoreParryDirection))
         {
             hitbox.SetParried();
             combatController.TryModifyParry(hitbox.Damage, col2d); //trigger secondary gem effect

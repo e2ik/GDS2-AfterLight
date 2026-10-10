@@ -19,11 +19,23 @@ public class EquipmentSlot : MonoBehaviour
     [SerializeField] private Color emptySlotColor = Color.white;
     [SerializeField] private Color equippedItemColor = Color.white;
 
+    [Header("Border Colour Settings")]
+    [SerializeField] private Image borderImage;
+    [SerializeField] private bool colorBorderByRarity = true;
+    [SerializeField] private Color noRarityBorderColor = Color.white;
+
     private Vector3 originalIconScale = Vector3.one;
     private string defaultSlotName;
+    private Color emptyBorderColor = Color.white;
+    private Color restBorderColor = Color.white;
+    private Color highlightBorderColor = Color.white;
+    private float highlightWeight;
 
     private void Awake()
     {
+        if (borderImage == null) borderImage = GetComponent<Image>();
+        if (borderImage != null) emptyBorderColor = restBorderColor = borderImage.color;
+
         if (iconImage != null)
         {
             iconImage.raycastTarget = false;
@@ -37,7 +49,7 @@ public class EquipmentSlot : MonoBehaviour
         }
     }
 
-    public void DisplayItem(Sprite sprite, string itemName)
+    public void DisplayItem(Sprite sprite, string itemName, ERarity? rarity = null)
     {
         bool hasItem = sprite != null;
 
@@ -67,6 +79,35 @@ public class EquipmentSlot : MonoBehaviour
                 nameText.text = defaultSlotName;
             }
         }
+
+        UpdateBorderColor(hasItem, rarity);
+    }
+
+    private void UpdateBorderColor(bool hasItem, ERarity? rarity)
+    {
+        if (borderImage == null) return;
+
+        if (!hasItem || !colorBorderByRarity)
+            restBorderColor = emptyBorderColor;
+        else
+            restBorderColor = rarity.HasValue && GameManager.Instance != null
+                ? GameManager.Instance.GetRarityColor(rarity.Value)
+                : noRarityBorderColor;
+
+        ApplyBorderColor();
+    }
+
+    public void ApplyHighlight(Color color, float weight)
+    {
+        highlightBorderColor = color;
+        highlightWeight = Mathf.Clamp01(weight);
+        ApplyBorderColor();
+    }
+
+    private void ApplyBorderColor()
+    {
+        if (borderImage == null) return;
+        borderImage.color = Color.Lerp(restBorderColor, highlightBorderColor, highlightWeight);
     }
 
     public void ClearSlot()

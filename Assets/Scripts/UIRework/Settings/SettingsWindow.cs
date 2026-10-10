@@ -135,6 +135,7 @@ namespace GameUI
 
             Color color = active ? activeTabColor : inactiveTabColor;
             if (tab.targetGraphic != null) tab.targetGraphic.color = color;
+            UIButtonStroke.SetButtonActive(tab, active && IsOpen);
 
             if (!tintTabText) return;
             foreach (TMP_Text text in tab.GetComponentsInChildren<TMP_Text>(true))
@@ -170,6 +171,10 @@ namespace GameUI
         protected override void OnWindowClosed()
         {
             UnsubscribeTabActions();
+
+            UIButtonStroke.SetButtonActive(audioTabButton, false);
+            UIButtonStroke.SetButtonActive(keyboardTabButton, false);
+            UIButtonStroke.SetButtonActive(controllerTabButton, false);
 
             foreach (RebindButton button in GetComponentsInChildren<RebindButton>(true))
             {

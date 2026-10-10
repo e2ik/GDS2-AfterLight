@@ -22,6 +22,9 @@ public class InventoryDisplay : GameUI.UIWindow
         public InventoryFilter filter;
         public Graphic graphic;
         public TMP_Text label;
+        public Graphic frame;
+        [System.NonSerialized] public Color frameBaseColor;
+        [System.NonSerialized] public bool frameCached;
     }
 
     [Header("UI Container")]
@@ -34,6 +37,10 @@ public class InventoryDisplay : GameUI.UIWindow
     [SerializeField] private Color inactiveFilterColor = Color.white;
     [SerializeField] private Color activeFilterTextColor = Color.black;
     [SerializeField] private Color inactiveFilterTextColor = Color.white;
+    [SerializeField] private string filterFrameChildName = "frame";
+    [SerializeField] private Color activeFramePulseColor = Color.white;
+    [SerializeField, Min(0.01f)] private float activeFramePulseSpeed = 1.5f;
+    [SerializeField, Range(0f, 1f)] private float activeFramePulseMin = 0.2f;
 
     [Header("Controller")]
     [SerializeField] private InputActionReference prevFilterAction;
@@ -68,6 +75,28 @@ public class InventoryDisplay : GameUI.UIWindow
     [Header("Lore Panel")]
     [SerializeField] private LorePanel lorePanel;
     [SerializeField] private UIWindowAnimator statsAndGearAnimator;
+
+    [Header("Character Highlight")]
+    [SerializeField] private Image characterArmorImage;
+    [SerializeField] private Image characterBootsImage;
+    [SerializeField] private Image characterWeaponImage;
+    [SerializeField] private EquipmentSlot armorEquipSlot;
+    [SerializeField] private EquipmentSlot bootsEquipSlot;
+    [SerializeField] private EquipmentSlot weaponEquipSlot;
+    [SerializeField] private EquipmentSlot primaryEquipSlot;
+    [SerializeField] private EquipmentSlot secondaryEquipSlot;
+    [SerializeField] private Color characterHighlightColor = Color.yellow;
+    [SerializeField, Min(0f)] private float characterHighlightSpeed = 15f;
+    [SerializeField, Range(0f, 1f)] private float characterHighlightMinAlpha = 0.4f;
+    [SerializeField, Min(0.01f)] private float characterHighlightPulseSpeed = 2f;
+    [SerializeField] private bool tintCharacterByRarity = true;
+    [SerializeField, Range(0f, 1f)] private float characterRarityTintStrength = 0.6f;
+    [SerializeField, Range(0f, 2f)] private float characterRarityBrightness = 1f;
+    [SerializeField] private bool useCustomCharacterRarityColors = false;
+    [SerializeField] private Color characterCommonColor = new Color(0.6f, 0.6f, 0.6f);
+    [SerializeField] private Color characterRareColor = new Color(0.1f, 0.35f, 0.9f);
+    [SerializeField] private Color characterEpicColor = new Color(0.5f, 0.1f, 0.8f);
+    [SerializeField] private Color characterLegendaryColor = new Color(0.9f, 0.5f, 0.05f);
 
     public RectTransform TooltipDock => tooltipDock;
     public TooltipAnchorSettings TooltipAnchor => tooltipAnchor;
@@ -114,9 +143,25 @@ public class InventoryDisplay : GameUI.UIWindow
         }
     }
 
+    private readonly Dictionary<Image, Color> characterBaseColors = new Dictionary<Image, Color>();
+    private readonly Dictionary<Image, float> characterHighlightWeights = new Dictionary<Image, float>();
+    private readonly Dictionary<EquipmentSlot, float> equipSlotHighlightWeights = new Dictionary<EquipmentSlot, float>();
+    private readonly List<EquipmentSlot> equipSlots = new List<EquipmentSlot>();
+    private readonly List<Selectable> filterSelectables = new List<Selectable>();
+
     protected override void Awake()
     {
         base.Awake();
+
+        CacheCharacterBaseColor(characterArmorImage);
+        CacheCharacterBaseColor(characterBootsImage);
+        CacheCharacterBaseColor(characterWeaponImage);
+        CacheEquipSlot(armorEquipSlot);
+        CacheEquipSlot(bootsEquipSlot);
+        CacheEquipSlot(weaponEquipSlot);
+        CacheEquipSlot(primaryEquipSlot);
+        CacheEquipSlot(secondaryEquipSlot);
+        DisableFilterNavigation();
 
         if (scrollRect == null && slotContainer != null)
         {
@@ -130,8 +175,238 @@ public class InventoryDisplay : GameUI.UIWindow
     {
         if (!IsOpen) return;
 
+        KeepSelectionOffFilters();
         TrackSelection();
         UpdateScroll();
+        UpdateFilterFrames(false);
+        UpdateCharacterHighlight(false);
+    }
+
+    private void CacheCharacterBaseColor(Image image)
+    {
+        if (image != null && !characterBaseColors.ContainsKey(image))
+        {
+            characterBaseColors.Add(image, image.color);
+            characterHighlightWeights.Add(image, 0f);
+        }
+    }
+
+    private void UpdateFilterFrames(bool reset)
+    {
+        if (filterButtons == null) return;
+
+        float wave = (1f - Mathf.Cos(Time.unscaledTime * activeFramePulseSpeed * Mathf.PI * 2f)) * 0.5f;
+        float pulse = Mathf.Lerp(activeFramePulseMin, 1f, wave);
+
+        foreach (FilterButtonVisual entry in filterButtons)
+        {
+            if (entry == null) continue;
+
+            if (entry.frame == null && entry.graphic != null && !string.IsNullOrEmpty(filterFrameChildName))
+            {
+                Transform child = entry.graphic.transform.Find(filterFrameChildName);
+                if (child != null) entry.frame = child.GetComponent<Graphic>();
+            }
+
+            if (entry.frame == null) continue;
+
+            if (!entry.frameCached)
+            {
+                entry.frameBaseColor = entry.frame.color;
+                entry.frameCached = true;
+            }
+
+            Color baseColor = entry.frameBaseColor;
+            if (reset || entry.filter != currentFilter)
+            {
+                entry.frame.color = baseColor;
+                continue;
+            }
+
+            entry.frame.color = Color.Lerp(baseColor, activeFramePulseColor, pulse);
+        }
+    }
+
+    private void DisableFilterNavigation()
+    {
+        if (filterButtons == null) return;
+
+        foreach (FilterButtonVisual entry in filterButtons)
+        {
+            if (entry == null || entry.graphic == null) continue;
+
+            Selectable selectable = entry.graphic.GetComponentInParent<Selectable>();
+            if (selectable == null || filterSelectables.Contains(selectable)) continue;
+
+            Navigation nav = selectable.navigation;
+            nav.mode = Navigation.Mode.None;
+            selectable.navigation = nav;
+            filterSelectables.Add(selectable);
+        }
+    }
+
+    private void KeepSelectionOffFilters()
+    {
+        GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        if (selected == null) return;
+
+        foreach (Selectable selectable in filterSelectables)
+        {
+            if (selectable == null || selected != selectable.gameObject) continue;
+
+            if (!RestoreSelectedSlot(rememberedSlotIndex))
+                EventSystem.current.SetSelectedGameObject(null);
+            return;
+        }
+    }
+
+    private void CacheEquipSlot(EquipmentSlot slot)
+    {
+        if (slot != null && !equipSlotHighlightWeights.ContainsKey(slot))
+        {
+            equipSlotHighlightWeights.Add(slot, 0f);
+            equipSlots.Add(slot);
+        }
+    }
+
+    private object GetSelectedInventoryItem()
+    {
+        GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        if (selected == null) return null;
+
+        InventorySlot slot = selected.GetComponentInParent<InventorySlot>();
+        return slot != null ? slot.CurrentItem : null;
+    }
+
+    private EquipmentSlot GetHighlightedEquipSlot(object item)
+    {
+        switch (item)
+        {
+            case WeaponInstance _:
+                return weaponEquipSlot;
+
+            case PrimaryGemInstance _:
+                return primaryEquipSlot;
+
+            case SecondaryGemInstance _:
+                return secondaryEquipSlot;
+
+            case GearInstance gear:
+            {
+                GearDefinition def = GameDatabase.GetGearTemplateFromID(gear.InstTemplateID);
+                if (def == null) return null;
+                return def.Slot == EGearSlot.Armor ? armorEquipSlot : def.Slot == EGearSlot.Boots ? bootsEquipSlot : null;
+            }
+
+            default:
+                return null;
+        }
+    }
+
+    private Image GetHighlightedCharacterPart(object item)
+    {
+        switch (item)
+        {
+            case WeaponInstance _:
+                return characterWeaponImage;
+
+            case GearInstance gear:
+            {
+                GearDefinition def = GameDatabase.GetGearTemplateFromID(gear.InstTemplateID);
+                if (def == null) return null;
+                return def.Slot == EGearSlot.Armor ? characterArmorImage : def.Slot == EGearSlot.Boots ? characterBootsImage : null;
+            }
+
+            default:
+                return null;
+        }
+    }
+
+    private ERarity? GetCharacterPartRarity(Image part)
+    {
+        if (equipManager == null || part == null) return null;
+
+        if (part == characterWeaponImage)
+            return equipManager.EquippedWeapon != null ? equipManager.EquippedWeapon.Rarity : (ERarity?)null;
+
+        if (part == characterArmorImage)
+        {
+            GearInstance gear = equipManager.GetEquippedGear(EGearSlot.Armor);
+            return gear != null ? gear.Rarity : (ERarity?)null;
+        }
+
+        if (part == characterBootsImage)
+        {
+            GearInstance gear = equipManager.GetEquippedGear(EGearSlot.Boots);
+            return gear != null ? gear.Rarity : (ERarity?)null;
+        }
+
+        return null;
+    }
+
+    private Color GetCharacterRarityColor(ERarity rarity)
+    {
+        if (!useCustomCharacterRarityColors)
+            return GameManager.Instance != null ? GameManager.Instance.GetRarityColor(rarity) : Color.white;
+
+        switch (rarity)
+        {
+            case ERarity.Rare: return characterRareColor;
+            case ERarity.Epic: return characterEpicColor;
+            case ERarity.Legendary: return characterLegendaryColor;
+            default: return characterCommonColor;
+        }
+    }
+
+    private Color GetCharacterRestColor(Image part, Color baseColor)
+    {
+        if (!tintCharacterByRarity) return baseColor;
+        if (!useCustomCharacterRarityColors && GameManager.Instance == null) return baseColor;
+
+        ERarity? rarity = GetCharacterPartRarity(part);
+        if (!rarity.HasValue) return baseColor;
+
+        Color rarityColor = GetCharacterRarityColor(rarity.Value);
+        rarityColor.r *= characterRarityBrightness;
+        rarityColor.g *= characterRarityBrightness;
+        rarityColor.b *= characterRarityBrightness;
+
+        Color tinted = Color.Lerp(baseColor, rarityColor, characterRarityTintStrength);
+        tinted.a = baseColor.a;
+        return tinted;
+    }
+
+    private void UpdateCharacterHighlight(bool snap)
+    {
+        object selectedItem = snap ? null : GetSelectedInventoryItem();
+        Image highlighted = GetHighlightedCharacterPart(selectedItem);
+        EquipmentSlot highlightedSlot = GetHighlightedEquipSlot(selectedItem);
+        float t = snap || characterHighlightSpeed <= 0f ? 1f : 1f - Mathf.Exp(-characterHighlightSpeed * Time.unscaledDeltaTime);
+        float pulse = (1f - Mathf.Cos(Time.unscaledTime * characterHighlightPulseSpeed * Mathf.PI * 2f)) * 0.5f;
+
+        Color pulsedHighlight = characterHighlightColor;
+        pulsedHighlight.a *= Mathf.Lerp(characterHighlightMinAlpha, 1f, pulse);
+
+        foreach (EquipmentSlot slot in equipSlots)
+        {
+            if (slot == null) continue;
+
+            float slotWeight = Mathf.Lerp(equipSlotHighlightWeights[slot], slot == highlightedSlot ? 1f : 0f, t);
+            equipSlotHighlightWeights[slot] = slotWeight;
+            slot.ApplyHighlight(pulsedHighlight, slotWeight);
+        }
+
+        foreach (KeyValuePair<Image, Color> entry in characterBaseColors)
+        {
+            Image part = entry.Key;
+            if (part == null) continue;
+
+            float weight = Mathf.Lerp(characterHighlightWeights[part], part == highlighted ? 1f : 0f, t);
+            characterHighlightWeights[part] = weight;
+
+            Color rest = GetCharacterRestColor(part, entry.Value);
+            part.color = Color.Lerp(rest, pulsedHighlight, weight);
+        }
     }
 
     private void OnDestroy()
@@ -236,11 +511,13 @@ public class InventoryDisplay : GameUI.UIWindow
     {
         UnsubscribeFilterActions();
         currentFilter = InventoryFilter.All;
+        UpdateFilterFrames(true);
         rememberedSlotIndex = 0;
         lastObservedSlotIndex = -1;
         isScrolling = false;
 
         CloseLorePanel();
+        UpdateCharacterHighlight(true);
 
         EventSystem.current?.SetSelectedGameObject(null);
 

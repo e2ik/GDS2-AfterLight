@@ -25,6 +25,8 @@ namespace GameUI
         [SerializeField] private Image bindingIcon;
         [SerializeField] private bool allowSharedBinding = true;
         [SerializeField] private string waitingLabel = "??";
+        [SerializeField] private TMP_Text buttonLabelText;
+        [SerializeField] private string rebindingButtonLabel = "...";
 
         public Button Button => rebindButton;
 
@@ -39,12 +41,16 @@ namespace GameUI
         private static int lastRebindFinishFrame = -10;
         public static bool AnyRebinding => rebindingCount > 0 || Time.frameCount - lastRebindFinishFrame <= 1;
         private bool isRebinding;
+        public bool IsRebinding => isRebinding;
 
         private RebindingOperation rebindingOperation;
+        private string defaultButtonLabel;
 
         private void Awake()
         {
             rebindButton.onClick.AddListener(StartRebind);
+            if (buttonLabelText == null && rebindButton != null) buttonLabelText = rebindButton.GetComponentInChildren<TMP_Text>(true);
+            if (buttonLabelText != null) defaultButtonLabel = buttonLabelText.text;
         }
 
         private void OnEnable()
@@ -111,8 +117,11 @@ namespace GameUI
 
         private void StartRebind()
         {
-            rebindButton.interactable = false;
+            if (isRebinding) return;
+
             isRebinding = true;
+            if (EventSystem.current != null) EventSystem.current.sendNavigationEvents = false;
+            if (buttonLabelText != null) buttonLabelText.text = rebindingButtonLabel;
             rebindingCount++;
             SetPromptVisible(true);
             ShowWaitingLabel();
@@ -202,7 +211,8 @@ namespace GameUI
             }
 
             actionReference.action.Enable();
-            rebindButton.interactable = true;
+            if (EventSystem.current != null) EventSystem.current.sendNavigationEvents = true;
+            if (buttonLabelText != null) buttonLabelText.text = defaultButtonLabel;
             SetPromptVisible(false);
             RefreshDisplay();
             InputRebindSaver.Save(actionReference.action.actionMap.asset);

@@ -40,10 +40,15 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [SerializeField, Min(0.01f)] private float badgePulseSpeed = 1.5f;
     [SerializeField, Range(0f, 1f)] private float badgeMinOpacity = 0.4f;
 
+    [Header("Click Sounds")]
+    [SerializeField] private FMODUnity.EventReference loreClickSound;
+    [SerializeField] private FMODUnity.EventReference keyClickSound;
+
     [Header("Lore Set Progress")]
     [SerializeField] private TextMeshProUGUI progressText;
 
     private object currentItem;
+    public object CurrentItem => currentItem;
     private InventoryDisplay cachedInventoryDisplay;
     private UIWindowAnimator windowAnimator;
     private RectTransform rectTransform;
@@ -359,6 +364,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         if (currentItem is LoreSetDisplayInfo loreSet)
         {
+            PlayClickSound(loreClickSound);
             display?.OnLoreSlotClicked(loreSet);
             UpdateTooltipState();
             return;
@@ -366,6 +372,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         if (currentItem is LoreItemInstance loreItem)
         {
+            PlayClickSound(loreClickSound);
             display?.OnLoreItemClicked(loreItem);
             UpdateTooltipState();
             return;
@@ -373,9 +380,19 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         display?.CloseLorePanel();
 
+        if (currentItem is KeyInstance) PlayClickSound(keyClickSound);
+
         ItemActionFactory.ToggleEquip(currentItem, ItemActionFactory.GetEquipment());
 
         if (display != null) display.RefreshUI();
+    }
+
+    private void PlayClickSound(FMODUnity.EventReference sound)
+    {
+        if (sound.IsNull) return;
+
+        GameUI.UISFXWatcher.SuppressSubmitSound();
+        AudioManager.PlaySFX(sound, this);
     }
 
     private void UpdateEquippedVisuals(bool isEquipped, ERarity? rarity)

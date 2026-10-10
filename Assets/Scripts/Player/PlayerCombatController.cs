@@ -430,9 +430,9 @@ public class PlayerCombatController : MonoBehaviour
         return movement.FacingDirection == 1 ? ParryDirection.Right : ParryDirection.Left;
     }
 
-    public bool CheckParry(ParryDirection incomingDirection)
+    public bool CheckParry(ParryDirection incomingDirection, bool ignoreDirection = false)
     {
-        bool directionMatches = parryDir == incomingDirection || !movement.IsGrounded;
+        bool directionMatches = ignoreDirection || parryDir == incomingDirection || !movement.IsGrounded;
         bool windowOpen = isParrying || parryWindowExtensionTimer > 0f;
         if (!windowOpen || !directionMatches) return false;
         OnSuccessfulParry();

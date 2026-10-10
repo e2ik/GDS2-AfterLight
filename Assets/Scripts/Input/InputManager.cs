@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.DualShock;
+using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.XInput;
 
 public enum InputDeviceType
@@ -29,6 +30,9 @@ public class InputManager : MonoBehaviour
     [SerializeField] private float triggerThreshold = 0.5f;
     [SerializeField] private float mouseMoveThreshold = 3f;
     [SerializeField] private bool hideCursorOnGamepad = true;
+    [SerializeField] private bool parkMouseOnGamepad = true;
+
+    private static readonly Vector2 ParkedMousePosition = new Vector2(-10000f, -10000f);
 
     private void Awake()
     {
@@ -54,6 +58,8 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
+        KeepMouseParked();
+
         foreach (Gamepad gamepad in Gamepad.all)
         {
             if (!IsGamepadActive(gamepad)) continue;
@@ -65,6 +71,17 @@ public class InputManager : MonoBehaviour
 
         if (IsKeyboardMouseActive())
             SetDevice(InputDeviceType.KeyboardMouse);
+    }
+
+    private void KeepMouseParked()
+    {
+        if (!parkMouseOnGamepad || !IsUsingGamepad) return;
+
+        Mouse mouse = Mouse.current;
+        if (mouse == null) return;
+        if (mouse.position.ReadValue() == ParkedMousePosition) return;
+
+        InputSystem.QueueDeltaStateEvent(mouse.position, ParkedMousePosition);
     }
 
     private bool IsGamepadActive(Gamepad gamepad)

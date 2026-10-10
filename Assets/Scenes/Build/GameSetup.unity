@@ -138,6 +138,7 @@ GameObject:
   - component: {fileID: 78526263}
   - component: {fileID: 78526264}
   - component: {fileID: 78526266}
+  - component: {fileID: 78526267}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -198,6 +199,8 @@ MonoBehaviour:
     legendary: 5
   unlockAllFastTravelAction: {fileID: 7163206889840615523, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   disableTutorials: 1
+  skipCutscenes: 0
+  projectilesIgnoreParryDirection: 1
   backgroundPrefab: {fileID: 3327786354979037545, guid: f6bdba2aea3bb1741a687ba8d5d96a43, type: 3}
 --- !u!4 &78526258
 Transform:
@@ -347,6 +350,35 @@ MonoBehaviour:
       Data3: -2109094511
       Data4: -1938160201
     Path: event:/Interface Events/UI Click Event
+  onlyPlayWhenNavigatingWithinWindow: 1
+  uiTabSwitchEvent:
+    Guid:
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
+  tabSwitchActions:
+  - {fileID: -1768861836552554593, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  - {fileID: 5363142178390000624, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  uiSubmitEvent:
+    Guid:
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
+  submitActions:
+  - {fileID: 392368643174621059, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  uiCancelEvent:
+    Guid:
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
+  cancelActions:
+  - {fileID: 7727032971491509709, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
 --- !u!114 &78526265
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -389,6 +421,22 @@ MonoBehaviour:
   triggerThreshold: 0.5
   mouseMoveThreshold: 3
   hideCursorOnGamepad: 1
+  parkMouseOnGamepad: 1
+--- !u!114 &78526267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 78526255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee08e259937fb0f428fd28c3d3bef342, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioFocusHandler
+  webGLOnly: 1
+  suspendOnFocusLost: 1
+  suspendOnPause: 1
 --- !u!1 &215098120
 GameObject:
   m_ObjectHideFlags: 0
@@ -1461,6 +1509,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: e211826df2aab5e47af454561951383b, type: 2}
   - {fileID: 2100000, guid: e472afa9e2823c74a8433aaccf3763b1, type: 2}
   - {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  - {fileID: 2100000, guid: 529494a91a5b96c4e90089bea915c6d0, type: 2}
 --- !u!4 &1958938305
 Transform:
   m_ObjectHideFlags: 0

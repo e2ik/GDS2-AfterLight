@@ -58,7 +58,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 1, b: 0.9489796, a: 1}
+  m_Color: {r: 0.2666429, g: 0.7924528, b: 0.7656469, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -175,16 +175,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 486727389636007301}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: 0.57202023, w: 0.82023954}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.08, y: 1.08, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 9121090822705856499}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 69.782}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 189.8, y: 4.6}
+  m_AnchoredPosition: {x: 268, y: -195}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4118583187434640907
@@ -711,7 +711,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 211.5, y: 42.8}
+  m_AnchoredPosition: {x: 216, y: 40.2}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7783993536469328886
@@ -1801,17 +1801,17 @@ MonoBehaviour:
   energyFillImage: {fileID: 8949171473597471573}
   energyTweenDuration: 0.6
   energyGlowIntensity: 1
-  energyFlashIntensity: 2
+  energyFlashIntensity: 1
   energyChipImage: {fileID: 5741653787796507178}
   energyChipDelay: 0.4
   energyChipTweenDuration: 0.4
   energyChipSpendColor: {r: 0.2980392, g: 0.60258174, b: 1, a: 1}
-  energyChipGainColor: {r: 0.011764706, g: 1, b: 0.9490196, a: 1}
-  energyFlashColor: {r: 1, g: 1, b: 1, a: 1}
-  energyGainFlashColor: {r: 1, g: 1, b: 1, a: 1}
+  energyChipGainColor: {r: 0, g: 1, b: 0.9454546, a: 1}
+  energyFlashColor: {r: 0, g: 0.58553505, b: 1, a: 1}
+  energyGainFlashColor: {r: 0, g: 1, b: 0.88371634, a: 1}
   energyFlashDuration: 0.12
   energyFlashMinChange: 0.02
-  energyFullPulseColor: {r: 0.9674921, g: 1, b: 0, a: 1}
+  energyFullPulseColor: {r: 0, g: 1, b: 0.8862745, a: 1}
   energyFullPulseSpeed: 15
   healImage: {fileID: 3734257354429438509}
   healIconEmptyColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}

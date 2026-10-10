@@ -633,6 +633,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            if (isWallSliding) playerAnimation.StopWallSlideEffect();
             isWallSliding = false;
         }
     }
@@ -665,6 +666,7 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(new Vector2(wallJumpDirection * wallJumpForce.x, wallJumpForce.y), ForceMode2D.Impulse);
             currentSurfaceNormal = new Vector2(-wallJumpDirection, 0f);
 
+            playerAnimation.StopWallSlideEffect();
             playerAnimation.TriggerJumpEffect(true, wallJumpDirection);
 
             wallJumpTimer = 0f;

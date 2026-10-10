@@ -79,7 +79,7 @@ public class EquipmentDisplay : MonoBehaviour
                 var def = GameDatabase.GetWeaponTemplateFromID(weapon.InstTemplateID);
                 if (def != null)
                 {
-                    weaponSlot.DisplayItem(def.UISprite, def.UIName);
+                    weaponSlot.DisplayItem(def.UISprite, def.UIName, weapon.Rarity);
                 }
                 else
                 {
@@ -113,7 +113,7 @@ public class EquipmentDisplay : MonoBehaviour
                 var def = GameDatabase.GetSecondaryTemplateFromID(gem.InstTemplateID);
                 if (def != null)
                 {
-                    secondarySlot.DisplayItem(def.UISprite, def.UIName);
+                    secondarySlot.DisplayItem(def.UISprite, def.UIName, gem.Rarity);
                 }
                 else
                 {
@@ -136,7 +136,7 @@ public class EquipmentDisplay : MonoBehaviour
             var def = GameDatabase.GetGearTemplateFromID(gear.InstTemplateID);
             if (def != null)
             {
-                slotUI.DisplayItem(def.UISprite, def.UIName);
+                slotUI.DisplayItem(def.UISprite, def.UIName, gear.Rarity);
                 return;
             }
         }
