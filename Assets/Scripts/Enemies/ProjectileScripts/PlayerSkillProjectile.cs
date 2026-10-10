@@ -59,6 +59,7 @@ public class PlayerSkillProjectile : PlayerProjectileBase
         Collider2D[] hitsAtExplosionPoint = Physics2D.OverlapCircleAll(originPoint, radius,enemyMask);
         DrawCircle(originPoint,radius,36,1);
         var enemiesHit = new HashSet<Collider2D>();
+        bool hitEnemy = false;
         if(hitsAtExplosionPoint.Count() > 0)
         {
             foreach(var col in hitsAtExplosionPoint)
@@ -69,9 +70,12 @@ public class PlayerSkillProjectile : PlayerProjectileBase
                 if(col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
                 {
                     enemyHealth.ApplyHit(GetAdjustedDamage(originPoint,col.transform.position,(float)Damage),Context);
+                    hitEnemy = true;
                 }
             }
         }
+
+        if (hitEnemy) NotifySkillHit();
     }
 
     private int GetAdjustedDamage(Vector2 explosionOrigin,Vector2 targetPosition, float baseDamage)

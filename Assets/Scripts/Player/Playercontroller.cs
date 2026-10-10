@@ -51,6 +51,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Vector2 wallJumpForce = new(8f, 16f);
     [SerializeField] private float wallJumpDuration = 0.4f;
     [SerializeField] private float wallJumpBufferTime = 0.2f;
+    [SerializeField] private bool wallJumpIgnoresTapCut = true;
 
     [Header("Step Up Settings")]
     [SerializeField] private float maxStepHeight = 0.3f;
@@ -75,6 +76,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float enemyBodyAirKnockbackForce = 8f;
     [SerializeField] private float enemyBodyAirStaggerDuration = 0.1f;
     [SerializeField, Range(0f, 90f)] private float enemyBodyAirKnockbackAngle = 45f;
+    [SerializeField, Min(0f)] private float enemyStandDropDelay = 0.1f;
+    [SerializeField, Min(0f)] private float enemyStandIgnoreDuration = 0.4f;
+    [SerializeField, Min(0f)] private float enemyStandMaxIgnoreDuration = 3f;
+    [SerializeField, Min(0f)] private float enemyOverlapPushSpeed = 4f;
+    [SerializeField, Min(0f)] private float enemyDropMinHeightRatio = 1.25f;
+    [SerializeField, Min(0f)] private float enemyBounceMemory = 2f;
+
+    private Collider2D lastBouncedEnemy;
+    private float lastBouncedEnemyTime = -100f;
+
+    private Collider2D standingOnEnemyCollider;
+    private float standingOnEnemySince;
     [SerializeField] private float hazardousKnockbackForce = 12f;
     [SerializeField] private float hazardousStaggerDuration = 0.3f;
     [SerializeField] private float bounceDuration = 0.2f;
@@ -683,7 +696,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void StopWallJumping() => isWallJumping = false;
+    private void StopWallJumping()
+    {
+        isWallJumping = false;
+        if (wallJumpIgnoresTapCut) jumpReleased = false;
+    }
 
     private void HandleDash()
     {
@@ -1475,11 +1492,122 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D col) => HandleEnemyBodyCollision(col);
 
+    private void OnCollisionStay2D(Collision2D col) => HandleStandingOnEnemy(col);
+
+    private void HandleStandingOnEnemy(Collision2D col)
+    {
+        if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
+
+        if (!IsTopContact(col) || !IsTallEnemy(col.collider) || lastBouncedEnemy != col.collider)
+        {
+            if (standingOnEnemyCollider == col.collider) standingOnEnemyCollider = null;
+            return;
+        }
+
+        if (standingOnEnemyCollider != col.collider)
+        {
+            standingOnEnemyCollider = col.collider;
+            standingOnEnemySince = Time.time;
+            return;
+        }
+
+        if (Time.time - standingOnEnemySince < enemyStandDropDelay) return;
+
+        standingOnEnemyCollider = null;
+        StartCoroutine(IgnoreEnemyCollisionRoutine(col.collider));
+    }
+
+    private bool HasRecentlyBouncedOn(Collider2D enemyCollider)
+    {
+        return enemyCollider != null && lastBouncedEnemy == enemyCollider && Time.time - lastBouncedEnemyTime <= enemyBounceMemory;
+    }
+
+    private bool IsTallEnemy(Collider2D enemyCollider)
+    {
+        if (enemyCollider == null) return false;
+        return enemyCollider.bounds.size.y >= cachedBounds.size.y * enemyDropMinHeightRatio;
+    }
+
+    private static bool IsTopContact(Collision2D col)
+    {
+        for (int i = 0; i < col.contactCount; i++)
+        {
+            if (col.GetContact(i).normal.y > 0.5f) return true;
+        }
+        return false;
+    }
+
+    private IEnumerator IgnoreEnemyCollisionRoutine(Collider2D enemyCollider)
+    {
+        if (enemyCollider == null || playerColliders == null) yield break;
+
+        foreach (var c in playerColliders)
+            if (c != null) Physics2D.IgnoreCollision(c, enemyCollider, true);
+
+        float elapsed = 0f;
+        while (enemyCollider != null && elapsed < enemyStandMaxIgnoreDuration)
+        {
+            bool overlapping = IsOverlappingCollider(enemyCollider);
+            if (elapsed >= enemyStandIgnoreDuration && !overlapping) break;
+
+            if (overlapping && isGrounded && !physicsSuspended)
+                PushOutOfEnemy(enemyCollider);
+
+            elapsed += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+
+        foreach (var c in playerColliders)
+            if (c != null && enemyCollider != null) Physics2D.IgnoreCollision(c, enemyCollider, false);
+    }
+
+    private void PushOutOfEnemy(Collider2D enemyCollider)
+    {
+        if (enemyOverlapPushSpeed <= 0f) return;
+
+        float offset = cachedBounds.center.x - enemyCollider.bounds.center.x;
+        float dir = Mathf.Abs(offset) > 0.01f ? Mathf.Sign(offset) : FacingDirection;
+
+        float checkDistance = cachedBounds.extents.x + 0.05f;
+        if (RaycastIgnoringSelf(cachedBounds.center, new Vector2(dir, 0f), checkDistance).collider != null)
+        {
+            dir = -dir;
+            if (RaycastIgnoringSelf(cachedBounds.center, new Vector2(dir, 0f), checkDistance).collider != null) return;
+        }
+
+        rb.MovePosition(rb.position + new Vector2(dir * enemyOverlapPushSpeed * Time.fixedDeltaTime, 0f));
+    }
+
+    private bool IsOverlappingCollider(Collider2D other)
+    {
+        if (other == null || !other.enabled) return false;
+
+        foreach (var c in playerColliders)
+        {
+            if (c == null || !c.enabled || c.isTrigger) continue;
+            if (c.Distance(other).isOverlapped) return true;
+        }
+        return false;
+    }
+
     private void HandleEnemyBodyCollision(Collision2D col)
     {
         if (!enemyBodyCollisionKnockback) return;
         if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
         if (!col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
+
+        if (IsTopContact(col) && IsTallEnemy(col.collider))
+        {
+            if (HasRecentlyBouncedOn(col.collider))
+            {
+                standingOnEnemyCollider = null;
+                StartCoroutine(IgnoreEnemyCollisionRoutine(col.collider));
+                return;
+            }
+
+            lastBouncedEnemy = col.collider;
+            lastBouncedEnemyTime = Time.time;
+        }
 
         if (isGrounded)
             ApplyKnockback(col.transform.position, enemyBodyCollisionForce, applyStagger: true, playHurtAnimation: false);

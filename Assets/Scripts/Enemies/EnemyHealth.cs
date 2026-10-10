@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace Enemies
 {
@@ -34,6 +35,21 @@ namespace Enemies
 
         private void Awake() => CurrentHealth = maxHealth;
         private Coroutine dotRoutine;
+
+        private class DotStack
+        {
+            public float DamagePerTick;
+            public int TicksRemaining;
+        }
+
+        private readonly List<DotStack> dotStacks = new List<DotStack>();
+        private float dotTickInterval = 1f;
+
+        private void OnDisable()
+        {
+            dotStacks.Clear();
+            dotRoutine = null;
+        }
 
         public void ApplyDamage(int amount, bool isDot = false)
         {
@@ -116,23 +132,45 @@ namespace Enemies
                 float dotDamagePerTick = damage * context.DotDamagePercent;
                 if (dotDamagePerTick < 1f) dotDamagePerTick = 1f; // at least 1 damage
 
-                if (dotRoutine != null)
-                    StopCoroutine(dotRoutine);
-
-                dotRoutine = StartCoroutine(DotRoutine(dotDamagePerTick, context.DotTickInterval, context.DotDuration));
+                AddDotStack(dotDamagePerTick, context.DotTickInterval, context.DotDuration, Mathf.Max(1, context.DotMaxStacks));
             }
         }
 
-        private IEnumerator DotRoutine(float damagePerTick, float tickInterval, float duration)
+        private void AddDotStack(float damagePerTick, float tickInterval, float duration, int maxStacks)
         {
-            float elapsed = 0f;
+            float interval = Mathf.Max(0.05f, tickInterval);
+            int ticks = Mathf.Max(1, Mathf.RoundToInt(duration / interval));
 
-            while (elapsed < duration)
+            if (maxStacks <= 1) dotStacks.Clear();
+
+            dotStacks.Add(new DotStack { DamagePerTick = damagePerTick, TicksRemaining = ticks });
+            while (dotStacks.Count > maxStacks) dotStacks.RemoveAt(0);
+
+            dotTickInterval = interval;
+            if (dotRoutine == null) dotRoutine = StartCoroutine(DotRoutine());
+        }
+
+        private IEnumerator DotRoutine()
+        {
+            while (dotStacks.Count > 0)
             {
-                yield return new WaitForSeconds(tickInterval);
-                elapsed += tickInterval;
+                yield return new WaitForSeconds(dotTickInterval);
 
-                ApplyDamage((int)damagePerTick, isDot: true);
+                float total = 0f;
+                for (int i = dotStacks.Count - 1; i >= 0; i--)
+                {
+                    total += dotStacks[i].DamagePerTick;
+                    dotStacks[i].TicksRemaining--;
+                    if (dotStacks[i].TicksRemaining <= 0) dotStacks.RemoveAt(i);
+                }
+
+                if (total > 0f) ApplyDamage((int)total, isDot: true);
+
+                if (CurrentHealth <= 0)
+                {
+                    dotStacks.Clear();
+                    break;
+                }
             }
 
             dotRoutine = null;

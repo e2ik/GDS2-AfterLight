@@ -37,6 +37,13 @@ public abstract class PlayerProjectileBase : MonoBehaviour
         }
     protected virtual bool OnHitTrigger(Collider2D other) => true;
 
+    protected void NotifySkillHit()
+    {
+        Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+        PlayerCombatController combat = player != null ? player.GetComponent<PlayerCombatController>() : null;
+        if (combat != null) combat.CheckEnergyChargePassive(isAttack: false, Context);
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (OnHitTrigger(other))

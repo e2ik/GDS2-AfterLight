@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2e054ff3130166479efb6f387d7ced9, type: 3}
+  m_Name: C_HospGown
+  m_EditorClassIdentifier: Assembly-CSharp::GearDefinition
+  ItemID: hosgown
+  UIName: Hospital Gown
+  UISprite: {fileID: 21300000, guid: 8fbdc95c5aa35d54f913c5bdbe4e8f51, type: 3}
+  Deletable: 1
+  SortOrder: 10
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
+  Slot: 0
+  TemplateID: A1
+  RollAttack: 1
+  RollDefense: 1
+  RollCrit: 0
+  AttackRanges:
+    Common: {x: 2, y: 3}
+    Rare: {x: 3, y: 5}
+    Epic: {x: 5, y: 10}
+    Legendary: {x: 10, y: 20}
+  DefenseRanges:
+    Common: {x: 5, y: 8}
+    Rare: {x: 8, y: 10}
+    Epic: {x: 10, y: 15}
+    Legendary: {x: 20, y: 25}
+  CritRanges:
+    Common: {x: 0, y: 0}
+    Rare: {x: 0, y: 0}
+    Epic: {x: 0, y: 0}
+    Legendary: {x: 0, y: 0}

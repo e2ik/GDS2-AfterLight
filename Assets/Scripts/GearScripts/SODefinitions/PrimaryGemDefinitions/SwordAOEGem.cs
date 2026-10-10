@@ -4,6 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Spin Attack Gem", menuName = "Primary Gems/Spin Attack Gem")]
 public class SwordAOEGem : PrimaryGemBehaviourDefinition
 {
+    [SerializeField, Range(0f, 1f)] private float energyGainMultiplier = 0.5f;
+    [SerializeField, Min(0f)] private float minEnergyGain = 0.01f;
+
     public override void Execute(AttackContext context, float baseDamage, float chargeAmount = 0f)
     {
         Debug.Log("Spin To Win");
@@ -33,6 +36,10 @@ public class SwordAOEGem : PrimaryGemBehaviourDefinition
         }
 
         if (!hitEnemy) return;
+
+        if (context.ChargeAmount > 0f)
+            context.ChargeAmount = Mathf.Max(context.ChargeAmount * energyGainMultiplier, minEnergyGain);
+
         pCombat.CheckEnergyChargePassive(isAttack: false, context);
     }
 }

@@ -18,6 +18,7 @@ public class PlayerStatsDisplay : MonoBehaviour
     private const int GearCritLine = 2;
     private const int WeaponCritLine = 2;
     private const int WeaponAttackLine = 3;
+    private const int WeaponDefenseLine = 4;
     private const int GemDamageLine = 0;
     private const int GemCritLine = 1;
 
@@ -211,6 +212,10 @@ public class PlayerStatsDisplay : MonoBehaviour
             if (gear.InstBonusDefense > 0f)
                 rarityBuffer.Add(LineRarity(gear.LineRarities, GearDefenseLine, gear.Rarity));
         }
+
+        WeaponInstance weapon = equipmentManager.EquippedWeapon;
+        if (weapon != null && weapon.InstRolledDefense > 0f)
+            rarityBuffer.Add(LineRarity(weapon.LineRarities, WeaponDefenseLine, weapon.Rarity));
 
         return rarityBuffer;
     }

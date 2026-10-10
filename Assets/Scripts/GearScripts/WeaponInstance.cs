@@ -10,6 +10,7 @@ public class WeaponInstance
     public float InstRolledRange;
     public float InstRolledCrit;
     public float InstRolledAttack;
+    public float InstRolledDefense;
     public List<ERarity> LineRarities = new List<ERarity>();
     public int PickupOrder;
     public bool IsNew = true;

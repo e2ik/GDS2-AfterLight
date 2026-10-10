@@ -15,11 +15,11 @@ MonoBehaviour:
   range: 5
   cooldownDuration: 1.5
   projectilePrefab: {fileID: 6559660887865809959, guid: 3a83574d3758d374c9b8cd25495ca35f, type: 3}
-  damage: 1
+  damage: 5
   launchAngleDegrees: 55
   launchSpeed: 8
-  shotCount: 1
   shotSpacingDegrees: 12
+  shotCount: 1
   clip: {fileID: 7400000, guid: 6fd2c038deedf1b4494ef41434b2f4bb, type: 2}
   placeholderClipName: EmptyAttack
   attackStateName: Attack

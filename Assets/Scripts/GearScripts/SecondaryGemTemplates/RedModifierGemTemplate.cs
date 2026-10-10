@@ -5,6 +5,7 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
 {
     [SerializeField] private float dotTickInterval = 1f;
     [SerializeField] private float dotDuration = 3f;
+    [SerializeField, Min(1)] private int attackDotMaxStacks = 3;
 
     [Header("Dot Percent by Rarity")]
     [SerializeField]
@@ -31,6 +32,7 @@ public class RedModifierGemTemplate : SecondaryGemBehaviourDefinition
         context.DotDamagePercent = instance.InstRolledDotPercent / 100f;
         context.DotTickInterval = dotTickInterval;
         context.DotDuration = dotDuration;
+        context.DotMaxStacks = instance.Type == SGemType.Attack ? attackDotMaxStacks : 1;
     }
 
     public override PassiveType GetPassiveType(SecondaryGemInstance instance)

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PiercingGem
   m_EditorClassIdentifier: Assembly-CSharp::PiercingGem
   ItemID: piercing
-  UIName: Piercing Gem
+  UIName: Lance
   UISprite: {fileID: 3281553926762341890, guid: 569538e0b1fa5a047b8f4146a4690e74, type: 3}
   Deletable: 0
   SortOrder: 0
@@ -26,7 +26,7 @@ MonoBehaviour:
   SkillType: 0
   SkillExecutionType: 0
   SkillRange: 3.5
-  SkillDamageModifier: 2.5
+  SkillDamageModifier: 2.25
   SkillCost: 0.2
   skillEvent:
     Guid:

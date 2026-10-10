@@ -63,7 +63,7 @@ public class PlayerHurtBox : MonoBehaviour
 
         playerController.CancelHeal();
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
-        bool isUnparryable = hitbox.AttackForce == AttackForce.Heavy;
+        bool isUnparryable = hitbox.AttackForce == AttackForce.Heavy && (combatController == null || !combatController.CanParryHeavy);
         bool ignoreParryDirection = GameManager.Instance != null && GameManager.Instance.ProjectilesIgnoreParryDirection
                                     && hitbox.GetComponent<Enemies.ProjectileScripts.Projectile>() != null;
 
@@ -80,8 +80,16 @@ public class PlayerHurtBox : MonoBehaviour
 
         if (isChargedSkillExecuting) return false;
 
+        bool hyperArmor = combatController != null && combatController.HasAttackHyperArmor;
+
         stats.TakeDamage(hitbox.Damage);
         PSpawner.Spawn("PlayerHit", transform.position);
+
+        if (hyperArmor)
+        {
+            hitbox.ConfirmHit();
+            return true;
+        }
 
         Vector2 sourcePosition = hitbox.transform.root.transform.position;
         if (!combatController.IsSkilling && !combatController.IsChargeInputHeld)

@@ -12,6 +12,7 @@ public static class ItemTooltipTextBuilder
     private const int WeaponRangeLine = 1;
     private const int WeaponCritLine = 2;
     private const int WeaponAttackLine = 3;
+    private const int WeaponDefenseLine = 4;
 
     private const int GearAttackLine = 0;
     private const int GearDefenseLine = 1;
@@ -78,12 +79,14 @@ public static class ItemTooltipTextBuilder
     {
         switch (type)
         {
-            case SGemType.Attack: return "OnHit";
-            case SGemType.Skill: return "OnSkill";
-            case SGemType.Parry: return "OnParry";
+            case SGemType.Attack: return TriggerText("Attack");
+            case SGemType.Skill: return TriggerText("Skill");
+            case SGemType.Parry: return TriggerText("Parry");
             default: return null;
         }
     }
+
+    private static string TriggerText(string trigger) => $"<color={StatLabelColor}>{trigger} Mod</color>";
 
     public static string BuildLootLineText(string itemName, ERarity? rarity, Color? overrideColor = null)
     {
@@ -131,7 +134,7 @@ public static class ItemTooltipTextBuilder
         StringBuilder sb = new StringBuilder();
         string rarityText = ColorizeByRarity(gem.Rarity.ToString(), gem.Rarity);
         string trigger = TriggerLabel(gem.Type);
-        sb.AppendLine(trigger != null ? $"{rarityText}, {trigger}" : rarityText);
+        sb.AppendLine(trigger != null ? $"{rarityText} {trigger}" : rarityText);
 
         float? eqDamage = equippedComparison != null ? (float?)equippedComparison.InstRolledDamageValue : null;
         float? eqCrit = equippedComparison != null ? (float?)equippedComparison.InstRolledCritValue : null;
@@ -192,9 +195,11 @@ public static class ItemTooltipTextBuilder
         float? eqDamage = equippedComparison != null ? (float?)equippedComparison.InstRolledDamage : null;
         float? eqCrit = equippedComparison != null ? (float?)(equippedComparison.InstRolledCrit * 100f) : null;
         float? eqAttack = equippedComparison != null ? (float?)equippedComparison.InstRolledAttack : null;
+        float? eqDefense = equippedComparison != null ? (float?)equippedComparison.InstRolledDefense : null;
 
         if (weapon.InstRolledDamage > 0) sb.AppendLine($"{Label("Damage", weapon.LineRarities, WeaponDamageLine)} {weapon.InstRolledDamage:F1}{BuildDiffSuffix(weapon.InstRolledDamage, eqDamage, "F1")}");
         if (weapon.InstRolledAttack > 0) sb.AppendLine($"{Label("Attack", weapon.LineRarities, WeaponAttackLine)} +{weapon.InstRolledAttack:F0}{BuildDiffSuffix(weapon.InstRolledAttack, eqAttack)}");
+        if (weapon.InstRolledDefense > 0) sb.AppendLine($"{Label("Defense", weapon.LineRarities, WeaponDefenseLine)} +{weapon.InstRolledDefense:F0}{BuildDiffSuffix(weapon.InstRolledDefense, eqDefense)}");
         if (weapon.InstRolledCrit > 0) sb.AppendLine($"{Label("Crit", weapon.LineRarities, WeaponCritLine)} {weapon.InstRolledCrit * 100f:F1}%{BuildDiffSuffix(weapon.InstRolledCrit * 100f, eqCrit, "F1", "%")}");
 
         return sb.ToString().TrimEnd();

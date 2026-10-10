@@ -361,6 +361,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private void OnSlotClicked()
     {
         InventoryDisplay display = Display;
+        if (display == null || !display.IsOpen) return;
 
         if (currentItem is LoreSetDisplayInfo loreSet)
         {

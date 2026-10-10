@@ -17,6 +17,7 @@ public struct AttackContext
     public float DotDamagePercent;
     public float DotTickInterval;
     public float DotDuration;
+    public int DotMaxStacks;
 
     public bool ChargesSkillMeter;
     public float ChargeAmount;

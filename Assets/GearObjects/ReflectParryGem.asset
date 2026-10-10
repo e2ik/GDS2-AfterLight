@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ReflectParryGem
   m_EditorClassIdentifier: Assembly-CSharp::BlueModifierGemTemplate
   ItemID: ReflectParryGem
-  UIName: Reflect On Parry
+  UIName: Recoil
   UISprite: {fileID: 21300000, guid: 33d4ba2313c6c401e8fa9b32598a2c59, type: 3}
   Deletable: 1
   SortOrder: 0
@@ -30,7 +30,6 @@ MonoBehaviour:
       Data3: 893189544
       Data4: -714071588
     Path: event:/WorldSFX Events/SecondaryGemPickupEvent
-  chargeAmountRange: {x: 0.01, y: 0.1}
   DamageByRarity:
     Common: {x: 0, y: 0}
     Rare: {x: 0, y: 0}

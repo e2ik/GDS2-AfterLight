@@ -375,7 +375,7 @@ MonoBehaviour:
   acceleration: 9
   deceleration: 8
   velocityPower: 1.2
-  airAccelerationMultiplier: 1.3
+  airAccelerationMultiplier: 1.2
   airSpeedMultiplier: 1.2
   friction: 0.2
   passThroughPlatformDuration: 0.25
@@ -494,11 +494,21 @@ MonoBehaviour:
   chargingSkillMaxDur: 1.5
   heldSkillFastestTickMultiplier: 0.7
   heldSkillRampDuration: 0.6
-  fullChargeDamageMultiplier: 2.5
+  fullChargeDamageMultiplier: 2
   skillHoldThreshold: 0.12
   skillReleaseBufferTime: 0.08
   chargeSkillAmount: 0.2
-  skillGemModifierBonus: 0.75
+  skillGemModifierBonus: 0.15
+  attackGemModifierBonus: 0.15
+  attackGemHyperArmor: 1
+  attackGemCooldownReduction: 0.5
+  attackGemRangeBonus: 1
+  attackGemAttackSpeedBonus: 0.15
+  attackGemDashMultiplierBonus: 0.25
+  attackGemPlungeMultiplierBonus: 0.25
+  reflectBonusPerDefense: 0.035
+  maxDefenseReflectMultiplier: 3
+  reflectGemParriesHeavy: 1
   parryEvent:
     Guid:
       Data1: 1039513163
@@ -676,6 +686,7 @@ MonoBehaviour:
     InstRolledRange: 0
     InstRolledCrit: 0
     InstRolledAttack: 0
+    InstRolledDefense: 0
     LineRarities: 
     PickupOrder: 0
     IsNew: 1
@@ -839,8 +850,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.05343598, y: -0.15353727}
-  m_Size: {x: 0.8069464, y: 2.7770748}
+  m_Offset: {x: -0.05343598, y: -0.29136273}
+  m_Size: {x: 0.8069464, y: 2.5014238}
   m_Direction: 0
 --- !u!61 &7665356309269939156
 BoxCollider2D:
@@ -1096,8 +1107,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.082692385, y: 0.0031090975}
-  m_Size: {x: 0.8068929, y: 2.7321951}
+  m_Offset: {x: 0.082692385, y: -0.18186712}
+  m_Size: {x: 0.8068929, y: 2.3622427}
   m_Direction: 0
 --- !u!114 &2800973266562923561
 MonoBehaviour:

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Spin Attack Gem
   m_EditorClassIdentifier: Assembly-CSharp::SwordAOEGem
   ItemID: spingem
-  UIName: Spin Attack
+  UIName: Whirlwind
   UISprite: {fileID: 21300000, guid: 37f596aad98565f4fb46855c66225589, type: 3}
   Deletable: 0
   SortOrder: 20
@@ -26,7 +26,7 @@ MonoBehaviour:
   SkillType: 1
   SkillExecutionType: 1
   SkillRange: 2.5
-  SkillDamageModifier: 1.5
+  SkillDamageModifier: 1.1
   SkillCost: 0.1
   skillEvent:
     Guid:
@@ -37,3 +37,5 @@ MonoBehaviour:
     Path: event:/CombatSFXEvents/SpinSkillEvent
   MinimumHeldDuration: 0.32
   EnergyDrainTick: 0.2
+  energyGainMultiplier: 0.5
+  minEnergyGain: 0.01

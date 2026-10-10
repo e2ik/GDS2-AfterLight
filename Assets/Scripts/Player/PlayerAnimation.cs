@@ -278,12 +278,19 @@ public class PlayerAnimation : MonoBehaviour
     {
         PlayerCombatController combat = player.CombatController;
         bool held = combat != null && combat.IsHeldSkillActive;
+        bool fastAttack = combat != null && !held && combat.IsAttacking && !combat.IsPlunging && !combat.IsSkilling
+            && !Mathf.Approximately(combat.AttackSpeedMultiplier, 1f);
 
         if (held)
         {
             animator.speed = syncHeldAnimToTicks
                 ? 1f / Mathf.Max(0.01f, combat.HeldSkillTickMultiplier)
                 : Mathf.Lerp(1f, heldSkillMaxAnimSpeed, combat.HeldSkillRamp);
+            heldSkillSpeedApplied = true;
+        }
+        else if (fastAttack)
+        {
+            animator.speed = combat.AttackSpeedMultiplier;
             heldSkillSpeedApplied = true;
         }
         else if (heldSkillSpeedApplied)

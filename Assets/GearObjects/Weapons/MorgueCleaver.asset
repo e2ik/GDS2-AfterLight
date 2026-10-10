@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bdcea4db7b01d13b7b2110c48f8b5a21, type: 3}
-  m_Name: RoughSword
+  m_Name: MorgueCleaver
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinition
-  ItemID: RoughSword
-  UIName: Rough Sword
+  ItemID: morguecleaver
+  UIName: Morgue Cleaver
   UISprite: {fileID: 21300000, guid: 292a8bd340ad3e74e91aafbb62d34a62, type: 3}
   Deletable: 1
   SortOrder: 0
@@ -42,3 +42,9 @@ MonoBehaviour:
     Rare: {x: 5, y: 8}
     Epic: {x: 8, y: 10}
     Legendary: {x: 10, y: 15}
+  CanRollDefense: 0
+  DefenseByRarity:
+    Common: {x: 0, y: 1}
+    Rare: {x: 1, y: 3}
+    Epic: {x: 3, y: 5}
+    Legendary: {x: 5, y: 8}

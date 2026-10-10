@@ -10,38 +10,38 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bdcea4db7b01d13b7b2110c48f8b5a21, type: 3}
-  m_Name: BrokenPipe
+  m_Name: BoneSaw
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinition
-  ItemID: brokenpipe
-  UIName: Broken Pipe
+  ItemID: bonesaw
+  UIName: Bone Saw
   UISprite: {fileID: 21300000, guid: 292a8bd340ad3e74e91aafbb62d34a62, type: 3}
   Deletable: 1
-  SortOrder: 5
+  SortOrder: 0
   maxCommonValue: 0
   maxRareValue: 0
   maxEpicValue: 0
   maxLegendaryValue: 0
-  BaseWeaponDamage: 1
+  BaseWeaponDamage: 1.5
   RangeByRarity:
-    Common: {x: 2, y: 2}
-    Rare: {x: 2, y: 2}
-    Epic: {x: 2, y: 2}
-    Legendary: {x: 2, y: 2}
+    Common: {x: 3, y: 3}
+    Rare: {x: 3, y: 3}
+    Epic: {x: 3, y: 3}
+    Legendary: {x: 3, y: 3}
   CritByRarity:
     Common: {x: 0, y: 0}
     Rare: {x: 0, y: 0}
     Epic: {x: 0, y: 0}
     Legendary: {x: 0, y: 0}
   DamageByRarity:
-    Common: {x: 1, y: 1}
-    Rare: {x: 1, y: 1}
-    Epic: {x: 1, y: 1}
-    Legendary: {x: 1, y: 1}
+    Common: {x: 3, y: 3}
+    Rare: {x: 3, y: 5}
+    Epic: {x: 5, y: 6}
+    Legendary: {x: 7, y: 10}
   AttackByRarity:
-    Common: {x: 0, y: 0}
-    Rare: {x: 0, y: 0}
-    Epic: {x: 0, y: 0}
-    Legendary: {x: 0, y: 0}
+    Common: {x: 1, y: 2}
+    Rare: {x: 2, y: 4}
+    Epic: {x: 4, y: 6}
+    Legendary: {x: 8, y: 10}
   CanRollDefense: 0
   DefenseByRarity:
     Common: {x: 0, y: 1}

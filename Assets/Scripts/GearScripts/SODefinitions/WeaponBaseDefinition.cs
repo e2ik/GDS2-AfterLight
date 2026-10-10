@@ -41,6 +41,16 @@ public class WeaponDefinition : InventoryItemBase
         Legendary = new Vector2(10f, 15f)
     };
 
+    [Header("Defense by Rarity")]
+    public bool CanRollDefense = true;
+    public RarityRange DefenseByRarity = new RarityRange
+    {
+        Common = new Vector2(0f, 1f),
+        Rare = new Vector2(1f, 3f),
+        Epic = new Vector2(3f, 5f),
+        Legendary = new Vector2(5f, 8f)
+    };
+
     public WeaponInstance CreateInstance(ERarity rarity) => Roll(RarityLineRoller.Fixed(rarity));
 
     public WeaponInstance Roll(RarityLineRoller roller)
@@ -52,7 +62,8 @@ public class WeaponDefinition : InventoryItemBase
             InstRolledDamage = BaseWeaponDamage + roller.RollValue(DamageByRarity),
             InstRolledRange = roller.RollValue(RangeByRarity),
             InstRolledCrit = roller.RollValue(CritByRarity),
-            InstRolledAttack = Mathf.Round(roller.RollValue(AttackByRarity))
+            InstRolledAttack = Mathf.Round(roller.RollValue(AttackByRarity)),
+            InstRolledDefense = CanRollDefense ? Mathf.Round(roller.RollValue(DefenseByRarity)) : 0f
         };
 
         newInstance.Rarity = roller.Final;

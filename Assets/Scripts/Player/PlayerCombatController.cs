@@ -99,6 +99,18 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float skillReleaseBufferTime = 0.08f;
     [SerializeField] private float chargeSkillAmount = 0.2f;
     [SerializeField] private float skillGemModifierBonus = 1f;
+    [SerializeField] private float attackGemModifierBonus = 0.25f;
+    [SerializeField] private bool attackGemHyperArmor = true;
+    [SerializeField, Range(0f, 1f)] private float attackGemCooldownReduction = 0.3f;
+    [SerializeField] private float attackGemRangeBonus = 1f;
+    [SerializeField, Range(0f, 1f)] private float attackGemAttackSpeedBonus = 0.15f;
+    [SerializeField, Min(0f)] private float attackGemDashMultiplierBonus = 0.25f;
+    [SerializeField, Min(0f)] private float attackGemPlungeMultiplierBonus = 0.25f;
+
+    [Header("Reflect")]
+    [SerializeField, Min(0f)] private float reflectBonusPerDefense = 0.02f;
+    [SerializeField, Min(1f)] private float maxDefenseReflectMultiplier = 3f;
+    [SerializeField] private bool reflectGemParriesHeavy = true;
 
     [Header("FMOD Events")]
     [SerializeField] private EventReference parryEvent;
@@ -299,7 +311,7 @@ public class PlayerCombatController : MonoBehaviour
         passiveEnergyRecoveryTimer = Tick(passiveEnergyRecoveryTimer, Time.deltaTime);
         parryWindowExtensionTimer = Tick(parryWindowExtensionTimer, Time.deltaTime);
 
-        attackTimer = HoldOrTick(isAttacking, attackCoolDown, attackTimer, Time.deltaTime);
+        attackTimer = HoldOrTick(isAttacking, EffectiveAttackCooldown, attackTimer, Time.deltaTime);
         skillTimer = HoldOrTick(isSkilling, skillCoolDown, skillTimer, Time.deltaTime);
 
         if (isAttacking)
@@ -522,7 +534,7 @@ public class PlayerCombatController : MonoBehaviour
             isAttacking = true;
             attackStartedGrounded = movement.IsGrounded;
             isDashAttack = movement.IsDashing;
-            attackDurationTimer = attackDuration;
+            attackDurationTimer = attackDuration / AttackSpeedMultiplier;
 
             enemiesHitThisAttack.Clear();
             passiveTriggeredThisAttack = false;
@@ -546,7 +558,7 @@ public class PlayerCombatController : MonoBehaviour
             _ => Vector2.right
         };
 
-        float weaponRange = player.Equipment.EquippedWeapon.InstRolledRange;
+        float weaponRange = player.Equipment.EquippedWeapon.InstRolledRange + (HasAttackGem() ? attackGemRangeBonus : 0f);
 
         if (attackDir != Vector2.down)
         {
@@ -686,12 +698,12 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
     {
-        float attackDamage = context.BaseAttackDamage * GetComboMultiplier();
+        float attackDamage = context.BaseAttackDamage * GetComboMultiplier() * (1f + GetAttackModifierBonus());
         context.IsComboFinisher = plungeDmgMult <= 0f && currentComboIndex >= maxComboCount;
 
         if (plungeDmgMult <= 0f)
         {
-            if (isDashAttack) attackDamage *= dashAttackMultiplier;
+            if (isDashAttack) attackDamage *= dashAttackMultiplier + (HasAttackGem() ? attackGemDashMultiplierBonus : 0f);
             if (!attackStartedGrounded) attackDamage *= airAttackMultiplier;
         }
 
@@ -704,7 +716,7 @@ public class PlayerCombatController : MonoBehaviour
                     enemiesHitThisAttack.Add(enemyHealth);
 
                     float dmg = plungeDmgMult > 0f
-                        ? attackDamage * (1 + plungeDmgMult)
+                        ? attackDamage * (1 + plungeDmgMult + (HasAttackGem() ? attackGemPlungeMultiplierBonus : 0f))
                         : attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
 
                     float roll = UnityEngine.Random.value;
@@ -940,6 +952,27 @@ public class PlayerCombatController : MonoBehaviour
 
     #region SecondaryGem Logic
 
+    public bool HasAttackHyperArmor => attackGemHyperArmor && (isAttacking || isSkilling || isChargingSkill) && HasAttackGem();
+
+    private bool HasAttackGem() => HasGemOfType(SGemType.Attack);
+
+    public float AttackSpeedMultiplier => HasAttackGem() ? 1f + attackGemAttackSpeedBonus : 1f;
+
+    private float EffectiveAttackCooldown => HasAttackGem() ? attackCoolDown * (1f - attackGemCooldownReduction) : attackCoolDown;
+
+    private bool HasGemOfType(SGemType type)
+    {
+        SecondaryGemInstance gem = player != null && player.Equipment != null ? player.Equipment.SecondaryGem : null;
+        return gem != null && !string.IsNullOrEmpty(gem.InstTemplateID) && gem.Type == type;
+    }
+
+    private float GetAttackModifierBonus()
+    {
+        SecondaryGemInstance gem = player.Equipment.SecondaryGem;
+        bool hasAttackGem = gem != null && !string.IsNullOrEmpty(gem.InstTemplateID) && gem.Type == SGemType.Attack;
+        return hasAttackGem ? attackGemModifierBonus : 0f;
+    }
+
     private float GetSkillModifierBonus()
     {
         SecondaryGemInstance gem = player.Equipment.SecondaryGem;
@@ -963,6 +996,21 @@ public class PlayerCombatController : MonoBehaviour
         ChargeSkillMeter(amount);
         OnGemEnergyGained?.Invoke(amount);
         AnyGemEnergyGained?.Invoke(this, amount);
+    }
+
+    public bool CanParryHeavy
+    {
+        get
+        {
+            if (!reflectGemParriesHeavy || player == null || player.Equipment == null) return false;
+
+            var secondaryGem = player.Equipment.SecondaryGem;
+            if (secondaryGem == null || string.IsNullOrEmpty(secondaryGem.InstTemplateID) || secondaryGem.Type != SGemType.Parry)
+                return false;
+
+            var secondaryDef = GameDatabase.GetSecondaryTemplateFromID(secondaryGem.InstTemplateID);
+            return secondaryDef != null && secondaryDef.GetPassiveType(secondaryGem) == PassiveType.Reflect;
+        }
     }
 
     public void TryModifyParry(float incomingDamage, Collider2D col)
@@ -992,6 +1040,12 @@ public class PlayerCombatController : MonoBehaviour
         }
     }
 
+    private float GetDefenseReflectMultiplier()
+    {
+        float defense = player != null && player.Stats != null ? player.Stats.TotalDefense : 0f;
+        return Mathf.Min(1f + Mathf.Max(0f, defense) * reflectBonusPerDefense, maxDefenseReflectMultiplier);
+    }
+
     private void TryReflectDmg(SecondaryGemBehaviourDefinition behaviourDefinition, Collider2D col, float incomingDamage)
     {
         if (col == null)
@@ -1008,6 +1062,7 @@ public class PlayerCombatController : MonoBehaviour
             };
 
             behaviourDefinition.Modify(ref context, player.Equipment.SecondaryGem);
+            context.BaseAttackDamage *= GetDefenseReflectMultiplier();
             int reflectDmg = Mathf.Max(1, Mathf.RoundToInt(context.BaseAttackDamage));
             enemyHealth.ApplyHit(reflectDmg, context);
         }

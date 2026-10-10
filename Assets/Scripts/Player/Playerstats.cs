@@ -119,6 +119,7 @@ public class PlayerStats : MonoBehaviour
             if (weapon != null && !string.IsNullOrEmpty(weapon.InstTemplateID))
             {
                 weaponAttackBonus = weapon.InstRolledAttack;
+                gearDefenseBonus += weapon.InstRolledDefense;
             }
 
             var gem = player.Equipment.SecondaryGem;
