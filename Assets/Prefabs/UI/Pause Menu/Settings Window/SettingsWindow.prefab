@@ -766,8 +766,6 @@ MonoBehaviour:
     keyboardOnly: 0
     allowSharedBinding: 1
   startInGamepadMode: 0
-  resetButton: {fileID: 3066163007772877224}
-  confirmWindow: {fileID: 0}
 --- !u!1 &5044226527872295872
 GameObject:
   m_ObjectHideFlags: 0
@@ -860,7 +858,6 @@ GameObject:
   - component: {fileID: 3301598763962935683}
   - component: {fileID: 8946800763843024408}
   - component: {fileID: 6767597586665947433}
-  - component: {fileID: 8264342342118271091}
   - component: {fileID: 4537022049503341086}
   m_Layer: 5
   m_Name: RebindScrollView
@@ -978,18 +975,6 @@ MonoBehaviour:
   m_FlexibleWidth: 0
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!114 &8264342342118271091
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5102102051359560152}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a61bcac7a40441469d25c24ca088f2d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameUI.ScrollRectSelectionFollow
 --- !u!114 &4537022049503341086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1016,7 +1001,6 @@ GameObject:
   - component: {fileID: 4165013952887279182}
   - component: {fileID: 1917080097989844418}
   - component: {fileID: 9156652194949342692}
-  - component: {fileID: 75112264621710420}
   m_Layer: 5
   m_Name: RebindScrollView
   m_TagString: Untagged
@@ -1134,18 +1118,6 @@ MonoBehaviour:
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
 --- !u!114 &9156652194949342692
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5363252768514771816}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a61bcac7a40441469d25c24ca088f2d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameUI.ScrollRectSelectionFollow
---- !u!114 &75112264621710420
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1698,8 +1670,6 @@ MonoBehaviour:
     keyboardOnly: 0
     allowSharedBinding: 1
   startInGamepadMode: 1
-  resetButton: {fileID: 5348105418713562098}
-  confirmWindow: {fileID: 0}
 --- !u!1 &8453096425875334795
 GameObject:
   m_ObjectHideFlags: 0
@@ -2504,17 +2474,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1988254532824687443, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
   m_PrefabInstance: {fileID: 2119526890375249687}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5348105418713562098 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6292192719355184357, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
-  m_PrefabInstance: {fileID: 2119526890375249687}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1001 &2688357217666024510
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4156,17 +4115,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
---- !u!114 &3066163007772877224 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6292192719355184357, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}
-  m_PrefabInstance: {fileID: 9070083565064676685}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!224 &7370380504444077598 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1988254532824687443, guid: c2e0b133b6aa88f4080611d5b285fc5e, type: 3}

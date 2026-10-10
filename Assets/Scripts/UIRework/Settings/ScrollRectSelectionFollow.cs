@@ -7,6 +7,8 @@ namespace GameUI
     [RequireComponent(typeof(ScrollRect))]
     public class ScrollRectSelectionFollow : MonoBehaviour
     {
+        [SerializeField, Min(0f)] private float edgePadding = 16f;
+
         private ScrollRect scrollRect;
         private GameObject lastSelected;
 
@@ -49,12 +51,15 @@ namespace GameUI
             float targetTop = content.rect.height * (1f - content.pivot.y) - (targetLocalPos.y + target.rect.height * (1f - target.pivot.y));
             float targetBottom = targetTop + target.rect.height;
 
+            float paddedTop = targetTop - edgePadding;
+            float paddedBottom = targetBottom + edgePadding;
+
             float currentTop = (1f - scrollRect.verticalNormalizedPosition) * (contentHeight - viewportHeight);
             float currentBottom = currentTop + viewportHeight;
 
             float newTop = currentTop;
-            if (targetTop < currentTop) newTop = targetTop;
-            else if (targetBottom > currentBottom) newTop = targetBottom - viewportHeight;
+            if (paddedTop < currentTop) newTop = paddedTop;
+            else if (paddedBottom > currentBottom) newTop = paddedBottom - viewportHeight;
 
             scrollRect.verticalNormalizedPosition = 1f - Mathf.Clamp01(newTop / (contentHeight - viewportHeight));
         }
