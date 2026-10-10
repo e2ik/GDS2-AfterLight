@@ -46,6 +46,10 @@ namespace GameUI
         [SerializeField] private Color lowHealthPulseColor = new Color(1f, 0.2f, 0.2f);
         [SerializeField] private float lowHealthPulseSpeed = 4f;
 
+        [Header("HP Indicator")]
+        [SerializeField] private Image hpIndicatorImage;
+        [SerializeField, Range(0f, 1f)] private float hpIndicatorAlpha = 0.75f;
+
         [Header("Energy")]
         [SerializeField] private Image energyFillImage;
         [SerializeField] private float energyTweenDuration = 0.25f;
@@ -69,7 +73,27 @@ namespace GameUI
 
         [Header("Heals")]
         [SerializeField] private Image healImage;
-        [SerializeField] private Sprite[] healSprites;
+        [SerializeField] private Color healIconEmptyColor = new Color(0.4f, 0.4f, 0.4f, 1f);
+
+        [Header("Heal Indicator")]
+        [SerializeField] private Image healIndicatorImage;
+        [SerializeField] private Color[] healIndicatorColors =
+        {
+            new Color(1f, 0.25f, 0.25f),
+            new Color(1f, 0.6f, 0.2f),
+            new Color(1f, 0.9f, 0.3f),
+            new Color(0.4f, 1f, 0.4f)
+        };
+
+        [Header("Heal Stacks")]
+        [SerializeField] private Image healStacksImage;
+        [SerializeField] private Sprite[] healStackSprites;
+        [SerializeField] private Color[] healStackColors =
+        {
+            new Color(1f, 0.6f, 0.2f),
+            new Color(1f, 0.9f, 0.3f),
+            new Color(0.4f, 1f, 0.4f)
+        };
 
         [Header("Heal Icon Feedback")]
         [SerializeField] private Color healDeniedColor = new Color(1f, 0.25f, 0.25f);
@@ -83,8 +107,8 @@ namespace GameUI
 
         [Header("Skill Icon")]
         [SerializeField] private Image skillIconImage;
-        [SerializeField] private Image meterOverlayImage;
         [SerializeField] private Image readyGlowImage;
+        [SerializeField] private Image skillReadyTwoImage;
         [SerializeField] private Sprite emptySlotSprite;
 
         [Header("Skill Icon Blink Settings")]
@@ -92,9 +116,26 @@ namespace GameUI
         [SerializeField] private float minAlpha = 0.15f;
         [SerializeField] private float maxAlpha = 1f;
 
+        [Header("Skill Ready Glow Colors")]
+        [SerializeField] private Color readyGlowColor = Color.white;
+        [SerializeField] private Color notReadyGlowColor = new Color(1f, 1f, 1f, 0.25f);
+        [SerializeField] private bool blinkWhenReady = true;
+        [SerializeField] private Color chargingGlowColor = new Color(1f, 0.8f, 0.3f);
+        [SerializeField] private Color chargingFullGlowColor = new Color(1f, 0.4f, 0.1f);
+        [SerializeField] private bool showChargingOnHeldSkill = true;
+
+        [Header("Skill Icon Usable Tint")]
+        [SerializeField] private Color skillIconUsableColor = Color.white;
+        [SerializeField] private Color skillIconUnusableColor = new Color(1f, 0.6f, 0.6f, 0.8f);
+        [SerializeField, Min(0f)] private float skillIconTintSpeed = 12f;
+
         [Header("Skill Icon Ready Punch")]
         [SerializeField] private float readyPunchScale = 1.2f;
         [SerializeField] private float readyPunchDuration = 0.25f;
+        [SerializeField, Min(0)] private int readyPunchCount = 3;
+        [SerializeField, Min(0f)] private float readyPunchRepeatDelay = 0.75f;
+        [SerializeField] private Color readyTwoIdleColor = new Color(1f, 1f, 1f, 0f);
+        [SerializeField] private Color readyTwoPulseColor = Color.white;
 
         private class BarState
         {
@@ -133,11 +174,15 @@ namespace GameUI
         private Coroutine readyPunchRoutine;
         private Coroutine healIconRoutine;
         private Color healIconBaseColor = Color.white;
+        private int currentHealCount = -1;
         private Vector3 healIconBasePosition;
         private Vector3 healIconBaseScale = Vector3.one;
         private Color healthBaseColor;
         private Color energyBaseColor;
         private Vector3 skillIconBaseScale = Vector3.one;
+        private bool skillIconTintInitialized;
+        private float readyPunchRepeatTimer;
+        private int readyPunchesRemaining;
 
         public void Bind(PlayerStats playerStats, PlayerCombatController playerCombat, PlayerEquipmentManager playerEquipment, PlayerHeals playerHeals)
         {
@@ -166,7 +211,6 @@ namespace GameUI
             {
                 combat.OnEnergyChanged += HandleEnergyChanged;
                 SnapBar(energyBar, combat.SkillMeter);
-                ApplyEnergyOverlay(combat.SkillMeter);
             }
 
             if (equipment != null)
@@ -234,26 +278,36 @@ namespace GameUI
                 if (ready != isReadyToUse)
                 {
                     isReadyToUse = ready;
-                    if (readyGlowImage != null) readyGlowImage.enabled = ready;
                     if (!ready) ResetGlowState();
-                    else TriggerReadyPunch();
+                    else
+                    {
+                        readyPunchesRemaining = readyPunchCount;
+                        readyPunchRepeatTimer = 0f;
+                    }
                 }
             }
 
-            if (isReadyToUse && readyGlowImage != null && readyGlowImage.enabled)
+            if (isReadyToUse && readyPunchRoutine == null && (readyPunchCount == 0 || readyPunchesRemaining > 0))
             {
-                Color c = readyGlowImage.color;
-                c.a = Mathf.Lerp(minAlpha, maxAlpha, (Mathf.Sin(Time.time * blinkSpeed) + 1f) * 0.5f);
-                readyGlowImage.color = c;
+                readyPunchRepeatTimer -= Time.unscaledDeltaTime;
+                if (readyPunchRepeatTimer <= 0f)
+                {
+                    TriggerReadyPunch();
+                    if (readyPunchesRemaining > 0) readyPunchesRemaining--;
+                    readyPunchRepeatTimer = readyPunchRepeatDelay;
+                }
             }
+
+            UpdateReadyGlowColor();
+            UpdateSkillIconTint();
 
             float dt = Time.unscaledDeltaTime;
 
             UpdateBar(healthBar, dt, chipDelay, chipTweenDuration);
             UpdateBar(energyBar, dt, energyChipDelay, energyChipTweenDuration);
-            if (energyBar.fill != null) ApplyEnergyOverlay(energyBar.fill.fillAmount);
 
             UpdateHealthColor();
+            UpdateHPIndicator();
             UpdateEnergyColor();
         }
 
@@ -434,6 +488,14 @@ namespace GameUI
             SetIntensity(healthBar.chipMaterial, healthGlowIntensity);
         }
 
+        private void UpdateHPIndicator()
+        {
+            if (hpIndicatorImage == null || healthBar.fill == null) return;
+            Color c = healthBar.fill.color;
+            c.a *= hpIndicatorAlpha;
+            hpIndicatorImage.color = c;
+        }
+
         #endregion
 
         #region Energy
@@ -470,18 +532,13 @@ namespace GameUI
             SetIntensity(energyBar.chipMaterial, energyGlowIntensity);
         }
 
-        private void ApplyEnergyOverlay(float normalized)
-        {
-            if (meterOverlayImage != null) meterOverlayImage.fillAmount = 1f - normalized;
-        }
-
         #endregion
 
         #region Skill Icon
 
         private void TriggerReadyPunch()
         {
-            if (skillIconImage == null) return;
+            if (skillIconImage == null && skillReadyTwoImage == null) return;
 
             if (readyPunchRoutine != null) StopCoroutine(readyPunchRoutine);
             readyPunchRoutine = StartCoroutine(PunchSkillIcon());
@@ -489,7 +546,7 @@ namespace GameUI
 
         private IEnumerator PunchSkillIcon()
         {
-            Transform t = skillIconImage.transform;
+            Transform t = skillIconImage != null ? skillIconImage.transform : null;
             float riseDuration = readyPunchDuration * 0.35f;
             float fallDuration = readyPunchDuration - riseDuration;
 
@@ -498,7 +555,8 @@ namespace GameUI
             {
                 elapsed += Time.unscaledDeltaTime;
                 float p = Mathf.Clamp01(elapsed / riseDuration);
-                t.localScale = Vector3.Lerp(skillIconBaseScale, skillIconBaseScale * readyPunchScale, p);
+                if (t != null) t.localScale = Vector3.Lerp(skillIconBaseScale, skillIconBaseScale * readyPunchScale, p);
+                if (skillReadyTwoImage != null) skillReadyTwoImage.color = Color.Lerp(readyTwoIdleColor, readyTwoPulseColor, p);
                 yield return null;
             }
 
@@ -507,11 +565,13 @@ namespace GameUI
             {
                 elapsed += Time.unscaledDeltaTime;
                 float p = Mathf.Clamp01(elapsed / fallDuration);
-                t.localScale = Vector3.Lerp(skillIconBaseScale * readyPunchScale, skillIconBaseScale, p);
+                if (t != null) t.localScale = Vector3.Lerp(skillIconBaseScale * readyPunchScale, skillIconBaseScale, p);
+                if (skillReadyTwoImage != null) skillReadyTwoImage.color = Color.Lerp(readyTwoPulseColor, readyTwoIdleColor, p);
                 yield return null;
             }
 
-            t.localScale = skillIconBaseScale;
+            if (t != null) t.localScale = skillIconBaseScale;
+            if (skillReadyTwoImage != null) skillReadyTwoImage.color = readyTwoIdleColor;
             readyPunchRoutine = null;
         }
 
@@ -523,15 +583,57 @@ namespace GameUI
             skillIconImage.sprite = specialDef != null ? specialDef.UISprite : emptySlotSprite;
         }
 
+        private void UpdateSkillIconTint()
+        {
+            if (skillIconImage == null) return;
+
+            bool usable = isReadyToUse || (combat != null && (combat.IsChargeInputHeld || combat.IsHeldSkillActive));
+            Color target = usable ? skillIconUsableColor : skillIconUnusableColor;
+
+            if (!skillIconTintInitialized || skillIconTintSpeed <= 0f)
+            {
+                skillIconImage.color = target;
+                skillIconTintInitialized = true;
+                return;
+            }
+
+            skillIconImage.color = Color.Lerp(skillIconImage.color, target, 1f - Mathf.Exp(-skillIconTintSpeed * Time.unscaledDeltaTime));
+        }
+
+        private void UpdateReadyGlowColor()
+        {
+            if (readyGlowImage == null) return;
+
+            if (!readyGlowImage.enabled) readyGlowImage.enabled = true;
+
+            if (combat != null && combat.IsChargeInputHeld)
+            {
+                float progress = combat.ChargingSkillMaxDur > 0f ? Mathf.Clamp01(combat.ChargingSkillTimer / combat.ChargingSkillMaxDur) : 1f;
+                readyGlowImage.color = Color.Lerp(chargingGlowColor, chargingFullGlowColor, progress);
+                return;
+            }
+
+            if (combat != null && showChargingOnHeldSkill && combat.IsHeldSkillActive)
+            {
+                readyGlowImage.color = Color.Lerp(chargingGlowColor, chargingFullGlowColor, combat.HeldSkillRamp);
+                return;
+            }
+
+            Color c = isReadyToUse ? readyGlowColor : notReadyGlowColor;
+            if (isReadyToUse && blinkWhenReady)
+                c.a *= Mathf.Lerp(minAlpha, maxAlpha, (Mathf.Sin(Time.time * blinkSpeed) + 1f) * 0.5f);
+
+            readyGlowImage.color = c;
+        }
+
         private void ResetGlowState()
         {
             isReadyToUse = false;
+            readyPunchesRemaining = 0;
             if (readyGlowImage != null)
             {
-                Color c = readyGlowImage.color;
-                c.a = 0f;
-                readyGlowImage.color = c;
-                readyGlowImage.enabled = false;
+                readyGlowImage.color = notReadyGlowColor;
+                readyGlowImage.enabled = true;
             }
 
             if (readyPunchRoutine != null)
@@ -541,6 +643,7 @@ namespace GameUI
             }
 
             if (skillIconImage != null) skillIconImage.transform.localScale = skillIconBaseScale;
+            if (skillReadyTwoImage != null) skillReadyTwoImage.color = readyTwoIdleColor;
         }
 
         #endregion
@@ -575,7 +678,7 @@ namespace GameUI
                 rect.anchoredPosition3D = healIconBasePosition + new Vector3(shake, 0f, 0f);
 
                 float pulse = Mathf.Abs(Mathf.Sin(p * Mathf.PI * Mathf.Max(1, healDeniedPulses)));
-                healImage.color = Color.Lerp(healIconBaseColor, healDeniedColor, pulse);
+                healImage.color = Color.Lerp(HealIconIdleColor, healDeniedColor, pulse);
 
                 yield return null;
             }
@@ -597,7 +700,7 @@ namespace GameUI
                 float bump = Mathf.Sin(p * Mathf.PI);
 
                 rect.localScale = healIconBaseScale * Mathf.Lerp(1f, healActivatedScale, bump);
-                healImage.color = Color.Lerp(healIconBaseColor, healActivatedColor, bump);
+                healImage.color = Color.Lerp(HealIconIdleColor, healActivatedColor, bump);
 
                 yield return null;
             }
@@ -611,15 +714,33 @@ namespace GameUI
             if (healImage == null) return;
             healImage.rectTransform.anchoredPosition3D = healIconBasePosition;
             healImage.rectTransform.localScale = healIconBaseScale;
-            healImage.color = healIconBaseColor;
+            healImage.color = HealIconIdleColor;
         }
+
+        private Color HealIconIdleColor => currentHealCount == 0 ? healIconEmptyColor : healIconBaseColor;
 
         private void UpdateHealUI(int healCount)
         {
-            if (healImage == null || healSprites == null || healSprites.Length == 0) return;
+            currentHealCount = healCount;
+            if (healImage != null && healIconRoutine == null) healImage.color = HealIconIdleColor;
 
-            int index = Mathf.Clamp(healCount, 0, healSprites.Length - 1);
-            healImage.sprite = healSprites[index];
+            if (healIndicatorImage != null && healIndicatorColors != null && healIndicatorColors.Length > 0)
+            {
+                int index = Mathf.Clamp(healCount, 0, healIndicatorColors.Length - 1);
+                healIndicatorImage.color = healIndicatorColors[index];
+            }
+
+            if (healStacksImage != null)
+            {
+                bool hasStacks = healCount > 0 && healStackSprites != null && healStackSprites.Length > 0;
+                healStacksImage.enabled = hasStacks;
+                if (hasStacks)
+                {
+                    healStacksImage.sprite = healStackSprites[Mathf.Clamp(healCount - 1, 0, healStackSprites.Length - 1)];
+                    if (healStackColors != null && healStackColors.Length > 0)
+                        healStacksImage.color = healStackColors[Mathf.Clamp(healCount - 1, 0, healStackColors.Length - 1)];
+                }
+            }
         }
     }
 }

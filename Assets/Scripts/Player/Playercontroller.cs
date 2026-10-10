@@ -23,6 +23,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float acceleration = 8f;
     [SerializeField] private float deceleration = 8f;
     [SerializeField] private float velocityPower = 1.2f;
+    [SerializeField, Min(0f)] private float airAccelerationMultiplier = 1.3f;
+    [SerializeField, Min(0f)] private float airSpeedMultiplier = 1.2f;
     [SerializeField] private float friction = 0.2f;
     [SerializeField] private float passThroughPlatformDuration = 0.25f;
 
@@ -436,8 +438,11 @@ public class PlayerController : MonoBehaviour
         if (!CanMove() && !duringWallJump) return;
 
         float targetSpeed = horizontalInput * moveSpeed;
+        if (!isGrounded) targetSpeed *= airSpeedMultiplier;
         float speedDif = targetSpeed - rb.linearVelocityX;
-        float accelRate = (Mathf.Abs(horizontalInput) > InputDeadzone) ? acceleration : deceleration;
+        bool accelerating = Mathf.Abs(horizontalInput) > InputDeadzone;
+        float accelRate = accelerating ? acceleration : deceleration;
+        if (accelerating && !isGrounded) accelRate *= airAccelerationMultiplier;
         float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, velocityPower) * Mathf.Sign(speedDif);
 
         if (isWallJumping && horizontalInput != 0f && Mathf.Sign(horizontalInput) != Mathf.Sign(wallJumpDirection))

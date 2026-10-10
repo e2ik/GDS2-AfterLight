@@ -333,7 +333,7 @@ public class PlayerCombatController : MonoBehaviour
             }
         }
 
-        if (isAttacking || isSkilling || player.Controller.IsDashing)
+        if (isAttacking || isSkilling || isChargingSkill || player.Controller.IsDashing)
             ResetPassiveEnergyTimer();
         if (passiveEnergyRecoveryTimer <= 0f && SkillMeter < passiveEnergyCap)
             ChargeSkillMeter(Mathf.Min(Time.deltaTime * passiveEnergyRegenMult, passiveEnergyCap - SkillMeter));

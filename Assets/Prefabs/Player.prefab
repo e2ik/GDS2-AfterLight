@@ -363,7 +363,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 8
-  jumpForce: 20
+  jumpForce: 19.5
   tapJumpMultiplier: 0.2
   jumpBufferTime: 0.1
   jumpEffectHoldTime: 0.05
@@ -371,7 +371,7 @@ MonoBehaviour:
   turnEffectMinSpeed: 3
   turnEffectCooldown: 0.3
   turnEffectMinDistance: 0.5
-  acceleration: 8
+  acceleration: 9
   deceleration: 8
   velocityPower: 1.2
   friction: 0.2

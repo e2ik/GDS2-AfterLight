@@ -17,10 +17,6 @@ public class PrefabSpawner : MonoBehaviour
     [Header("Respawn")]
     [SerializeField] private bool respawnOnlyAfterRest = true;
 
-    [Header("Permanent Defeat")] 
-    [SerializeField] private bool permanentlyDefeatable = false;
-    [SerializeField] private string persistentDefeatID;
-
     private static readonly HashSet<string> defeatedSpawners = new HashSet<string>();
     public static event Action OnDefeatedReset;
 
@@ -31,11 +27,7 @@ public class PrefabSpawner : MonoBehaviour
     private string spawnerKey;
 
     public GameObject SpawnedEnemy => spawnedEnemy;
-
-    public bool IsDefeated => (respawnOnlyAfterRest && defeatedSpawners.Contains(SpawnerKey)) ||
-                              (permanentlyDefeatable && SaveManager.Instance != null &&
-                               SaveManager.Instance.HasStoryFlag(persistentDefeatID));
-    
+    public bool IsDefeated => respawnOnlyAfterRest && defeatedSpawners.Contains(SpawnerKey);
 
     private string SpawnerKey
     {
@@ -54,6 +46,18 @@ public class PrefabSpawner : MonoBehaviour
     {
         defeatedSpawners.Clear();
         OnDefeatedReset?.Invoke();
+    }
+
+    public static void ClearDefeated()
+    {
+        defeatedSpawners.Clear();
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        defeatedSpawners.Clear();
+        OnDefeatedReset = null;
     }
 
     private void Awake()
@@ -106,14 +110,6 @@ public class PrefabSpawner : MonoBehaviour
         enemyAlive = false;
         UnhookHealth();
         if (respawnOnlyAfterRest) defeatedSpawners.Add(SpawnerKey);
-
-        if (permanentlyDefeatable)
-        {
-            if(string.IsNullOrEmpty(persistentDefeatID))
-                Debug.LogWarning($"[PrefabSpawner] {gameObject.name} is permanentlyDefeatable but has no persistentDefeatID assigned");
-            else
-                SaveManager.Instance?.SetStoryFlag(persistentDefeatID);
-        }
     }
 
     private void UnhookHealth()

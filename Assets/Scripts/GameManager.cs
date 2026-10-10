@@ -195,11 +195,13 @@ public class GameManager : MonoBehaviour
 
     public void NewGame()
     {
+        PrefabSpawner.ClearDefeated();
         StartCoroutine(NewGameRoutine());
     }
 
     public void LoadGame()
     {
+        PrefabSpawner.ClearDefeated();
         StartCoroutine(LoadGameRoutine());
     }
 
