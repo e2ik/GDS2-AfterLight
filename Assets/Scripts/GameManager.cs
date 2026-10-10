@@ -66,6 +66,7 @@ public class GameManager : MonoBehaviour
     [Header("Dev Tools")]
     [SerializeField] private InputActionReference unlockAllFastTravelAction;
     [SerializeField] private bool disableTutorials = false;
+    [SerializeField] private bool skipCutscenes = false;
 
     public bool TutorialsDisabled => disableTutorials;
 
@@ -213,6 +214,8 @@ public class GameManager : MonoBehaviour
 
         FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
+        if (WillPlayIntroCutscene()) CutscenePlayer.Instance.SetCutsceneUIHidden(true);
+
         yield return PlayIntroCutscene();
         
         SpawnPlayer();
@@ -253,6 +256,8 @@ public class GameManager : MonoBehaviour
             targetSaveManager.SaveProgressAtLocation(defaultStartSceneName, defaultSpawnAnchorID, defaultStartAreaSide);
 
         SetState(GameState.Game);
+
+        if (CutscenePlayer.Instance != null) CutscenePlayer.Instance.SetCutsceneUIHidden(false);
 
         yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
     }
@@ -357,9 +362,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private bool WillPlayIntroCutscene()
+    {
+        return !skipCutscenes && !string.IsNullOrEmpty(introCutsceneFile) && CutscenePlayer.Instance != null;
+    }
+
     private IEnumerator PlayIntroCutscene()
     {
-        if(string.IsNullOrEmpty(introCutsceneFile) || CutscenePlayer.Instance == null)
+        if (!WillPlayIntroCutscene())
             yield break;
 
         if (MusicManager.Instance != null)

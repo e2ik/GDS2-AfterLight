@@ -437,6 +437,11 @@ public class PlayerAnimation : MonoBehaviour
         PSpawner.Spawn("SwordAOE", transform.position, null, transform);
     }
 
+    public void OnDeathAnimationFinished()
+    {
+        if (player != null && player.Stats != null) player.Stats.ShowDeathScreen();
+    }
+
     public void EndSkillAnimation()
     {
         player.CombatController.EndSkill();

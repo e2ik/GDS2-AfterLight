@@ -34,11 +34,14 @@ public class PlayerStats : MonoBehaviour
 
     [Header("Death")]
     [SerializeField] private float deathLandingTimeout = 2f;
+    [SerializeField, Min(0f)] private float deathScreenDelay = 1.5f;
 
     private Player player;
     private GameUI.DeathWindow deathWindow;
     private Coroutine landingSuspendRoutine;
     private bool isRespawning;
+    private Coroutine deathScreenRoutine;
+    private bool deathScreenShown;
 
     public float MaxHealth => maxHealth;
     public float CurrentHealth => currentHealth;
@@ -217,6 +220,29 @@ public class PlayerStats : MonoBehaviour
         if (player != null)
             landingSuspendRoutine = StartCoroutine(WaitForLandingThenSuspend());
 
+        deathScreenShown = false;
+        if (deathScreenRoutine != null) StopCoroutine(deathScreenRoutine);
+        deathScreenRoutine = StartCoroutine(ShowDeathScreenAfter(deathScreenDelay));
+    }
+
+    private IEnumerator ShowDeathScreenAfter(float delay)
+    {
+        yield return new WaitForSecondsRealtime(delay);
+        deathScreenRoutine = null;
+        ShowDeathScreen();
+    }
+
+    public void ShowDeathScreen()
+    {
+        if (!IsDead || deathScreenShown) return;
+
+        if (deathScreenRoutine != null)
+        {
+            StopCoroutine(deathScreenRoutine);
+            deathScreenRoutine = null;
+        }
+
+        deathScreenShown = true;
         GameUI.DeathWindow window = GetDeathWindow();
         if (window != null) GameUI.UIManager.Instance.Open(window);
     }

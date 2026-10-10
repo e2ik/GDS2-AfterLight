@@ -490,6 +490,7 @@ MonoBehaviour:
   chargingSkillMinDur: 0.4
   chargingSkillMaxDur: 1.5
   heldSkillFastestTickMultiplier: 0.7
+  heldSkillRampDuration: 0.6
   fullChargeDamageMultiplier: 2.5
   skillHoldThreshold: 0.12
   skillReleaseBufferTime: 0.08
@@ -593,6 +594,7 @@ MonoBehaviour:
   chargeGlowRamps: 1
   chargeGlowFullIntensity: 4
   heldSkillUsesChargeColor: 1
+  syncHeldAnimToTicks: 1
   heldSkillMaxAnimSpeed: 1.75
   hitFlashColor: {r: 1.6055586, g: 0.2408338, b: 0.2408338, a: 1}
   parryFlashColor: {r: 1.6055586, g: 1.097204, b: 0, a: 1}
@@ -632,6 +634,7 @@ MonoBehaviour:
   crushPenetrationThreshold: 0.15
   descendingCrushThreshold: 0.02
   deathLandingTimeout: 2
+  deathScreenDelay: 1
 --- !u!114 &7383012226346758473
 MonoBehaviour:
   m_ObjectHideFlags: 0
