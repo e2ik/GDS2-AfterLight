@@ -7,10 +7,19 @@ public class PlayerHurtBox : MonoBehaviour
 {
     [SerializeField] private PlayerStats stats;
     [SerializeField] private PlayerCombatController combatController;
+
+    [Header("Late Parry")]
+    [SerializeField, Min(0f)] private float lateParryGrace = 0.1f;
+    [SerializeField] private bool lateParryProjectilesOnly = true;
     private PlayerController playerController;
     private PlayerAnimation playerAnimation;
     private Collider2D col;
     private bool manualInvulnerable;
+
+    private HitBox pendingHitbox;
+    private Collider2D pendingCollider;
+    private bool pendingIgnoreDirection;
+    private float pendingTimer;
 
     public static event Action<HitBox, bool> AnyAttackDodged;
     private static HitBox lastDodgedHitbox;
@@ -43,6 +52,47 @@ public class PlayerHurtBox : MonoBehaviour
             col = GetComponent<Collider2D>();
     }
 
+    private void OnDisable()
+    {
+        pendingHitbox = null;
+        pendingCollider = null;
+    }
+
+    private void Update()
+    {
+        if (pendingHitbox == null) return;
+
+        HitBox hitbox = pendingHitbox;
+
+        if (hitbox.HasBeenParried || stats == null || stats.IsDead)
+        {
+            pendingHitbox = null;
+            return;
+        }
+
+        if (Invulnerable)
+        {
+            pendingHitbox = null;
+            if (!manualInvulnerable && playerController != null && playerController.IsInvulnerable)
+                ReportDodge(hitbox, playerController.IsInPerfectDodgeWindow);
+            return;
+        }
+
+        if (combatController != null && combatController.CheckParry(hitbox.ParryDirection, pendingIgnoreDirection))
+        {
+            pendingHitbox = null;
+            hitbox.SetParried();
+            combatController.TryModifyParry(hitbox.Damage, pendingCollider);
+            return;
+        }
+
+        pendingTimer -= Time.deltaTime;
+        if (pendingTimer > 0f) return;
+
+        pendingHitbox = null;
+        ApplyHit(hitbox);
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         var hitbox = other.GetComponent<HitBox>();
@@ -64,8 +114,9 @@ public class PlayerHurtBox : MonoBehaviour
         playerController.CancelHeal();
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
         bool isUnparryable = hitbox.AttackForce == AttackForce.Heavy && (combatController == null || !combatController.CanParryHeavy);
+        bool isProjectile = hitbox.GetComponentInParent<Enemies.ProjectileScripts.Projectile>() != null;
         bool ignoreParryDirection = GameManager.Instance != null && GameManager.Instance.ProjectilesIgnoreParryDirection
-                                    && hitbox.GetComponent<Enemies.ProjectileScripts.Projectile>() != null;
+                                    && isProjectile;
 
         if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection, ignoreParryDirection))
         {
@@ -75,6 +126,23 @@ public class PlayerHurtBox : MonoBehaviour
             return false; // Successfully parried! Did not take damage.
         }
 
+        bool canLateParry = lateParryGrace > 0f && parryWindowOpen && !isUnparryable && combatController != null
+                            && pendingHitbox == null && (isProjectile || !lateParryProjectilesOnly);
+
+        if (canLateParry)
+        {
+            pendingHitbox = hitbox;
+            pendingCollider = col2d;
+            pendingIgnoreDirection = ignoreParryDirection;
+            pendingTimer = lateParryGrace;
+            return false;
+        }
+
+        return ApplyHit(hitbox);
+    }
+
+    private bool ApplyHit(HitBox hitbox)
+    {
         bool isChargedSkillExecuting = combatController != null && combatController.IsSkilling &&
                                     (combatController.GetComponentInParent<Player>()?.Equipment?.SpecialAttackDef?.SkillExecutionType == SkillExecutionType.Charged);
 

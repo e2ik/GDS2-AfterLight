@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 4290251116939388466}
   - component: {fileID: 1079424855414851441}
   - component: {fileID: 3971712004336234337}
+  - component: {fileID: 9146911830956874588}
+  - component: {fileID: 4703903151475819460}
   m_Layer: 0
   m_Name: TrapProjectile
   m_TagString: Untagged
@@ -86,12 +88,12 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: -401912243
-  m_SortingLayer: 1
-  m_SortingOrder: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 20
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.3773585, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: 21300000, guid: eea6d425ba5687044b3914e21b15a5e2, type: 3}
+  m_Color: {r: 1, g: 0.15656643, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -204,7 +206,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ProjectileScripts.TrapProjectile
   lifetime: 3.4028235e+38
-  attackForce: 0
+  attackForce: 1
   gravityScale: 2
   landEvent:
     Guid:
@@ -213,10 +215,42 @@ MonoBehaviour:
       Data3: -257892426
       Data4: 2053622759
     Path: event:/Interface Events/Dialogue Event
+  hoverAmplitude: {x: 0.5, y: 0.5}
+  hoverSpeed: 0.6
+  hoverBlendSpeed: 4
+  hoverDuringWarning: 0
+  hoverWhileFiring: 0
   diagonalChance: 0.5
   beamLength: 6
   beamWidth: 0.5
+  beamHitboxExtraWidth: 2
   fireDuration: 0.5
+  beamGrowDuration: 0.35
+  beamGrowCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  hitboxGrowsWithBeam: 1
   playerMask:
     serializedVersion: 2
     m_Bits: 8
@@ -225,6 +259,9 @@ MonoBehaviour:
   - {fileID: 7457591294180096695}
   - {fileID: 90629895500057088}
   - {fileID: 7583248251523569936}
+  beamAttackForce: 0
+  beamsHitOnce: 1
+  trapSprite: {fileID: 0}
   warningDelay: 0.6
   warningEvent:
     Guid:
@@ -234,6 +271,91 @@ MonoBehaviour:
       Data4: 2098668369
     Path: event:/CombatSFXEvents/Parry Warning Event
   armedLifetime: 8
+  armedGlow: {fileID: 9146911830956874588}
+  colorGlow: {fileID: 0}
+  armedGlowMode: 1
+  edgeGlowInFlight: 1
+  flightGlowColor: {r: 0, g: 0.79657125, b: 1, a: 1}
+  flightGlowIntensity: 2
+  flightPulseSpeed: 10
+  glowTransitionSpeed: 10
+  armedGlowColor: {r: 1, g: 0.035956677, b: 0, a: 1}
+  armedGlowIntensity: 2
+  armedPulseSpeed: 5
+  warningGlowColor: {r: 1, g: 0.3245357, b: 0, a: 1}
+  warningGlowIntensity: 4
+  warningPulseSpeed: 10
+--- !u!114 &9146911830956874588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 953349887385060339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36a3c13139e219041a3ed714c67b80bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HitFlash
+  flashMaterial: {fileID: 2100000, guid: e211826df2aab5e47af454561951383b, type: 2}
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 2
+  duration: 0.15
+  fadeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  checkerLowOpacity: 0.4
+  pixelSize: 3
+  defaultMode: 1
+  edgeWidth: 1
+  useUnscaledTime: 1
+  sortingOrderOffset: 1
+  holdFadeDuration: 0.15
+  holdPulseMinAmount: 0.4
+--- !u!114 &4703903151475819460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 953349887385060339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 552c61b0b3d01574a9c690c9cfa647a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorGlow
+  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  startActive: 1
+  matchColor: {r: 1, g: 1, b: 1, a: 1}
+  matchTolerance: 0.1
+  glowColor: {r: 1, g: 0.48210704, b: 0, a: 1}
+  intensity: 5
+  checkerLow: 0.847
+  checkerSize: 1
+  fadeDuration: 0.08
+  useUnscaledTime: 1
+  sortingOrderOffset: 1
 --- !u!1001 &553052476945293517
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -309,6 +431,18 @@ PrefabInstance:
     - target: {fileID: 2106584063288244280, guid: 11197df7d595f7f40939d7de04da15c9, type: 3}
       propertyPath: InitialModule.startColor.minMaxState
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2640322360441891110, guid: 11197df7d595f7f40939d7de04da15c9, type: 3}
+      propertyPath: pulseMaxAlpha
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2640322360441891110, guid: 11197df7d595f7f40939d7de04da15c9, type: 3}
+      propertyPath: pulseMinAlpha
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2640322360441891110, guid: 11197df7d595f7f40939d7de04da15c9, type: 3}
+      propertyPath: warningColor.a
+      value: 0.7607843
       objectReference: {fileID: 0}
     - target: {fileID: 2854333539358891207, guid: 11197df7d595f7f40939d7de04da15c9, type: 3}
       propertyPath: m_Name

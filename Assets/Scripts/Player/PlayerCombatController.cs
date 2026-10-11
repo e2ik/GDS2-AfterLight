@@ -1046,6 +1046,20 @@ public class PlayerCombatController : MonoBehaviour
         return Mathf.Min(1f + Mathf.Max(0f, defense) * reflectBonusPerDefense, maxDefenseReflectMultiplier);
     }
 
+    private static EnemyHealth ResolveReflectTarget(Collider2D col)
+    {
+        var projectile = col.GetComponentInParent<Enemies.ProjectileScripts.Projectile>();
+        if (projectile != null)
+        {
+            if (projectile.Owner == null) return null;
+            EnemyHealth ownerHealth = projectile.Owner.GetComponentInParent<EnemyHealth>();
+            return ownerHealth != null ? ownerHealth : projectile.Owner.root.GetComponentInChildren<EnemyHealth>();
+        }
+
+        if (col.transform.root.TryGetComponent(out EnemyHealth rootHealth)) return rootHealth;
+        return col.GetComponentInParent<EnemyHealth>();
+    }
+
     private void TryReflectDmg(SecondaryGemBehaviourDefinition behaviourDefinition, Collider2D col, float incomingDamage)
     {
         if (col == null)
@@ -1053,7 +1067,8 @@ public class PlayerCombatController : MonoBehaviour
             Debug.Log("no collider provided, no reflect damage");
             return;
         }
-        if (col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
+        EnemyHealth enemyHealth = ResolveReflectTarget(col);
+        if (enemyHealth != null)
         {
             AttackContext context = new AttackContext
             {

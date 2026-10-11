@@ -9,6 +9,7 @@ public class DamageNumberSpawner : MonoBehaviour
 
     [Header("Dodge")]
     [SerializeField] private bool showDodges = true;
+    [SerializeField, Min(0f)] private float dodgeCooldown = 0.25f;
 
     [Header("Player Popups")]
     [SerializeField] private Vector3 playerSpawnOffset = new Vector3(0f, 1.5f, 0f);
@@ -16,6 +17,8 @@ public class DamageNumberSpawner : MonoBehaviour
     [SerializeField, Min(0f)] private float rollTierCooldown = 0.15f;
 
     private ERollTier lastRollTier = ERollTier.None;
+    private float lastDodgeTime = float.NegativeInfinity;
+    private bool lastDodgeWasPerfect;
     private float lastRollTierTime = float.NegativeInfinity;
 
     private void OnEnable()
@@ -66,7 +69,14 @@ public class DamageNumberSpawner : MonoBehaviour
     private void SpawnDodge(HitBox hitbox, bool isPerfect)
     {
         if (!showDodges || damageNumberPrefab == null) return;
+
+        bool onCooldown = Time.time - lastDodgeTime < dodgeCooldown;
+        if (onCooldown && (lastDodgeWasPerfect || !isPerfect)) return;
+
         if (!TryGetPlayerPosition(out Vector3 position)) return;
+
+        lastDodgeTime = Time.time;
+        lastDodgeWasPerfect = isPerfect;
 
         DamageNumber number = Instantiate(damageNumberPrefab, position, Quaternion.identity);
         number.ShowDodge(isPerfect);

@@ -18,6 +18,10 @@ public class HitFlash : MonoBehaviour
     [SerializeField] private bool useUnscaledTime = true;
     [SerializeField] private int sortingOrderOffset = 1;
 
+    [Header("Hold")]
+    [SerializeField, Min(0f)] private float holdFadeDuration = 0.15f;
+    [SerializeField, Range(0f, 1f)] private float holdPulseMinAmount = 0.4f;
+
     private static readonly int FlashColorId = Shader.PropertyToID("_FlashColor");
     private static readonly int IntensityId = Shader.PropertyToID("_Intensity");
     private static readonly int AmountId = Shader.PropertyToID("_Amount");
@@ -33,6 +37,13 @@ public class HitFlash : MonoBehaviour
     private float activeIntensity;
     private FlashMode activeMode;
     private float timer;
+    private bool holdActive;
+    private Color holdColor;
+    private float holdIntensity;
+    private FlashMode holdMode;
+    private float holdPulseSpeed;
+    private float holdFade;
+    private float holdTime;
 
     public bool IsFlashing => timer > 0f;
 
@@ -54,6 +65,8 @@ public class HitFlash : MonoBehaviour
     private void OnDisable()
     {
         timer = 0f;
+        holdActive = false;
+        holdFade = 0f;
         if (overlay != null) overlay.enabled = false;
     }
 
@@ -79,19 +92,64 @@ public class HitFlash : MonoBehaviour
         Sync(1f);
     }
 
+    public void Hold(Color color, float holdIntensityValue, FlashMode mode = FlashMode.Edge, float pulseSpeed = 0f)
+    {
+        if (!holdActive) holdTime = 0f;
+
+        holdActive = true;
+        holdColor = color;
+        holdIntensity = holdIntensityValue;
+        holdMode = mode;
+        holdPulseSpeed = Mathf.Max(0f, pulseSpeed);
+    }
+
+    public void ReleaseHold(bool instant = false)
+    {
+        holdActive = false;
+        if (instant) holdFade = 0f;
+    }
+
     private void LateUpdate()
     {
         if (overlay == null) return;
 
-        if (timer <= 0f)
+        float delta = useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+        float holdTarget = holdActive ? 1f : 0f;
+        holdFade = holdFadeDuration <= 0f ? holdTarget : Mathf.MoveTowards(holdFade, holdTarget, delta / holdFadeDuration);
+        holdTime += delta;
+
+        if (timer > 0f)
         {
-            if (overlay.enabled) overlay.enabled = false;
+            timer -= delta;
+            float t = 1f - Mathf.Clamp01(timer / duration);
+            float flashAmount = timer > 0f ? Mathf.Clamp01(fadeCurve.Evaluate(t)) : 0f;
+
+            if (flashAmount > 0f || holdFade <= 0f)
+            {
+                Sync(flashAmount);
+                return;
+            }
+        }
+
+        if (holdFade > 0f)
+        {
+            activeColor = holdColor;
+            activeIntensity = holdIntensity;
+            activeMode = holdMode;
+
+            float pulse = 1f;
+            if (holdPulseSpeed > 0f)
+            {
+                float wave = (1f - Mathf.Cos(holdTime * holdPulseSpeed * Mathf.PI * 2f)) * 0.5f;
+                pulse = Mathf.Lerp(holdPulseMinAmount, 1f, wave);
+            }
+
+            Sync(holdFade * pulse);
             return;
         }
 
-        timer -= useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
-        float t = 1f - Mathf.Clamp01(timer / duration);
-        Sync(timer > 0f ? Mathf.Clamp01(fadeCurve.Evaluate(t)) : 0f);
+        if (overlay.enabled) overlay.enabled = false;
     }
 
     private void Sync(float amount)

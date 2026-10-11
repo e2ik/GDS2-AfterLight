@@ -1028,11 +1028,14 @@ public class PlayerController : MonoBehaviour
 
     private void PushAway(Vector2 sourcePosition, float force, float staggerDuration, bool applyStagger, Vector2? directionOverride = null)
     {
-        Vector2 dir = directionOverride.HasValue
-            ? directionOverride.Value.normalized
-            : ((Vector2)transform.position - sourcePosition).normalized;
-        rb.linearVelocity = Vector2.zero;
-        rb.AddForce(dir * force, ForceMode2D.Impulse);
+        if (force > 0f)
+        {
+            Vector2 dir = directionOverride.HasValue
+                ? directionOverride.Value.normalized
+                : ((Vector2)transform.position - sourcePosition).normalized;
+            rb.linearVelocity = Vector2.zero;
+            rb.AddForce(dir * force, ForceMode2D.Impulse);
+        }
 
         if (applyStagger && staggerDuration > 0f) StartHitStagger(staggerDuration);
     }

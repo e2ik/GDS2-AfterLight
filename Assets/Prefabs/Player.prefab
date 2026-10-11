@@ -395,6 +395,7 @@ MonoBehaviour:
   wallJumpForce: {x: 8, y: 16}
   wallJumpDuration: 0.4
   wallJumpBufferTime: 0.2
+  wallJumpIgnoresTapCut: 1
   maxStepHeight: 0.3
   stepCheckDistance: 0.15
   stepSmoothSpeed: 6
@@ -411,6 +412,12 @@ MonoBehaviour:
   enemyBodyAirKnockbackForce: 10
   enemyBodyAirStaggerDuration: 0.15
   enemyBodyAirKnockbackAngle: 25
+  enemyStandDropDelay: 0.1
+  enemyStandIgnoreDuration: 0.4
+  enemyStandMaxIgnoreDuration: 3
+  enemyOverlapPushSpeed: 4
+  enemyDropMinHeightRatio: 1.25
+  enemyBounceMemory: 2
   hazardousKnockbackForce: 8
   hazardousStaggerDuration: 0.3
   bounceDuration: 0.25
@@ -1008,6 +1015,8 @@ MonoBehaviour:
   edgeWidth: 1
   useUnscaledTime: 1
   sortingOrderOffset: 1
+  holdFadeDuration: 0.15
+  holdPulseMinAmount: 0.4
 --- !u!1 &8844592283841214288
 GameObject:
   m_ObjectHideFlags: 0
@@ -1124,6 +1133,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHurtBox
   stats: {fileID: 6264206310521610964}
   combatController: {fileID: 3547647608137716798}
+  lateParryGrace: 0.01
+  lateParryProjectilesOnly: 1
 --- !u!1001 &1920389937048310893
 PrefabInstance:
   m_ObjectHideFlags: 0
