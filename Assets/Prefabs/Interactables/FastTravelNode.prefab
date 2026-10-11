@@ -38,7 +38,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 32, y: 32}
+  m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &551588545585615343
 CanvasRenderer:
@@ -75,7 +75,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 1f6689609b9f93a43826a1267e7bffc7, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -83,9 +83,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 384f3626baa5d1a4286d232c9f49890a, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 65bec529619b81244a50b83a94a4ce1f, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -114,11 +114,11 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.99461675, g: 1, b: 0.37421376, a: 1}
-    m_HighlightedColor: {r: 1, g: 0.003144443, b: 0.54521537, a: 1}
-    m_PressedColor: {r: 0.9622642, g: 0.081701525, b: 0.47157148, a: 1}
-    m_SelectedColor: {r: 0.66126543, g: 0.8301887, b: 0.21668443, a: 1}
-    m_DisabledColor: {r: 0.8805031, g: 0.32395858, b: 0.32395858, a: 1}
+    m_NormalColor: {r: 1, g: 0.7411765, b: 0.003921569, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 0, g: 1, b: 0.9619627, a: 1}
+    m_SelectedColor: {r: 0, g: 0.99019146, b: 1, a: 1}
+    m_DisabledColor: {r: 1, g: 0.5485742, b: 0, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -154,7 +154,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &77753765376059052
 RectTransform:
   m_ObjectHideFlags: 0

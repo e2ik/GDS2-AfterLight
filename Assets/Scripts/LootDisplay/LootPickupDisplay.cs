@@ -46,11 +46,18 @@ public class LootPickupDisplay : MonoBehaviour
     [SerializeField] private TooltipAnchorSettings inspectAnchor = new TooltipAnchorSettings();
     [SerializeField] private bool overrideTooltipWidth = true;
     [SerializeField] private float tooltipWidth = 300f;
+    [SerializeField] private bool fitTooltipWidthToContent = true;
+    [SerializeField] private float minTooltipWidth = 0f;
     [SerializeField] private Graphic lootOnlyBackground;
+    [SerializeField, Range(0f, 1f)] private float lootBackgroundAlpha = 1f;
     [SerializeField] private int lootPaddingTop = 10;
     [SerializeField] private int lootPaddingBottom = 10;
+    [SerializeField] private int lootPaddingLeft = 10;
+    [SerializeField] private int lootPaddingRight = 10;
     [SerializeField] private int quickEquipPaddingTop = 50;
     [SerializeField] private int quickEquipPaddingBottom = 50;
+    [SerializeField] private int quickEquipPaddingLeft = 10;
+    [SerializeField] private int quickEquipPaddingRight = 10;
     [SerializeField] private HorizontalOrVerticalLayoutGroup lootControlledContainer;
 
     [Header("Debug")]
@@ -78,6 +85,8 @@ public class LootPickupDisplay : MonoBehaviour
     private LayoutGroup paddedLayout;
     private int originalPaddingTop;
     private int originalPaddingBottom;
+    private int originalPaddingLeft;
+    private int originalPaddingRight;
     private RectTransform resizedTooltip;
     private Vector2 originalTooltipSize;
     private ContentSizeFitter resizedFitter;
@@ -345,7 +354,7 @@ public class LootPickupDisplay : MonoBehaviour
         SetLootChildControl(visible);
 
         Color color = lootOnlyBackground.color;
-        color.a = visible ? 1f : 0f;
+        color.a = visible ? lootBackgroundAlpha : 0f;
         lootOnlyBackground.color = color;
     }
 
@@ -380,6 +389,8 @@ public class LootPickupDisplay : MonoBehaviour
 
             originalPaddingTop = paddedLayout.padding.top;
             originalPaddingBottom = paddedLayout.padding.bottom;
+            originalPaddingLeft = paddedLayout.padding.left;
+            originalPaddingRight = paddedLayout.padding.right;
         }
 
         int top = lootHasQuickEquip ? quickEquipPaddingTop : lootPaddingTop;
@@ -387,6 +398,11 @@ public class LootPickupDisplay : MonoBehaviour
 
         paddedLayout.padding.top = loot ? top : originalPaddingTop;
         paddedLayout.padding.bottom = loot ? bottom : originalPaddingBottom;
+        int left = lootHasQuickEquip ? quickEquipPaddingLeft : lootPaddingLeft;
+        int right = lootHasQuickEquip ? quickEquipPaddingRight : lootPaddingRight;
+
+        paddedLayout.padding.left = loot ? left : originalPaddingLeft;
+        paddedLayout.padding.right = loot ? right : originalPaddingRight;
 
         RectTransform layoutRect = (RectTransform)paddedLayout.transform;
         LayoutRebuilder.MarkLayoutForRebuild(layoutRect);
@@ -426,7 +442,16 @@ public class LootPickupDisplay : MonoBehaviour
 
         if (resizedFitter != null) resizedFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
-        tooltip.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, tooltipWidth);
+        float width = tooltipWidth;
+
+        if (fitTooltipWidthToContent)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(tooltip);
+            float preferred = LayoutUtility.GetPreferredWidth(tooltip);
+            if (preferred > 0f) width = Mathf.Clamp(Mathf.Ceil(preferred), minTooltipWidth, tooltipWidth);
+        }
+
+        tooltip.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(tooltip);
     }

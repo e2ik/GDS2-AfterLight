@@ -839,11 +839,18 @@ MonoBehaviour:
     offset: {x: 0, y: 0}
   overrideTooltipWidth: 1
   tooltipWidth: 550
+  fitTooltipWidthToContent: 1
+  minTooltipWidth: 0
   lootOnlyBackground: {fileID: 159788416572236182}
-  lootPaddingTop: 10
-  lootPaddingBottom: 10
-  quickEquipPaddingTop: 10
-  quickEquipPaddingBottom: 55
+  lootBackgroundAlpha: 0.8
+  lootPaddingTop: 20
+  lootPaddingBottom: 30
+  lootPaddingLeft: 30
+  lootPaddingRight: 30
+  quickEquipPaddingTop: 35
+  quickEquipPaddingBottom: 80
+  quickEquipPaddingLeft: 20
+  quickEquipPaddingRight: 45
   lootControlledContainer: {fileID: 0}
   debugDrawTooltip: 0
   debugColor: {r: 0, g: 1, b: 0, a: 1}
@@ -6150,7 +6157,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6930881626492912435, guid: 221c6d1bd45d14bc59d16e20d78794cd, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 151
+      value: 201
       objectReference: {fileID: 0}
     - target: {fileID: 6930881626492912435, guid: 221c6d1bd45d14bc59d16e20d78794cd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

@@ -25,6 +25,8 @@ public class DialogueEffects : MonoBehaviour
     private Coroutine textEffectCoroutine;
 
     private Vector2 originalPanelPosition;
+    private RectTransform[] shakeTargets = new RectTransform[0];
+    private Vector2[] shakeOrigins = new Vector2[0];
     private float originalFontSize;
 
     private DialogueEffect currentEffect = DialogueEffect.Default;
@@ -36,6 +38,27 @@ public class DialogueEffects : MonoBehaviour
 
         if (dialogueText != null)
             originalFontSize = dialogueText.fontSize;
+    }
+
+    public void SetTargets(TMP_Text text, RectTransform textbox, RectTransform portrait)
+    {
+        StopEffects();
+
+        if (text != null && text != dialogueText)
+        {
+            dialogueText = text;
+            originalFontSize = text.fontSize;
+        }
+
+        int count = (textbox != null ? 1 : 0) + (portrait != null ? 1 : 0);
+        shakeTargets = new RectTransform[count];
+        shakeOrigins = new Vector2[count];
+
+        int index = 0;
+        if (textbox != null) shakeTargets[index++] = textbox;
+        if (portrait != null) shakeTargets[index] = portrait;
+
+        for (int i = 0; i < count; i++) shakeOrigins[i] = shakeTargets[i].anchoredPosition;
     }
 
     public void PlayEffect(DialogueEffect effect)
@@ -64,6 +87,7 @@ public class DialogueEffects : MonoBehaviour
         {
             StopCoroutine(boxShakeCoroutine);
             boxShakeCoroutine = null;
+            ApplyShakeOffset(Vector2.zero);
         }
 
         if (textEffectCoroutine != null)
@@ -73,9 +97,6 @@ public class DialogueEffects : MonoBehaviour
         }
 
         currentEffect = DialogueEffect.Default;
-
-        if (dialoguePanel != null)
-            dialoguePanel.anchoredPosition = originalPanelPosition;
 
         if (dialogueText != null)
         {
@@ -92,13 +113,28 @@ public class DialogueEffects : MonoBehaviour
         {
             elapsed += Time.unscaledDeltaTime;
 
-            dialoguePanel.anchoredPosition = originalPanelPosition + Random.insideUnitCircle * angryBoxShakeStrength;
+            ApplyShakeOffset(Random.insideUnitCircle * angryBoxShakeStrength);
 
             yield return null;
         }
 
-        dialoguePanel.anchoredPosition = originalPanelPosition;
+        ApplyShakeOffset(Vector2.zero);
         boxShakeCoroutine = null;
+    }
+
+    private void ApplyShakeOffset(Vector2 offset)
+    {
+        if (shakeTargets.Length > 0)
+        {
+            for (int i = 0; i < shakeTargets.Length; i++)
+            {
+                if (shakeTargets[i] != null) shakeTargets[i].anchoredPosition = shakeOrigins[i] + offset;
+            }
+
+            return;
+        }
+
+        if (dialoguePanel != null) dialoguePanel.anchoredPosition = originalPanelPosition + offset;
     }
 
     private IEnumerator ShakeCharacters()
