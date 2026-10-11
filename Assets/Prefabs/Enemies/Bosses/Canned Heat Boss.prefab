@@ -159,7 +159,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -1.9987259, y: -0.27956247}
+  m_Offset: {x: -2.167512, y: -0.4279455}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -169,7 +169,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.87570953, y: 2.2267656}
+  m_Size: {x: 1.2132816, y: 2.968682}
   m_EdgeRadius: 0
 --- !u!114 &8107799500015843298
 MonoBehaviour:
@@ -282,7 +282,7 @@ MonoBehaviour:
   canDropAggro: 0
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
-  isStaggerImmune: 0
+  isStaggerImmune: 1
   staggerOnlyOnComboFinisher: 1
   staggerImmunityDuration: 4
   staggerStunDuration: 0.5
@@ -405,8 +405,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.0317955, y: -0.38180315}
-  m_Size: {x: 0.8710966, y: 2.6582978}
+  m_Offset: {x: -0.16666692, y: -0.4930906}
+  m_Size: {x: 1.0602854, y: 2.8808727}
   m_Direction: 0
 --- !u!1 &5835482462216775301
 GameObject:
@@ -422,6 +422,8 @@ GameObject:
   - component: {fileID: 2769822166128368776}
   - component: {fileID: 3772755303928414562}
   - component: {fileID: 8447035490974730339}
+  - component: {fileID: 1514995599007304358}
+  - component: {fileID: 3609489035518637061}
   m_Layer: 12
   m_Name: Graphics
   m_TagString: Untagged
@@ -614,8 +616,93 @@ MonoBehaviour:
     m_RotationOrder: 4
   checkerLowOpacity: 0.695
   pixelSize: 3
+  defaultMode: 0
+  edgeWidth: 1
   useUnscaledTime: 1
   sortingOrderOffset: 1
+--- !u!114 &1514995599007304358
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e03e55a74b3100642a9152c2a71c9216, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MultiplyOutline
+  outlineMaterial: {fileID: 2100000, guid: edb9203f7655d31448a43b9003f3f6bb, type: 2}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  strength: 0.565
+  falloff: 0.29
+  rings: 2
+  pixelSize: 3
+  checkerContrast: 1
+  showLine: 1
+  lineColor: {r: 0, g: 0, b: 0, a: 1}
+  lineStrength: 0.5
+  lineDiagonals: 0
+  sortingOrderOffset: -1
+  glowColor: 1
+  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  matchColor: {r: 1, g: 1, b: 1, a: 1}
+  matchTolerance: 0.1
+  replaceColor: {r: 1, g: 1, b: 1, a: 1}
+  glowIntensity: 5.17
+  glowCheckerLow: 0.5
+  glowCheckerSize: 1
+  glowFadeDuration: 0.08
+  glowSortingOrderOffset: 1
+--- !u!114 &3609489035518637061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561b6f6388a42344dbfeddb4154aceba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttackGlow
+  enemy: {fileID: 2819779926548626800}
+  multiplyOutline: {fileID: 1514995599007304358}
+  colorGlow: {fileID: 0}
+  colorSource: {fileID: 0}
+  useVfxBoxColors: 1
+  onlyDuringAttackAnimation: 1
+  attackStateNames:
+  - Attack
+  - Attack2
+  stopAtClipEnd: 1
+  lightGlow:
+    enabled: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 1.5
+    checkerLow: 0.5
+    checkerSize: 1
+  mediumGlow:
+    enabled: 1
+    color: {r: 1, g: 0.8, b: 0.2, a: 1}
+    intensity: 1.5
+    checkerLow: 0.5
+    checkerSize: 1
+  heavyGlow:
+    enabled: 1
+    color: {r: 1, g: 0.15, b: 0.1, a: 1}
+    intensity: 1.5
+    checkerLow: 0.5
+    checkerSize: 1
+  zeroForceGlow:
+    enabled: 0
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 1.2
+    checkerLow: 0.5
+    checkerSize: 1
+  parryIntensityBoost: 1
+  parryBoostFadeSpeed: 30
+  heavyGetsParryBoost: 0
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0
@@ -716,4 +803,9 @@ MonoBehaviour:
     Path: event:/CombatSFXEvents/Parry Warning Event
   flashOnAnticipation: 1
   hitFlash: {fileID: 8447035490974730339}
+  flashMode: 1
   flashIntensity: 1.25
+  zeroColor: {r: 1, g: 1, b: 1, a: 1}
+  lightColor: {r: 0, g: 1, b: 1, a: 1}
+  mediumColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  heavyColor: {r: 1, g: 0, b: 0, a: 1}

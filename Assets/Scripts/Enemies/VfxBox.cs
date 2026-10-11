@@ -65,7 +65,7 @@ namespace Enemies
             main.startColor = color;
         }
 
-        private Color GetColorForForce(AttackForce force)
+        public Color GetColorForForce(AttackForce force)
         {
             switch (force)
             {
