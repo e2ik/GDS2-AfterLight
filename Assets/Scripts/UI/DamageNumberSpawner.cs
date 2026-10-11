@@ -1,5 +1,4 @@
 using Enemies;
-using Enemies.ProjectileScripts;
 using UnityEngine;
 
 public class DamageNumberSpawner : MonoBehaviour
@@ -10,6 +9,14 @@ public class DamageNumberSpawner : MonoBehaviour
 
     [Header("Dodge")]
     [SerializeField] private bool showDodges = true;
+
+    [Header("Player Popups")]
+    [SerializeField] private Vector3 playerSpawnOffset = new Vector3(0f, 1.5f, 0f);
+    [SerializeField] private bool showRollTiers = true;
+    [SerializeField, Min(0f)] private float rollTierCooldown = 0.15f;
+
+    private ERollTier lastRollTier = ERollTier.None;
+    private float lastRollTierTime = float.NegativeInfinity;
 
     private void OnEnable()
     {
@@ -31,20 +38,37 @@ public class DamageNumberSpawner : MonoBehaviour
 
         DamageNumber number = Instantiate(damageNumberPrefab, info.Position + spawnOffset + RandomOffset(), Quaternion.identity);
         number.Show(info);
+
+        if (showRollTiers && info.HasRoll && (info.DamageType == EDamageType.Base || info.DamageType == EDamageType.Skill))
+            SpawnRollTier(info.RollTier);
+    }
+
+    private bool TryGetPlayerPosition(out Vector3 position)
+    {
+        Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+        position = player != null ? player.transform.position + playerSpawnOffset + RandomOffset() : Vector3.zero;
+        return player != null;
+    }
+
+    private void SpawnRollTier(ERollTier tier)
+    {
+        if (!DamageNumber.HasRollText(tier)) return;
+        if (tier == lastRollTier && Time.time - lastRollTierTime < rollTierCooldown) return;
+        if (!TryGetPlayerPosition(out Vector3 position)) return;
+
+        lastRollTier = tier;
+        lastRollTierTime = Time.time;
+
+        DamageNumber number = Instantiate(damageNumberPrefab, position, Quaternion.identity);
+        number.ShowRollTier(tier);
     }
 
     private void SpawnDodge(HitBox hitbox, bool isPerfect)
     {
-        if (!showDodges || damageNumberPrefab == null || hitbox == null) return;
+        if (!showDodges || damageNumberPrefab == null) return;
+        if (!TryGetPlayerPosition(out Vector3 position)) return;
 
-        Projectile projectile = hitbox.GetComponentInParent<Projectile>();
-        Enemy enemy = hitbox.GetComponentInParent<Enemy>();
-
-        Transform source = projectile != null && projectile.Owner != null
-            ? projectile.Owner
-            : enemy != null ? enemy.transform : hitbox.transform;
-
-        DamageNumber number = Instantiate(damageNumberPrefab, source.position + spawnOffset + RandomOffset(), Quaternion.identity);
+        DamageNumber number = Instantiate(damageNumberPrefab, position, Quaternion.identity);
         number.ShowDodge(isPerfect);
     }
 }

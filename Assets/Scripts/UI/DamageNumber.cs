@@ -36,6 +36,7 @@ public class DamageNumber : MonoBehaviour
     [SerializeField] private float lowRollScale = 0.8f;
     [SerializeField] private float highRollScale = 1.3f;
     [SerializeField] private string niceSuffix = "\\nNICE";
+    [SerializeField] private string[] niceVariants = { "NICE", "SWEET", "SLICK", "CLEAN", "SHARP", "CRISP", "SOLID", "NEAT" };
     [SerializeField] private string jackpotSuffix = "\\nJACKPOT!";
     [SerializeField] private bool rainbowJackpot = true;
     [SerializeField] private float rainbowSpeed = 2f;
@@ -84,24 +85,55 @@ public class DamageNumber : MonoBehaviour
 
             if (tintByRoll)
                 scale *= Mathf.Lerp(lowRollScale, highRollScale, info.RollQuality);
-
-            switch (info.RollTier)
-            {
-                case ERollTier.Jackpot:
-                    sb.Replace("\\n", "\n");
-                    if (rainbowJackpot) rainbowStartIndex = sb.Length;
-                    sb.Append(jackpotSuffix);
-                    break;
-                case ERollTier.Nice:
-                    sb.Append(niceSuffix);
-                    break;
-                case ERollTier.Whiff:
-                    sb.Append(whiffSuffix);
-                    break;
-            }
         }
 
         Begin(color, scale, style.material);
+    }
+
+    public static bool HasRollText(ERollTier tier)
+    {
+        return tier == ERollTier.Jackpot || tier == ERollTier.Nice || tier == ERollTier.Whiff;
+    }
+
+    public void ShowRollTier(ERollTier tier)
+    {
+        string label;
+        Color color;
+        float scale;
+
+        switch (tier)
+        {
+            case ERollTier.Jackpot:
+                label = jackpotSuffix;
+                color = highRollColor;
+                scale = highRollScale;
+                break;
+            case ERollTier.Nice:
+                label = niceVariants != null && niceVariants.Length > 0
+                    ? niceVariants[Random.Range(0, niceVariants.Length)]
+                    : niceSuffix;
+                color = highRollColor;
+                scale = highRollScale;
+                break;
+            case ERollTier.Whiff:
+                label = whiffSuffix;
+                color = lowRollColor;
+                scale = lowRollScale;
+                break;
+            default:
+                Destroy(gameObject);
+                return;
+        }
+
+        sb.Clear();
+        sb.Append(label);
+        sb.Replace("\\n", "\n");
+        string trimmed = sb.ToString().Trim();
+        sb.Clear();
+        sb.Append(trimmed);
+        rainbowStartIndex = tier == ERollTier.Jackpot && rainbowJackpot ? 0 : -1;
+
+        Begin(color, scale, normalStyle.material);
     }
 
     public void ShowDodge(bool isPerfect = false)
