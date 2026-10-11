@@ -15,6 +15,8 @@ public class DialogueLine
     [SerializeField] private string text;
 
     [Header("Optional Overrides")]
+    [SerializeField] private bool overrideSpeakerName;
+    [SerializeField] private string speakerNameOverride;
     [SerializeField] private bool overrideTextSpeed;
     [SerializeField] private float textSpeed = 0.03f; // will be ignored unless overrideTextSpeed is true
 
@@ -23,6 +25,15 @@ public class DialogueLine
 
     public CharacterData Speaker => speaker;
     public string Text => text;
+
+    public string SpeakerName
+    {
+        get
+        {
+            if (overrideSpeakerName) return speakerNameOverride;
+            return speaker != null ? speaker.CharacterName : "";
+        }
+    }
 
     public bool OverrideTextSpeed => overrideTextSpeed;
 

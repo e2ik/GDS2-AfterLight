@@ -52,6 +52,13 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private float slideOutDuration = 0.2f;
     [SerializeField, Min(0f)] private float slideOffscreenMargin = 20f;
 
+    [Header("Typing Sound")]
+    [SerializeField, Min(0f)] private float typingSoundInterval = 0.07f;
+    [SerializeField] private bool skipSoundOnWhitespace = true;
+
+    [Header("Player")]
+    [SerializeField] private bool stopPlayerMovement = true;
+
     [Header("Hold To Skip")]
     [SerializeField] private float holdSkipDuration = 1.5f;
     [SerializeField] private float holdSkipAppearDelay = 0.25f;
@@ -83,6 +90,8 @@ public class DialogueManager : MonoBehaviour
     private Color nameTextLeftDefault = Color.white;
     private Color nameTextRightDefault = Color.white;
     private bool waitingForInitialInteractRelease;
+    private float lastTypingSoundTime = float.NegativeInfinity;
+    private bool playerMovementFrozen;
     private Vector3 leftPortraitBaseScale = Vector3.one;
     private Vector3 rightPortraitBaseScale = Vector3.one;
     private float leftPortraitScale = 1f;
@@ -227,7 +236,15 @@ public class DialogueManager : MonoBehaviour
         {
             currentPlayer.Controller.InputEnabled = false;
             currentPlayer.InteractionManager.SetInteractionBlocked(true);
+
+            if (stopPlayerMovement && !playerMovementFrozen)
+            {
+                currentPlayer.Controller.FreezeMovement(true);
+                playerMovementFrozen = true;
+            }
         }
+
+        lastTypingSoundTime = float.NegativeInfinity;
 
         ResetHoldSkip();
         playerOnLeft = DeterminePlayerOnLeft();
@@ -329,12 +346,12 @@ public class DialogueManager : MonoBehaviour
 
         if (line.Speaker != null)
         {
-            if (activeNameText != null) activeNameText.text = line.Speaker.CharacterName;
+            if (activeNameText != null) activeNameText.text = line.SpeakerName;
             ShowSpeakerPortrait(line.Speaker, line.Speaker.Portrait);
         }
         else
         {
-            if (activeNameText != null) activeNameText.text = "";
+            if (activeNameText != null) activeNameText.text = line.SpeakerName;
             SetPortraitInactive(characterPortrait);
             SetPortraitInactive(characterPortraitRight);
         }
@@ -542,7 +559,7 @@ public class DialogueManager : MonoBehaviour
         {
             activeDialogueText.text += character;
 
-            PlayTypingSound(line);
+            PlayTypingSound(line, character);
 
             float textSpeed = line.TextSpeed;
 
@@ -634,7 +651,7 @@ public class DialogueManager : MonoBehaviour
         nextDialogueIndicator.SetActive(!isLastLine || !hideContinueIndicatorOnLastLine);
     }
 
-    private void PlayTypingSound(DialogueLine line)
+    private void PlayTypingSound(DialogueLine line, char character)
     {
         if (line.Speaker == null)
             return;
@@ -642,6 +659,13 @@ public class DialogueManager : MonoBehaviour
         if (line.Speaker.TypingSound.IsNull)
             return;
 
+        if (skipSoundOnWhitespace && char.IsWhiteSpace(character))
+            return;
+
+        if (Time.unscaledTime - lastTypingSoundTime < typingSoundInterval)
+            return;
+
+        lastTypingSoundTime = Time.unscaledTime;
         AudioManager.PlaySFX(line.Speaker.TypingSound);
     }
 
@@ -773,7 +797,11 @@ public class DialogueManager : MonoBehaviour
         {
             currentPlayer.Controller.InputEnabled = true;
             currentPlayer.InteractionManager.SetInteractionBlocked(false);
+
+            if (playerMovementFrozen) currentPlayer.Controller.FreezeMovement(false);
         }
+
+        playerMovementFrozen = false;
 
         if (currentNPC != null)
         {

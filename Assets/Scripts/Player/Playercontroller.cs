@@ -445,7 +445,13 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
-        if (IsMovementFrozen || IsMovementLockedBySkill || isStaggered || isClimbing) return;
+        if (IsMovementFrozen && !isClimbing)
+        {
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+            return;
+        }
+
+        if (IsMovementLockedBySkill || isStaggered || isClimbing) return;
 
         bool duringWallJump = isWallJumping && Mathf.Abs(horizontalInput) > InputDeadzone;
         if (!CanMove() && !duringWallJump) return;
