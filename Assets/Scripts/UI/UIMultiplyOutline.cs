@@ -50,18 +50,36 @@ public class UIMultiplyOutline : MonoBehaviour
     {
         if (outline != null)
         {
-            if (Application.isPlaying) Destroy(outline.gameObject);
-            else DestroyImmediate(outline.gameObject);
+            DestroyDeferred(outline.gameObject);
             outline = null;
             outlineRect = null;
         }
 
         if (materialInstance != null)
         {
-            if (Application.isPlaying) Destroy(materialInstance);
-            else DestroyImmediate(materialInstance);
+            DestroyDeferred(materialInstance);
             materialInstance = null;
         }
+    }
+
+    private static void DestroyDeferred(Object target)
+    {
+        if (target == null) return;
+
+        if (Application.isPlaying)
+        {
+            Destroy(target);
+            return;
+        }
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.delayCall += () =>
+        {
+            if (target != null) DestroyImmediate(target);
+        };
+#else
+        DestroyImmediate(target);
+#endif
     }
 
     private void OnValidate()
