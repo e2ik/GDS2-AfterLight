@@ -14,6 +14,7 @@ namespace Enemies
         [SerializeField] private BossBounds arenaBounds;
         [SerializeField] private string playerTag = "Player";
         [SerializeField] private string bossID = "boss_intro_unique_id";
+        [SerializeField] private string bossName = "";
 
         [Header("Rematch")]
         [SerializeField] private bool rematchPlaysDeathDialogue = false;
@@ -175,7 +176,7 @@ namespace Enemies
                 bool playDeathDialogue = !isRematch || rematchPlaysDeathDialogue;
 
                 if (playMusic) MusicManager.Instance?.SwitchMusic(bossMusicEvent, isBossMusic: true);
-                if (showHealthBar) BossHealthBarUI.Instance?.Initialize(bossEnemy.Context.Health.CurrentHealth, bossEnemy.Context.Health.MaxHealth);
+                if (showHealthBar) BossHealthBarUI.Instance?.Initialize(bossEnemy.Context.Health.CurrentHealth, bossEnemy.Context.Health.MaxHealth, bossName);
 
                 activeBossEnemy = bossEnemy;
                 engagedPlayer = player.transform;
