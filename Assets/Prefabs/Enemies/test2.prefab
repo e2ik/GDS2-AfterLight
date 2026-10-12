@@ -268,9 +268,9 @@ MonoBehaviour:
   ignoreTerrainChecks: 0
   ledgeGroundMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   ledgeCheckDistance: 0.5
-  ledgeCheckDepth: 1
+  ledgeCheckDepth: 0.3
   canDropAggro: 1
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
@@ -638,6 +638,8 @@ MonoBehaviour:
   edgeWidth: 1
   useUnscaledTime: 1
   sortingOrderOffset: 1
+  holdFadeDuration: 0.15
+  holdPulseMinAmount: 0.4
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0

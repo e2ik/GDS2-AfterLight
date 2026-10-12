@@ -32,12 +32,18 @@ namespace Enemies.ModuleScripts.Movement
         [SerializeField] private float hiddenDuration = 1.5f;
         [SerializeField, Min(0.1f)] private float animationTimeout = 2f;
 
+        [Header("Defense")]
+        [SerializeField] private bool invulnerableWhileTeleporting = true;
+
 
         public void Begin(EnemyContext ctx)
         {
             ctx.Body.linearVelocity = Vector2.zero;
             ctx.TeleportDestination = PickDestination(ctx);
             MarkUsed(ctx);
+
+            if (invulnerableWhileTeleporting && ctx.Health != null) ctx.Health.Invulnerable = true;
+            ctx.TeleportStartedTime = Time.time;
 
             ctx.Animator.SetTrigger(teleportOutTrigger);
             ctx.TeleportPhase = TeleportPhase.TeleportingOut;
@@ -79,6 +85,8 @@ namespace Enemies.ModuleScripts.Movement
                     {
                         SetHidden(ctx, false);
                         ctx.TeleportPhase = TeleportPhase.Finished;
+                        if (ctx.Health != null) ctx.Health.Invulnerable = false;
+                        ctx.TeleportStartedTime = float.NegativeInfinity;
                         MarkUsed(ctx);
                     }
                     break;

@@ -14,6 +14,43 @@ Shader "UI/Scanline Warp Text"
         _StencilWriteMask ("Stencil Write Mask", Float) = 255
         _StencilReadMask ("Stencil Read Mask", Float) = 255
         _ColorMask ("Color Mask", Float) = 15
+
+        [HideInInspector] _CullMode ("Cull Mode", Float) = 0
+        [HideInInspector] _GradientScale ("Gradient Scale", Float) = 5
+        [HideInInspector] _TextureWidth ("Texture Width", Float) = 512
+        [HideInInspector] _TextureHeight ("Texture Height", Float) = 512
+        [HideInInspector] _ScaleRatioA ("Scale Ratio A", Float) = 1
+        [HideInInspector] _ScaleRatioB ("Scale Ratio B", Float) = 1
+        [HideInInspector] _ScaleRatioC ("Scale Ratio C", Float) = 1
+        [HideInInspector] _WeightNormal ("Weight Normal", Float) = 0
+        [HideInInspector] _WeightBold ("Weight Bold", Float) = 0.5
+        [HideInInspector] _FaceDilate ("Face Dilate", Float) = 0
+        [HideInInspector] _VertexOffsetX ("Vertex Offset X", Float) = 0
+        [HideInInspector] _VertexOffsetY ("Vertex Offset Y", Float) = 0
+        [HideInInspector] _MaskSoftnessX ("Mask Softness X", Float) = 0
+        [HideInInspector] _MaskSoftnessY ("Mask Softness Y", Float) = 0
+        [HideInInspector] _ClipRect ("Clip Rect", Vector) = (-32767, -32767, 32767, 32767)
+        [HideInInspector] _OutlineWidth ("OutlineWidth", Float) = 0
+        [HideInInspector] _OutlineSoftness ("OutlineSoftness", Float) = 0
+        [HideInInspector] _UnderlayOffsetX ("UnderlayOffsetX", Float) = 0
+        [HideInInspector] _UnderlayOffsetY ("UnderlayOffsetY", Float) = 0
+        [HideInInspector] _UnderlayDilate ("UnderlayDilate", Float) = 0
+        [HideInInspector] _UnderlaySoftness ("UnderlaySoftness", Float) = 0
+        [HideInInspector] _GlowOffset ("GlowOffset", Float) = 0
+        [HideInInspector] _GlowInner ("GlowInner", Float) = 0
+        [HideInInspector] _GlowOuter ("GlowOuter", Float) = 0
+        [HideInInspector] _GlowPower ("GlowPower", Float) = 0
+        [HideInInspector] _PerspectiveFilter ("PerspectiveFilter", Float) = 0
+        [HideInInspector] _ShaderFlags ("ShaderFlags", Float) = 0
+        [HideInInspector] _Bevel ("Bevel", Float) = 0
+        [HideInInspector] _BevelOffset ("BevelOffset", Float) = 0
+        [HideInInspector] _BevelWidth ("BevelWidth", Float) = 0
+        [HideInInspector] _BevelClamp ("BevelClamp", Float) = 0
+        [HideInInspector] _BevelRoundness ("BevelRoundness", Float) = 0
+        [HideInInspector] _BumpOutline ("BumpOutline", Float) = 0
+        [HideInInspector] _BumpFace ("BumpFace", Float) = 0
+        [HideInInspector] _ScaleX ("ScaleX", Float) = 1
+        [HideInInspector] _ScaleY ("ScaleY", Float) = 1
     }
 
     SubShader
@@ -35,7 +72,7 @@ Shader "UI/Scanline Warp Text"
             WriteMask [_StencilWriteMask]
         }
 
-        Cull Off
+        Cull [_CullMode]
         Lighting Off
         ZWrite Off
         ZTest [unity_GUIZTestMode]

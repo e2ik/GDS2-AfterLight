@@ -38,6 +38,11 @@ namespace Enemies
         public float AttackElapsed;
         public float LastChaseBlockedTime = float.NegativeInfinity;
         public bool IgnoreTerrainChecks;
+        public LayerMask GroundMask;
+        public float EdgeCheckDistance = 0.5f;
+        public float GroundCheckDepth = 1f;
+        public float WallCheckDistance = 0.3f;
+        public float WallCheckHeight = 0.1f;
 
         public AttackEvents AttackEvents;
         public int ComboStepIndex;
@@ -46,6 +51,7 @@ namespace Enemies
         public BossBounds BossBounds;
         public TeleportPhase TeleportPhase;
         public float TeleportTimer;
+        public float TeleportStartedTime = float.NegativeInfinity;
         public Vector2 TeleportDestination;
         public bool ForceTeleportNearTarget;
         public SpriteRenderer SpriteRenderer;

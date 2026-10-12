@@ -138,6 +138,7 @@ public class PlayerController : MonoBehaviour
     private bool healPressed, isHealing;
     private const float InputDeadzone = 0.1f;
     private Collider2D currentPassThroughPlatform;
+    private Collider2D groundCollider;
 
     private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer, wallContactTimer;
     private float dashTimer, dashDirection, wallJumpDirection, wallSide;
@@ -827,6 +828,7 @@ public class PlayerController : MonoBehaviour
         onEdge = false;
         if (edgeDetection == null || !canClimbEdge) return;
         if (!InputEnabled || IsFrozenOrSkillLocked || isStaggered || isBouncing || isDashing) return;
+        if (IsOnMovingPlatform()) return;
 
         // Look for a ledge on the side being pressed toward, not the side being faced.
         // Turning is locked during a wall jump, so using facing made ledges on the other
@@ -1268,13 +1270,28 @@ public class PlayerController : MonoBehaviour
         hit = RaycastIgnoringSelf(origin, Vector2.down, distance);
         if (hit.collider == null || hit.normal.y <= groundCheckNormalThreshold) return false;
         if (hit.collider == currentPassThroughPlatform) return false;
-        if (rb.linearVelocityY > 0f && hit.collider.GetComponent<PlatformEffector2D>() != null)
+        if (rb.linearVelocityY > 0f && hit.collider.GetComponent<PlatformEffector2D>() != null && !IsRidingPlatform(hit.collider))
             return false;
 
         if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
             return false;
 
         return true;
+    }
+
+    private bool IsOnMovingPlatform()
+    {
+        if (!isGrounded || groundCollider == null) return false;
+        if (groundCollider.GetComponentInParent<PositionSwitch>() != null) return true;
+
+        DropThroughPlatform dropThrough = groundCollider.GetComponentInParent<DropThroughPlatform>();
+        return dropThrough != null && dropThrough.IsMovingPlatform;
+    }
+
+    private bool IsRidingPlatform(Collider2D platform)
+    {
+        DropThroughPlatform dropThrough = platform.GetComponentInParent<DropThroughPlatform>();
+        return dropThrough != null && dropThrough.IsRiding(rb.linearVelocityY);
     }
 
     private void GroundCheckUpdate()
@@ -1287,9 +1304,12 @@ public class PlayerController : MonoBehaviour
         bool rightGrounded = false;
         bool leftGrounded = false;
 
+        groundCollider = null;
+
         if (RaycastGroundAt(leftFoot, dist, out RaycastHit2D leftHit))
         {
             isGrounded = true;
+            groundCollider = leftHit.collider;
             currentSurfaceNormal = leftHit.normal;
             lastHitPoint = leftHit.point;
 
@@ -1300,6 +1320,7 @@ public class PlayerController : MonoBehaviour
         else if (RaycastGroundAt(rightFoot, dist, out RaycastHit2D rightHit))
         {
             isGrounded = true;
+            groundCollider = rightHit.collider;
             currentSurfaceNormal = rightHit.normal;
             lastHitPoint = rightHit.point;
 

@@ -8,19 +8,12 @@ namespace Enemies.ModuleScripts
         [SerializeField] private float moveSpeed = 3.5f;
         [SerializeField] private float facingDeadZone = 0.15f;
 
-        [Header("Edge & Wall Checks")]
-        [SerializeField] private LayerMask groundMask;
-        [SerializeField] private float edgeCheckDistance = 0.5f;
-        [SerializeField] private float groundCheckDepth = 1f;
-        [SerializeField] private float wallCheckDistance = 0.3f;
-        [SerializeField] private float wallCheckHeight = 0.1f;
-
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
             if (ctx.IsAttacking)
             {
                 if (!ctx.IgnoreTerrainChecks)
-                    EnemyTerrainProbe.StopAtEdge(ctx, groundMask, edgeCheckDistance, groundCheckDepth, wallCheckDistance, wallCheckHeight);
+                    EnemyTerrainProbe.StopAtEdge(ctx);
                 return;
             }
 
@@ -40,7 +33,7 @@ namespace Enemies.ModuleScripts
 
             float moveX = ctx.TargetInRange || arrived ? 0f : dir * moveSpeed;
 
-            if (moveX != 0f && !ctx.IgnoreTerrainChecks && EnemyTerrainProbe.IsBlocked(ctx, dir, groundMask, edgeCheckDistance, groundCheckDepth, wallCheckDistance, wallCheckHeight))
+            if (moveX != 0f && !ctx.IgnoreTerrainChecks && EnemyTerrainProbe.IsBlocked(ctx, dir))
             {
                 moveX = 0f;
                 ctx.LastChaseBlockedTime = Time.time;

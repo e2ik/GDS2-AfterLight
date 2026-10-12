@@ -276,9 +276,11 @@ MonoBehaviour:
   ignoreTerrainChecks: 0
   ledgeGroundMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   ledgeCheckDistance: 0.5
   ledgeCheckDepth: 1
+  wallCheckDistance: 0.3
+  wallCheckHeight: 0.1
   canDropAggro: 0
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
@@ -311,6 +313,8 @@ MonoBehaviour:
   canTeleport: 1
   teleportToTargetWhenOutOfRange: 1
   outOfRangeTeleportDelay: 1
+  teleportAfterDamagePercent: 0.15
+  teleportInvulnerabilityFailsafe: 6
   hasDeathAnimation: 1
   deathTrigger: Death
   deathStateName: Death

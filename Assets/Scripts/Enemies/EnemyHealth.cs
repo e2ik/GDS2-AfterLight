@@ -29,6 +29,7 @@ namespace Enemies
         public event Action OnHealthDepleted;
         
         public bool DeferDeath { get; set; }
+        public bool Invulnerable { get; set; }
         private bool deathFinalized;
 
         public static event Action<EnemyHealth, DamageInfo> AnyEnemyDamaged;
@@ -62,7 +63,7 @@ namespace Enemies
 
         private void ApplyDamage(DamageInfo info)
         {
-            if (CurrentHealth <= 0) return;
+            if (CurrentHealth <= 0 || Invulnerable) return;
 
             int minHealth = Tutorial.TutorialDirector.Instance != null && Tutorial.TutorialDirector.Instance.EnemiesProtected ? 1 : 0;
             CurrentHealth = Mathf.Max(minHealth, CurrentHealth - info.Amount);
@@ -114,6 +115,8 @@ namespace Enemies
 
         public void ApplyHit(int damage, AttackContext context, bool isCrit = false)
         {
+            if (Invulnerable) return;
+
             ApplyDamage(new DamageInfo
             {
                 Amount = damage,
