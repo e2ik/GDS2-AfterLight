@@ -81,6 +81,7 @@ public class PlayerHurtBox : MonoBehaviour
         if (combatController != null && combatController.CheckParry(hitbox.ParryDirection, pendingIgnoreDirection))
         {
             pendingHitbox = null;
+            ConfirmAvoidedHit(hitbox);
             hitbox.SetParried();
             combatController.TryModifyParry(hitbox.Damage, pendingCollider);
             return;
@@ -120,6 +121,7 @@ public class PlayerHurtBox : MonoBehaviour
 
         if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection, ignoreParryDirection))
         {
+            ConfirmAvoidedHit(hitbox);
             hitbox.SetParried();
             combatController.TryModifyParry(hitbox.Damage, col2d); //trigger secondary gem effect
 
@@ -174,6 +176,12 @@ public class PlayerHurtBox : MonoBehaviour
         hitbox.ConfirmHit();
 
         return true; // Successfully took the hit.
+    }
+
+    private static void ConfirmAvoidedHit(HitBox hitbox)
+    {
+        if (hitbox == null || hitbox.GetComponentInParent<Enemies.ProjectileScripts.Projectile>() != null) return;
+        hitbox.ConfirmHit();
     }
 
     private static void ReportDodge(HitBox hitbox, bool isPerfect)

@@ -47,6 +47,8 @@ namespace Enemies
         public AttackEvents AttackEvents;
         public int ComboStepIndex;
         public bool ComboNextArmed;
+        public bool ComboStopped;
+        public int ComboTelegraphFrame = -10;
 
         public BossBounds BossBounds;
         public TeleportPhase TeleportPhase;

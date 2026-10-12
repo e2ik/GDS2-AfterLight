@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Tutorial;
+using Enemies;
 
 public class GameManager : MonoBehaviour
 {
@@ -54,6 +55,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Color defaultRarityColor = Color.white;
     [SerializeField] private Color keyItemColor = Color.yellow;
     [SerializeField] private Color loreItemColor = Color.cyan;
+
+    [Header("Attack Force Colors")]
+    [SerializeField, ColorUsage(false, true)] private Color zeroForceColor = Color.white;
+    [SerializeField, ColorUsage(false, true)] private Color lightForceColor = Color.cyan;
+    [SerializeField, ColorUsage(false, true)] private Color mediumForceColor = Color.yellow;
+    [SerializeField, ColorUsage(false, true)] private Color heavyForceColor = Color.red;
 
     [Header("Loot Rarity Odds")]
     [SerializeField] private RarityWeights defaultRarityOdds = new RarityWeights();
@@ -649,6 +656,17 @@ public class GameManager : MonoBehaviour
             case ERarity.Epic: return epicColor;
             case ERarity.Legendary: return legendaryColor;
             default: return defaultRarityColor;
+        }
+    }
+
+    public Color GetAttackForceColor(AttackForce force)
+    {
+        switch (force)
+        {
+            case AttackForce.Light: return lightForceColor;
+            case AttackForce.Medium: return mediumForceColor;
+            case AttackForce.Heavy: return heavyForceColor;
+            default: return zeroForceColor;
         }
     }
 

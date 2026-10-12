@@ -61,8 +61,9 @@ namespace Enemies.ModuleScripts.Movement
                     ctx.TeleportTimer -= deltaTime;
                     if ((state.IsName(teleportOutStateName) && state.normalizedTime >= 1f) || ctx.TeleportTimer <= 0f)
                     {
+                        Vector2 destination = ClampInsideBounds(ctx, ctx.TeleportDestination);
                         SetHidden(ctx, true);
-                        ctx.Self.position = ctx.TeleportDestination;
+                        ctx.Self.position = destination;
                         ctx.TeleportPhase = TeleportPhase.Hidden;
                         ctx.TeleportTimer = hiddenDuration;
                     }
@@ -128,9 +129,13 @@ namespace Enemies.ModuleScripts.Movement
             if (nearTargetFirst && TryPickNearTarget(ctx, bounds, body, targetPos, toTargetMinDistance, toTargetMaxDistance, out Vector2 nearDestination))
                 return nearDestination;
 
+            float halfWidth = body.extents.x;
+            float minX = Mathf.Min(bounds.min.x + halfWidth, bounds.center.x);
+            float maxX = Mathf.Max(bounds.max.x - halfWidth, bounds.center.x);
+
             for (int attempt = 0; attempt < maxRerollAttempts; attempt++)
             {
-                float x = Random.Range(bounds.min.x, bounds.max.x);
+                float x = Random.Range(minX, maxX);
                 float y = PickY(ctx, bounds, hasTarget, targetPos);
 
                 if (TryValidate(ctx, new Vector2(x, y), useGround, body, hasTarget, targetPos, minDistSqr, out Vector2 destination))
@@ -190,16 +195,38 @@ namespace Enemies.ModuleScripts.Movement
                 if (!NavMeshFlightUtility.TrySamplePoint(candidate, navMeshSampleDistance, out destination)) return false;
             }
 
-            if (!InsideBounds(ctx, destination)) return false;
+            if (!InsideBounds(ctx, destination, body)) return false;
 
             return !hasTarget || (destination - targetPos).sqrMagnitude >= minDistSqr;
         }
 
-        private bool InsideBounds(EnemyContext ctx, Vector2 point)
+        private bool InsideBounds(EnemyContext ctx, Vector2 destination, Bounds body)
         {
             Bounds bounds = ctx.BossBounds.WorldBounds;
-            return point.x >= bounds.min.x && point.x <= bounds.max.x
-                && point.y >= bounds.min.y && point.y <= bounds.max.y;
+            Vector2 offset = (Vector2)body.center - (Vector2)ctx.Self.position;
+            Vector2 center = destination + offset;
+            Vector2 extents = body.extents;
+
+            return center.x - extents.x >= bounds.min.x && center.x + extents.x <= bounds.max.x
+                && center.y >= bounds.min.y && center.y <= bounds.max.y;
+        }
+
+        private Vector2 ClampInsideBounds(EnemyContext ctx, Vector2 destination)
+        {
+            if (ctx.BossBounds == null) return destination;
+
+            Bounds bounds = ctx.BossBounds.WorldBounds;
+            Bounds body = EnemyTerrainProbe.GetBodyBounds(ctx);
+            Vector2 offset = (Vector2)body.center - (Vector2)ctx.Self.position;
+            Vector2 center = destination + offset;
+
+            float minX = bounds.min.x + body.extents.x;
+            float maxX = bounds.max.x - body.extents.x;
+
+            center.x = minX <= maxX ? Mathf.Clamp(center.x, minX, maxX) : bounds.center.x;
+            center.y = Mathf.Clamp(center.y, bounds.min.y, bounds.max.y);
+
+            return center - offset;
         }
 
         private float PickY(EnemyContext ctx, Bounds bounds, bool hasTarget, Vector2 targetPos)
