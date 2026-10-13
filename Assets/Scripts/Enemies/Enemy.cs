@@ -53,6 +53,7 @@ namespace Enemies
         [Header("Hit Reaction")]
         [SerializeField] private bool playHurtOnHit = true;
         [SerializeField] private string hitTrigger = "Hurt";
+        private Coroutine hitTriggerResetRoutine;
 
         [Header("FMOD Events")]
         [SerializeField] private EventReference hitEvent;
@@ -531,6 +532,17 @@ namespace Enemies
         {
             if (!playHurtOnHit || animator == null || Context.IsAttacking || IsStaggered) return;
             animator.SetTrigger(hitTrigger);
+
+            if (hitTriggerResetRoutine != null) StopCoroutine(hitTriggerResetRoutine);
+            hitTriggerResetRoutine = StartCoroutine(ResetHitTriggerSoon());
+        }
+
+        private IEnumerator ResetHitTriggerSoon()
+        {
+            yield return null;
+            yield return null;
+            if (animator != null) animator.ResetTrigger(hitTrigger);
+            hitTriggerResetRoutine = null;
         }
 
         private void OnDeath()

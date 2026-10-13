@@ -289,6 +289,8 @@ MonoBehaviour:
   staggerImmunityDuration: 4
   staggerStunDuration: 0.5
   postStaggerAttackDelay: 0.5
+  playHurtOnHit: 1
+  hitTrigger: Hurt
   hitEvent:
     Guid:
       Data1: 515442699
@@ -709,6 +711,8 @@ MonoBehaviour:
   parryIntensityBoost: 1
   parryBoostFadeSpeed: 30
   heavyGetsParryBoost: 0
+  boostIntensity: 0
+  intensityBoost: 1
   comboIntensityBoost: 2
 --- !u!1 &6608810097252315666
 GameObject:

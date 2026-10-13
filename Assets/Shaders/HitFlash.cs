@@ -162,7 +162,8 @@ public class HitFlash : MonoBehaviour
         overlay.drawMode = source.drawMode;
         if (source.drawMode != SpriteDrawMode.Simple) overlay.size = source.size;
         overlay.color = new Color(1f, 1f, 1f, source.color.a);
-        overlay.enabled = amount > 0f && source.enabled && source.sprite != null;
+        if (overlay.sharedMaterial != flashMaterial) overlay.sharedMaterial = flashMaterial;
+        overlay.enabled = amount > 0f && source.enabled && source.sprite != null && flashMaterial != null;
 
         overlay.GetPropertyBlock(block);
         block.SetColor(FlashColorId, activeColor);

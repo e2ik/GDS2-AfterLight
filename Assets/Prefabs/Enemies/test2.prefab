@@ -300,7 +300,7 @@ MonoBehaviour:
     Path: 
   spriteRenderer: {fileID: 5107996575365250629}
   hitFlash: {fileID: 3995612085123234234}
-  flashColor: {r: 1.6621785, g: 0, b: 0, a: 1}
+  flashColor: {r: 1.4980392, g: 0, b: 0, a: 1}
   flashDuration: 0.15
   bossBounds: {fileID: 0}
   attacksPerTeleport: 3
@@ -455,6 +455,7 @@ MonoBehaviour:
   parryIntensityBoost: 2
   parryBoostFadeSpeed: 30
   heavyGetsParryBoost: 0
+  hideOnHitDuration: 0.15
   boostIntensity: 1
   intensityBoost: 1.25
   comboIntensityBoost: 1
@@ -697,6 +698,7 @@ MonoBehaviour:
   edgeWidth: 1
   useUnscaledTime: 1
   sortingOrderOffset: 1
+  edgeSortingOrderOffset: 1
   holdFadeDuration: 0.15
   holdPulseMinAmount: 0.4
 --- !u!114 &5639220963888445822

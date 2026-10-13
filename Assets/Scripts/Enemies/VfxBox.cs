@@ -58,7 +58,7 @@ namespace Enemies
 
             Color color = GetColorForForce(attackForce);
 
-            if (flashOnAnticipation && hitFlash != null)
+            if (flashOnAnticipation && hitFlash != null && !hitFlash.IsFlashing)
                 hitFlash.Flash(color, flashIntensity, flashMode);
 
             activeParticleSystem = PSpawner.Spawn("anticipation", col.bounds.center, Quaternion.identity);
