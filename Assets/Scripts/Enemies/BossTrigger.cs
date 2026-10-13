@@ -14,6 +14,13 @@ namespace Enemies
         [SerializeField] private BossBounds arenaBounds;
         [SerializeField] private string playerTag = "Player";
         [SerializeField] private string bossID = "boss_intro_unique_id";
+        [SerializeField] private string bossName = "";
+
+        [Header("Rematch")]
+        [SerializeField] private bool rematchPlaysDeathDialogue = false;
+        [SerializeField] private bool rematchLocksArena = true;
+        [SerializeField] private bool rematchPlaysBossMusic = true;
+        [SerializeField] private bool rematchShowsHealthBar = true;
 
         [Header("Camera")]
         [SerializeField] private bool lockCameraToArena = true;
@@ -24,6 +31,8 @@ namespace Enemies
         
         private bool hasTriggered;
         private bool bossDefeated;
+        private GameObject defeatedBossObject;
+        private bool isRematch;
 
         private Enemy activeBossEnemy;
         private Transform engagedPlayer;
@@ -80,9 +89,18 @@ namespace Enemies
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (activeBossEnemy != null) return;
-            if (hasTriggered) return;
-            if (bossDefeated) return;
             if (!other.CompareTag(playerTag)) return;
+            if (hasTriggered && !bossDefeated) return;
+
+            if (bossDefeated)
+            {
+                if (!HasFreshBoss()) return;
+
+                bossDefeated = false;
+                hasTriggered = false;
+                defeatedBossObject = null;
+                isRematch = true;
+            }
 
             Player player = other.GetComponentInParent<Player>();
             if (player == null) return;
@@ -116,6 +134,22 @@ namespace Enemies
                 hasTriggered = false;
         }
 
+        private void OnTriggerStay2D(Collider2D other)
+        {
+            if (activeBossEnemy != null || !bossDefeated) return;
+            if (!HasFreshBoss()) return;
+
+            OnTriggerEnter2D(other);
+        }
+
+        private bool HasFreshBoss()
+        {
+            if (deathSequenceRunning || bossSpawner == null) return false;
+
+            GameObject spawned = bossSpawner.SpawnedEnemy;
+            return spawned != null && spawned.activeInHierarchy && spawned != defeatedBossObject;
+        }
+
         private IEnumerator WaitForDialogueEnd(Player player)
         {
             yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
@@ -123,8 +157,12 @@ namespace Enemies
             TriggerBossFight(player);
         }
 
+        private string DefeatedFlag => bossID + "_defeated";
+
         private void TriggerBossFight(Player player)
         {
+            if (SaveManager.Instance != null && SaveManager.Instance.HasStoryFlag(DefeatedFlag)) isRematch = true;
+
             Enemy bossEnemy = bossSpawner != null ? bossSpawner.SpawnedEnemy?.GetComponent<Enemy>() : null;
 
             if (bossEnemy != null)
@@ -132,33 +170,48 @@ namespace Enemies
                 bossEnemy.SetBossBounds(arenaBounds);
                 bossEnemy.TriggerLockOn(player.transform);
                 
-                MusicManager.Instance?.SwitchMusic(bossMusicEvent, isBossMusic: true);
-                BossHealthBarUI.Instance?.Initialize(bossEnemy.Context.Health.CurrentHealth, bossEnemy.Context.Health.MaxHealth);
+                bool playMusic = !isRematch || rematchPlaysBossMusic;
+                bool showHealthBar = !isRematch || rematchShowsHealthBar;
+                bool lockArena = !isRematch || rematchLocksArena;
+                bool playDeathDialogue = !isRematch || rematchPlaysDeathDialogue;
+
+                if (playMusic) MusicManager.Instance?.SwitchMusic(bossMusicEvent, isBossMusic: true);
+                if (showHealthBar) BossHealthBarUI.Instance?.Initialize(bossEnemy.Context.Health.CurrentHealth, bossEnemy.Context.Health.MaxHealth, bossName);
 
                 activeBossEnemy = bossEnemy;
                 engagedPlayer = player.transform;
                 engagedStats = player.Stats;
                 if (engagedStats != null) engagedStats.OnDied += HandlePlayerDied;
 
-                LockCamera();
-                SetDoorsLocked(true);
+                if (lockArena)
+                {
+                    LockCamera();
+                    SetDoorsLocked(true);
+                }
 
-                bossEnemy.Context.Health.DeferDeath = true;
-                onHealthDepleted = () => StartCoroutine(PlayDeathDialogueThenFinalize(bossEnemy, player));
-                bossEnemy.Context.Health.OnHealthDepleted += onHealthDepleted;
+                if (playDeathDialogue)
+                {
+                    bossEnemy.Context.Health.DeferDeath = true;
+                    onHealthDepleted = () => StartCoroutine(PlayDeathDialogueThenFinalize(bossEnemy, player));
+                    bossEnemy.Context.Health.OnHealthDepleted += onHealthDepleted;
+                }
 
                 onBossDamaged = (amount, currentHealth, isCrit) =>
                 {
-                    MusicManager.Instance?.SetBossIntensity((float)currentHealth / bossEnemy.Context.Health.MaxHealth);
-                    BossHealthBarUI.Instance?.SetHealth(currentHealth, bossEnemy.Context.Health.MaxHealth);
+                    if (playMusic) MusicManager.Instance?.SetBossIntensity((float)currentHealth / bossEnemy.Context.Health.MaxHealth);
+                    if (showHealthBar) BossHealthBarUI.Instance?.SetHealth(currentHealth, bossEnemy.Context.Health.MaxHealth);
                 };
                 
+                GameObject bossObject = bossEnemy.gameObject;
                 onBossDeath = () => 
                 {
                     bossDefeated = true;
+                    hasTriggered = false;
+                    defeatedBossObject = bossObject;
+                    if (SaveManager.Instance != null) SaveManager.Instance.SetStoryFlag(DefeatedFlag);
                     ReleaseCamera();
                     SetDoorsLocked(false);
-                    MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
+                    if (playMusic) MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
                     BossHealthBarUI.Instance?.Hide();
                     CleanupFightSubscriptions();
                 };

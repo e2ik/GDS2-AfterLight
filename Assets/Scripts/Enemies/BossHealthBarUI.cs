@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +15,7 @@ namespace Enemies
         [SerializeField] private RectTransform fillBar;
         [SerializeField] private RectTransform ghostBar;
         [SerializeField] private Image fillImage;
+        [SerializeField] private TMP_Text bossNameText;
 
         [Header("Juice")] 
         [SerializeField] private float fillLerpSpeed = 3f;
@@ -51,6 +53,7 @@ namespace Enemies
 
             canvasGroup.alpha = 0f;
             canvasGroup.gameObject.SetActive(false);
+            SyncName(0f, false);
         }
 
         private void OnDestroy()
@@ -59,13 +62,17 @@ namespace Enemies
                 Instance = null;
         }
 
-        public void Initialize(int currentHealth, int maxHealth)
+        public void Initialize(int currentHealth, int maxHealth, string bossName = null)
         {
+            if (bossNameText != null)
+                bossNameText.text = bossName ?? string.Empty;
+
             targetFraction = currentFraction = ghostFraction = Fraction(currentHealth, maxHealth);
             ApplyScale(fillBar, currentFraction);
             ApplyScale(ghostBar, ghostFraction);
 
             canvasGroup.gameObject.SetActive(true);
+            SyncName(canvasGroup.alpha, true);
 
             if (fadeRoutine != null) StopCoroutine(fadeRoutine);
             fadeRoutine = StartCoroutine(Fade(1f));
@@ -113,6 +120,17 @@ namespace Enemies
             ApplyScale(ghostBar, ghostFraction);
         }
         
+        private void SyncName(float alpha, bool visible)
+        {
+            if (bossNameText == null) return;
+
+            bool hasName = !string.IsNullOrEmpty(bossNameText.text);
+            bossNameText.gameObject.SetActive(visible && hasName);
+
+            if (canvasGroup == null || !bossNameText.transform.IsChildOf(canvasGroup.transform))
+                bossNameText.alpha = alpha;
+        }
+
         private static float Fraction(int current, int max) => max > 0 ? Mathf.Clamp01((float)current / max) : 0f;
         
         private static void ApplyScale(RectTransform bar, float fraction)
@@ -132,10 +150,12 @@ namespace Enemies
             {
                 t += Time.unscaledDeltaTime;
                 canvasGroup.alpha = Mathf.Lerp(start, targetAlpha, t / fadeDuration);
+                SyncName(canvasGroup.alpha, true);
                 yield return null;
             }
 
             canvasGroup.alpha = targetAlpha;
+            SyncName(targetAlpha, !deactivateOnEnd);
             if (deactivateOnEnd) canvasGroup.gameObject.SetActive(false);
             fadeRoutine = null;
         }

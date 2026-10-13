@@ -23,12 +23,14 @@ namespace Enemies
         [SerializeField] private float facingDeadZone = 0.15f;
         [SerializeField] private string placeholderClipName = "EmptyAttack";
 
-        [Header("Ledge Safety")]
+        [Header("Terrain Checks")]
         [SerializeField] private bool preventLedgeFalls = true;
         [SerializeField] private bool ignoreTerrainChecks = false;
         [SerializeField] private LayerMask ledgeGroundMask;
         [SerializeField] private float ledgeCheckDistance = 0.5f;
         [SerializeField] private float ledgeCheckDepth = 1f;
+        [SerializeField] private float wallCheckDistance = 0.3f;
+        [SerializeField] private float wallCheckHeight = 0.1f;
 
         [Header("Aggro")]
         [SerializeField] private bool canDropAggro = true;
@@ -67,7 +69,10 @@ namespace Enemies
         [SerializeField] private bool canTeleport = false;
         [SerializeField] private bool teleportToTargetWhenOutOfRange = true;
         [SerializeField] private float outOfRangeTeleportDelay = 4f;
+        [SerializeField, Range(0f, 1f)] private float teleportAfterDamagePercent = 0f;
+        [SerializeField, Min(0.5f)] private float teleportInvulnerabilityFailsafe = 6f;
         private int attacksSinceLastTeleport;
+        private int damageSinceTeleport;
         private float teleportCooldownTimer;
         private float outOfRangeTimer;
 
@@ -99,6 +104,7 @@ namespace Enemies
             Context.Health.OnDamageTaken -= OnDamaged;
             Context.Health.OnDeath -= OnDeath;
             EnemyCombatTracker.EnemyStoppedTargeting(this);
+            if (Context.Health != null) Context.Health.Invulnerable = false;
 
             if (IsAttacking) MarkAttackEnded();
         }
@@ -135,6 +141,8 @@ namespace Enemies
             Context.HomePosition = transform.position;
             Context.NavPath = new NavMeshPath();
             Context.NoiseSeed = UnityEngine.Random.value * 1000f;
+            Context.IgnoreTerrainChecks = ignoreTerrainChecks;
+            ApplyTerrainSettings();
 
             if (spriteRenderer == null)
                 Debug.LogError($"{name}: no sprite renderer found");
@@ -149,6 +157,13 @@ namespace Enemies
         private void Update()
         {
             Context.IgnoreTerrainChecks = ignoreTerrainChecks;
+            ApplyTerrainSettings();
+
+            if (Context.Health != null && Context.Health.Invulnerable && Time.time - Context.TeleportStartedTime > teleportInvulnerabilityFailsafe)
+            {
+                Context.Health.Invulnerable = false;
+                Context.TeleportStartedTime = float.NegativeInfinity;
+            }
 
             observationSO.Tick(Context, Time.deltaTime);
 
@@ -230,9 +245,11 @@ namespace Enemies
             UpdateOutOfRangeTimer();
             bool forceTeleport = IsBoss && teleportToTargetWhenOutOfRange && outOfRangeTeleportDelay > 0f && outOfRangeTimer >= outOfRangeTeleportDelay
                                  && teleportCooldownTimer <= 0f;
-            bool teleportReady = canTeleport && (forceTeleport
+            bool damageTeleport = teleportAfterDamagePercent > 0f && Context.Health != null
+                                  && damageSinceTeleport >= Context.Health.MaxHealth * teleportAfterDamagePercent;
+            bool teleportReady = canTeleport && (forceTeleport || damageTeleport
                 || (attacksSinceLastTeleport >= attacksPerTeleport && teleportCooldownTimer <= 0f));
-            Context.ForceTeleportNearTarget = canTeleport && forceTeleport;
+            Context.ForceTeleportNearTarget = canTeleport && forceTeleport && !damageTeleport;
             TeleportReady = IsBoss && teleportReady;
 
             behaviorAgent.BlackboardReference.SetVariableValue("TargetVisible", Context.TargetVisible);
@@ -247,17 +264,28 @@ namespace Enemies
             if (IsBoss)
                 KeepInsideBossBounds();
 
-            if (!preventLedgeFalls || ledgeGroundMask == 0 || Context.IgnoreTerrainChecks) return;
+            if (!preventLedgeFalls || Context.GroundMask == 0 || Context.IgnoreTerrainChecks) return;
 
             Vector2 velocity = rb2D.linearVelocity;
             if (Mathf.Abs(velocity.x) < 0.01f) return;
-            if (!EnemyTerrainProbe.HasGroundBelow(Context, ledgeGroundMask, ledgeCheckDepth)) return;
+            if (!EnemyTerrainProbe.HasGroundBelow(Context)) return;
 
             int dir = velocity.x > 0f ? 1 : -1;
-            if (!EnemyTerrainProbe.HasGroundAhead(Context, dir, ledgeGroundMask, ledgeCheckDistance, ledgeCheckDepth))
+            if (!EnemyTerrainProbe.HasGroundAhead(Context, dir))
             {
                 rb2D.linearVelocity = new Vector2(0f, velocity.y);
             }
+        }
+
+        private void ApplyTerrainSettings()
+        {
+            if (Context == null) return;
+
+            Context.GroundMask = ledgeGroundMask;
+            Context.EdgeCheckDistance = ledgeCheckDistance;
+            Context.GroundCheckDepth = ledgeCheckDepth;
+            Context.WallCheckDistance = wallCheckDistance;
+            Context.WallCheckHeight = wallCheckHeight;
         }
 
         private void KeepInsideBossBounds()
@@ -432,6 +460,7 @@ namespace Enemies
         public void MarkTeleportUsed()
         {
             attacksSinceLastTeleport = 0;
+            damageSinceTeleport = 0;
             teleportCooldownTimer = teleportMinCooldown;
             outOfRangeTimer = 0f;
             Context.ForceTeleportNearTarget = false;
@@ -439,10 +468,12 @@ namespace Enemies
 
         private void OnDamaged(DamageInfo info)
         {
+            if (canTeleport && IsBoss) damageSinceTeleport += info.Amount;
+
             bool isDot = info.DamageType == EDamageType.Dot;
             string crit = info.IsCrit ? " CRIT" : "";
             string roll = info.HasRoll ? $" roll:{info.RollQuality:F2}" : "";
-            Debug.Log($"Enemy blud was damaged for {info.Amount} ({info.DamageType}{crit}{roll}). Current Health: {Context.Health.CurrentHealth}");
+            // Debug.Log($"Enemy blud was damaged for {info.Amount} ({info.DamageType}{crit}{roll}). Current Health: {Context.Health.CurrentHealth}");
 
             AudioManager.PlaySFXAttached(hitEvent, gameObject);
 

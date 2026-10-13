@@ -17,14 +17,18 @@ MonoBehaviour:
   steps:
   - placeholderClip: {fileID: 7400000, guid: d66efa7785c333342abd93d7aad1f9b5, type: 2}
     clip: {fileID: 7400000, guid: f19c0c54fdef13542abc27014ba3607d, type: 2}
-    damage: 10
+    damage: 15
     attackForce: 1
     attackStateName: Attack
     requiresHitToContinue: 1
   - placeholderClip: {fileID: 7400000, guid: 5a21eabbe1da2d04e8adff2cce4eb615, type: 2}
     clip: {fileID: 7400000, guid: 063f0820e1375ee498915c7c785a8c87, type: 2}
-    damage: 10
+    damage: 20
     attackForce: 1
     attackStateName: Attack2
     requiresHitToContinue: 0
   comboBoolName: ComboContinue
+  continueChance: 0.33
+  healthThreshold: 0.6
+  continueChanceBelowThreshold: 0.66
+  lightFirstStepWhenContinuing: 1

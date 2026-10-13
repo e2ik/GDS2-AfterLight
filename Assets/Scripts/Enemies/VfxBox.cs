@@ -13,6 +13,9 @@ namespace Enemies
         [SerializeField] private HitFlash hitFlash;
         [SerializeField] private HitFlash.FlashMode flashMode = HitFlash.FlashMode.Edge;
         [SerializeField, Min(0f)] private float flashIntensity = 2f;
+
+        [Header("Color Override")]
+        [SerializeField] private bool overrideColors = false;
         [SerializeField, ColorUsage(false, true)] private Color zeroColor = Color.white;
         [SerializeField, ColorUsage(false, true)] private Color lightColor = Color.cyan;
         [SerializeField, ColorUsage(false, true)] private Color mediumColor = Color.yellow;
@@ -67,6 +70,9 @@ namespace Enemies
 
         public Color GetColorForForce(AttackForce force)
         {
+            if (!overrideColors && GameManager.Instance != null)
+                return GameManager.Instance.GetAttackForceColor(force);
+
             switch (force)
             {
                 case AttackForce.Zero:   return zeroColor;

@@ -233,7 +233,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9b08fde3cea1e74eaa88ad2dd99a63a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
-  maxHealth: 500
+  maxHealth: 800
 --- !u!114 &2819779926548626800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -254,7 +254,7 @@ MonoBehaviour:
     manualOnly: 0
   - Attack: {fileID: 11400000, guid: 0f75b721bbec5ef43b6f61278a419117, type: 2}
     Weight: 35
-    maxDuration: 3
+    maxDuration: 2
     manualOnly: 0
   - Attack: {fileID: 11400000, guid: 4cd372f9398bcd342a8a8aa495170729, type: 2}
     Weight: 25
@@ -276,9 +276,11 @@ MonoBehaviour:
   ignoreTerrainChecks: 0
   ledgeGroundMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   ledgeCheckDistance: 0.5
   ledgeCheckDepth: 1
+  wallCheckDistance: 0.3
+  wallCheckHeight: 0.1
   canDropAggro: 0
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
@@ -311,6 +313,8 @@ MonoBehaviour:
   canTeleport: 1
   teleportToTargetWhenOutOfRange: 1
   outOfRangeTeleportDelay: 1
+  teleportAfterDamagePercent: 0.15
+  teleportInvulnerabilityFailsafe: 6
   hasDeathAnimation: 1
   deathTrigger: Death
   deathStateName: Death
@@ -705,6 +709,7 @@ MonoBehaviour:
   parryIntensityBoost: 1
   parryBoostFadeSpeed: 30
   heavyGetsParryBoost: 0
+  comboIntensityBoost: 2
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0
@@ -807,6 +812,7 @@ MonoBehaviour:
   hitFlash: {fileID: 8447035490974730339}
   flashMode: 1
   flashIntensity: 1.25
+  overrideColors: 0
   zeroColor: {r: 1, g: 1, b: 1, a: 1}
   lightColor: {r: 0, g: 1, b: 1, a: 1}
   mediumColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}

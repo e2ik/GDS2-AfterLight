@@ -36,6 +36,9 @@ public class EnemyAttackGlow : MonoBehaviour
     [SerializeField, Min(0f)] private float parryBoostFadeSpeed = 30f;
     [SerializeField] private bool heavyGetsParryBoost = false;
 
+    [Header("Combo Telegraph")]
+    [SerializeField] private float comboIntensityBoost = 1f;
+
     private readonly MultiplyOutline.GlowStyle outlineStyle = new MultiplyOutline.GlowStyle();
     private readonly ColorGlow.GlowStyle colorGlowStyle = new ColorGlow.GlowStyle();
     private bool glowOn;
@@ -66,6 +69,7 @@ public class EnemyAttackGlow : MonoBehaviour
         Style style = null;
         bool parryOpen = false;
         Color color = Color.white;
+        bool comboTelegraph = false;
 
         if (enemy != null && enemy.Context != null && enemy.IsAttacking && InAttackAnimation(enemy.Context.Animator))
         {
@@ -73,6 +77,7 @@ public class EnemyAttackGlow : MonoBehaviour
             style = ForceStyle(ctx.CurrentAttackForce);
             if (style != null)
                 color = useVfxBoxColors && colorSource != null ? colorSource.GetColorForForce(ctx.CurrentAttackForce) : style.color;
+            comboTelegraph = Time.frameCount - ctx.ComboTelegraphFrame <= 1;
             bool canBoost = ctx.CurrentAttackForce != AttackForce.Heavy || heavyGetsParryBoost;
             parryOpen = canBoost && ctx.AttackEvents != null && ctx.AttackEvents.ParryWindowOpen;
         }
@@ -85,7 +90,7 @@ public class EnemyAttackGlow : MonoBehaviour
         bool on = style != null && style.enabled;
         if (on)
         {
-            float intensity = Mathf.Min(10f, style.intensity + boost);
+            float intensity = Mathf.Clamp(style.intensity + boost + (comboTelegraph ? comboIntensityBoost : 0f), 0f, 10f);
 
             outlineStyle.enabled = true;
             outlineStyle.color = color;

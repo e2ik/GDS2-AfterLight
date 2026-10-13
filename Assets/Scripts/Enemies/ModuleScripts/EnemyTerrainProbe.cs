@@ -13,6 +13,21 @@ namespace Enemies
         private static readonly Dictionary<Transform, Collider2D> hurtBoxCache = new();
         private static readonly List<Collider2D> attachedBuffer = new();
 
+        public static bool IsBlocked(EnemyContext ctx, int dir)
+            => IsBlocked(ctx, dir, ctx.GroundMask, ctx.EdgeCheckDistance, ctx.GroundCheckDepth, ctx.WallCheckDistance, ctx.WallCheckHeight);
+
+        public static void StopAtEdge(EnemyContext ctx)
+            => StopAtEdge(ctx, ctx.GroundMask, ctx.EdgeCheckDistance, ctx.GroundCheckDepth, ctx.WallCheckDistance, ctx.WallCheckHeight);
+
+        public static bool HasGroundBelow(EnemyContext ctx)
+            => HasGroundBelow(ctx, ctx.GroundMask, ctx.GroundCheckDepth);
+
+        public static bool HasGroundAhead(EnemyContext ctx, int dir)
+            => HasGroundAhead(ctx, dir, ctx.GroundMask, ctx.EdgeCheckDistance, ctx.GroundCheckDepth);
+
+        public static bool HasWallAhead(EnemyContext ctx, int dir)
+            => HasWallAhead(ctx, dir, ctx.GroundMask, ctx.WallCheckDistance, ctx.WallCheckHeight);
+
         public static bool IsBlocked(EnemyContext ctx, int dir, LayerMask mask, float edgeCheckDistance, float groundCheckDepth, float wallCheckDistance, float wallCheckHeight)
         {
             if (mask == 0 || dir == 0) return false;
@@ -36,8 +51,12 @@ namespace Enemies
         public static bool HasGroundBelow(EnemyContext ctx, LayerMask mask, float groundCheckDepth)
         {
             Bounds body = GetBodyBounds(ctx);
-            Vector2 origin = new Vector2(body.center.x, body.min.y + Skin);
-            return TryCast(ctx, origin, Vector2.down, groundCheckDepth + Skin, mask, out _);
+            float y = body.min.y + Skin;
+            float distance = groundCheckDepth + Skin;
+
+            return TryCast(ctx, new Vector2(body.center.x, y), Vector2.down, distance, mask, out _)
+                   || TryCast(ctx, new Vector2(body.min.x + Skin, y), Vector2.down, distance, mask, out _)
+                   || TryCast(ctx, new Vector2(body.max.x - Skin, y), Vector2.down, distance, mask, out _);
         }
 
         public static bool HasGroundAhead(EnemyContext ctx, int dir, LayerMask mask, float edgeCheckDistance, float groundCheckDepth)

@@ -23,6 +23,11 @@ namespace Enemies.ModuleScripts.Attacks
         [SerializeField] private List<ComboStep> steps = new();
         [SerializeField] private string comboBoolName = "ComboContinue";
 
+        [Header("Random Continue")]
+        [SerializeField, Range(0f, 1f)] private float continueChance = 1f;
+        [SerializeField, Range(0f, 1f)] private float healthThreshold = 0f;
+        [SerializeField, Range(0f, 1f)] private float continueChanceBelowThreshold = 1f;
+
         public override void Begin(EnemyContext ctx)
         {
             ctx.ComboStepIndex = 0;
@@ -33,6 +38,8 @@ namespace Enemies.ModuleScripts.Attacks
                 ctx.AttackEvents = ctx.Self.GetComponentInChildren<AttackEvents>();
 
             ApplyStepData(ctx, steps[0]);
+            RollContinue(ctx);
+            MarkTelegraph(ctx);
             
             ctx.Animator.Play(steps[0].attackStateName, 0, 0f);
             ctx.Animator.Update(0f);
@@ -43,8 +50,9 @@ namespace Enemies.ModuleScripts.Attacks
             ComboStep step = steps[ctx.ComboStepIndex];
             AnimatorStateInfo state = ctx.Animator.GetCurrentAnimatorStateInfo(0);
             bool hasNextStep = ctx.ComboStepIndex < steps.Count - 1;
+            MarkTelegraph(ctx);
 
-            if (hasNextStep && !ctx.ComboNextArmed &&
+            if (hasNextStep && !ctx.ComboNextArmed && !ctx.ComboStopped &&
                 (!step.requiresHitToContinue || ctx.AttackEvents.LastHitConfirmed))
             {
                 ArmNextStep(ctx);
@@ -58,6 +66,7 @@ namespace Enemies.ModuleScripts.Attacks
                     ctx.ComboStepIndex++;
                     ctx.ComboNextArmed = false;
                     ctx.Animator.SetBool(comboBoolName, false);
+                    RollContinue(ctx);
                 }
  
                 return false;
@@ -73,6 +82,25 @@ namespace Enemies.ModuleScripts.Attacks
             
             ctx.Animator.SetBool(comboBoolName, true);
             ctx.ComboNextArmed = true;
+        }
+
+        private void MarkTelegraph(EnemyContext ctx)
+        {
+            if (ctx.ComboStepIndex == 0 && steps.Count > 1 && !ctx.ComboStopped)
+                ctx.ComboTelegraphFrame = Time.frameCount;
+        }
+
+        private void RollContinue(EnemyContext ctx)
+        {
+            float chance = continueChance;
+
+            if (ctx.Health != null && ctx.Health.MaxHealth > 0 &&
+                (float)ctx.Health.CurrentHealth / ctx.Health.MaxHealth <= healthThreshold)
+            {
+                chance = continueChanceBelowThreshold;
+            }
+
+            ctx.ComboStopped = chance < 1f && UnityEngine.Random.value >= chance;
         }
 
         private void ApplyStepData(EnemyContext ctx, ComboStep step)
