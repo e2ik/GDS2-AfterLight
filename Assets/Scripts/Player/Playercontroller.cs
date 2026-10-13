@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Enemies;
+using FMODUnity;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -216,6 +217,8 @@ public class PlayerController : MonoBehaviour
     public bool IsPhysicsSuspended => physicsSuspended;
 
     private int lastFacingDirection;
+
+    public EventReference landSound;
 
     private void Awake()
     {

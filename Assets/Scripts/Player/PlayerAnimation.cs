@@ -550,12 +550,14 @@ public class PlayerAnimation : MonoBehaviour
         Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
 
         PSpawner.Spawn("JumpDust", spawnPosition, rotation);
+        AudioManager.PlaySFX(player.Controller.landSound);
     }
 
     public void TriggerJumpEffectAt(Vector2 position, Vector2 normal)
     {
         float angle = Mathf.Atan2(normal.y, -normal.x) * Mathf.Rad2Deg - 90f;
         PSpawner.Spawn("JumpDust", position, Quaternion.Euler(0f, 0f, angle));
+        AudioManager.PlaySFX(player.Controller.landSound);
     }
 
     public void TriggerDashEffect()
@@ -630,6 +632,7 @@ public class PlayerAnimation : MonoBehaviour
         Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
 
         PSpawner.Spawn("JumpDust", spawnPosition, rotation);
+        AudioManager.PlaySFX(player.Controller.landSound);
     }
 
     public void TriggerPlungeLandEffect()

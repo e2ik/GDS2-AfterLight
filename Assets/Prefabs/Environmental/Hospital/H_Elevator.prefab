@@ -1208,6 +1208,13 @@ MonoBehaviour:
   drawGizmos: 1
   onGizmoColor: {r: 0, g: 1, b: 0, a: 1}
   offGizmoColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  stopEvent:
+    Guid:
+      Data1: -688760955
+      Data2: 1163261655
+      Data3: -1677420625
+      Data4: -653569640
+    Path: event:/WorldSFX Events/ElevatorStopEvent
 --- !u!1 &8444348730550973902
 GameObject:
   m_ObjectHideFlags: 0
@@ -1403,6 +1410,7 @@ MonoBehaviour:
   switchMode: 0
   requiredKey: {fileID: 0}
   missingKeyMessage: '"I need the {0}..."'
+  keyNameColor: {r: 1, g: 0.85, b: 0.3, a: 1}
   missingKeyMessageDuration: 2
   missingKeyMessageEffect: 0
   brokenMessage: This switch doesn't seem to work...
@@ -1432,6 +1440,7 @@ MonoBehaviour:
       Data3: 1653027773
       Data4: 1966799234
     Path: event:/WorldSFX Events/SwitchClickEvent
+  tutorialEventKey: 
 --- !u!114 &6956037067544977643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1446,6 +1455,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpriteOutlineToggle
   outlineColor: {r: 0, g: 1, b: 0.99045587, a: 1}
   outlineThickness: 0.5
+  outlineIntensity: 1.4
   pulseOnHighlight: 1
   highlightPulseSpeed: 20
   highlightMinAlpha: 0.2

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using FMODUnity;
 using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider2D))]
@@ -51,6 +52,8 @@ public class WheelObj : MonoBehaviour
     public bool IsNudging => isNudging;
 
     private float ProbeReach => Mathf.Max(0f, halfSize.x - edgeInset);
+
+    [SerializeField] private EventReference moveSound;
 
     private void Reset()
     {
@@ -177,7 +180,7 @@ public class WheelObj : MonoBehaviour
         float direction = Mathf.Abs(dx) < 0.01f
             ? (Random.value < 0.5f ? -1f : 1f)
             : Mathf.Sign(dx);
-
+        AudioManager.PlaySFXAttached(moveSound,gameObject);
         Nudge(direction);
     }
 

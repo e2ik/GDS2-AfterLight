@@ -1,4 +1,5 @@
 using System.Collections;
+using FMODUnity;
 using UnityEngine;
 
 public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
@@ -51,6 +52,8 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
     public float CurrentVerticalDirection => IsMoving ? currentVerticalDirection : 0f;
 
     private bool HasSecondary => secondaryMovingPart != null;
+
+    [SerializeField] private EventReference stopEvent;
 
     private void OnDisable()
     {
@@ -178,6 +181,7 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
             moverRigidbody.MovePosition(position);
         else
             Mover().position = position;
+            
     }
 
     private void NotifyMovingStateChanged(bool moving)
@@ -197,7 +201,7 @@ public class PositionSwitch : MonoBehaviour, IOnOff, IMovementIndicator
         if (movementLoopEmitter != null)
         {
             if (moving) movementLoopEmitter.Play();
-            else movementLoopEmitter.Stop();
+            else {movementLoopEmitter.Stop();AudioManager.PlaySFXAttached(stopEvent,gameObject);};
         }
     }
 
