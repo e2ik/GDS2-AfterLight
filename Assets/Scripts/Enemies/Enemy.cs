@@ -576,20 +576,39 @@ namespace Enemies
         {
             yield return null;
 
-            float elapsed = 0f;
+            float duration = GetDeathClipDuration();
+            float elapsed = Time.deltaTime;
 
-            while (elapsed < deathAnimationTimeout)
+            while (elapsed < duration)
             {
-                AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
-                
-                if(state.IsName(deathStateName) && state.normalizedTime >= 1f)
-                    break;
-
                 elapsed += Time.deltaTime;
                 yield return null;
             }
             
             gameObject.SetActive(false);
+        }
+
+        private float GetDeathClipDuration()
+        {
+            AnimatorStateInfo state = animator.IsInTransition(0)
+                ? animator.GetNextAnimatorStateInfo(0)
+                : animator.GetCurrentAnimatorStateInfo(0);
+
+            if (state.IsName(deathStateName) && state.length > 0f && !float.IsInfinity(state.length))
+                return Mathf.Min(state.length, deathAnimationTimeout);
+
+            AnimatorClipInfo[] clips = animator.IsInTransition(0)
+                ? animator.GetNextAnimatorClipInfo(0)
+                : animator.GetCurrentAnimatorClipInfo(0);
+
+            if (clips.Length > 0 && clips[0].clip != null)
+            {
+                float speed = Mathf.Abs(animator.speed * state.speed);
+                float length = speed > 0.0001f ? clips[0].clip.length / speed : clips[0].clip.length;
+                return Mathf.Min(length, deathAnimationTimeout);
+            }
+
+            return deathAnimationTimeout;
         }
 
         private IEnumerator FlashRed()
