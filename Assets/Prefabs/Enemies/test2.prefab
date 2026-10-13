@@ -198,6 +198,7 @@ GameObject:
   - component: {fileID: 7603609893098896341}
   - component: {fileID: 2968184197812120870}
   - component: {fileID: 59898807662759673}
+  - component: {fileID: 3073881872794185367}
   m_Layer: 12
   m_Name: test2
   m_TagString: Untagged
@@ -249,11 +250,11 @@ MonoBehaviour:
   observationSO: {fileID: 11400000, guid: 507f599106ab90f40a26514267cdd09a, type: 2}
   attacks:
   - Attack: {fileID: 11400000, guid: 7411ed713c0ca1942bc732a7dc39d2de, type: 2}
-    Weight: 70
+    Weight: 50
     maxDuration: 3
     manualOnly: 0
   - Attack: {fileID: 11400000, guid: 751f14cc21839bf458d141af3c78dca3, type: 2}
-    Weight: 30
+    Weight: 50
     maxDuration: 3
     manualOnly: 0
   lootTable: {fileID: 11400000, guid: 567a4ae1129c3c74b9bcb59707e14432, type: 2}
@@ -271,6 +272,8 @@ MonoBehaviour:
     m_Bits: 64
   ledgeCheckDistance: 0.5
   ledgeCheckDepth: 0.3
+  wallCheckDistance: 0.3
+  wallCheckHeight: 0.1
   canDropAggro: 1
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
@@ -279,6 +282,8 @@ MonoBehaviour:
   staggerImmunityDuration: 8
   staggerStunDuration: 0.5
   postStaggerAttackDelay: 0.5
+  playHurtOnHit: 1
+  hitTrigger: Hurt
   hitEvent:
     Guid:
       Data1: 515442699
@@ -303,10 +308,12 @@ MonoBehaviour:
   canTeleport: 0
   teleportToTargetWhenOutOfRange: 1
   outOfRangeTeleportDelay: 4
-  hasDeathAnimation: 0
+  teleportAfterDamagePercent: 0
+  teleportInvulnerabilityFailsafe: 6
+  hasDeathAnimation: 1
   deathTrigger: Death
   deathStateName: Death
-  deathAnimationTimeout: 5
+  deathAnimationTimeout: 0.75
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -400,6 +407,57 @@ CapsuleCollider2D:
   m_Offset: {x: 0.31871605, y: 0.20642161}
   m_Size: {x: 3.1974487, y: 3.9317794}
   m_Direction: 0
+--- !u!114 &3073881872794185367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4998036943446194957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561b6f6388a42344dbfeddb4154aceba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttackGlow
+  enemy: {fileID: 2819779926548626800}
+  multiplyOutline: {fileID: 1830594110896471678}
+  colorGlow: {fileID: 5639220963888445822}
+  colorSource: {fileID: 69754505853120667}
+  useVfxBoxColors: 1
+  onlyDuringAttackAnimation: 1
+  attackStateNames:
+  - Attack
+  stopAtClipEnd: 1
+  lightGlow:
+    enabled: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 2
+    checkerLow: 0.5
+    checkerSize: 1
+  mediumGlow:
+    enabled: 1
+    color: {r: 1, g: 0.8, b: 0.2, a: 1}
+    intensity: 2
+    checkerLow: 0.5
+    checkerSize: 1
+  heavyGlow:
+    enabled: 1
+    color: {r: 1, g: 0.15, b: 0.1, a: 1}
+    intensity: 3
+    checkerLow: 0.5
+    checkerSize: 1
+  zeroForceGlow:
+    enabled: 0
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 2
+    checkerLow: 0.5
+    checkerSize: 1
+  parryIntensityBoost: 2
+  parryBoostFadeSpeed: 30
+  heavyGetsParryBoost: 0
+  boostIntensity: 1
+  intensityBoost: 1.25
+  comboIntensityBoost: 1
 --- !u!1 &5835482462216775301
 GameObject:
   m_ObjectHideFlags: 0
@@ -415,6 +473,7 @@ GameObject:
   - component: {fileID: 327413178282637274}
   - component: {fileID: 1830594110896471678}
   - component: {fileID: 3995612085123234234}
+  - component: {fileID: 5639220963888445822}
   m_Layer: 12
   m_Name: Graphics
   m_TagString: Untagged
@@ -491,7 +550,7 @@ SpriteRenderer:
   m_SortingOrder: 15
   m_MaskInteraction: 0
   m_Sprite: {fileID: 5391429805581040246, guid: a9e66e8fcac1fda40b09ca1ad934d7ba, type: 3}
-  m_Color: {r: 0.7381568, g: 0.67352945, b: 0.8742138, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -640,6 +699,29 @@ MonoBehaviour:
   sortingOrderOffset: 1
   holdFadeDuration: 0.15
   holdPulseMinAmount: 0.4
+--- !u!114 &5639220963888445822
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 552c61b0b3d01574a9c690c9cfa647a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorGlow
+  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  startActive: 1
+  matchColor: {r: 0.8117648, g: 0.8313726, b: 0, a: 1}
+  matchTolerance: 0.438
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 2
+  checkerLow: 0.5
+  checkerSize: 1
+  fadeDuration: 0.08
+  useUnscaledTime: 0
+  sortingOrderOffset: 1
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0
@@ -742,6 +824,7 @@ MonoBehaviour:
   hitFlash: {fileID: 3995612085123234234}
   flashMode: 1
   flashIntensity: 1.25
+  overrideColors: 0
   zeroColor: {r: 1, g: 1, b: 1, a: 1}
   lightColor: {r: 0, g: 1, b: 1, a: 1}
   mediumColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}

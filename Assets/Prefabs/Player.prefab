@@ -563,6 +563,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimation
   defaultHurtClip: {fileID: 7400000, guid: 26d803efe6f1d7c459f7cb954f68e965, type: 2}
   holdHurtInAir: 1
+  minHurtHoldTime: 0.3
   wallSlideParticleSystem: {fileID: 8438840527263229074}
   wallSlideExtraParticleSystems:
   - {fileID: 6263486156134207216}
@@ -620,7 +621,7 @@ MonoBehaviour:
   heldSkillUsesChargeColor: 1
   syncHeldAnimToTicks: 1
   heldSkillMaxAnimSpeed: 1.75
-  hitFlashColor: {r: 1.1353015, g: 0.17029522, b: 0.17029522, a: 1}
+  hitFlashColor: {r: 1.6055588, g: 0.2408338, b: 0.2408338, a: 1}
   parryFlashColor: {r: 0.9221513, g: 0.6301782, b: 0, a: 1}
   healFlashColor: {r: 0, g: 1.1353015, b: 0.06982221, a: 1}
 --- !u!114 &6264206310521610964

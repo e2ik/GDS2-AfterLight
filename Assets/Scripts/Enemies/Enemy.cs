@@ -494,6 +494,12 @@ namespace Enemies
 
             if (isDot) return;
 
+            if (Context.Health.CurrentHealth <= 0)
+            {
+                PSpawner.Spawn("EnemyHit", transform.position);
+                return;
+            }
+
             if (isStaggerImmune || (staggerOnlyOnComboFinisher && !info.IsComboFinisher))
             {
                 PlayHitReaction();
@@ -537,7 +543,15 @@ namespace Enemies
 
             if (hasDeathAnimation && animator != null)
             {
-                animator.SetTrigger(deathTrigger);
+                animator.ResetTrigger(hitTrigger);
+                animator.ResetTrigger("Hurt");
+
+                int deathHash = Animator.StringToHash(deathStateName);
+                if (animator.HasState(0, deathHash))
+                    animator.Play(deathHash, 0, 0f);
+                else
+                    animator.SetTrigger(deathTrigger);
+
                 StartCoroutine(PlayDeathAnimationThenDeactivate());
             }
             else
@@ -548,6 +562,8 @@ namespace Enemies
         
         private IEnumerator PlayDeathAnimationThenDeactivate()
         {
+            yield return null;
+
             float elapsed = 0f;
 
             while (elapsed < deathAnimationTimeout)
@@ -597,6 +613,12 @@ namespace Enemies
             rb2D.linearVelocity = Vector2.zero;
             IsAttacking = false;
             Context.IsAttacking = false;
+
+            foreach (HitBox hitBox in GetComponentsInChildren<HitBox>())
+                hitBox.Disable();
+
+            AttackEvents events = Context.AttackEvents != null ? Context.AttackEvents : GetComponentInChildren<AttackEvents>();
+            if (events != null) events.CloseParryWindow();
         }
 
 #if UNITY_EDITOR

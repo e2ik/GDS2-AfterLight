@@ -35,6 +35,7 @@ public class PlayerAnimation : MonoBehaviour
     [Header("Hurt Variants")]
     [SerializeField] private AnimationClip defaultHurtClip;
     [SerializeField] private bool holdHurtInAir = true;
+    [SerializeField, Min(0f)] private float minHurtHoldTime = 0f;
     private float hurtHoldUntil;
     private bool hasHurtHeldParam;
     private AnimatorOverrideController hurtOverride;
@@ -499,7 +500,7 @@ public class PlayerAnimation : MonoBehaviour
 
         AnimationClip shownClip = hurtClip != null ? hurtClip : defaultHurtClip;
         if (holdHurtInAir && shownClip != null)
-            hurtHoldUntil = Time.time + shownClip.length;
+            hurtHoldUntil = Time.time + Mathf.Max(shownClip.length, minHurtHoldTime);
 
         animator.SetTrigger(IsHurtHash);
         FlashRedOnHit(flashColor);
