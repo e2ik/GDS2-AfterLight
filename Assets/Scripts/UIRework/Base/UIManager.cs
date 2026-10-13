@@ -109,15 +109,31 @@ namespace GameUI
         {
             if (openWindows.Count == 0) { return; }
 
+            bool closedAny = false;
             while (openWindows.Count > 0)
             {
+                if (!openWindows.Peek().CanClose) { break; }
+
                 UIWindow window = openWindows.Pop();
                 window.HandleClosed();
                 TrackClosing(window);
+                closedAny = true;
             }
 
+            if (!closedAny) { return; }
+
             UISFX.PlayClose();
-            ReleasePlayer();
+
+            if (openWindows.Count == 0)
+            {
+                ReleasePlayer();
+            }
+            else
+            {
+                UIWindow newTop = openWindows.Peek();
+                newTop.SetInteractable(true);
+                newTop.Reselect();
+            }
         }
 
         private void TrackClosing(UIWindow window)

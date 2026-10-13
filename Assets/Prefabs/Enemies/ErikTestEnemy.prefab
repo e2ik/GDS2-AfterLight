@@ -119,7 +119,7 @@ Transform:
   m_GameObject: {fileID: 2031692109752764887}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.296, y: -1.51, z: 0}
+  m_LocalPosition: {x: -0.296, y: -1.752, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -275,7 +275,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -1.0383949, y: -0.25561595}
+  m_Offset: {x: -0.9895706, y: -0.45872283}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -285,7 +285,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.047905, y: 2.1788726}
+  m_Size: {x: 1.1455536, y: 2.5850863}
   m_EdgeRadius: 0
 --- !u!114 &8107799500015843298
 MonoBehaviour:
@@ -314,6 +314,7 @@ GameObject:
   - component: {fileID: 7603609893098896341}
   - component: {fileID: 2968184197812120870}
   - component: {fileID: 59898807662759673}
+  - component: {fileID: 4573562225778305629}
   m_Layer: 12
   m_Name: ErikTestEnemy
   m_TagString: Untagged
@@ -387,6 +388,8 @@ MonoBehaviour:
     m_Bits: 64
   ledgeCheckDistance: 0.5
   ledgeCheckDepth: 0.3
+  wallCheckDistance: 0.3
+  wallCheckHeight: 0.1
   canDropAggro: 1
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
@@ -395,6 +398,8 @@ MonoBehaviour:
   staggerImmunityDuration: 4
   staggerStunDuration: 0.5
   postStaggerAttackDelay: 0.5
+  playHurtOnHit: 1
+  hitTrigger: Hurt
   hitEvent:
     Guid:
       Data1: 515442699
@@ -419,7 +424,9 @@ MonoBehaviour:
   canTeleport: 0
   teleportToTargetWhenOutOfRange: 1
   outOfRangeTeleportDelay: 4
-  hasDeathAnimation: 0
+  teleportAfterDamagePercent: 0
+  teleportInvulnerabilityFailsafe: 6
+  hasDeathAnimation: 1
   deathTrigger: Death
   deathStateName: Death
   deathAnimationTimeout: 5
@@ -513,9 +520,60 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.37811947, y: -0.32686448}
-  m_Size: {x: 1.0167637, y: 2.3888564}
+  m_Offset: {x: -0.31367207, y: -0.44404173}
+  m_Size: {x: 1.1456585, y: 2.623211}
   m_Direction: 0
+--- !u!114 &4573562225778305629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4998036943446194957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561b6f6388a42344dbfeddb4154aceba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttackGlow
+  enemy: {fileID: 2819779926548626800}
+  multiplyOutline: {fileID: 8534714332133621480}
+  colorGlow: {fileID: 8682135288823320430}
+  colorSource: {fileID: 69754505853120667}
+  useVfxBoxColors: 1
+  onlyDuringAttackAnimation: 1
+  attackStateNames:
+  - Attack
+  stopAtClipEnd: 1
+  lightGlow:
+    enabled: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 2
+    checkerLow: 0.5
+    checkerSize: 1
+  mediumGlow:
+    enabled: 1
+    color: {r: 1, g: 0.8, b: 0.2, a: 1}
+    intensity: 2
+    checkerLow: 0.5
+    checkerSize: 1
+  heavyGlow:
+    enabled: 1
+    color: {r: 1, g: 0.15, b: 0.1, a: 1}
+    intensity: 3
+    checkerLow: 0.5
+    checkerSize: 1
+  zeroForceGlow:
+    enabled: 0
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 2
+    checkerLow: 0.5
+    checkerSize: 1
+  parryIntensityBoost: 2
+  parryBoostFadeSpeed: 30
+  heavyGetsParryBoost: 0
+  boostIntensity: 1
+  intensityBoost: 1
+  comboIntensityBoost: 1
 --- !u!1 &5835482462216775301
 GameObject:
   m_ObjectHideFlags: 0
@@ -531,6 +589,7 @@ GameObject:
   - component: {fileID: 3772755303928414562}
   - component: {fileID: 8534714332133621480}
   - component: {fileID: 8607045623648066577}
+  - component: {fileID: 8682135288823320430}
   m_Layer: 12
   m_Name: Graphics
   m_TagString: Untagged
@@ -607,11 +666,11 @@ SpriteRenderer:
   m_SortingOrder: 15
   m_MaskInteraction: 0
   m_Sprite: {fileID: 4915813873902804441, guid: 023e804845e514c43ad3c3714c7a360d, type: 3}
-  m_Color: {r: 1, g: 0.52351165, b: 0.15408784, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 5.5, y: 1.875}
+  m_Size: {x: 7.111111, y: 3.5555556}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -756,6 +815,29 @@ MonoBehaviour:
   sortingOrderOffset: 1
   holdFadeDuration: 0.15
   holdPulseMinAmount: 0.4
+--- !u!114 &8682135288823320430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 552c61b0b3d01574a9c690c9cfa647a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorGlow
+  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  startActive: 1
+  matchColor: {r: 1, g: 0.98628986, b: 0.022012413, a: 1}
+  matchTolerance: 0.277
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 2
+  checkerLow: 0.72
+  checkerSize: 1
+  fadeDuration: 0.08
+  useUnscaledTime: 0
+  sortingOrderOffset: 1
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,6 +940,7 @@ MonoBehaviour:
   hitFlash: {fileID: 8607045623648066577}
   flashMode: 1
   flashIntensity: 1.25
+  overrideColors: 0
   zeroColor: {r: 1, g: 1, b: 1, a: 1}
   lightColor: {r: 0, g: 1, b: 1, a: 1}
   mediumColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}

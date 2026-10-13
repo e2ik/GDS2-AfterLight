@@ -80,6 +80,7 @@ public class EquipmentDisplay : MonoBehaviour
                 if (def != null)
                 {
                     weaponSlot.DisplayItem(def.UISprite, def.UIName, weapon.Rarity);
+                    weaponSlot.SetItem(weapon);
                 }
                 else
                 {
@@ -98,6 +99,7 @@ public class EquipmentDisplay : MonoBehaviour
             if (primary != null)
             {
                 primarySlot.DisplayItem(primary.UISprite, primary.UIName);
+                primarySlot.SetItem(FindPrimaryInstance(primary));
             }
             else
             {
@@ -114,6 +116,7 @@ public class EquipmentDisplay : MonoBehaviour
                 if (def != null)
                 {
                     secondarySlot.DisplayItem(def.UISprite, def.UIName, gem.Rarity);
+                    secondarySlot.SetItem(gem);
                 }
                 else
                 {
@@ -137,10 +140,26 @@ public class EquipmentDisplay : MonoBehaviour
             if (def != null)
             {
                 slotUI.DisplayItem(def.UISprite, def.UIName, gear.Rarity);
+                slotUI.SetItem(gear);
                 return;
             }
         }
 
         slotUI.ClearSlot();
+    }
+
+    private static PrimaryGemInstance FindPrimaryInstance(PrimaryGemBehaviourDefinition def)
+    {
+        Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+        PlayerInventoryManager inventory = player != null ? player.Inventory : null;
+        if (inventory == null || inventory.currentInventory == null || inventory.currentInventory.PrimaryGems == null) return null;
+
+        foreach (PrimaryGemInstance gem in inventory.currentInventory.PrimaryGems)
+        {
+            if (gem != null && GameDatabase.GetPrimaryTemplateFromID(gem.InstTemplateID) == def)
+                return gem;
+        }
+
+        return null;
     }
 }

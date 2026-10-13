@@ -33,10 +33,10 @@ MonoBehaviour:
     Epic: {x: 0, y: 0}
     Legendary: {x: 0, y: 0}
   DamageByRarity:
-    Common: {x: 4, y: 4}
-    Rare: {x: 4, y: 6}
-    Epic: {x: 6, y: 10}
-    Legendary: {x: 12, y: 15}
+    Common: {x: 1, y: 2}
+    Rare: {x: 2, y: 4}
+    Epic: {x: 4, y: 6}
+    Legendary: {x: 6, y: 8}
   AttackByRarity:
     Common: {x: 0, y: 0}
     Rare: {x: 0, y: 0}
@@ -44,7 +44,7 @@ MonoBehaviour:
     Legendary: {x: 0, y: 0}
   CanRollDefense: 1
   DefenseByRarity:
-    Common: {x: 3, y: 5}
-    Rare: {x: 5, y: 8}
-    Epic: {x: 8, y: 10}
-    Legendary: {x: 10, y: 15}
+    Common: {x: 5, y: 8}
+    Rare: {x: 8, y: 10}
+    Epic: {x: 10, y: 15}
+    Legendary: {x: 15, y: 20}

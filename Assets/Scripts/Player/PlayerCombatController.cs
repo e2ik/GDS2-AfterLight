@@ -1159,7 +1159,18 @@ public class PlayerCombatController : MonoBehaviour
         }
         else
         {
+            bool wasHeld = skillButtonHeld;
             skillButtonHeld = false;
+            if (!wasHeld) return;
+
+            if (movement.IsUILocked && !isSkilling)
+            {
+                isChargingSkill = false;
+                skillFiredThisHold = true;
+                StopChargingPhysics();
+                RefundChargeCost();
+                return;
+            }
 
             if (specialDef != null && specialDef.SkillExecutionType == SkillExecutionType.Held)
             {

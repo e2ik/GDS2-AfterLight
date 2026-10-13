@@ -54,6 +54,7 @@ public class InventoryDisplay : GameUI.UIWindow
 
     [Header("Navigation")]
     [SerializeField] private bool wrapNavigation = true;
+    [SerializeField] private bool linkEquipSlots = true;
 
     [Header("Scrolling")]
     [SerializeField] private ScrollRect scrollRect;
@@ -275,7 +276,10 @@ public class InventoryDisplay : GameUI.UIWindow
         if (selected == null) return null;
 
         InventorySlot slot = selected.GetComponentInParent<InventorySlot>();
-        return slot != null ? slot.CurrentItem : null;
+        if (slot != null) return slot.CurrentItem;
+
+        EquipmentSlot equipSlot = selected.GetComponentInParent<EquipmentSlot>();
+        return equipSlot != null ? equipSlot.CurrentItem : null;
     }
 
     private EquipmentSlot GetHighlightedEquipSlot(object item)
@@ -749,10 +753,125 @@ public class InventoryDisplay : GameUI.UIWindow
             navNodes.Add(new SlotNode { Selectable = selectable, X = local.x, Y = local.y });
         }
 
-        if (navNodes.Count == 0) return;
+        if (navNodes.Count == 0)
+        {
+            LinkEquipSlotNavigation();
+            return;
+        }
 
         GroupIntoRows();
         ApplyNavigation();
+        LinkEquipSlotNavigation();
+    }
+
+    private void LinkEquipSlotNavigation()
+    {
+        if (!linkEquipSlots) return;
+
+        List<Selectable> equipSelectables = new List<Selectable>();
+        foreach (EquipmentSlot slot in equipSlots)
+        {
+            if (slot == null || slot.Selectable == null || !slot.Selectable.gameObject.activeInHierarchy) continue;
+            equipSelectables.Add(slot.Selectable);
+        }
+
+        if (equipSelectables.Count == 0) return;
+
+        bool panelOnLeft = true;
+        if (navNodes.Count > 0)
+        {
+            float equipX = 0f;
+            foreach (Selectable s in equipSelectables) equipX += s.transform.position.x;
+            equipX /= equipSelectables.Count;
+
+            float gridX = 0f;
+            foreach (SlotNode node in navNodes) gridX += node.Selectable.transform.position.x;
+            gridX /= navNodes.Count;
+
+            panelOnLeft = equipX < gridX;
+        }
+
+        List<Selectable> gridEdges = new List<Selectable>();
+        foreach (List<SlotNode> row in navRows)
+        {
+            if (row.Count == 0) continue;
+
+            Selectable edge = panelOnLeft ? row[0].Selectable : row[row.Count - 1].Selectable;
+            gridEdges.Add(edge);
+
+            Navigation nav = edge.navigation;
+            Selectable target = Nearest(edge.transform.position, equipSelectables);
+            if (panelOnLeft) nav.selectOnLeft = target;
+            else nav.selectOnRight = target;
+            edge.navigation = nav;
+        }
+
+        Vector2 towardGrid = panelOnLeft ? Vector2.right : Vector2.left;
+
+        foreach (Selectable equip in equipSelectables)
+        {
+            Navigation nav = new Navigation { mode = Navigation.Mode.Explicit };
+            nav.selectOnUp = NearestInDirection(equip, Vector2.up, equipSelectables);
+            nav.selectOnDown = NearestInDirection(equip, Vector2.down, equipSelectables);
+            nav.selectOnLeft = NearestInDirection(equip, Vector2.left, equipSelectables);
+            nav.selectOnRight = NearestInDirection(equip, Vector2.right, equipSelectables);
+
+            if (NearestInDirection(equip, towardGrid, equipSelectables) == null && gridEdges.Count > 0)
+            {
+                Selectable gridTarget = Nearest(equip.transform.position, gridEdges);
+                if (panelOnLeft) nav.selectOnRight = gridTarget;
+                else nav.selectOnLeft = gridTarget;
+            }
+
+            equip.navigation = nav;
+        }
+    }
+
+    private static Selectable Nearest(Vector3 position, List<Selectable> pool)
+    {
+        Selectable best = null;
+        float bestDistance = float.MaxValue;
+
+        foreach (Selectable candidate in pool)
+        {
+            if (candidate == null) continue;
+            float distance = ((Vector2)(candidate.transform.position - position)).sqrMagnitude;
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = candidate;
+            }
+        }
+
+        return best;
+    }
+
+    private static Selectable NearestInDirection(Selectable from, Vector2 direction, List<Selectable> pool)
+    {
+        Vector2 origin = from.transform.position;
+        Selectable best = null;
+        float bestScore = float.MaxValue;
+
+        foreach (Selectable candidate in pool)
+        {
+            if (candidate == null || candidate == from) continue;
+
+            Vector2 delta = (Vector2)candidate.transform.position - origin;
+            float distance = delta.magnitude;
+            if (distance < 0.001f) continue;
+
+            float alignment = Vector2.Dot(delta / distance, direction);
+            if (alignment < 0.5f) continue;
+
+            float score = distance / alignment;
+            if (score < bestScore)
+            {
+                bestScore = score;
+                best = candidate;
+            }
+        }
+
+        return best;
     }
 
     private void GroupIntoRows()

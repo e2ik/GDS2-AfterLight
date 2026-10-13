@@ -54,6 +54,23 @@ public static class ItemActionFactory
         };
     }
 
+    public static TooltipActions ForEquipped(object item)
+    {
+        if (!TryGetManagers(item, out PlayerEquipmentManager equip, out PlayerInventoryManager inventory)) return null;
+
+        return new TooltipActions
+        {
+            Panel = TooltipPanel.Inventory,
+            CanEquip = () => CanUnequip(item, equip),
+            EquipLabel = "Unequip"
+        };
+    }
+
+    public static bool CanUnequip(object item, PlayerEquipmentManager equip)
+    {
+        return item != null && !(item is WeaponInstance) && IsEquippableType(item) && IsItemEquipped(item, equip);
+    }
+
     private static bool IsEquippableType(object item)
     {
         return item is SecondaryGemInstance

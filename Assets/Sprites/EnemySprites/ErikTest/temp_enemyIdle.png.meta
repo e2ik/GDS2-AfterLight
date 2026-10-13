@@ -54,7 +54,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 9
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -133,7 +133,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
+        y: 32
         width: 64
         height: 32
       alignment: 0
@@ -155,7 +155,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 64
-        y: 0
+        y: 32
         width: 64
         height: 32
       alignment: 0
@@ -168,6 +168,50 @@ TextureImporter:
       bones: []
       spriteID: 874d8e19716db93c0800000000000000
       internalID: -4351649218202905480
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: temp_enemyIdle_3
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e98926ef69076e54f82239df4e780a93
+      internalID: 867519543
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: temp_enemyIdle_4
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8d57d44ab34e8194fa4126d2be8cd2e0
+      internalID: 1891103683
       vertices: []
       indices: 
       edges: []
@@ -190,6 +234,9 @@ TextureImporter:
     nameFileIdTable:
       temp_enemyIdle_0: 4915813873902804441
       temp_enemyIdle_1: -4351649218202905480
+      temp_enemyIdle_2: 1469678316
+      temp_enemyIdle_3: 867519543
+      temp_enemyIdle_4: 1891103683
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

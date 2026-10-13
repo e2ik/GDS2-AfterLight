@@ -181,7 +181,7 @@ public static class ItemTooltipTextBuilder
                 ? (float?)effectComparison.InstRolledMaxGambleMult
                 : null;
 
-            sb.AppendLine($"{Label("GAMBLE", gem.LineRarities, GemEffectLine)} {gem.InstRolledMaxGambleMult:F1}x dmg{BuildDiffSuffix(gem.InstRolledMaxGambleMult, eqGamble, "F1", "x")}");
+            sb.AppendLine($"{Label("GAMBLE", gem.LineRarities, GemEffectLine)} Up to {gem.InstRolledMaxGambleMult:F1}x dmg{BuildDiffSuffix(gem.InstRolledMaxGambleMult, eqGamble, "F1", "x")}");
         }
 
         return sb.ToString().TrimEnd();

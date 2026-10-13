@@ -1,13 +1,16 @@
 fileFormatVersion: 2
-guid: 0f4d51e4ccf3718438f20b79450a5455
+guid: c94c440a88e65644b9aa7c589fe163d3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5202817920536276228
-    second: temp_enemyCombatIdle_0
+      213: 2123965818143820524
+    second: tempEnemy_death_0
   - first:
-      213: 8261233146151307888
-    second: temp_enemyCombatIdle_1
+      213: -4075592595333056459
+    second: tempEnemy_death_1
+  - first:
+      213: -1636385717819728682
+    second: tempEnemy_death_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -54,7 +57,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 9
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -129,7 +132,51 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: temp_enemyCombatIdle_0
+      name: tempEnemy_death_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 32
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ceac88988a7d97d10800000000000000
+      internalID: 2123965818143820524
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tempEnemy_death_1
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 32
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 538f5f1c0269077c0800000000000000
+      internalID: -4075592595333056459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tempEnemy_death_2
       rect:
         serializedVersion: 2
         x: 0
@@ -144,14 +191,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: cf2166fbaa0ebc7b0800000000000000
-      internalID: -5202817920536276228
+      spriteID: 6dc15dd0cd36a49e0800000000000000
+      internalID: -1636385717819728682
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: temp_enemyCombatIdle_1
+      name: tempEnemy_death_3
       rect:
         serializedVersion: 2
         x: 64
@@ -164,10 +211,10 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 07a080bc6cbc5a270800000000000000
-      internalID: 8261233146151307888
+      spriteID: ba439cfc2a3c383469351bd622bbb0b2
+      internalID: 878973841
       vertices: []
       indices: 
       edges: []
@@ -176,7 +223,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: e736bfd2762e8534b8c48744e00dddbb
+    spriteID: dcd40631018c3c243a26b969cb180d7a
     internalID: 0
     vertices: []
     indices: 
@@ -188,8 +235,10 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      temp_enemyCombatIdle_0: -5202817920536276228
-      temp_enemyCombatIdle_1: 8261233146151307888
+      tempEnemy_death_0: 2123965818143820524
+      tempEnemy_death_1: -4075592595333056459
+      tempEnemy_death_2: -1636385717819728682
+      tempEnemy_death_3: 878973841
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

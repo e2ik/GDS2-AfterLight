@@ -192,17 +192,17 @@ MonoBehaviour:
   defaultRarityColor: {r: 1, g: 1, b: 1, a: 1}
   keyItemColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   loreItemColor: {r: 0, g: 1, b: 1, a: 1}
-  zeroForceColor: {r: 1, g: 1, b: 1, a: 1}
-  lightForceColor: {r: 0, g: 0.5513458, b: 1, a: 1}
-  mediumForceColor: {r: 1, g: 0.4951912, b: 0.009433806, a: 1}
-  heavyForceColor: {r: 0.70440245, g: 0.011075439, b: 0.011075439, a: 1}
+  zeroForceColor: {r: 1.4980392, g: 1.4980392, b: 1.4980392, a: 1}
+  lightForceColor: {r: 0, g: 0.6259438, b: 1.1353016, a: 1}
+  mediumForceColor: {r: 1.1353016, g: 0.5621913, b: 0.010710214, a: 1}
+  heavyForceColor: {r: 1.1353016, g: 0.017850537, b: 0.017850537, a: 1}
   defaultRarityOdds:
     common: 50
     rare: 35
     epic: 10
     legendary: 5
   unlockAllFastTravelAction: {fileID: 7163206889840615523, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-  disableTutorials: 1
+  disableTutorials: 0
   skipCutscenes: 0
   projectilesIgnoreParryDirection: 1
   backgroundPrefab: {fileID: 3327786354979037545, guid: f6bdba2aea3bb1741a687ba8d5d96a43, type: 3}

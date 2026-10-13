@@ -30,6 +30,8 @@ public class ItemTooltip : MonoBehaviour
     [SerializeField] private GameObject inventoryEquipPrompt;
     [SerializeField] private TextMeshProUGUI inventoryEquipPromptLabel;
     [SerializeField] private GameObject deletePrompt;
+    [SerializeField] private GameObject[] equipPromptExtras;
+    [SerializeField] private GameObject[] deletePromptExtras;
     [SerializeField] private InputActionReference deleteAction;
     [SerializeField] private Image deleteProgressFill;
     [SerializeField, Min(0.1f)] private float deleteHoldDuration = 1f;
@@ -162,6 +164,7 @@ public class ItemTooltip : MonoBehaviour
         anchorSettings = settings;
         currentActions = actions;
 
+        // The label only depends on which item is shown, so set it once here rather than every frame.
         if (inventoryEquipPromptLabel != null && actions != null)
         {
             inventoryEquipPromptLabel.text = actions.EquipLabel;
@@ -220,6 +223,18 @@ public class ItemTooltip : MonoBehaviour
         changed |= SetActiveIfChanged(inventoryPanel, showInventory);
         changed |= SetActiveIfChanged(inventoryEquipPrompt, showEquipHint);
         changed |= SetActiveIfChanged(deletePrompt, showDelete);
+        changed |= SetAllActiveIfChanged(equipPromptExtras, showEquipHint);
+        changed |= SetAllActiveIfChanged(deletePromptExtras, showDelete);
+        return changed;
+    }
+
+    private static bool SetAllActiveIfChanged(GameObject[] targets, bool active)
+    {
+        if (targets == null) return false;
+
+        bool changed = false;
+        foreach (GameObject target in targets)
+            changed |= SetActiveIfChanged(target, active);
         return changed;
     }
 
