@@ -561,6 +561,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aba58ce41b4bc2047928edc948b644bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimation
+  defaultHurtClip: {fileID: 7400000, guid: 26d803efe6f1d7c459f7cb954f68e965, type: 2}
+  holdHurtInAir: 1
   wallSlideParticleSystem: {fileID: 8438840527263229074}
   wallSlideExtraParticleSystems:
   - {fileID: 6263486156134207216}
@@ -983,7 +985,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HitFlash
   flashMaterial: {fileID: 2100000, guid: e211826df2aab5e47af454561951383b, type: 2}
   flashColor: {r: 1, g: 0, b: 0, a: 1}
-  intensity: 1
+  intensity: 1.2
   duration: 0.5
   fadeCurve:
     serializedVersion: 2
@@ -1011,7 +1013,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   checkerLowOpacity: 0.85
   pixelSize: 3
-  defaultMode: 0
+  defaultMode: 1
   edgeWidth: 1
   useUnscaledTime: 1
   sortingOrderOffset: 1

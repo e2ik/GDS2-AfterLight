@@ -27,6 +27,10 @@ public class InputActionPrompt : MonoBehaviour
 
     private static readonly int TintId = Shader.PropertyToID("_Color");
     private Material imageMaterial;
+    private float alphaMultiplier = 1f;
+    private bool glowSuppressed;
+    private Color tintColor = Color.white;
+    private float tintAmount;
 
     private bool pendingRefresh;
     private Sprite shownSprite;
@@ -61,14 +65,40 @@ public class InputActionPrompt : MonoBehaviour
         ApplyGlow();
     }
 
+    public void SetFade(float alpha, bool suppressGlow)
+    {
+        alpha = Mathf.Clamp01(alpha);
+        if (Mathf.Approximately(alpha, alphaMultiplier) && suppressGlow == glowSuppressed) return;
+
+        alphaMultiplier = alpha;
+        glowSuppressed = suppressGlow;
+        ApplyGlow();
+    }
+
+    public void SetTint(Color color, float amount)
+    {
+        amount = Mathf.Clamp01(amount);
+        if (color == tintColor && Mathf.Approximately(amount, tintAmount)) return;
+
+        tintColor = color;
+        tintAmount = amount;
+        ApplyGlow();
+    }
+
+    public bool Owns(Component component) => component != null && (component == iconImage || component == iconRenderer);
+
     private void ApplyGlow()
     {
+        float intensity = glowSuppressed ? Mathf.Min(1f, iconIntensity) : iconIntensity;
+        float alpha = iconColor.a * alphaMultiplier;
+        Color tinted = Color.Lerp(iconColor, iconColor * tintColor, tintAmount);
+
         if (iconRenderer != null)
-            iconRenderer.color = new Color(iconColor.r * iconIntensity, iconColor.g * iconIntensity, iconColor.b * iconIntensity, iconColor.a);
+            iconRenderer.color = new Color(tinted.r * intensity, tinted.g * intensity, tinted.b * intensity, alpha);
 
         if (iconImage != null)
         {
-            iconImage.color = iconColor;
+            iconImage.color = new Color(tinted.r, tinted.g, tinted.b, alpha);
 
             if (Application.isPlaying)
             {
@@ -80,7 +110,7 @@ public class InputActionPrompt : MonoBehaviour
                 }
 
                 if (imageMaterial != null && imageMaterial.HasProperty(TintId))
-                    imageMaterial.SetColor(TintId, new Color(iconIntensity, iconIntensity, iconIntensity, 1f));
+                    imageMaterial.SetColor(TintId, new Color(intensity, intensity, intensity, 1f));
             }
         }
     }

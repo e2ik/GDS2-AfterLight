@@ -114,6 +114,9 @@ MonoBehaviour:
   knockbackForce: 12
   staggerDuration: 0.3
   directionMode: 0
+  hurtClipOverride: {fileID: 7400000, guid: f1c88c6146126d945bebed0966f0111a, type: 2}
+  overrideHurtFlashColor: 1
+  hurtFlashColor: {r: 1.6055588, g: 1.5173607, b: 0.32783657, a: 1}
   centerZone: 0.3
   maxAngle: 60
   debugLogs: 0
@@ -143,6 +146,7 @@ MonoBehaviour:
   particleSpawnPoint: {fileID: 9057232781803509709}
   particleIntervalRange: {x: 0.5, y: 1.5}
   particlesOnlyWhenOn: 0
+  stopParticlesWhenInactive: 1
   sparkEvent:
     Guid:
       Data1: -500597264
@@ -150,11 +154,6 @@ MonoBehaviour:
       Data3: -377067090
       Data4: 174082186
     Path: event:/WorldSFX Events/HazardSparksEvent
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
   hazardLight: {fileID: 2952302658052108538}
   offIntensity: 0
   inBetweenIntensity: 0.4

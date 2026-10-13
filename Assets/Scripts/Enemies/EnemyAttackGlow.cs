@@ -36,6 +36,10 @@ public class EnemyAttackGlow : MonoBehaviour
     [SerializeField, Min(0f)] private float parryBoostFadeSpeed = 30f;
     [SerializeField] private bool heavyGetsParryBoost = false;
 
+    [Header("Intensity Boost")]
+    [SerializeField] private bool boostIntensity = false;
+    [SerializeField] private float intensityBoost = 1f;
+
     [Header("Combo Telegraph")]
     [SerializeField] private float comboIntensityBoost = 1f;
 
@@ -90,7 +94,8 @@ public class EnemyAttackGlow : MonoBehaviour
         bool on = style != null && style.enabled;
         if (on)
         {
-            float intensity = Mathf.Clamp(style.intensity + boost + (comboTelegraph ? comboIntensityBoost : 0f), 0f, 10f);
+            float extra = (comboTelegraph ? comboIntensityBoost : 0f) + (boostIntensity ? intensityBoost : 0f);
+            float intensity = Mathf.Clamp(style.intensity + boost + extra, 0f, 10f);
 
             outlineStyle.enabled = true;
             outlineStyle.color = color;

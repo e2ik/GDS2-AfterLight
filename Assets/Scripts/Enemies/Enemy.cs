@@ -50,6 +50,10 @@ namespace Enemies
 
         public bool IsStaggered => staggerStunTimer > 0f;
 
+        [Header("Hit Reaction")]
+        [SerializeField] private bool playHurtOnHit = true;
+        [SerializeField] private string hitTrigger = "Hurt";
+
         [Header("FMOD Events")]
         [SerializeField] private EventReference hitEvent;
         [SerializeField] private EventReference attackEvent;
@@ -473,7 +477,7 @@ namespace Enemies
             bool isDot = info.DamageType == EDamageType.Dot;
             string crit = info.IsCrit ? " CRIT" : "";
             string roll = info.HasRoll ? $" roll:{info.RollQuality:F2}" : "";
-            // Debug.Log($"Enemy blud was damaged for {info.Amount} ({info.DamageType}{crit}{roll}). Current Health: {Context.Health.CurrentHealth}");
+            Debug.Log($"Enemy blud was damaged for {info.Amount} ({info.DamageType}{crit}{roll}). Current Health: {Context.Health.CurrentHealth}");
 
             AudioManager.PlaySFXAttached(hitEvent, gameObject);
 
@@ -492,6 +496,7 @@ namespace Enemies
 
             if (isStaggerImmune || (staggerOnlyOnComboFinisher && !info.IsComboFinisher))
             {
+                PlayHitReaction();
                 PSpawner.Spawn("EnemyHit", transform.position);
                 return;
             }
@@ -508,8 +513,18 @@ namespace Enemies
                 attackCooldownTimer = Mathf.Max(attackCooldownTimer, staggerStunDuration + postStaggerAttackDelay);
                 rb2D.linearVelocity = new Vector2(0f, rb2D.linearVelocity.y);
             }
+            else
+            {
+                PlayHitReaction();
+            }
 
             PSpawner.Spawn("EnemyHit", transform.position);
+        }
+
+        private void PlayHitReaction()
+        {
+            if (!playHurtOnHit || animator == null || Context.IsAttacking || IsStaggered) return;
+            animator.SetTrigger(hitTrigger);
         }
 
         private void OnDeath()

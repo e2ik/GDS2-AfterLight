@@ -871,6 +871,10 @@ MonoBehaviour:
   spawnOffset: {x: 0, y: 1, z: 0}
   randomSpawnRangeX: 0.5
   showDodges: 1
+  dodgeCooldown: 0.25
+  playerSpawnOffset: {x: 0, y: 1.5, z: 0}
+  showRollTiers: 1
+  rollTierCooldown: 0.15
 --- !u!114 &358202639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2968,6 +2972,11 @@ MonoBehaviour:
   hover: 1
   hoverHeight: 0.035
   hoverSpeed: 8
+  belowPlayerInCombat: 1
+  combatOrderOffset: -3
+  fadeDuration: 0.12
+  combatAlpha: 0.5
+  removeIconGlowInCombat: 1
 --- !u!224 &1284252395 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8305582429712239306, guid: d73b34840c2074cc8a1ec47f842a5ddb, type: 3}

@@ -24,12 +24,21 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsSkillingHash = Animator.StringToHash("isSkilling");
     private static readonly int IsPlungingHash = Animator.StringToHash("isPlunging");
     private static readonly int IsHurtHash = Animator.StringToHash("Hurt");
+    private static readonly int IsHurtHeldHash = Animator.StringToHash("isHurtHeld");
     private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
     private static readonly int IsAboutToLandHash = Animator.StringToHash("isAboutToLand");
     private static readonly int ChargeProgressHash = Animator.StringToHash("ChargeProgress");
     private static readonly int IsDeadHash = Animator.StringToHash("isDead");
     private static readonly int IsClimbingHash = Animator.StringToHash("isClimbing");
     private static readonly int IsHealingHash = Animator.StringToHash("isHealing");
+
+    [Header("Hurt Variants")]
+    [SerializeField] private AnimationClip defaultHurtClip;
+    [SerializeField] private bool holdHurtInAir = true;
+    private float hurtHoldUntil;
+    private bool hasHurtHeldParam;
+    private AnimatorOverrideController hurtOverride;
+    private AnimationClip activeHurtClip;
 
     [Header("particle prefabs")]
     [SerializeField] private ParticleSystem wallSlideParticleSystem;
@@ -104,6 +113,12 @@ public class PlayerAnimation : MonoBehaviour
     {
         player = GetComponentInParent<Player>();
         animator = GetComponent<Animator>();
+        SetupHurtOverride();
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+        {
+            if (parameter.nameHash == IsHurtHeldHash && parameter.type == AnimatorControllerParameterType.Bool)
+                hasHurtHeldParam = true;
+        }
         if (rb == null) rb = GetComponentInParent<Rigidbody2D>();
         if (sr == null)
         {
@@ -412,10 +427,14 @@ public class PlayerAnimation : MonoBehaviour
             ? player.CombatController.AttackStartedGrounded
             : player.Controller.IsGrounded;
 
+        bool holdingHurt = Time.time < hurtHoldUntil;
+        if (holdingHurt) groundedForAnim = true;
+        if (hasHurtHeldParam) animator.SetBool(IsHurtHeldHash, holdingHurt);
+
         SyncParryAcrossGroundChange(isParrying, groundedForAnim);
 
         animator.SetFloat(SpeedHash, Mathf.Abs(rb.linearVelocityX));
-        animator.SetFloat(YVelocityHash, rb.linearVelocityY);
+        animator.SetFloat(YVelocityHash, holdingHurt ? 0f : rb.linearVelocityY);
         animator.SetBool(IsGroundedHash, groundedForAnim);
         animator.SetBool(IsWallSlidingHash, player.Controller.IsWallSliding);
         animator.SetBool(IsBouncingHash, isBouncing);
@@ -458,22 +477,44 @@ public class PlayerAnimation : MonoBehaviour
 
     #region Hit & Knockback Animation
 
-    public void PlayHurtAnimation()
+    private void SetupHurtOverride()
     {
+        if (defaultHurtClip == null || animator == null || animator.runtimeAnimatorController == null) return;
+
+        hurtOverride = animator.runtimeAnimatorController as AnimatorOverrideController;
+        if (hurtOverride == null)
+        {
+            hurtOverride = new AnimatorOverrideController(animator.runtimeAnimatorController);
+            animator.runtimeAnimatorController = hurtOverride;
+        }
+    }
+
+    public void PlayHurtAnimation(AnimationClip hurtClip = null, Color? flashColor = null)
+    {
+        if (hurtOverride != null && hurtClip != activeHurtClip)
+        {
+            hurtOverride[defaultHurtClip] = hurtClip;
+            activeHurtClip = hurtClip;
+        }
+
+        AnimationClip shownClip = hurtClip != null ? hurtClip : defaultHurtClip;
+        if (holdHurtInAir && shownClip != null)
+            hurtHoldUntil = Time.time + shownClip.length;
+
         animator.SetTrigger(IsHurtHash);
-        FlashRedOnHit();
+        FlashRedOnHit(flashColor);
         CamControls.Shake(0.1f, 0.8f);
     }
 
-    public void FlashRedOnHit()
+    public void FlashRedOnHit(Color? flashColor = null)
     {
         if (ResolveHitFlash() != null)
         {
-            hitFlash.Flash(hitFlashColor);
+            hitFlash.Flash(flashColor ?? hitFlashColor);
             return;
         }
 
-        StartFlashColor(Color.red, 0.1f);
+        StartFlashColor(flashColor ?? Color.red, 0.1f);
     }
 
     public void FlashOnHeal()

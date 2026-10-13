@@ -194,7 +194,7 @@ public class PlayerHurtBox : MonoBehaviour
         AnyAttackDodged?.Invoke(hitbox, isPerfect);
     }
 
-    public bool TakeHazardHit(float damage, Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null, bool dealsDamage = true, bool resetsPlayer = false)
+    public bool TakeHazardHit(float damage, Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null, bool dealsDamage = true, bool resetsPlayer = false, AnimationClip hurtClip = null, Color? hurtFlashColor = null)
     {
         if (Invulnerable) return false;
         if (stats == null || playerController == null || stats.IsDead) return false;
@@ -209,7 +209,7 @@ public class PlayerHurtBox : MonoBehaviour
 
         stats.TakeDamage(damage);
         PSpawner.Spawn("PlayerHit", transform.position);
-        if (playerAnimation != null) playerAnimation.PlayHurtAnimation();
+        if (playerAnimation != null) playerAnimation.PlayHurtAnimation(hurtClip, hurtFlashColor);
 
         return true;
     }
