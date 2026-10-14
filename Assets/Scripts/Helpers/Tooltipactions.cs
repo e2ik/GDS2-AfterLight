@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public enum TooltipPanel
 {
@@ -69,6 +71,172 @@ public static class ItemActionFactory
     public static bool CanUnequip(object item, PlayerEquipmentManager equip)
     {
         return item != null && !(item is WeaponInstance) && IsEquippableType(item) && IsItemEquipped(item, equip);
+    }
+
+    private class WorseCandidate
+    {
+        public object Item;
+        public int[] Stats;
+        public bool Equipped;
+        public bool InInventory;
+        public bool IsNew;
+        public ERarity Rarity;
+        public int PickupOrder;
+        public string Guid;
+    }
+
+    public static List<object> GetWorseItems(PlayerInventoryManager inventory, PlayerEquipmentManager equip, bool keepNewItems)
+    {
+        List<object> result = new List<object>();
+        if (inventory == null || equip == null || inventory.currentInventory == null) return result;
+
+        Dictionary<string, List<WorseCandidate>> groups = new Dictionary<string, List<WorseCandidate>>();
+
+        if (inventory.currentInventory.GearInstances != null)
+        {
+            foreach (GearInstance gear in inventory.currentInventory.GearInstances)
+                AddGear(groups, gear, equip, true);
+        }
+
+        foreach (KeyValuePair<EGearSlot, GearInstance> pair in equip.EquippedGear)
+            if (pair.Value != null && !ContainsCandidate(groups, pair.Value, pair.Value.InstanceGUID)) AddGear(groups, pair.Value, equip, false);
+
+        if (inventory.currentInventory.SecondaryGems != null)
+        {
+            foreach (SecondaryGemInstance gem in inventory.currentInventory.SecondaryGems)
+                AddGem(groups, gem, equip, true);
+        }
+
+        SecondaryGemInstance equippedGem = equip.SecondaryGem;
+        if (equippedGem != null && !ContainsCandidate(groups, equippedGem, equippedGem.InstanceGUID)) AddGem(groups, equippedGem, equip, false);
+
+        foreach (List<WorseCandidate> candidates in groups.Values)
+        {
+            foreach (WorseCandidate candidate in candidates)
+            {
+                if (candidate.Equipped || !candidate.InInventory) continue;
+                if (keepNewItems && candidate.IsNew) continue;
+                if (!IsItemDeletable(candidate.Item)) continue;
+
+                foreach (WorseCandidate other in candidates)
+                {
+                    if (other == candidate || !IsBetterOrEqual(other.Stats, candidate.Stats)) continue;
+
+                    if (IsStrictlyBetter(other.Stats, candidate.Stats) || RanksAbove(other, candidate))
+                    {
+                        result.Add(candidate.Item);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static void AddGear(Dictionary<string, List<WorseCandidate>> groups, GearInstance gear, PlayerEquipmentManager equip, bool inInventory)
+    {
+        if (gear == null) return;
+
+        GearDefinition def = GameDatabase.GetGearTemplateFromID(gear.InstTemplateID);
+        if (def == null) return;
+
+        AddCandidate(groups, "gear:" + def.Slot, new WorseCandidate
+        {
+            Item = gear,
+            Stats = new[]
+            {
+                (int)gear.InstBonusAttack,
+                (int)gear.InstBonusDefense,
+                (int)gear.InstBonusHumanity,
+                Mathf.RoundToInt(gear.InstBonusCrit * 1000f)
+            },
+            Equipped = equip.IsGearEquipped(gear),
+            InInventory = inInventory,
+            IsNew = gear.IsNew,
+            Rarity = gear.Rarity,
+            PickupOrder = gear.PickupOrder,
+            Guid = gear.InstanceGUID
+        });
+    }
+
+    private static void AddGem(Dictionary<string, List<WorseCandidate>> groups, SecondaryGemInstance gem, PlayerEquipmentManager equip, bool inInventory)
+    {
+        if (gem == null || string.IsNullOrEmpty(gem.InstTemplateID)) return;
+
+        AddCandidate(groups, "gem:" + gem.InstTemplateID, new WorseCandidate
+        {
+            Item = gem,
+            Stats = new[]
+            {
+                gem.InstRolledDamageValue,
+                gem.InstRolledCritValue,
+                gem.InstRolledDotPercent,
+                Mathf.RoundToInt(gem.InstRolledChargeAmount * 100f),
+                Mathf.RoundToInt(gem.InstRolledReflectPercent * 1000f),
+                Mathf.RoundToInt(gem.InstRolledMaxGambleMult * 10f)
+            },
+            Equipped = equip.IsGemEquipped(gem),
+            InInventory = inInventory,
+            IsNew = gem.IsNew,
+            Rarity = gem.Rarity,
+            PickupOrder = gem.PickupOrder,
+            Guid = gem.InstanceGUID
+        });
+    }
+
+    private static void AddCandidate(Dictionary<string, List<WorseCandidate>> groups, string key, WorseCandidate candidate)
+    {
+        if (!groups.TryGetValue(key, out List<WorseCandidate> list))
+        {
+            list = new List<WorseCandidate>();
+            groups.Add(key, list);
+        }
+
+        list.Add(candidate);
+    }
+
+    private static bool ContainsCandidate(Dictionary<string, List<WorseCandidate>> groups, object item, string guid)
+    {
+        foreach (List<WorseCandidate> list in groups.Values)
+        {
+            foreach (WorseCandidate entry in list)
+            {
+                if (entry.Item == item) return true;
+                if (!string.IsNullOrEmpty(guid) && entry.Guid == guid) return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsBetterOrEqual(int[] a, int[] b)
+    {
+        for (int i = 0; i < a.Length; i++)
+            if (a[i] < b[i]) return false;
+
+        return true;
+    }
+
+    private static bool IsStrictlyBetter(int[] a, int[] b)
+    {
+        if (!IsBetterOrEqual(a, b)) return false;
+
+        for (int i = 0; i < a.Length; i++)
+            if (a[i] > b[i]) return true;
+
+        return false;
+    }
+
+    private static bool RanksAbove(WorseCandidate a, WorseCandidate b)
+    {
+        if (a.Equipped != b.Equipped) return a.Equipped;
+
+        if (a.Rarity != b.Rarity) return a.Rarity > b.Rarity;
+
+        if (a.PickupOrder != b.PickupOrder) return a.PickupOrder < b.PickupOrder;
+
+        return string.CompareOrdinal(a.Guid, b.Guid) < 0;
     }
 
     private static bool IsEquippableType(object item)

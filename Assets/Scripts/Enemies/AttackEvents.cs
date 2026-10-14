@@ -14,7 +14,12 @@ namespace Enemies
         public bool ParryWindowOpen { get; private set; }
         public bool LastHitConfirmed { get; private set; }
         
-        public void EnableHitbox() => hitbox.Enable(CurrentDamage, CurrentParryDirection, CurrentAttackForce);
+        public void EnableHitbox()
+        {
+            StopCharge();
+            hitbox.Enable(CurrentDamage, CurrentParryDirection, CurrentAttackForce);
+        }
+
         public void DisableHitbox() => hitbox.Disable();
 
         public void EnableIFrames() => hurtbox.Invulnerable = true;
@@ -24,6 +29,7 @@ namespace Enemies
         public void CloseParryWindow() => ParryWindowOpen = false;
 
         public void PlayAnticipation() => vfxBox.PlayVFX(CurrentAttackForce);
+        public void StopCharge() => vfxBox?.StopCharge();
 
         public void ResetHitConfirmation() => LastHitConfirmed = false;
         public void ConfirmHit() => LastHitConfirmed = true;

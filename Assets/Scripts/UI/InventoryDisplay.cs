@@ -46,6 +46,23 @@ public class InventoryDisplay : GameUI.UIWindow
     [SerializeField] private InputActionReference prevFilterAction;
     [SerializeField] private InputActionReference nextFilterAction;
 
+    [Header("Delete Worse Gear")]
+    [SerializeField] private Button deleteWorseButton;
+    [SerializeField] private TMP_Text deleteWorseLabel;
+    [SerializeField] private InputActionReference deleteWorseAction;
+    [SerializeField] private GameUI.ConfirmWindow deleteWorseConfirm;
+    [SerializeField] private bool keepNewGear = true;
+    [SerializeField] private Color deleteWorseDisabledTint = new Color(0.5f, 0.5f, 0.5f, 1f);
+    [SerializeField] private string deleteWorseText = "Delete Worse Gear ({0})";
+    [SerializeField] private string deleteWorseEmptyText = "No Worse Gear";
+    [SerializeField] private Color deleteWorseEmptyTextColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+    [SerializeField] private string deleteWorseConfirmMessage = "Delete {0} worse gear? This cannot be undone.";
+    [SerializeField] private Graphic deleteWorseFrame;
+    [SerializeField] private Color deleteWorseSelectedColor = Color.red;
+    [SerializeField] private Color deleteWorseSelectedButtonColor = new Color(1f, 0.6f, 0.6f, 1f);
+    [SerializeField, Min(0.01f)] private float deleteWorsePulseSpeed = 1.5f;
+    [SerializeField, Range(0f, 1f)] private float deleteWorsePulseMin = 0.2f;
+
     [Header("Equipped Items")]
     [SerializeField] private bool hideEquippedGear = true;
     [SerializeField] private bool hideEquippedWeapons = false;
@@ -109,6 +126,12 @@ public class InventoryDisplay : GameUI.UIWindow
     private int rememberedSlotIndex;
     private int lastObservedSlotIndex = -1;
     private string openLoreSetID;
+    private float deleteWorseRefreshAt;
+    private Color deleteWorseFrameBaseColor;
+    private Graphic deleteWorseGraphic;
+    private Color deleteWorseLabelBaseColor;
+    private Color deleteWorseGraphicBaseColor;
+    private const float DeleteWorseRefreshInterval = 0.25f;
 
     private bool isScrolling;
     private float scrollTarget;
@@ -163,6 +186,7 @@ public class InventoryDisplay : GameUI.UIWindow
         CacheEquipSlot(primaryEquipSlot);
         CacheEquipSlot(secondaryEquipSlot);
         DisableFilterNavigation();
+        SetupDeleteWorseButton();
 
         if (scrollRect == null && slotContainer != null)
         {
@@ -181,6 +205,43 @@ public class InventoryDisplay : GameUI.UIWindow
         UpdateScroll();
         UpdateFilterFrames(false);
         UpdateCharacterHighlight(false);
+
+        if (Time.unscaledTime >= deleteWorseRefreshAt)
+        {
+            deleteWorseRefreshAt = Time.unscaledTime + DeleteWorseRefreshInterval;
+            UpdateDeleteWorseButton();
+        }
+
+        UpdateDeleteWorseFrame(false);
+    }
+
+    private void UpdateDeleteWorseFrame(bool reset)
+    {
+        if (deleteWorseButton == null) return;
+
+        Color restColor = deleteWorseButton.interactable
+            ? deleteWorseGraphicBaseColor
+            : deleteWorseGraphicBaseColor * deleteWorseDisabledTint;
+
+        GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        bool isSelected = !reset && selected == deleteWorseButton.gameObject;
+
+        if (deleteWorseGraphic != null)
+            deleteWorseGraphic.color = isSelected ? deleteWorseSelectedButtonColor : restColor;
+
+        if (deleteWorseFrame == null) return;
+
+        Color frameBase = deleteWorseGraphic != null ? restColor : deleteWorseFrameBaseColor;
+
+        if (!isSelected)
+        {
+            deleteWorseFrame.color = frameBase;
+            return;
+        }
+
+        float wave = (1f - Mathf.Cos(Time.unscaledTime * deleteWorsePulseSpeed * Mathf.PI * 2f)) * 0.5f;
+        float pulse = Mathf.Lerp(deleteWorsePulseMin, 1f, wave);
+        deleteWorseFrame.color = Color.Lerp(frameBase, deleteWorseSelectedColor, pulse);
     }
 
     private void CacheCharacterBaseColor(Image image)
@@ -416,6 +477,10 @@ public class InventoryDisplay : GameUI.UIWindow
     private void OnDestroy()
     {
         UnsubscribeFilterActions();
+        UnsubscribeDeleteWorseAction();
+
+        if (deleteWorseButton != null)
+            deleteWorseButton.onClick.RemoveListener(OnDeleteWorseGearPressed);
 
         if (invManager != null)
         {
@@ -504,6 +569,12 @@ public class InventoryDisplay : GameUI.UIWindow
             nextFilterAction.action.performed += HandleNextFilter;
         }
 
+        if (deleteWorseAction != null)
+        {
+            deleteWorseAction.action.Enable();
+            deleteWorseAction.action.performed += HandleDeleteWorseAction;
+        }
+
         ApplyFilterVisuals();
         RefreshUI();
 
@@ -514,6 +585,8 @@ public class InventoryDisplay : GameUI.UIWindow
     protected override void OnWindowClosed()
     {
         UnsubscribeFilterActions();
+        UnsubscribeDeleteWorseAction();
+        UpdateDeleteWorseFrame(true);
         currentFilter = InventoryFilter.All;
         UpdateFilterFrames(true);
         rememberedSlotIndex = 0;
@@ -623,6 +696,116 @@ public class InventoryDisplay : GameUI.UIWindow
             nextFilterAction.action.performed -= HandleNextFilter;
             nextFilterAction.action.Disable();
         }
+    }
+
+    private void UnsubscribeDeleteWorseAction()
+    {
+        if (deleteWorseAction != null)
+            deleteWorseAction.action.performed -= HandleDeleteWorseAction;
+    }
+
+    private void SetupDeleteWorseButton()
+    {
+        if (deleteWorseButton == null) return;
+
+        if (deleteWorseLabel == null) deleteWorseLabel = deleteWorseButton.GetComponentInChildren<TMP_Text>(true);
+        if (deleteWorseLabel != null) deleteWorseLabelBaseColor = deleteWorseLabel.color;
+
+        if (deleteWorseFrame == null && !string.IsNullOrEmpty(filterFrameChildName))
+        {
+            Transform child = deleteWorseButton.transform.Find(filterFrameChildName);
+            if (child != null) deleteWorseFrame = child.GetComponent<Graphic>();
+        }
+
+        if (deleteWorseFrame != null) deleteWorseFrameBaseColor = deleteWorseFrame.color;
+
+        deleteWorseGraphic = deleteWorseButton.GetComponent<Graphic>();
+        if (deleteWorseGraphic != null) deleteWorseGraphicBaseColor = deleteWorseGraphic.color;
+
+        deleteWorseButton.onClick.RemoveListener(OnDeleteWorseGearPressed);
+        deleteWorseButton.onClick.AddListener(OnDeleteWorseGearPressed);
+    }
+
+    private bool IsDeleteWorseUsable()
+    {
+        return deleteWorseButton != null && deleteWorseButton.interactable && deleteWorseButton.gameObject.activeSelf;
+    }
+
+    private void ResetDeleteWorseNavigation()
+    {
+        if (deleteWorseButton == null) return;
+
+        deleteWorseButton.navigation = new Navigation { mode = Navigation.Mode.Explicit };
+    }
+
+    private void HandleDeleteWorseAction(InputAction.CallbackContext context) => OnDeleteWorseGearPressed();
+
+    private void OnDeleteWorseGearPressed()
+    {
+        if (!IsOpen || invManager == null || equipManager == null) return;
+        if (GameUI.UIManager.Instance != null && !GameUI.UIManager.Instance.IsTopmost(this)) return;
+
+        List<object> worse = ItemActionFactory.GetWorseItems(invManager, equipManager, keepNewGear);
+        if (worse.Count == 0)
+        {
+            UpdateDeleteWorseButton(0);
+            return;
+        }
+
+        if (deleteWorseConfirm != null)
+            deleteWorseConfirm.Show(string.Format(deleteWorseConfirmMessage, worse.Count), ConfirmDeleteWorseGear);
+        else
+            ConfirmDeleteWorseGear();
+    }
+
+    private void ConfirmDeleteWorseGear()
+    {
+        if (invManager == null || equipManager == null) return;
+
+        List<object> worse = ItemActionFactory.GetWorseItems(invManager, equipManager, keepNewGear);
+        if (worse.Count == 0) return;
+
+        invManager.OnInventoryChanged -= RefreshUI;
+
+        foreach (object item in worse)
+            invManager.RemoveItem(item);
+
+        invManager.OnInventoryChanged += RefreshUI;
+
+        RefreshUI();
+    }
+
+    private void UpdateDeleteWorseButton()
+    {
+        if (deleteWorseButton == null && deleteWorseLabel == null) return;
+
+        int count = invManager != null && equipManager != null
+            ? ItemActionFactory.GetWorseItems(invManager, equipManager, keepNewGear).Count
+            : 0;
+
+        UpdateDeleteWorseButton(count);
+    }
+
+    private void UpdateDeleteWorseButton(int count)
+    {
+        bool interactable = count > 0;
+
+        if (deleteWorseButton != null && deleteWorseButton.interactable != interactable)
+        {
+            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            bool wasSelected = selected == deleteWorseButton.gameObject;
+
+            deleteWorseButton.interactable = interactable;
+            if (slotContainer != null) BuildSlotNavigation();
+
+            if (!interactable && wasSelected && !RestoreSelectedSlot(rememberedSlotIndex))
+                Reselect();
+        }
+
+        if (deleteWorseLabel == null) return;
+
+        deleteWorseLabel.color = count == 0 ? deleteWorseEmptyTextColor : deleteWorseLabelBaseColor;
+        deleteWorseLabel.text = count == 0 ? deleteWorseEmptyText : string.Format(deleteWorseText, count);
     }
 
     private void HandlePrevFilter(InputAction.CallbackContext context) => CycleFilter(-1);
@@ -753,6 +936,8 @@ public class InventoryDisplay : GameUI.UIWindow
             navNodes.Add(new SlotNode { Selectable = selectable, X = local.x, Y = local.y });
         }
 
+        ResetDeleteWorseNavigation();
+
         if (navNodes.Count == 0)
         {
             LinkEquipSlotNavigation();
@@ -774,6 +959,8 @@ public class InventoryDisplay : GameUI.UIWindow
             if (slot == null || slot.Selectable == null || !slot.Selectable.gameObject.activeInHierarchy) continue;
             equipSelectables.Add(slot.Selectable);
         }
+
+        if (IsDeleteWorseUsable()) equipSelectables.Add(deleteWorseButton);
 
         if (equipSelectables.Count == 0) return;
 
@@ -1176,6 +1363,7 @@ public class InventoryDisplay : GameUI.UIWindow
         LayoutRebuilder.ForceRebuildLayoutImmediate(slotContainer as RectTransform);
 
         BuildSlotNavigation();
+        UpdateDeleteWorseButton();
 
         if (scrollToTopOnRefresh)
         {

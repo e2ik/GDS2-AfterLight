@@ -829,6 +829,16 @@ MonoBehaviour:
   lightColor: {r: 0, g: 2, b: 2, a: 1}
   mediumColor: {r: 2, g: 1.8431373, b: 0.03137255, a: 1}
   heavyColor: {r: 2, g: 0, b: 0, a: 1}
+  chargeParticles: {fileID: 5497425098577746589, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
+  tintChargeByForce: 1
+  chargeEmissionRate: 15
+  chargeShapeScale: 0.8
+  chargeParticleSize: 0.7
+  chargeSimulationSpeed: 5
+  overrideAnticipationScale: 1
+  anticipationScale: 1.75
+  chargeGlowProperty: _Intensity
+  chargeGlowIntensity: 1.5
 --- !u!1 &7731191844363344220
 GameObject:
   m_ObjectHideFlags: 0
