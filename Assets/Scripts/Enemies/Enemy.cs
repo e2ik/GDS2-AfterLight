@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+using Enemies.ModuleScripts.Movement;
 using FMODUnity;
 using Unity.Behavior;
 using UnityEngine;
@@ -35,46 +36,12 @@ namespace Enemies
         [Header("Sprite")]
         [SerializeField] private bool spriteFacesLeft = false;
 
-        [Header("Movement Windup")]
-        [SerializeField] private bool useMoveWindup = false;
-        [SerializeField] private string moveWindupTrigger = "MoveWindup";
-        [SerializeField] private string moveWindupState = "MoveWindup";
-        [SerializeField] private string moveWinddownTrigger = "MoveWinddown";
-        [SerializeField] private string moveWinddownState = "MoveWinddown";
-        [SerializeField, Min(0.1f)] private float moveWindupTimeout = 3f;
-        [SerializeField, Min(0f)] private float moveStartDelay = 0.15f;
-        private float moveWantTimer;
-        [SerializeField] private bool windupOnDirectionChange = true;
-        [SerializeField] private bool holdAttacksUntilStopped = true;
-
-        [Header("Approach And Retreat")]
-        [SerializeField, Range(0f, 1f)] private float approachRetreatChance = 0.3f;
-        [SerializeField] private bool approachOnAggro = true;
-        [SerializeField] private float approachSpeed = 5f;
-        [SerializeField] private float approachStopDistance = 0.5f;
-        [SerializeField] private float retreatSpeed = 4f;
-        [SerializeField] private float retreatDistance = 4f;
-        [SerializeField, Min(0.5f)] private float approachRetreatTimeout = 6f;
-        [SerializeField] private bool debugApproachRetreat = false;
-
-        private enum ApproachPhase { None, Approach, Retreat }
-        private ApproachPhase approachPhase;
-        private float approachElapsed;
-        private float approachStartTime;
-        private float retreatStartX;
-        private int retreatDir;
-
         [Header("Movement Hitbox")]
         [SerializeField] private int moveHitDamage = 10;
         [SerializeField] private AttackForce moveHitForce = AttackForce.Medium;
         [SerializeField] private ParryDirection moveHitParryDirection = ParryDirection.Left;
         private bool moveHitboxArmed;
-
-        private bool moveMoving, moveWindingUp, moveWindingDown, moveHoldsAttacks;
-        private bool moveWindupEntered, moveWinddownEntered;
-        private float moveWindupElapsed, moveWinddownElapsed;
-        private int moveDir;
-        private int moveTickFrame = -10;
+        
 
         [Header("Aggro")]
         [SerializeField] private bool stayStillUntilAggro = false;
@@ -127,6 +94,12 @@ namespace Enemies
         private float teleportCooldownTimer;
         private float outOfRangeTimer;
 
+        [Header("Approach Cycles")] 
+        [SerializeField, Min(0)] private int approachCyclesBeforeAttack = 0;
+
+        private bool AttackLockedByCycles => approachCyclesBeforeAttack > 0 &&
+                                             Context.ApproachCyclesSinceAttack < approachCyclesBeforeAttack;
+
         [Header("Death")] 
         [SerializeField] private bool hasDeathAnimation = false;
 
@@ -139,8 +112,9 @@ namespace Enemies
         public bool AttackReady { get; private set; }
         public bool TeleportReady { get; private set; }
         public bool IsBoss => Context != null && Context.BossBounds != null;
-        public bool InMoveWindupPhase => useMoveWindup && Time.frameCount - moveTickFrame <= 2
-            && (moveWindingUp || moveMoving || moveWindingDown);
+        
+        public bool InMoveWindupPhase => Context != null && Context.MoveWindup.InPhase;
+      
 
         private float attackCooldownTimer;
         private float attackStartedTime;
@@ -189,6 +163,8 @@ namespace Enemies
                 SpriteRenderer = spriteRenderer,
                 FacingRight = true
             };
+
+            Context.AttackEvents = GetComponentInChildren<AttackEvents>();
 
             Context.AttackStopDistance = attacks.Count > 0 ? attacks.Min(a => a.Attack.Range) : 0.1f;
             Context.HomePosition = transform.position;
@@ -247,7 +223,6 @@ namespace Enemies
                 {
                     EnemyCombatTracker.EnemyStartedTargeting(this);
                     hasAggroed = true;
-                    if (approachOnAggro) TryStartApproachRetreat(true);
                     // can spawn aggro here
                     PSpawner.Spawn("Aggro", transform.position);
                     Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyAggroed);
@@ -305,8 +280,14 @@ namespace Enemies
 
             UpdateUnreachableGiveUp();
             if (!Context.TargetVisible) attackReady = IsAttacking;
-            if (approachPhase != ApproachPhase.None && Time.time - approachStartTime > approachRetreatTimeout + 2f) EndApproachRetreat("never ran (timeout)");
-            if (approachPhase != ApproachPhase.None || (moveHoldsAttacks && Time.frameCount - moveTickFrame <= 2)) attackReady = IsAttacking;
+            if (Context.ApproachRetreat.Active || Context.MoveWindup.HoldsAttacks)
+                attackReady = IsAttacking;
+
+            Context.ApproachCyclesSatisfied = approachCyclesBeforeAttack > 0 && !AttackLockedByCycles;
+            if (AttackLockedByCycles)
+                attackReady = IsAttacking;
+            
+            UpdateMoveHitbox();
 
             AttackReady = attackReady;
 
@@ -384,241 +365,36 @@ namespace Enemies
 
         public void RunMovement(EnemyMovementSO module, float dt)
         {
-            bool isTeleport = module is Enemies.ModuleScripts.Movement.TeleportMovementSO;
+            bool isTeleport = module is TeleportMovementSO;
 
             if (IsStaggered && !isTeleport)
             {
-                EndApproachRetreat("staggered");
-                ResetMoveWindup();
+                Context.ApproachRetreat.Finish();
+                MoveWindup.Reset(Context);
                 rb2D.linearVelocity = new Vector2(0f, rb2D.linearVelocity.y);
                 return;
             }
 
             if (stayStillUntilAggro && !hasAggroed && !isTeleport)
             {
-                ResetMoveWindup();
+                MoveWindup.Reset(Context);
                 rb2D.linearVelocity = new Vector2(0f, rb2D.linearVelocity.y);
                 return;
             }
 
-            if (!useMoveWindup || isTeleport)
+            if (isTeleport)
             {
-                EndApproachRetreat(isTeleport ? "teleport" : "windup off");
-                ResetMoveWindup();
-                module.Tick(Context, dt);
-                return;
+                Context.ApproachRetreat.Finish();
+                MoveWindup.Reset(Context);
             }
 
-            if (Time.frameCount - moveTickFrame > 2) ClearMoveWindup();
-            moveTickFrame = Time.frameCount;
-
-            bool facingBefore = Context.FacingRight;
-
-            if (approachPhase != ApproachPhase.None && (Context.Target == null || IsAttacking))
-                EndApproachRetreat(IsAttacking ? "attacking" : "no target");
-
-            if (approachPhase != ApproachPhase.None) TickApproachRetreat(dt);
-            else module.Tick(Context, dt);
-
-            if (IsAttacking)
-            {
-                ResetMoveWindup();
-                return;
-            }
-
-            float velocityX = rb2D.linearVelocity.x;
-            bool wantsMove = Mathf.Abs(velocityX) > 0.01f;
-            int dir = wantsMove ? (velocityX > 0f ? 1 : -1) : moveDir;
-
-            bool canMove = AdvanceMoveWindup(wantsMove, dir, dt);
-            UpdateMoveHitbox();
-            moveHoldsAttacks = holdAttacksUntilStopped && (moveMoving || moveWindingDown);
-
-            if (canMove) return;
-
-            rb2D.linearVelocity = new Vector2(0f, rb2D.linearVelocity.y);
-            if (moveWindingDown) Context.FacingRight = facingBefore;
+            module.Tick(Context, dt);
         }
-
-        private bool AdvanceMoveWindup(bool wantsMove, int dir, float dt)
-        {
-            if (moveWindingDown)
-            {
-                moveWinddownElapsed += dt;
-                if (!MovePhaseFinished(moveWinddownState, ref moveWinddownEntered, moveWinddownElapsed)) return false;
-
-                moveWindingDown = false;
-            }
-
-            if (!wantsMove)
-            {
-                moveWantTimer = 0f;
-
-                if (moveWindingUp)
-                {
-                    SetMoveTrigger(moveWindupTrigger, false);
-                    moveWindingUp = false;
-                }
-
-                if (moveMoving) StartMoveWinddown();
-                return false;
-            }
-
-            if (moveMoving && windupOnDirectionChange && dir != moveDir)
-            {
-                StartMoveWinddown();
-                if (moveWindingDown) return false;
-            }
-
-            if (!moveMoving)
-            {
-                if (!moveWindingUp)
-                {
-                    moveWantTimer += dt;
-                    if (moveWantTimer < moveStartDelay) return false;
-                    moveWantTimer = 0f;
-
-                    if (!HasMoveTrigger(moveWindupTrigger))
-                    {
-                        moveMoving = true;
-                        moveDir = dir;
-                        return true;
-                    }
-
-                    moveWindingUp = true;
-                    moveWindupEntered = false;
-                    moveWindupElapsed = 0f;
-                    SetMoveTrigger(moveWindupTrigger, true);
-                }
-
-                moveWindupElapsed += dt;
-                if (!MovePhaseFinished(moveWindupState, ref moveWindupEntered, moveWindupElapsed)) return false;
-
-                moveWindingUp = false;
-                moveMoving = true;
-            }
-
-            moveDir = dir;
-            return true;
-        }
-
-        private void StartMoveWinddown()
-        {
-            moveMoving = false;
-            if (!HasMoveTrigger(moveWinddownTrigger)) return;
-
-            moveWindingDown = true;
-            moveWinddownEntered = false;
-            moveWinddownElapsed = 0f;
-            SetMoveTrigger(moveWinddownTrigger, true);
-        }
-
-        private bool MovePhaseFinished(string stateName, ref bool entered, float elapsed)
-        {
-            if (elapsed >= moveWindupTimeout) return true;
-
-            Animator animator = Context.Animator;
-            if (animator == null || string.IsNullOrEmpty(stateName)) return true;
-
-            AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
-            if (state.IsName(stateName))
-            {
-                entered = true;
-                return state.normalizedTime >= 1f;
-            }
-
-            return entered;
-        }
-
-        private void ResetMoveWindup()
-        {
-            if (moveWindingUp) SetMoveTrigger(moveWindupTrigger, false);
-            if (moveWindingDown) SetMoveTrigger(moveWinddownTrigger, false);
-
-            ClearMoveWindup();
-        }
-
-        private void TryStartApproachRetreat(bool guaranteed = false)
-        {
-            if (!useMoveWindup || Context.Target == null || IsAttacking)
-            {
-                LogApproach($"not started (useMoveWindup {useMoveWindup}, has target {Context.Target != null}, attacking {IsAttacking})");
-                return;
-            }
-            if (Context.Health != null && Context.Health.CurrentHealth <= 0) return;
-            if (!guaranteed && (approachRetreatChance <= 0f || UnityEngine.Random.value >= approachRetreatChance))
-            {
-                LogApproach("roll failed");
-                return;
-            }
-
-            LogApproach(guaranteed ? "started (aggro)" : "started (roll)");
-
-            approachPhase = ApproachPhase.Approach;
-            approachElapsed = 0f;
-            approachStartTime = Time.time;
-        }
-
-        private void LogApproach(string message)
-        {
-            if (debugApproachRetreat) Debug.Log($"[ApproachRetreat] {name}: {message}", this);
-        }
-
-        private void EndApproachRetreat(string reason = "finished")
-        {
-            if (approachPhase != ApproachPhase.None) LogApproach($"ended during {approachPhase}: {reason}");
-            approachPhase = ApproachPhase.None;
-            approachElapsed = 0f;
-        }
-
-        private void TickApproachRetreat(float dt)
-        {
-            approachElapsed += dt;
-
-            float selfX = transform.position.x;
-            float dx = Context.Target.position.x - selfX;
-            int toTarget = dx >= 0f ? 1 : -1;
-            bool timedOut = approachElapsed >= approachRetreatTimeout;
-            float velocityX = 0f;
-
-            Context.FacingRight = toTarget > 0;
-
-            if (approachPhase == ApproachPhase.Approach)
-            {
-                bool reached = Mathf.Abs(dx) <= approachStopDistance;
-                bool blocked = !Context.IgnoreTerrainChecks && EnemyTerrainProbe.IsBlocked(Context, toTarget);
-
-                if (reached || blocked || timedOut)
-                {
-                    LogApproach($"approach done (reached {reached}, blocked {blocked}, timed out {timedOut})");
-                    approachPhase = ApproachPhase.Retreat;
-                    retreatDir = -toTarget;
-                    retreatStartX = selfX;
-                }
-                else
-                {
-                    velocityX = toTarget * approachSpeed;
-                }
-            }
-            else
-            {
-                bool travelled = Mathf.Abs(selfX - retreatStartX) >= retreatDistance;
-                bool blocked = !Context.IgnoreTerrainChecks && EnemyTerrainProbe.IsBlocked(Context, retreatDir);
-
-                if (travelled || blocked || timedOut)
-                {
-                    LogApproach($"retreat done (travelled {travelled}, blocked {blocked}, timed out {timedOut})");
-                    EndApproachRetreat();
-                }
-                else velocityX = retreatDir * retreatSpeed;
-            }
-
-            rb2D.linearVelocity = new Vector2(velocityX, rb2D.linearVelocity.y);
-        }
+        
 
         private void UpdateMoveHitbox()
         {
-            bool inPhase = moveWindingUp || moveMoving || moveWindingDown;
+            bool inPhase = Context.MoveWindup.InPhase && !IsAttacking;
             if (inPhase && !moveHitboxArmed) ArmMoveHitbox();
             else if (!inPhase) DisarmMoveHitbox();
         }
@@ -651,20 +427,6 @@ namespace Enemies
             Context.AttackEvents?.DisableHitbox();
         }
 
-        private void ClearMoveWindup()
-        {
-            DisarmMoveHitbox();
-            moveMoving = false;
-            moveWindingUp = false;
-            moveWindingDown = false;
-            moveHoldsAttacks = false;
-            moveWindupEntered = false;
-            moveWinddownEntered = false;
-            moveWindupElapsed = 0f;
-            moveWinddownElapsed = 0f;
-            moveWantTimer = 0f;
-        }
-
         private void SetMoveTrigger(string trigger, bool set)
         {
             if (!HasMoveTrigger(trigger)) return;
@@ -694,8 +456,10 @@ namespace Enemies
         {
             selected = null;
             if (IsAttacking) return false;
-            if (approachPhase != ApproachPhase.None || (moveHoldsAttacks && Time.frameCount - moveTickFrame <= 2)) return false;
+            if (Context.ApproachRetreat.Active || Context.MoveWindup.HoldsAttacks) return false;
 
+            if (AttackLockedByCycles) return false;
+ 
             float totalWeight = attacks.Where(a => a.IsValid && !a.ManualOnly).Sum(a => a.Weight);
             if (totalWeight <= 0f) return false;
 
@@ -763,7 +527,7 @@ namespace Enemies
 
         private void DropAggro()
         {
-            EndApproachRetreat("dropped aggro");
+            Context.ApproachRetreat.Finish();
             unreachableTimer = 0f;
             reaggroCooldownTimer = reaggroCooldown;
 
@@ -792,7 +556,7 @@ namespace Enemies
 
         public void MarkAttackStarted()
         {
-            EndApproachRetreat("attack started");
+            Context.ApproachRetreat.Finish();
 
             if (Context.Target != null)
                 FaceTowards(Context.Target.position.x);
@@ -800,6 +564,7 @@ namespace Enemies
 
             IsAttacking = true;
             Context.IsAttacking = true;
+            Context.ApproachCyclesSinceAttack = 0;
             Context.Body.linearVelocity = Vector2.zero;
             attackStartedTime = Time.time;
             attacksSinceLastTeleport++;
@@ -807,12 +572,9 @@ namespace Enemies
 
         public void MarkAttackEnded()
         {
-            bool wasAttacking = IsAttacking;
             IsAttacking = false;
             Context.IsAttacking = false;
             attackCooldownTimer = Mathf.Max(attackCooldown, attackCooldownTimer);
-
-            if (wasAttacking) TryStartApproachRetreat();
         }
 
         public bool CanTeleport => canTeleport;
