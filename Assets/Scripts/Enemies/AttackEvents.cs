@@ -10,6 +10,7 @@ namespace Enemies
         [SerializeField] private GameObject[] groundObjs;
         [SerializeField] private Collider2D[] bonusZones;
         [SerializeField, Min(1f)] private float bonusDamageMultiplier = 2f;
+        [SerializeField] private bool debugBonus = false;
 
         public int CurrentDamage { get; set; }
         public ParryDirection CurrentParryDirection { get; set; }
@@ -21,6 +22,40 @@ namespace Enemies
         private Enemy owner;
         private Collider2D[] playerColliders;
         private Player cachedPlayer;
+
+        private void Awake()
+        {
+            IgnoreGroundObjsVsOwnBody();
+        }
+
+        private void IgnoreGroundObjsVsOwnBody()
+        {
+            if (groundObjs == null) return;
+
+            Collider2D[] bodyColliders = transform.root.GetComponentsInChildren<Collider2D>(true);
+
+            foreach (GameObject obj in groundObjs)
+            {
+                if (obj == null) continue;
+
+                foreach (Collider2D groundCol in obj.GetComponentsInChildren<Collider2D>(true))
+                {
+                    foreach (Collider2D bodyCol in bodyColliders)
+                    {
+                        if (bodyCol == null || IsInGroundObjs(bodyCol.transform)) continue;
+                        Physics2D.IgnoreCollision(groundCol, bodyCol, true);
+                    }
+                }
+            }
+        }
+
+        private bool IsInGroundObjs(Transform t)
+        {
+            foreach (GameObject obj in groundObjs)
+                if (obj != null && t.IsChildOf(obj.transform)) return true;
+
+            return false;
+        }
         
         public void EnableHitbox()
         {
@@ -45,10 +80,19 @@ namespace Enemies
 
         public bool IsPlayerBonusActive()
         {
-            if (!BonusWindowOpen || bonusZones == null) return false;
+            bool active = CheckPlayerBonus(out string reason);
+            if (debugBonus) Debug.Log($"[Bonus] {name}: {(active ? "ACTIVE" : "inactive")} ({reason})", this);
+            return active;
+        }
+
+        private bool CheckPlayerBonus(out string reason)
+        {
+            reason = "ok";
+            if (!BonusWindowOpen) { reason = "window closed"; return false; }
+            if (bonusZones == null || bonusZones.Length == 0) { reason = "no bonus zones assigned"; return false; }
 
             Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
-            if (player == null) return false;
+            if (player == null) { reason = "no player"; return false; }
 
             if (player != cachedPlayer)
             {
@@ -56,9 +100,12 @@ namespace Enemies
                 playerColliders = player.GetComponentsInChildren<Collider2D>(true);
             }
 
+            bool anyZoneOn = false;
+
             foreach (Collider2D zone in bonusZones)
             {
                 if (zone == null || !zone.enabled || !zone.gameObject.activeInHierarchy) continue;
+                anyZoneOn = true;
 
                 foreach (Collider2D col in playerColliders)
                 {
@@ -67,6 +114,7 @@ namespace Enemies
                 }
             }
 
+            reason = anyZoneOn ? "player not inside a zone" : "all zones switched off";
             return false;
         }
 

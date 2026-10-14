@@ -536,7 +536,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9b08fde3cea1e74eaa88ad2dd99a63a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
-  maxHealth: 400
+  maxHealth: 600
   blockDamageOutsideBonus: 1
   blockedHitDamage: 1
 --- !u!114 &2819779926548626800
@@ -586,14 +586,17 @@ MonoBehaviour:
   holdAttacksUntilStopped: 1
   lockTargetOnMoveStart: 1
   lockedArriveDistance: 0.5
-  approachRetreatChance: 1
+  approachRetreatChance: 0.5
   approachOnAggro: 1
   approachSpeed: 5
   approachStopDistance: 0.5
+  maxAttacksWithoutApproach: 2
+  retreatChance: 0.5
+  noBackToBackRetreats: 1
   retreatSpeed: 4
   retreatDistance: 4
   approachRetreatTimeout: 6
-  debugApproachRetreat: 1
+  debugApproachRetreat: 0
   moveHitDamage: 10
   moveHitForce: 2
   moveHitParryDirection: 2
@@ -783,6 +786,12 @@ MonoBehaviour:
   boostIntensity: 1
   intensityBoost: 1
   comboIntensityBoost: 1
+  vulnerableGlow:
+    enabled: 1
+    color: {r: 0, g: 0.58364606, b: 1, a: 1}
+    intensity: 2.5
+    checkerLow: 0.5
+    checkerSize: 1
   moveWindupGlow:
     enabled: 1
     color: {r: 0, g: 0.41679955, b: 1, a: 1}
@@ -933,6 +942,7 @@ MonoBehaviour:
   bonusZones:
   - {fileID: 3582051706981433652}
   bonusDamageMultiplier: 4
+  debugBonus: 0
 --- !u!114 &3772755303928414562
 MonoBehaviour:
   m_ObjectHideFlags: 0

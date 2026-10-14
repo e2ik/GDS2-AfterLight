@@ -1520,15 +1520,15 @@ AnimationClip:
     intParameter: 0
     messageOptions: 0
   - time: 0.6
-    functionName: PlaySFXEvent
-    data: AttackEvent
+    functionName: EnableHitbox
+    data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 0.6
-    functionName: EnableHitbox
-    data: 
+    functionName: PlaySFXEvent
+    data: AttackEvent
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
@@ -1540,7 +1540,7 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 0.7
+  - time: 1.2
     functionName: OpenBonusWindow
     data: 
     objectReferenceParameter: {fileID: 0}
@@ -1548,14 +1548,14 @@ AnimationClip:
     intParameter: 0
     messageOptions: 0
   - time: 1.2
-    functionName: CloseParryWindow
+    functionName: DisableHitbox
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 1.2
-    functionName: DisableHitbox
+    functionName: CloseParryWindow
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0

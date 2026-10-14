@@ -55,6 +55,11 @@ namespace Enemies
         [SerializeField] private bool approachOnAggro = true;
         [SerializeField] private float approachSpeed = 5f;
         [SerializeField] private float approachStopDistance = 0.5f;
+        [SerializeField, Min(0)] private int maxAttacksWithoutApproach = 2;
+        [SerializeField, Range(0f, 1f)] private float retreatChance = 0.5f;
+        [SerializeField] private bool noBackToBackRetreats = true;
+        private int attacksWithoutApproach;
+        private bool retreatedLastTime;
         [SerializeField] private float retreatSpeed = 4f;
         [SerializeField] private float retreatDistance = 4f;
         [SerializeField, Min(0.5f)] private float approachRetreatTimeout = 6f;
@@ -191,6 +196,7 @@ namespace Enemies
                 PlaceholderClip = placeholderClip,
                 BossBounds = bossBounds,
                 SpriteRenderer = spriteRenderer,
+                AttackEvents = GetComponentInChildren<AttackEvents>(true),
                 FacingRight = true
             };
 
@@ -574,11 +580,17 @@ namespace Enemies
                 return;
             }
             if (Context.Health != null && Context.Health.CurrentHealth <= 0) return;
-            if (!guaranteed && (approachRetreatChance <= 0f || UnityEngine.Random.value >= approachRetreatChance))
+            bool forced = !guaranteed && maxAttacksWithoutApproach > 0 && attacksWithoutApproach >= maxAttacksWithoutApproach;
+
+            if (!guaranteed && !forced && (approachRetreatChance <= 0f || UnityEngine.Random.value >= approachRetreatChance))
             {
-                LogApproach("roll failed");
+                attacksWithoutApproach++;
+                LogApproach($"roll failed ({attacksWithoutApproach} attacks without approach)");
                 return;
             }
+
+            attacksWithoutApproach = 0;
+            if (forced) LogApproach("forced after too many attacks in a row");
 
             LogApproach(guaranteed ? "started (aggro)" : "started (roll)");
 
@@ -620,9 +632,21 @@ namespace Enemies
                 if (reached || blocked || timedOut)
                 {
                     LogApproach($"approach done (reached {reached}, blocked {blocked}, timed out {timedOut})");
-                    approachPhase = ApproachPhase.Retreat;
-                    retreatDir = -toTarget;
-                    retreatStartX = selfX;
+
+                    bool blockedByLast = noBackToBackRetreats && retreatedLastTime;
+
+                    if (blockedByLast || UnityEngine.Random.value >= retreatChance)
+                    {
+                        retreatedLastTime = false;
+                        EndApproachRetreat(blockedByLast ? "retreated last time" : "retreat roll failed");
+                    }
+                    else
+                    {
+                        retreatedLastTime = true;
+                        approachPhase = ApproachPhase.Retreat;
+                        retreatDir = -toTarget;
+                        retreatStartX = selfX;
+                    }
                 }
                 else
                 {
