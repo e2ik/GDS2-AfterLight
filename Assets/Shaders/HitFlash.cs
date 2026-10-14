@@ -81,6 +81,8 @@ public class HitFlash : MonoBehaviour
 
     public void Flash(Color color, float flashIntensity) => Flash(color, flashIntensity, defaultMode);
 
+    public void Flash(Color color, FlashMode mode) => Flash(color, intensity, mode);
+
     public void Flash(Color color, float flashIntensity, FlashMode mode)
     {
         if (overlay == null || flashMaterial == null) return;

@@ -43,6 +43,11 @@ public class EnemyAttackGlow : MonoBehaviour
     [Header("Combo Telegraph")]
     [SerializeField] private float comboIntensityBoost = 1f;
 
+    [Header("Vulnerable")]
+    [SerializeField] private Style vulnerableGlow = new Style { color = new Color(0.3f, 1f, 0.4f), intensity = 2.5f };
+    [SerializeField, Min(0.01f)] private float vulnerablePulseSpeed = 3f;
+    [SerializeField, Range(0f, 1f)] private float vulnerablePulseMin = 0.3f;
+
     [Header("Movement Windup")]
     [SerializeField] private Style moveWindupGlow = new Style { color = new Color(0.3f, 0.8f, 1f), intensity = 1.5f };
 
@@ -77,8 +82,17 @@ public class EnemyAttackGlow : MonoBehaviour
         bool parryOpen = false;
         Color color = Color.white;
         bool comboTelegraph = false;
+        float pulse = 1f;
 
-        if (enemy != null && enemy.Context != null && enemy.IsAttacking && InAttackAnimation(enemy.Context.Animator))
+        if (enemy != null && enemy.Context != null && enemy.Context.AttackEvents != null
+            && enemy.Context.AttackEvents.BonusWindowOpen && vulnerableGlow.enabled)
+        {
+            style = vulnerableGlow;
+            color = vulnerableGlow.color;
+            float wave = (1f - Mathf.Cos(Time.time * vulnerablePulseSpeed * Mathf.PI * 2f)) * 0.5f;
+            pulse = Mathf.Lerp(vulnerablePulseMin, 1f, wave);
+        }
+        else if (enemy != null && enemy.Context != null && enemy.IsAttacking && InAttackAnimation(enemy.Context.Animator))
         {
             EnemyContext ctx = enemy.Context;
             style = ForceStyle(ctx.CurrentAttackForce);
@@ -103,7 +117,7 @@ public class EnemyAttackGlow : MonoBehaviour
         if (on)
         {
             float extra = (comboTelegraph ? comboIntensityBoost : 0f) + (boostIntensity ? intensityBoost : 0f);
-            float intensity = Mathf.Clamp(style.intensity + boost + extra, 0f, 10f);
+            float intensity = Mathf.Clamp((style.intensity + boost + extra) * pulse, 0f, 10f);
 
             outlineStyle.enabled = true;
             outlineStyle.color = color;
