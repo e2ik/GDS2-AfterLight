@@ -1119,6 +1119,15 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(dir * force, ForceMode2D.Impulse);
     }
 
+    public void ApplyBounceImpulseInDirection(Vector2 direction, float force)
+    {
+        if (physicsSuspended) return;
+
+        CancelClimb();
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce(direction.normalized * force, ForceMode2D.Impulse);
+    }
+
     public void TriggerBounce(Vector2 sourcePosition, float force, float duration)
     {
         if (physicsSuspended) return;

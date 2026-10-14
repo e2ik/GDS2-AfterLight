@@ -40,6 +40,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float plungeAdjustedDmg = 1f;
     [SerializeField] private float plungeGraceWindow = 0.15f;
     [SerializeField] private float plungeBounceForce = 10f;
+    [SerializeField, Range(0f, 1f)] private float plungeBounceSideAmount = 0.25f;
     [SerializeField] private float plungeRecoveryDuration = 0.3f;
     [SerializeField] private float attackWidth = 2f;
     [SerializeField] private float attackDuration = 0.3f;
@@ -62,6 +63,10 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float[] comboDamageMultipliers = { 1.0f, 1.25f, 1.5f };
     [SerializeField] private float dashAttackMultiplier = 1.25f;
     [SerializeField] private float airAttackMultiplier = 1.1f;
+    [SerializeField] private bool endAirAttackOnLanding = true;
+    [SerializeField, Range(0f, 1f)] private float attackActiveStart = 0.3f;
+    [SerializeField, Range(0f, 1f)] private float attackActiveEnd = 1f;
+    private float attackTotalDuration;
     public int CurrentComboIndex => currentComboIndex;
 
     [Header("Input Conflict Settings")]
@@ -222,6 +227,11 @@ public class PlayerCombatController : MonoBehaviour
         HandleAttack();
         HandleSkill();
         UpdateTimers();
+
+        if (endAirAttackOnLanding && isAttacking && !attackStartedGrounded && !isDashAttack && movement.IsGrounded)
+        {
+            EndAttack();
+        }
 
         if (isAttacking && player.Equipment?.EquippedWeapon != null)
         {
@@ -535,6 +545,7 @@ public class PlayerCombatController : MonoBehaviour
             attackStartedGrounded = movement.IsGrounded;
             isDashAttack = movement.IsDashing;
             attackDurationTimer = attackDuration / AttackSpeedMultiplier;
+            attackTotalDuration = attackDurationTimer;
 
             enemiesHitThisAttack.Clear();
             passiveTriggeredThisAttack = false;
@@ -544,6 +555,14 @@ public class PlayerCombatController : MonoBehaviour
                 movement.SetDashLockedDuringAttack(true);
             }
         }
+    }
+
+    private bool IsAttackHitActive()
+    {
+        if (attackTotalDuration <= 0f) return true;
+
+        float progress = 1f - attackDurationTimer / attackTotalDuration;
+        return progress >= attackActiveStart && progress <= attackActiveEnd;
     }
 
     private void PerformAttackHitboxCheck()
@@ -562,6 +581,8 @@ public class PlayerCombatController : MonoBehaviour
 
         if (attackDir != Vector2.down)
         {
+            if (!IsAttackHitActive()) return;
+
             bool isHorizontal = attackDir.x != 0f;
 
             attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
@@ -624,7 +645,10 @@ public class PlayerCombatController : MonoBehaviour
                 float plungeDmgMultiplier = Mathf.Clamp(adjusted, 0f, plungeDmgMaxMultiplier);
                 AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: true);
                 HitEnemy(validHurtboxes, context, plungeDmgMultiplier);
-                movement.ApplyBounceImpulse(GetClosestBouncePoint(validHurtboxes), plungeBounceForce);
+                Vector2 bouncePoint = GetClosestBouncePoint(validHurtboxes);
+                float side = transform.position.x >= bouncePoint.x ? 1f : -1f;
+                Vector2 bounceDir = new Vector2(side * plungeBounceSideAmount, 1f).normalized;
+                movement.ApplyBounceImpulseInDirection(bounceDir, plungeBounceForce);
                 movement.PlayBounceState(movement.BounceDuration);
             }
             else if (player.Controller.IsGrounded)

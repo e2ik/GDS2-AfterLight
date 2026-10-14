@@ -46,6 +46,9 @@ namespace Enemies
         private float moveWantTimer;
         [SerializeField] private bool windupOnDirectionChange = true;
         [SerializeField] private bool holdAttacksUntilStopped = true;
+        [SerializeField] private bool lockTargetOnMoveStart = true;
+        [SerializeField, Min(0.05f)] private float lockedArriveDistance = 0.5f;
+        private float lockedTargetX;
 
         [Header("Approach And Retreat")]
         [SerializeField, Range(0f, 1f)] private float approachRetreatChance = 0.3f;
@@ -109,6 +112,7 @@ namespace Enemies
         [SerializeField] private SpriteRenderer spriteRenderer;
         [SerializeField] private HitFlash hitFlash;
         [SerializeField, ColorUsage(false, true)] private Color flashColor = Color.red;
+        [SerializeField, ColorUsage(false, true)] private Color blockedFlashColor = Color.white;
         [SerializeField] private float flashDuration = 0.15f;
         private Coroutine flashRoutine;
         private Color baseColor;
@@ -413,6 +417,10 @@ namespace Enemies
             moveTickFrame = Time.frameCount;
 
             bool facingBefore = Context.FacingRight;
+            bool idle = !moveMoving && !moveWindingUp && !moveWindingDown;
+
+            if (idle && Context.Target != null)
+                lockedTargetX = Context.Target.position.x;
 
             if (approachPhase != ApproachPhase.None && (Context.Target == null || IsAttacking))
                 EndApproachRetreat(IsAttacking ? "attacking" : "no target");
@@ -428,6 +436,26 @@ namespace Enemies
 
             float velocityX = rb2D.linearVelocity.x;
             bool wantsMove = Mathf.Abs(velocityX) > 0.01f;
+
+            if (lockTargetOnMoveStart && wantsMove && approachPhase == ApproachPhase.None)
+            {
+                float lockedDx = lockedTargetX - transform.position.x;
+
+                if (Mathf.Abs(lockedDx) <= lockedArriveDistance)
+                {
+                    wantsMove = false;
+                    rb2D.linearVelocity = new Vector2(0f, rb2D.linearVelocity.y);
+                }
+                else
+                {
+                    int lockedDir = lockedDx > 0f ? 1 : -1;
+                    rb2D.linearVelocity = new Vector2(lockedDir * Mathf.Abs(velocityX), rb2D.linearVelocity.y);
+                    Context.FacingRight = lockedDir > 0;
+                }
+
+                velocityX = rb2D.linearVelocity.x;
+            }
+
             int dir = wantsMove ? (velocityX > 0f ? 1 : -1) : moveDir;
 
             bool canMove = AdvanceMoveWindup(wantsMove, dir, dt);
@@ -576,7 +604,8 @@ namespace Enemies
             approachElapsed += dt;
 
             float selfX = transform.position.x;
-            float dx = Context.Target.position.x - selfX;
+            float targetX = lockTargetOnMoveStart ? lockedTargetX : Context.Target.position.x;
+            float dx = targetX - selfX;
             int toTarget = dx >= 0f ? 1 : -1;
             bool timedOut = approachElapsed >= approachRetreatTimeout;
             float velocityX = 0f;
@@ -846,7 +875,8 @@ namespace Enemies
 
             if (hitFlash != null)
             {
-                hitFlash.Flash(flashColor);
+                if (info.Blocked > 0) hitFlash.Flash(blockedFlashColor, HitFlash.FlashMode.Edge);
+                else hitFlash.Flash(flashColor);
             }
             else
             {
