@@ -37,6 +37,14 @@ namespace Enemies
         public Vector2 LastKnownTargetPosition;
         public float AttackElapsed;
         public float LastChaseBlockedTime = float.NegativeInfinity;
+        public bool ChaseMoving;
+        public bool ChaseWindingUp;
+        public float ChaseWindupTimer;
+        public bool ChaseWindingDown;
+        public float ChaseWinddownTimer;
+        public int ChaseMoveDir;
+        public bool ChaseHoldsAttacks;
+        public int ChaseTickFrame = -10;
         public bool IgnoreTerrainChecks;
         public LayerMask GroundMask;
         public float EdgeCheckDistance = 0.5f;

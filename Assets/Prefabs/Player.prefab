@@ -283,7 +283,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 11
+  m_SortingOrder: 15
   m_MaskInteraction: 0
   m_Sprite: {fileID: 408967185115449019, guid: 65f8c3654b3b59f4d8163ad47992ba4a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -389,6 +389,7 @@ MonoBehaviour:
   coyoteTime: 0.1
   wallSlideSpeed: 2
   wallSlideGracePeriod: 0.025
+  wallSlideReleaseGrace: 0.25
   wallJumpCounterStrength: 0.1
   wallSlideUpwardDampening: 0.9
   wallCheckNormalThreshold: 0.5
@@ -406,6 +407,8 @@ MonoBehaviour:
   dashSkillEnergyCost: 0.1
   neutralDashInvulnExtension: 0.1
   directionalDashInvulnerable: 1
+  preventDashBump: 1
+  dashFlatGroundNormalY: 0.98
   perfectDodgeWindow: 0.035
   enemyBodyCollisionKnockback: 1
   enemyBodyCollisionForce: 1

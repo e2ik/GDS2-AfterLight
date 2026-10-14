@@ -1604,7 +1604,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleStandingOnEnemy(Collision2D col)
     {
-        if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
+        if (((1 << col.collider.gameObject.layer) & combat.enemyLayer) == 0) return;
 
         if (!IsTopContact(col) || !IsTallEnemy(col.collider) || lastBouncedEnemy != col.collider)
         {
@@ -1701,7 +1701,7 @@ public class PlayerController : MonoBehaviour
     private void HandleEnemyBodyCollision(Collision2D col)
     {
         if (!enemyBodyCollisionKnockback) return;
-        if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
+        if (((1 << col.collider.gameObject.layer) & combat.enemyLayer) == 0) return;
         if (!col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
 
         if (IsTopContact(col) && IsTallEnemy(col.collider))

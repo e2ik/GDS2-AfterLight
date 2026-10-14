@@ -43,6 +43,9 @@ public class EnemyAttackGlow : MonoBehaviour
     [Header("Combo Telegraph")]
     [SerializeField] private float comboIntensityBoost = 1f;
 
+    [Header("Movement Windup")]
+    [SerializeField] private Style moveWindupGlow = new Style { color = new Color(0.3f, 0.8f, 1f), intensity = 1.5f };
+
     private readonly MultiplyOutline.GlowStyle outlineStyle = new MultiplyOutline.GlowStyle();
     private readonly ColorGlow.GlowStyle colorGlowStyle = new ColorGlow.GlowStyle();
     private bool glowOn;
@@ -84,6 +87,11 @@ public class EnemyAttackGlow : MonoBehaviour
             comboTelegraph = Time.frameCount - ctx.ComboTelegraphFrame <= 1;
             bool canBoost = ctx.CurrentAttackForce != AttackForce.Heavy || heavyGetsParryBoost;
             parryOpen = canBoost && ctx.AttackEvents != null && ctx.AttackEvents.ParryWindowOpen;
+        }
+        else if (enemy != null && enemy.InMoveWindupPhase)
+        {
+            style = moveWindupGlow;
+            color = moveWindupGlow.color;
         }
 
         float targetBoost = parryOpen ? parryIntensityBoost : 0f;
