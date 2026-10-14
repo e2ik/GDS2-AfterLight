@@ -406,6 +406,15 @@ MonoBehaviour:
   - eventKey: PrimaryGemPickedUp
     sequence: {fileID: 11400000, guid: 8ec1a9fd94e536340b2f2be96eedbfdf, type: 2}
     requiredCompletedSequences: []
+  - eventKey: EnemyHeavyAttack
+    sequence: {fileID: 11400000, guid: 1cce327c88cf6fa458e03f7594a4e0e3, type: 2}
+    requiredCompletedSequences: []
+  - eventKey: EnemyAggroed
+    sequence: {fileID: 11400000, guid: 1631a3fff5c7db048bca853201e8496e, type: 2}
+    requiredCompletedSequences: []
+  - eventKey: PlayerOnDropPlatform
+    sequence: {fileID: 11400000, guid: 69b55e4faf7f4674abcbd3e6ddc7e788, type: 2}
+    requiredCompletedSequences: []
   debugEventTriggers: 0
   pauseTimeOnPromptSteps: 1
 --- !u!114 &78526266

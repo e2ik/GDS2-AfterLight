@@ -28,7 +28,13 @@ namespace Enemies
         public void OpenParryWindow() => ParryWindowOpen = true;
         public void CloseParryWindow() => ParryWindowOpen = false;
 
-        public void PlayAnticipation() => vfxBox.PlayVFX(CurrentAttackForce);
+        public void PlayAnticipation()
+        {
+            vfxBox.PlayVFX(CurrentAttackForce);
+
+            if (CurrentAttackForce == AttackForce.Heavy)
+                Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyHeavyAttack);
+        }
         public void StopCharge() => vfxBox?.StopCharge();
 
         public void ResetHitConfirmation() => LastHitConfirmed = false;

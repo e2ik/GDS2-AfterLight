@@ -289,6 +289,9 @@ namespace Tutorial
                 yield return RunStep(step, player);
             }
 
+            if (sequence.NeutralDashOnComplete && player != null && player.Controller != null)
+                player.Controller.ForceNeutralDash();
+
             FinishSequence(sequence, markCompleted: true);
         }
 

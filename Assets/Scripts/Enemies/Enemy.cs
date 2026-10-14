@@ -164,6 +164,16 @@ namespace Enemies
             Context.IgnoreTerrainChecks = ignoreTerrainChecks;
             ApplyTerrainSettings();
 
+            bool teleportStuck = !float.IsNegativeInfinity(Context.TeleportStartedTime)
+                && Time.time - Context.TeleportStartedTime > teleportInvulnerabilityFailsafe
+                && (Context.Health == null || Context.Health.CurrentHealth > 0);
+
+            if (teleportStuck && Context.Body != null && !Context.Body.simulated)
+            {
+                Context.Body.simulated = true;
+                if (Context.SpriteRenderer != null) Context.SpriteRenderer.enabled = true;
+            }
+
             if (Context.Health != null && Context.Health.Invulnerable && Time.time - Context.TeleportStartedTime > teleportInvulnerabilityFailsafe)
             {
                 Context.Health.Invulnerable = false;
@@ -190,6 +200,7 @@ namespace Enemies
                     EnemyCombatTracker.EnemyStartedTargeting(this);
                     // can spawn aggro here
                     PSpawner.Spawn("Aggro", transform.position);
+                    Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyAggroed);
                 }
                 else
                     EnemyCombatTracker.EnemyStoppedTargeting(this);

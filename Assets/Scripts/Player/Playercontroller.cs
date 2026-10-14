@@ -45,6 +45,7 @@ public class PlayerController : MonoBehaviour
     [Header("Wall Settings")]
     [SerializeField] private float wallSlideSpeed = 2f;
     [SerializeField] private float wallSlideGracePeriod = 0.5f;
+    [SerializeField, Min(0f)] private float wallSlideReleaseGrace = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     [SerializeField] private float wallCheckNormalThreshold = 0.5f;
@@ -66,6 +67,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashSkillEnergyCost = 0.1f;
     [SerializeField] private float neutralDashInvulnExtension = 0.1f;
     [SerializeField] private bool directionalDashInvulnerable = true;
+    [SerializeField] private bool preventDashBump = true;
+    [SerializeField, Range(0f, 1f)] private float dashFlatGroundNormalY = 0.98f;
+    private float lastJumpTime = float.NegativeInfinity;
+    private Collider2D lastGroundCollider;
+    private bool groundIsDropPlatform;
+    public bool IsOnDropPlatform { get; private set; }
     [SerializeField] private float perfectDodgeWindow = 0.1f;
     private float neutralDashStartTime = float.NegativeInfinity;
     private float neutralDashInvulnTimer;
@@ -141,6 +148,7 @@ public class PlayerController : MonoBehaviour
     private Collider2D groundCollider;
 
     private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer, wallContactTimer;
+    private float wallReleaseTimer;
     private float dashTimer, dashDirection, wallJumpDirection, wallSide;
     private bool wasWallSliding;
     private float jumpBufferTimer;
@@ -324,6 +332,7 @@ public class PlayerController : MonoBehaviour
         UpdatePendingJumpEffect();
 
         GroundCheckUpdate();
+        UpdateDropPlatformCheck();
         WallCheckUpdate();
 
         HandleEdgeClimb();
@@ -334,6 +343,7 @@ public class PlayerController : MonoBehaviour
         HandleJump();
         HandleWallJump();
         HandleDash();
+        PreventDashBump();
         HandlePlunge();
 
         UpdateGravity();
@@ -531,6 +541,7 @@ public class PlayerController : MonoBehaviour
 
             if (!isGrounded || rb.linearVelocityY < 0f) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            lastJumpTime = Time.fixedTime;
 
             QueueJumpEffect();
             Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerJumped);
@@ -624,10 +635,14 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        wallCoyoteTimer = (onWall && !isGrounded && Mathf.Abs(horizontalInput) > InputDeadzone) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
+        bool holdingInput = Mathf.Abs(horizontalInput) > InputDeadzone;
+        wallCoyoteTimer = (onWall && !isGrounded && holdingInput) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
+
+        wallReleaseTimer = holdingInput || !isWallSliding ? wallSlideReleaseGrace : wallReleaseTimer - Time.fixedDeltaTime;
+        bool releaseGrace = isWallSliding && !holdingInput && verticalInput > -0.5f && wallReleaseTimer > 0f;
 
         bool wallJustLeft = isWallJumping && wallSide == -wallJumpDirection;
-        bool touchingWall = onWall && !isGrounded && wallCoyoteTimer > 0f && !wallJustLeft;
+        bool touchingWall = onWall && !isGrounded && (wallCoyoteTimer > 0f || releaseGrace) && !wallJustLeft;
         wallContactTimer = touchingWall ? wallContactTimer + Time.fixedDeltaTime : 0f;
 
         if (touchingWall && wallContactTimer >= wallSlideGracePeriod)
@@ -769,6 +784,43 @@ public class PlayerController : MonoBehaviour
         }
 
         if (dashReleased) ConsumeDashInput();
+    }
+
+    private void PreventDashBump()
+    {
+        if (!preventDashBump || !isDashing || !isGrounded) return;
+        if (Time.fixedTime - lastJumpTime < 0.1f) return;
+        if (currentSurfaceNormal.y < dashFlatGroundNormalY) return;
+        if (rb.linearVelocityY <= 0f) return;
+
+        rb.linearVelocityY = 0f;
+    }
+
+    public bool ForceNeutralDash()
+    {
+        if (IsMovementFrozen || isClimbing || isStaggered) return false;
+
+        if (combat.IsParrying) combat.CancelParry();
+        if (combat.IsAttacking) combat.ForceCancelAttack();
+
+        isDashing = true;
+        isDashLocked = false;
+        IsDirectionalDash = false;
+        neutralDashStartTime = Time.time;
+        dashDirection = -FacingDirection;
+
+        float activeDuration = dashDuration * backDashMultiplier;
+
+        IgnoreAllAirOnlyPlatformsDuringDash(activeDuration);
+
+        rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
+        playerAnimation.TriggerDashEffect();
+
+        ConsumeDashInput();
+
+        CancelInvoke(nameof(StopDashing));
+        Invoke(nameof(StopDashing), activeDuration);
+        return true;
     }
 
     private void IgnoreAllAirOnlyPlatformsDuringDash(float duration)
@@ -1035,6 +1087,7 @@ public class PlayerController : MonoBehaviour
             Vector2 dir = directionOverride.HasValue
                 ? directionOverride.Value.normalized
                 : ((Vector2)transform.position - sourcePosition).normalized;
+            if (isDashing) CancelDash();
             rb.linearVelocity = Vector2.zero;
             rb.AddForce(dir * force, ForceMode2D.Impulse);
         }
@@ -1288,6 +1341,14 @@ public class PlayerController : MonoBehaviour
         return dropThrough != null && dropThrough.IsMovingPlatform;
     }
 
+    private static bool IsMovingPlatformCollider(Collider2D platform)
+    {
+        if (platform.GetComponentInParent<PositionSwitch>() != null) return true;
+
+        DropThroughPlatform dropThrough = platform.GetComponentInParent<DropThroughPlatform>();
+        return dropThrough != null && dropThrough.IsMovingPlatform;
+    }
+
     private bool IsRidingPlatform(Collider2D platform)
     {
         DropThroughPlatform dropThrough = platform.GetComponentInParent<DropThroughPlatform>();
@@ -1477,6 +1538,23 @@ public class PlayerController : MonoBehaviour
         return found ? b : new Bounds(transform.position, Vector3.one);
     }
 
+    private void UpdateDropPlatformCheck()
+    {
+        if (groundCollider != lastGroundCollider)
+        {
+            lastGroundCollider = groundCollider;
+            groundIsDropPlatform = groundCollider != null
+                && groundCollider.GetComponent<PlatformEffector2D>() != null
+                && !IsMovingPlatformCollider(groundCollider);
+        }
+
+        bool onDropPlatform = isGrounded && groundIsDropPlatform;
+        if (onDropPlatform && !IsOnDropPlatform)
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerOnDropPlatform);
+
+        IsOnDropPlatform = onDropPlatform;
+    }
+
     private bool TryPassThroughPlatform()
     {
         Bounds bounds = cachedBounds;
@@ -1659,6 +1737,7 @@ public class PlayerController : MonoBehaviour
         CancelClimb();
         CancelHeal();
         combat.ForceCancelAttack();
+        if (isDashing) CancelDash();
 
         rb.linearVelocity = Vector2.zero;
         Vector2 dir = directionOverride ?? new Vector2(transform.position.x >= contactPoint.x ? 1f : -1f, 1f);

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2acefbb5902d7144eba89835c8ff06bf, type: 3}
+  m_Name: HeavyAtkSeq
+  m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialSequenceDefinition
+  sequenceID: HeavyAtkSeq
+  steps:
+  - {fileID: 11400000, guid: 90631f48dec4db9458f8e84d46e039f2, type: 2}
+  - {fileID: 11400000, guid: 6d4da8e4048eee647af3110a8c2b12ea, type: 2}
+  - {fileID: 11400000, guid: 9cad84609307f50469fca70cb2f1804f, type: 2}
+  canRepeat: 0
+  uninterruptible: 1
+  keepEnemiesAlive: 0
+  lockMapCloseUntilCloseStep: 0
+  allowMenus: 0
+  neutralDashOnComplete: 1
+  reactions:
+  - eventKey: PlayerHit
+    speechText: F#@*!!!!
+    effect: 1
+    duration: 1.5
+    onlyOnce: 0
