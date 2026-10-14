@@ -472,7 +472,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.Enemy
   observationSO: {fileID: 11400000, guid: 2662c507cf4c6e2428cadb68c36de074, type: 2}
   attacks:
-  - Attack: {fileID: 11400000, guid: d3b00ebbd32a6f044899c7fb27385476, type: 2}
+  - Attack: {fileID: 11400000, guid: 4e4d7c8c35cfcc64683025ab179bf5ac, type: 2}
     Weight: 100
     maxDuration: 5
     manualOnly: 0
@@ -567,7 +567,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0038c16c34866b4f9e25c9c0dc0f7e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Behavior::Unity.Behavior.BehaviorGraphAgent
-  m_Graph: {fileID: 4179997528926895500, guid: bc54622a94ee35845ae0e010d8dd287d, type: 2}
+  m_Graph: {fileID: 4179997528926895500, guid: bd320aa5c248119408a3dcaba67d01d0, type: 2}
   m_BlackboardVariableOverridesList:
   - rid: 1460187202314567867
   m_OriginalGraph: {fileID: 0}

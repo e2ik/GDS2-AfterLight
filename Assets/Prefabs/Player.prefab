@@ -955,12 +955,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MultiplyOutline
   outlineMaterial: {fileID: 2100000, guid: edb9203f7655d31448a43b9003f3f6bb, type: 2}
   tint: {r: 1, g: 1, b: 1, a: 1}
-  strength: 0.565
-  falloff: 0.29
+  strength: 1
+  falloff: 0.197
   rings: 2
-  pixelSize: 3
-  checkerContrast: 1
-  showLine: 1
+  pixelSize: 2
+  checkerContrast: 0
+  showLine: 0
   lineColor: {r: 0, g: 0, b: 0, a: 1}
   lineStrength: 0.5
   lineDiagonals: 0
