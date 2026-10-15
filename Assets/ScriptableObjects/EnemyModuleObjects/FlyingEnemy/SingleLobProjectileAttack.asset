@@ -15,7 +15,7 @@ MonoBehaviour:
   range: 5
   cooldownDuration: 1.5
   projectilePrefab: {fileID: 6559660887865809959, guid: 3a83574d3758d374c9b8cd25495ca35f, type: 3}
-  damage: 5
+  damage: 10
   launchAngleDegrees: 55
   launchSpeed: 8
   shotSpacingDegrees: 12
@@ -30,3 +30,6 @@ MonoBehaviour:
       Data3: -1823744120
       Data4: -1124302290
     Path: event:/CombatSFXEvents/Projectile Spawn Event
+  playAnticipation: 1
+  attackForce: 1
+  anticipationDelay: 0.3

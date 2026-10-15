@@ -15,7 +15,7 @@ MonoBehaviour:
   range: 10
   cooldownDuration: 3
   projectilePrefab: {fileID: 64684783344483869, guid: ac141771e8e49e0429aab1a3886656d3, type: 3}
-  damage: 1
+  damage: 35
   launchAngleDegrees: 55
   launchSpeed: 8
   shotSpacingDegrees: 12
@@ -30,3 +30,6 @@ MonoBehaviour:
       Data3: 0
       Data4: 0
     Path: 
+  playAnticipation: 1
+  attackForce: 1
+  anticipationDelay: 0.3
