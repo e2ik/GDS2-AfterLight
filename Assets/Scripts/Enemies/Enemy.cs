@@ -169,6 +169,11 @@ namespace Enemies
         public bool AttackReady { get; private set; }
         public bool TeleportReady { get; private set; }
         public bool IsBoss => Context != null && Context.BossBounds != null;
+        public bool UsesMoveWindup => useMoveWindup;
+        public bool IsMoveWindingUp => useMoveWindup && moveWindingUp;
+        public bool IsMoveMoving => useMoveWindup && moveMoving;
+        public bool IsMoveWindingDown => useMoveWindup && moveWindingDown;
+
         public bool InMoveWindupPhase => useMoveWindup && Time.frameCount - moveTickFrame <= 2
             && (moveWindingUp || moveMoving || moveWindingDown);
 
