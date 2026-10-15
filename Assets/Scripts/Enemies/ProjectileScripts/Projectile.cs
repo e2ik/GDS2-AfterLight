@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Enemies.ProjectileScripts
@@ -11,6 +12,10 @@ namespace Enemies.ProjectileScripts
         [SerializeField] private float lifetime = float.MaxValue;
         [SerializeField] private AttackForce attackForce;
 
+        [Header("Friendly Fire")]
+        [SerializeField] private bool damagesEnemies = false;
+        [SerializeField] private LayerMask enemyMask;
+
         protected Rigidbody2D Rb { get; private set; }
         protected HitBox HitBox { get; private set; }
         protected AttackEvents Events { get; private set; }
@@ -18,12 +23,17 @@ namespace Enemies.ProjectileScripts
 
         public Projectile SourcePrefab { get; set; }
         public Transform Owner => owner;
+        public virtual bool HandlesOwnAnticipation => false;
 
         private Transform owner;
         private bool hasOwner;
         private bool isReleased;
 
         private float _lifeTimer;
+        private readonly HashSet<EnemyHealth> enemiesHit = new HashSet<EnemyHealth>();
+        private readonly List<Collider2D> enemyOverlapResults = new List<Collider2D>();
+
+        protected bool DamagesEnemies => damagesEnemies;
 
         protected void Awake()
         {
@@ -43,6 +53,7 @@ namespace Enemies.ProjectileScripts
 
             this.owner = owner;
             hasOwner = owner != null;
+            enemiesHit.Clear();
 
             HitBox.Enable(damage, CombatUtility.GetDirectionFromVelocity(initialVelocity), attackForce);
             Events.OpenParryWindow();
@@ -80,6 +91,57 @@ namespace Enemies.ProjectileScripts
 
             ProjectilePool.Release(SourcePrefab, this);
         }
+
+        protected bool IsEnemyTarget(Collider2D other, out EnemyHealth enemy)
+        {
+            enemy = null;
+            if (!damagesEnemies || other == null || !other.CompareTag("EnemyHurtBox")) return false;
+
+            enemy = other.GetComponentInParent<EnemyHealth>();
+            if (enemy == null) return false;
+
+            if (owner != null && (enemy.transform == owner || enemy.transform.IsChildOf(owner) || owner.IsChildOf(enemy.transform)))
+                return false;
+
+            return true;
+        }
+
+        protected bool TryDamageEnemy(Collider2D other)
+        {
+            if (!IsEnemyTarget(other, out EnemyHealth enemy)) return false;
+            if (!enemiesHit.Add(enemy)) return false;
+
+            enemy.ApplyDamage(Damage);
+            return true;
+        }
+
+        protected void DamageEnemiesInCircle(Vector2 center, float radius)
+        {
+            if (!damagesEnemies) return;
+
+            Physics2D.OverlapCircle(center, radius, EnemyFilter(), enemyOverlapResults);
+            foreach (Collider2D hit in enemyOverlapResults)
+                TryDamageEnemy(hit);
+        }
+
+        protected void DamageEnemiesInBox(Vector2 center, Vector2 size, float angle)
+        {
+            if (!damagesEnemies) return;
+
+            Physics2D.OverlapBox(center, size, angle, EnemyFilter(), enemyOverlapResults);
+            foreach (Collider2D hit in enemyOverlapResults)
+                TryDamageEnemy(hit);
+        }
+
+        private ContactFilter2D EnemyFilter()
+        {
+            ContactFilter2D filter = new ContactFilter2D();
+            filter.SetLayerMask(enemyMask);
+            filter.useTriggers = true;
+            return filter;
+        }
+
+        protected void ClearEnemiesHit() => enemiesHit.Clear();
 
         protected virtual bool OnHitTrigger(Collider2D other) => true;
 

@@ -13,9 +13,16 @@ MonoBehaviour:
   m_Name: FlyingEnemyFlyingPosition
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Movement.FlyingPositionMovementSO
   moveSpeed: 3
-  hoverHeight: 3
+  hoverPosition: {x: 2, y: 3}
   arriveDistance: 0.3
   cornerReachDistance: 0.2
   repathInterval: 0.5
+  ignoreTargetJumps: 1
+  repositionThreshold: 1.5
+  separationRadius: 1.75
+  separationStrength: 3
+  separationMask:
+    serializedVersion: 2
+    m_Bits: 4608
   wobbleAmplitude: 0.5
   wobbleFrequency: 1.5

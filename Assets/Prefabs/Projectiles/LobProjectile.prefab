@@ -113,6 +113,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ProjectileScripts.LobProjectile
   lifetime: 15
   attackForce: 1
+  damagesEnemies: 1
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 4608
   gravityScale: 2
   explosionRadius: 1.25
   playerMask:
@@ -220,6 +224,10 @@ MonoBehaviour:
   hitbox: {fileID: 5186317559378152056}
   hurtbox: {fileID: 0}
   vfxBox: {fileID: 0}
+  groundObjs: []
+  bonusZones: []
+  bonusDamageMultiplier: 2
+  debugBonus: 0
 --- !u!95 &287847599752517
 Animator:
   serializedVersion: 7

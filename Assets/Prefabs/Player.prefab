@@ -200,6 +200,7 @@ GameObject:
   - component: {fileID: 6264206310521610964}
   - component: {fileID: 7383012226346758473}
   - component: {fileID: 3959588101215870426}
+  - component: {fileID: 1374188543498749964}
   - component: {fileID: 4056446563424932215}
   - component: {fileID: 3384368436107685213}
   - component: {fileID: 8973568721246507005}
@@ -479,6 +480,7 @@ MonoBehaviour:
   plungeAdjustedDmg: 3
   plungeGraceWindow: 0.15
   plungeBounceForce: 15
+  plungeBounceSideAmount: 0.25
   plungeRecoveryDuration: 1
   attackWidth: 2
   attackDuration: 0.4
@@ -496,6 +498,9 @@ MonoBehaviour:
   - 1.75
   dashAttackMultiplier: 2
   airAttackMultiplier: 1.5
+  endAirAttackOnLanding: 1
+  attackActiveStart: 0.3
+  attackActiveEnd: 1
   dashAttackConflictWindow: 0.03
   jumpAttackConflictWindow: 0.03
   skillMeterAlwaysFull: 0
@@ -761,6 +766,29 @@ MonoBehaviour:
       Data4: 0
     Path: 
   equippedGearDebug: []
+--- !u!114 &1374188543498749964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6310612592100663882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7f610c70393db04d817953d3e9c70fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHitBarks
+  lines:
+  - Ouch!
+  - Ow!
+  - Argh!
+  - F@#$!
+  chance: 0.5
+  cooldown: 6
+  duration: 1.5
+  effect: 1
+  skipDuringTutorials: 1
+  target: {fileID: 0}
 --- !u!114 &4056446563424932215
 MonoBehaviour:
   m_ObjectHideFlags: 0

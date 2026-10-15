@@ -17,6 +17,8 @@ namespace Enemies.ProjectileScripts
         private LineRenderer warningLine;
         private bool warningActive;
 
+        public event Action<Collider2D> BeamTouched;
+
         private void Awake()
         {
             ps = GetComponent<ParticleSystem>();
@@ -38,6 +40,14 @@ namespace Enemies.ProjectileScripts
         public void Play() => ps.Play();
         public void Stop() => ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
+        public void SetWarningColor(Color color) => warningColor = color;
+
+        public void SetWarningWidth(float width)
+        {
+            warningLine.startWidth = width;
+            warningLine.endWidth = width;
+        }
+
         public void ShowWarning(float length, float width)
         {
             warningActive = true;
@@ -53,6 +63,9 @@ namespace Enemies.ProjectileScripts
             warningActive = false;
             warningLine.enabled = false;
         }
+
+        private void OnTriggerEnter2D(Collider2D other) => BeamTouched?.Invoke(other);
+        private void OnTriggerStay2D(Collider2D other) => BeamTouched?.Invoke(other);
 
         private void Update()
         {

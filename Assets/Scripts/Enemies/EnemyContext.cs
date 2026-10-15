@@ -37,14 +37,6 @@ namespace Enemies
         public Vector2 LastKnownTargetPosition;
         public float AttackElapsed;
         public float LastChaseBlockedTime = float.NegativeInfinity;
-        public bool ChaseMoving;
-        public bool ChaseWindingUp;
-        public float ChaseWindupTimer;
-        public bool ChaseWindingDown;
-        public float ChaseWinddownTimer;
-        public int ChaseMoveDir;
-        public bool ChaseHoldsAttacks;
-        public int ChaseTickFrame = -10;
         public bool IgnoreTerrainChecks;
         public LayerMask GroundMask;
         public float EdgeCheckDistance = 0.5f;
@@ -57,6 +49,11 @@ namespace Enemies
         public bool ComboNextArmed;
         public bool ComboStopped;
         public int ComboTelegraphFrame = -10;
+        public bool ProjectilePending;
+        public float TargetGroundY = float.NaN;
+        public Vector2 HoverDestination;
+        public bool HasHoverDestination;
+        public float ProjectileFireTime;
 
         public BossBounds BossBounds;
         public TeleportPhase TeleportPhase;

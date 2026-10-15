@@ -18,5 +18,15 @@ MonoBehaviour:
   minWaitAtWaypoint: 0.5
   maxWaitAtWaypoint: 1.5
   navMeshSampleDistance: 2
+  driftNearby: 1
+  minDriftDistance: 1
+  maxDriftDistance: 2.5
+  verticalDriftScale: 0.4
+  returnSpeedMultiplier: 2
+  separationRadius: 1.75
+  separationStrength: 3
+  separationMask:
+    serializedVersion: 2
+    m_Bits: 4608
   wobbleAmplitude: 0.75
   wobbleFrequency: 2.5
