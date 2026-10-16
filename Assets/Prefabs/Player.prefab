@@ -987,22 +987,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MultiplyOutline
   outlineMaterial: {fileID: 2100000, guid: edb9203f7655d31448a43b9003f3f6bb, type: 2}
   tint: {r: 1, g: 1, b: 1, a: 1}
-  strength: 1
-  falloff: 0.197
+  strength: 0.565
+  falloff: 0.29
   rings: 2
-  pixelSize: 2
-  checkerContrast: 0
-  showLine: 0
+  pixelSize: 3
+  checkerContrast: 1
+  showLine: 1
   lineColor: {r: 0, g: 0, b: 0, a: 1}
   lineStrength: 0.5
   lineDiagonals: 0
   sortingOrderOffset: -1
-  glowColor: 1
-  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  glowColor: 0
+  glowMaterial: {fileID: 0}
   matchColor: {r: 1, g: 1, b: 1, a: 1}
   matchTolerance: 0.1
   replaceColor: {r: 1, g: 1, b: 1, a: 1}
-  glowIntensity: 5.17
+  glowIntensity: 2
   glowCheckerLow: 0.5
   glowCheckerSize: 1
   glowFadeDuration: 0.08
