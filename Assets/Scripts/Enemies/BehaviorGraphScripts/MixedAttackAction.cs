@@ -14,15 +14,16 @@ public partial class MixedAttackAction : Action
     [Tooltip("Leave empty for melee only.")]
     [SerializeReference] public BlackboardVariable<EnemyAttackSO> ProjectileAttack;
     [SerializeReference] public BlackboardVariable<float> ProjectileChance; 
-    [SerializeReference] public BlackboardVariable<int> GuaranteeAfterMelee; 
+    [SerializeReference] public BlackboardVariable<int> GuaranteeMeleeAfter; 
     [SerializeReference] public BlackboardVariable<float> WaitTimeout; 
     
     private Enemy _enemy;
     private AttackInstance _running;
     private bool _preferProjectile;
+    private bool _forceMelee;
     private bool _hasProjectile;
     private float _waited;
-    private int _meleeStreak;
+    private int _projectileStreak;
 
     protected override Status OnStart()
     {
@@ -42,10 +43,11 @@ public partial class MixedAttackAction : Action
         _waited = 0f;
         _hasProjectile = ProjectileAttack != null && ProjectileAttack.Value != null;
 
-        int pityAfter = GuaranteeAfterMelee != null ? GuaranteeAfterMelee.Value : 0;
-        bool pity = _hasProjectile && pityAfter > 0 && _meleeStreak >= pityAfter;
+        int pityAfter = GuaranteeMeleeAfter != null ? GuaranteeMeleeAfter.Value : 0;
+        _forceMelee = pityAfter > 0 && _projectileStreak >= pityAfter;
         float chance = ProjectileChance != null ? Mathf.Clamp01(ProjectileChance.Value) : 0f;
-        _preferProjectile = _hasProjectile && (pity || UnityEngine.Random.value < chance);
+        _preferProjectile = _hasProjectile && !_forceMelee && UnityEngine.Random.value < chance;
+        Debug.Log($"MixedAttack roll: chance {chance}, projectileStreak {_projectileStreak}, preferProjectile {_preferProjectile}, forceMelee {_forceMelee}");
 
         TryBegin();
         return Status.Running;
@@ -90,9 +92,15 @@ public partial class MixedAttackAction : Action
         bool meleeValid = _enemy.TrySelectAttack(out AttackInstance melee);
 
         bool useProjectile;
-        
-        if (_preferProjectile) 
-            useProjectile = projectileValid;
+
+        if (_preferProjectile)
+        {
+            if (!projectileValid)
+                return false;
+            useProjectile = true;
+        }
+        else if (_forceMelee)
+            useProjectile = false;
         else
             useProjectile = !meleeValid && projectileValid;
 
@@ -104,8 +112,7 @@ public partial class MixedAttackAction : Action
         chosen.Begin(ctx);
         _running = chosen;
 
-        if (_hasProjectile) 
-            _meleeStreak = useProjectile ? 0 : _meleeStreak + 1;
+        _projectileStreak = useProjectile ? _projectileStreak + 1 : 0;
         
         return true;
     }

@@ -523,6 +523,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1399683160982514297}
+  - {fileID: 3385679213783017059}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6142844553538156266
@@ -537,7 +538,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9b08fde3cea1e74eaa88ad2dd99a63a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
-  maxHealth: 600
+  maxHealth: 800
   blockDamageOutsideBonus: 1
   blockedHitDamage: 1
 --- !u!114 &2819779926548626800
@@ -556,6 +557,10 @@ MonoBehaviour:
   attacks:
   - Attack: {fileID: 11400000, guid: 4e4d7c8c35cfcc64683025ab179bf5ac, type: 2}
     Weight: 100
+    maxDuration: 5
+    manualOnly: 0
+  - Attack: {fileID: 11400000, guid: 1d4328bc8dfa3494ba2f98348e9b59a4, type: 2}
+    Weight: 0
     maxDuration: 5
     manualOnly: 0
   lootTable: {fileID: 11400000, guid: 6252f6ee048300646a7a55bd5c7f22d6, type: 2}
@@ -581,28 +586,6 @@ MonoBehaviour:
   queueAttackers: 0
   queueSpacing: 1.5
   queueYieldTime: 1.5
-  useMoveWindup: 1
-  moveWindupTrigger: MoveWindup
-  moveWindupState: MoveWindup
-  moveWinddownTrigger: MoveWinddown
-  moveWinddownState: MoveWinddown
-  moveWindupTimeout: 3
-  moveStartDelay: 0.15
-  windupOnDirectionChange: 1
-  holdAttacksUntilStopped: 1
-  lockTargetOnMoveStart: 1
-  lockedArriveDistance: 0.5
-  approachRetreatChance: 0.5
-  approachOnAggro: 1
-  approachSpeed: 5
-  approachStopDistance: 0.5
-  maxAttacksWithoutApproach: 2
-  retreatChance: 0.5
-  noBackToBackRetreats: 1
-  retreatSpeed: 4
-  retreatDistance: 4
-  approachRetreatTimeout: 6
-  debugApproachRetreat: 0
   moveHitDamage: 10
   moveHitForce: 2
   moveHitParryDirection: 2
@@ -639,6 +622,7 @@ MonoBehaviour:
   flashColor: {r: 1.4980392, g: 0, b: 0, a: 1}
   blockedFlashColor: {r: 0, g: 1.4610351, b: 2.1185474, a: 1}
   flashDuration: 0.15
+  projectileSpawnPoint: {fileID: 3385679213783017059}
   bossBounds: {fileID: 0}
   attacksPerTeleport: 3
   teleportMinCooldown: 8
@@ -686,6 +670,28 @@ MonoBehaviour:
       Data4: 0
     Path: 
   stopWindupIfCancelled: 1
+  attackEvents: {fileID: 0}
+  vulnerableStartEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  vulnerableLoopEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  vulnerableEndEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1232,6 +1238,37 @@ MonoBehaviour:
   anticipationScale: 1
   chargeGlowProperty: _Intensity
   chargeGlowIntensity: 1
+--- !u!1 &8570302234005237042
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3385679213783017059}
+  m_Layer: 9
+  m_Name: ProjectileSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3385679213783017059
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8570302234005237042}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 4.59, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3813132406114893413}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &8517385075128853198
 PrefabInstance:
   m_ObjectHideFlags: 0

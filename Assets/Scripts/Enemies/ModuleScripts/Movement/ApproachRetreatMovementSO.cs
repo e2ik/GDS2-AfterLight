@@ -103,6 +103,9 @@ namespace Enemies.ModuleScripts.Movement
 
             ctx.FacingRight = toTarget > 0;
 
+            if (st.Phase == ApproachPhase.Retreat)
+                ctx.FacingRight = ctx.Target.position.x >= selfX;
+
             if (st.Phase == ApproachPhase.Approach)
             {
                 bool reached = Mathf.Abs(dx) <= approachStopDistance;
@@ -119,7 +122,8 @@ namespace Enemies.ModuleScripts.Movement
                     else
                     {
                         st.Phase = ApproachPhase.Retreat;
-                        st.RetreatDir = -toTarget;
+                        float liveDx = ctx.Target.position.x - selfX;
+                        st.RetreatDir = liveDx >= 0f ? -1 : 1;
                         st.RetreatStartX = selfX;
                     }
                 }

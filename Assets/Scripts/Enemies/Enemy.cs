@@ -102,6 +102,9 @@ namespace Enemies
         private Coroutine flashRoutine;
         private Color baseColor;
 
+        [Header("Projectile")] 
+        [SerializeField] private Transform projectileSpawnPoint;
+
         [Header("Boss stuff")]
         [SerializeField] private BossBounds bossBounds;
         [SerializeField] private int attacksPerTeleport = 3;
@@ -198,6 +201,7 @@ namespace Enemies
             Context.NavPath = new NavMeshPath();
             Context.NoiseSeed = UnityEngine.Random.value * 1000f;
             Context.IgnoreTerrainChecks = ignoreTerrainChecks;
+            Context.ProjectileSpawnPoint = projectileSpawnPoint;
             ApplyTerrainSettings();
 
             if (spriteRenderer == null)

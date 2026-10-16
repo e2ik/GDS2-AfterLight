@@ -13,7 +13,10 @@ namespace Enemies.ModuleScripts.Attacks
         [SerializeField] private float launchSpeed = 8f;
         [SerializeField] private float shotSpacingDegrees = 12f;
         [SerializeField] protected int shotCount = 1;
- 
+
+        [Header("Spawn")] 
+        [SerializeField] private bool useCustomSpawnPoint = false;
+        
         [SerializeField] private AnimationClip clip;
         [SerializeField] private string placeholderClipName = "AttackPlaceholder";
         [SerializeField] private string attackStateName = "Attack";
@@ -63,6 +66,10 @@ namespace Enemies.ModuleScripts.Attacks
             if (ctx.AttackEvents != null) ctx.AttackEvents.StopCharge();
 
             AudioManager.PlaySFXAttached(launchEvent, ctx.Self.gameObject);
+
+            Vector3 spawnPos = useCustomSpawnPoint && ctx.ProjectileSpawnPoint != null
+                ? ctx.ProjectileSpawnPoint.position
+                : ctx.Self.position;
             
             int facing = ctx.FacingRight ? 1 : -1;
             float startAngle = launchAngleDegrees - shotSpacingDegrees * (shotCount - 1) / 2f;
@@ -72,8 +79,8 @@ namespace Enemies.ModuleScripts.Attacks
                 float angle = (startAngle + i * shotSpacingDegrees) * Mathf.Deg2Rad;
                 Vector2 velocity = new Vector2(Mathf.Cos(angle) * facing, Mathf.Sin(angle)) * launchSpeed;
 
-                var proj = ProjectilePool.Get(projectilePrefab, ctx.Self.position, Quaternion.identity);
-                proj.Launch(ctx.Self.position, velocity, damage, ctx.Self);
+                var proj = ProjectilePool.Get(projectilePrefab, spawnPos, Quaternion.identity);
+                proj.Launch(spawnPos, velocity, damage, ctx.Self);
             }
         }
 

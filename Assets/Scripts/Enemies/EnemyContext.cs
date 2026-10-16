@@ -66,5 +66,6 @@ namespace Enemies
         public Vector2 TeleportDestination;
         public bool ForceTeleportNearTarget;
         public SpriteRenderer SpriteRenderer;
+        public Transform ProjectileSpawnPoint;
     }
 }

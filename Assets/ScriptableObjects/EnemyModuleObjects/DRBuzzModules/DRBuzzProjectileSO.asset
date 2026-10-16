@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f5ae828e1d92a54c9ebad168293629e, type: 3}
   m_Name: DRBuzzProjectileSO
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.ProjectileAttackSO
-  range: 10
+  range: 20
   cooldownDuration: 3
   projectilePrefab: {fileID: -4014174415143715826, guid: 7215074949f70bf40ba4e978b21ba15d, type: 3}
-  damage: 20
-  launchAngleDegrees: 55
-  launchSpeed: 8
-  shotSpacingDegrees: 12
+  damage: 10
+  launchAngleDegrees: 90
+  launchSpeed: 15
+  shotSpacingDegrees: 35
   shotCount: 5
+  useCustomSpawnPoint: 1
   clip: {fileID: 0}
   placeholderClipName: EmptyAttack
   attackStateName: Attack
