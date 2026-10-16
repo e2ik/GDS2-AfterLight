@@ -2,7 +2,7 @@ Shader "Custom/Pixel Light Shafts"
 {
     Properties
     {
-        [MainTexture] _MainTex ("Mask (optional)", 2D) = "white" {}
+        [MainTexture][NoScaleOffset] _MainTex ("Mask (optional)", 2D) = "white" {}
         _Color ("Colour", Color) = (1, 0.95, 0.8, 1)
         _Intensity ("Intensity", Range(0, 2)) = 0.6
         _Origin ("Origin (UV)", Vector) = (0.5, 1.15, 0, 0)
@@ -60,7 +60,6 @@ Shader "Custom/Pixel Light Shafts"
             SAMPLER(sampler_MainTex);
 
             CBUFFER_START(UnityPerMaterial)
-                float4 _MainTex_ST;
                 half4 _Color;
                 half _Intensity;
                 float4 _Origin;
@@ -90,7 +89,7 @@ Shader "Custom/Pixel Light Shafts"
             {
                 Varyings output;
                 output.positionCS = TransformObjectToHClip(input.positionOS);
-                output.uv = TRANSFORM_TEX(input.uv, _MainTex);
+                output.uv = input.uv;
                 output.color = input.color;
                 return output;
             }
