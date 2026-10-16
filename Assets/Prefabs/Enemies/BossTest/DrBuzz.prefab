@@ -497,6 +497,7 @@ GameObject:
   - component: {fileID: 3813132406114893413}
   - component: {fileID: 6142844553538156266}
   - component: {fileID: 2819779926548626800}
+  - component: {fileID: 1227528568327133779}
   - component: {fileID: 7603609893098896341}
   - component: {fileID: 2968184197812120870}
   - component: {fileID: 59898807662759673}
@@ -575,6 +576,11 @@ MonoBehaviour:
   wallCheckDistance: 0.3
   wallCheckHeight: 0.1
   spriteFacesLeft: 1
+  raiseSortingWhenOverlapping: 1
+  overlapPadding: 0
+  queueAttackers: 0
+  queueSpacing: 1.5
+  queueYieldTime: 1.5
   useMoveWindup: 1
   moveWindupTrigger: MoveWindup
   moveWindupState: MoveWindup
@@ -601,6 +607,9 @@ MonoBehaviour:
   moveHitForce: 2
   moveHitParryDirection: 2
   stayStillUntilAggro: 1
+  aggroEffectOffset: {x: 0, y: 0}
+  aggroEffectFollowsEnemy: 1
+  aggroAttackDelay: 0.5
   canDropAggro: 1
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
@@ -642,6 +651,41 @@ MonoBehaviour:
   deathTrigger: Death
   deathStateName: Death
   deathAnimationTimeout: 5
+--- !u!114 &1227528568327133779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4998036943446194957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3076a8a9393550e4b8ed38e0d96edd9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyMoveSfx
+  enemy: {fileID: 2819779926548626800}
+  windupEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  moveLoopEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  winddownEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  stopWindupIfCancelled: 1
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -792,6 +836,8 @@ MonoBehaviour:
     intensity: 2.5
     checkerLow: 0.5
     checkerSize: 1
+  vulnerablePulseSpeed: 3
+  vulnerablePulseMin: 0.3
   moveWindupGlow:
     enabled: 1
     color: {r: 0, g: 0.41679955, b: 1, a: 1}

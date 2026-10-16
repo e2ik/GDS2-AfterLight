@@ -10,14 +10,15 @@ namespace Enemies.ModuleScripts
         [SerializeField] private float facingDeadZone = 0.15f;
         [SerializeField] private MoveWindupSettings windup = new MoveWindupSettings();
 
+        [Header("Back Up")]
+        [SerializeField] private float backUpDistance = 0f;
+        [SerializeField] private float backUpSpeed = 2f;
+        [SerializeField] private bool backUpFacesTarget = true;
+
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
-            MoveWindup.BeginTick(ctx, windup);
-            bool facingBefore = ctx.FacingRight;
-
             if (ctx.IsAttacking)
             {
-                MoveWindup.Reset(ctx);
                 if (!ctx.IgnoreTerrainChecks)
                     EnemyTerrainProbe.StopAtEdge(ctx);
                 return;
@@ -25,18 +26,33 @@ namespace Enemies.ModuleScripts
 
             if (ctx.Target == null)
             {
-                MoveWindup.Process(ctx, windup, 0f, facingBefore, deltaTime);
                 ctx.Body.linearVelocity = new Vector2(0f, ctx.Body.linearVelocity.y);
                 return;
             }
 
             float diff = ctx.Target.position.x - ctx.Self.position.x;
             bool arrived = Mathf.Abs(diff) <= facingDeadZone;
-            int dir = arrived ? (ctx.FacingRight ? 1 : -1) : (diff >= 0f ? 1 : -1);
 
-            ctx.FacingRight = dir > 0;
+            if (!arrived)
+                ctx.FacingRight = diff >= 0f;
+
+            int dir = ctx.FacingRight ? 1 : -1;
 
             float moveX = ctx.TargetInRange || arrived ? 0f : dir * moveSpeed;
+
+            if (backUpDistance > 0f && Mathf.Abs(diff) < backUpDistance)
+            {
+                int backDir = -dir;
+                if (!ctx.IgnoreTerrainChecks && EnemyTerrainProbe.IsBlocked(ctx, backDir))
+                {
+                    ctx.Body.linearVelocity = new Vector2(0f, ctx.Body.linearVelocity.y);
+                    return;
+                }
+
+                if (!backUpFacesTarget) ctx.FacingRight = backDir > 0;
+                ctx.Body.linearVelocity = new Vector2(backDir * backUpSpeed, ctx.Body.linearVelocity.y);
+                return;
+            }
 
             if (moveX != 0f && !ctx.IgnoreTerrainChecks && EnemyTerrainProbe.IsBlocked(ctx, dir))
             {
@@ -44,7 +60,6 @@ namespace Enemies.ModuleScripts
                 ctx.LastChaseBlockedTime = Time.time;
             }
 
-            moveX = MoveWindup.Process(ctx, windup, moveX, facingBefore, deltaTime);
             ctx.Body.linearVelocity = new Vector2(moveX, ctx.Body.linearVelocity.y);
         }
     }

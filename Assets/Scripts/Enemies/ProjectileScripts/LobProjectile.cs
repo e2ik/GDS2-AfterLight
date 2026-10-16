@@ -47,6 +47,14 @@ namespace Enemies.ProjectileScripts
                 return false;
             }
 
+            if (IsEnemyTarget(other, out _))
+            {
+                hasTriggered = true;
+                Explode();
+                PlayHitAnimation();
+                return false;
+            }
+
             if ((collideWithMask.value & (1 << other.gameObject.layer)) != 0)
             {
                 hasTriggered = true;
@@ -95,6 +103,8 @@ namespace Enemies.ProjectileScripts
                     hurtBox.TakeHit(HitBox);
                 }
             }
+
+            DamageEnemiesInCircle(transform.position, explosionRadius);
         }
 
         private void OnDrawGizmosSelected()

@@ -108,6 +108,18 @@ namespace Enemies
             }
         }
 
+        public void StartCharge(AttackForce attackForce, float duration)
+        {
+            PlayCharge(GetColorForForce(attackForce));
+            HoldCharge(duration);
+        }
+
+        public void HoldCharge(float duration)
+        {
+            if (!charging) return;
+            stopEmitAt = Time.time + Mathf.Max(0f, duration);
+        }
+
         public void StopCharge()
         {
             charging = false;

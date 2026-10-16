@@ -235,6 +235,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
   maxHealth: 100
+  blockDamageOutsideBonus: 0
+  blockedHitDamage: 1
 --- !u!114 &2819779926548626800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -270,6 +272,38 @@ MonoBehaviour:
   ledgeCheckDepth: 0.3
   wallCheckDistance: 0.3
   wallCheckHeight: 0.1
+  spriteFacesLeft: 0
+  queueAttackers: 1
+  queueSpacing: 1.5
+  useMoveWindup: 0
+  moveWindupTrigger: MoveWindup
+  moveWindupState: MoveWindup
+  moveWinddownTrigger: MoveWinddown
+  moveWinddownState: MoveWinddown
+  moveWindupTimeout: 3
+  moveStartDelay: 0.15
+  windupOnDirectionChange: 1
+  holdAttacksUntilStopped: 1
+  lockTargetOnMoveStart: 1
+  lockedArriveDistance: 0.5
+  approachRetreatChance: 0.3
+  approachOnAggro: 1
+  approachSpeed: 5
+  approachStopDistance: 0.5
+  maxAttacksWithoutApproach: 2
+  retreatChance: 0.5
+  noBackToBackRetreats: 1
+  retreatSpeed: 4
+  retreatDistance: 4
+  approachRetreatTimeout: 6
+  debugApproachRetreat: 0
+  moveHitDamage: 10
+  moveHitForce: 2
+  moveHitParryDirection: 2
+  stayStillUntilAggro: 0
+  aggroEffectOffset: {x: -0.5, y: 0.5}
+  aggroEffectFollowsEnemy: 1
+  aggroAttackDelay: 0.7
   canDropAggro: 1
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
@@ -297,6 +331,7 @@ MonoBehaviour:
   spriteRenderer: {fileID: 5107996575365250629}
   hitFlash: {fileID: 4849572205173769118}
   flashColor: {r: 1.6621785, g: 0, b: 0, a: 1}
+  blockedFlashColor: {r: 1, g: 1, b: 1, a: 1}
   flashDuration: 0.15
   bossBounds: {fileID: 0}
   attacksPerTeleport: 3
@@ -454,6 +489,20 @@ MonoBehaviour:
   boostIntensity: 1
   intensityBoost: 1
   comboIntensityBoost: 1
+  vulnerableGlow:
+    enabled: 1
+    color: {r: 0.3, g: 1, b: 0.4, a: 1}
+    intensity: 2.5
+    checkerLow: 0.5
+    checkerSize: 1
+  vulnerablePulseSpeed: 3
+  vulnerablePulseMin: 0.3
+  moveWindupGlow:
+    enabled: 1
+    color: {r: 0.3, g: 0.8, b: 1, a: 1}
+    intensity: 1.5
+    checkerLow: 0.5
+    checkerSize: 1
 --- !u!1 &5835482462216775301
 GameObject:
   m_ObjectHideFlags: 0
@@ -592,6 +641,10 @@ MonoBehaviour:
   hitbox: {fileID: 6096227191426472029}
   hurtbox: {fileID: 8107799500015843298}
   vfxBox: {fileID: 69754505853120667}
+  groundObjs: []
+  bonusZones: []
+  bonusDamageMultiplier: 2
+  debugBonus: 0
 --- !u!114 &7276209283235879916
 MonoBehaviour:
   m_ObjectHideFlags: 0

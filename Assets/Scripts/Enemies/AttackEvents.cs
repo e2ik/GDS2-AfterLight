@@ -149,12 +149,22 @@ namespace Enemies
 
         public void PlayAnticipation()
         {
-            vfxBox.PlayVFX(CurrentAttackForce);
+            if (vfxBox != null) vfxBox.PlayVFX(CurrentAttackForce);
 
             if (CurrentAttackForce == AttackForce.Heavy)
                 Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyHeavyAttack);
         }
         public void StopCharge() => vfxBox?.StopCharge();
+
+        public void StartCharge(float duration)
+        {
+            if (vfxBox != null) vfxBox.StartCharge(CurrentAttackForce, duration);
+        }
+
+        public void HoldCharge(float duration)
+        {
+            if (vfxBox != null) vfxBox.HoldCharge(duration);
+        }
 
         public void ResetHitConfirmation() => LastHitConfirmed = false;
         public void ConfirmHit() => LastHitConfirmed = true;

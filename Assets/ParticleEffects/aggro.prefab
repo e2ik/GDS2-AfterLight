@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 808012042735887737}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 29.04961, y: 8.70955, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -43,7 +43,7 @@ ParticleSystem:
   m_GameObject: {fileID: 808012042735887737}
   serializedVersion: 8
   lengthInSec: 2
-  simulationSpeed: 4
+  simulationSpeed: 2
   stopAction: 1
   cullingMode: 0
   ringBufferMode: 0
@@ -288,7 +288,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 2
+      scalar: 1
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -1495,6 +1495,14 @@ ParticleSystem:
     - sprite: {fileID: 1090243848, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
     - sprite: {fileID: 1090243848, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
     - sprite: {fileID: 1090243848, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
+    - sprite: {fileID: 1090243848, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
+    - sprite: {fileID: 1090243848, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
+    - sprite: {fileID: 1090243848, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
+    - sprite: {fileID: 1090243848, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
+    - sprite: {fileID: 1090243848, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
+    - sprite: {fileID: -5496195189654561716, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
+    - sprite: {fileID: -6563272925453458163, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
+    - sprite: {fileID: 6372183433741300735, guid: 6880ca541bfc7d9498dd443567276669, type: 3}
     flipU: 0
     flipV: 0
   VelocityModule:

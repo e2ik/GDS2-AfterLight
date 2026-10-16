@@ -6,6 +6,7 @@ using FMODUnity;
 using Unity.Behavior;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Rendering;
 
 namespace Enemies
 {
@@ -35,6 +36,21 @@ namespace Enemies
 
         [Header("Sprite")]
         [SerializeField] private bool spriteFacesLeft = false;
+
+        [Header("Overlap Sorting")]
+        [SerializeField] private bool raiseSortingWhenOverlapping = true;
+        [SerializeField] private float overlapPadding = 0f;
+        private static readonly List<Enemy> sortedEnemies = new List<Enemy>();
+        private SortingGroup sortingGroup;
+        private int baseSortingOrder;
+
+        [Header("Attack Queue")]
+        [SerializeField] private bool queueAttackers = false;
+        [SerializeField, Min(0f)] private float queueSpacing = 1.5f;
+        [SerializeField, Min(0f)] private float queueYieldTime = 1.5f;
+        private float queueYieldUntil;
+        private static readonly List<Enemy> queuedEnemies = new List<Enemy>();
+        private bool waitingInQueue;
 
         [Header("Movement Windup")]
         [SerializeField] private bool useMoveWindup = false;
@@ -82,6 +98,11 @@ namespace Enemies
 
         [Header("Aggro")]
         [SerializeField] private bool stayStillUntilAggro = false;
+        [SerializeField] private Vector2 aggroEffectOffset = Vector2.zero;
+        [SerializeField] private bool aggroEffectFollowsEnemy = true;
+        private ParticleSystem aggroEffect;
+        [SerializeField, Min(0f)] private float aggroAttackDelay = 0.5f;
+        private float aggroAttackBlockUntil;
         private bool hasAggroed;
         [SerializeField] private bool canDropAggro = true;
         [SerializeField] private float unreachableGiveUpDelay = 1.5f;
@@ -150,6 +171,11 @@ namespace Enemies
         public bool AttackReady { get; private set; }
         public bool TeleportReady { get; private set; }
         public bool IsBoss => Context != null && Context.BossBounds != null;
+        public bool UsesMoveWindup => useMoveWindup;
+        public bool IsMoveWindingUp => useMoveWindup && moveWindingUp;
+        public bool IsMoveMoving => useMoveWindup && moveMoving;
+        public bool IsMoveWindingDown => useMoveWindup && moveWindingDown;
+
         
         public bool InMoveWindupPhase => Context != null && Context.MoveWindup.InPhase;
       
@@ -162,6 +188,8 @@ namespace Enemies
         {
             Context.Health.OnDamageTaken += OnDamaged;
             Context.Health.OnDeath += OnDeath;
+            if (queueAttackers && !queuedEnemies.Contains(this)) queuedEnemies.Add(this);
+            if (raiseSortingWhenOverlapping) SetupOverlapSorting();
         }
 
         private void OnDisable()
@@ -170,6 +198,10 @@ namespace Enemies
             Context.Health.OnDeath -= OnDeath;
             EnemyCombatTracker.EnemyStoppedTargeting(this);
             if (Context.Health != null) Context.Health.Invulnerable = false;
+            queuedEnemies.Remove(this);
+            waitingInQueue = false;
+            sortedEnemies.Remove(this);
+            if (sortingGroup != null) sortingGroup.sortingOrder = baseSortingOrder;
 
             if (IsAttacking) MarkAttackEnded();
         }
@@ -263,7 +295,8 @@ namespace Enemies
                     EnemyCombatTracker.EnemyStartedTargeting(this);
                     hasAggroed = true;
                     // can spawn aggro here
-                    PSpawner.Spawn("Aggro", transform.position);
+                    aggroEffect = PSpawner.Spawn("Aggro", GetAggroEffectPosition(true));
+                    aggroAttackBlockUntil = Time.time + aggroAttackDelay;
                     Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.EnemyAggroed);
                 }
                 else
@@ -325,6 +358,9 @@ namespace Enemies
             Context.ApproachCyclesSatisfied = approachCyclesBeforeAttack > 0 && !AttackLockedByCycles;
             if (AttackLockedByCycles)
                 attackReady = IsAttacking;
+            if (Time.time < aggroAttackBlockUntil) attackReady = IsAttacking;
+            UpdateAttackQueue();
+            if (waitingInQueue) attackReady = IsAttacking;
             
             UpdateMoveHitbox();
 
@@ -426,6 +462,7 @@ namespace Enemies
                 EndApproachRetreat(isTeleport ? "teleport" : "windup off");
                 ResetMoveWindup();
                 module.Tick(Context, dt);
+                if (!isTeleport) ApplyQueueHold();
                 return;
             }
 
@@ -478,10 +515,64 @@ namespace Enemies
             UpdateMoveHitbox();
             moveHoldsAttacks = holdAttacksUntilStopped && (moveMoving || moveWindingDown);
 
-            if (canMove) return;
+            if (canMove)
+            {
+                ApplyQueueHold();
+                return;
+            }
 
             rb2D.linearVelocity = new Vector2(0f, rb2D.linearVelocity.y);
             if (moveWindingDown) Context.FacingRight = facingBefore;
+        }
+
+        private void UpdateAttackQueue()
+        {
+            waitingInQueue = false;
+            if (!queueAttackers || IsAttacking || Context.Target == null || !Context.TargetVisible) return;
+
+            float targetX = Context.Target.position.x;
+            float myOffset = transform.position.x - targetX;
+            float myDistance = Mathf.Abs(myOffset);
+            float closest = float.MaxValue;
+            Enemy leader = null;
+
+            foreach (Enemy other in queuedEnemies)
+            {
+                if (other == null || !other.isActiveAndEnabled || other.Context == null) continue;
+                if (other.Context.Target != Context.Target || !other.Context.TargetVisible) continue;
+                if (other.Context.Health != null && other.Context.Health.CurrentHealth <= 0) continue;
+                if (!other.IsAttacking && Time.time < other.queueYieldUntil) continue;
+
+                float offset = other.transform.position.x - targetX;
+                if (Mathf.Sign(offset) != Mathf.Sign(myOffset)) continue;
+
+                float distance = Mathf.Abs(offset);
+                if (other.IsAttacking) distance = -1f;
+
+                if (distance < closest)
+                {
+                    closest = distance;
+                    leader = other;
+                }
+            }
+
+            if (leader == null || leader == this) return;
+
+            waitingInQueue = true;
+            queueHoldDistance = Mathf.Max(0f, Mathf.Abs(leader.transform.position.x - targetX)) + queueSpacing;
+        }
+
+        private float queueHoldDistance;
+
+        private void ApplyQueueHold()
+        {
+            if (!waitingInQueue || Context.Target == null) return;
+
+            float toTarget = Context.Target.position.x - transform.position.x;
+            bool movingToward = Mathf.Abs(rb2D.linearVelocity.x) > 0.01f && Mathf.Sign(rb2D.linearVelocity.x) == Mathf.Sign(toTarget);
+
+            if (movingToward && Mathf.Abs(toTarget) <= queueHoldDistance)
+                rb2D.linearVelocity = new Vector2(0f, rb2D.linearVelocity.y);
         }
 
         private bool AdvanceMoveWindup(bool wantsMove, int dir, float dt)
@@ -746,6 +837,8 @@ namespace Enemies
             if (Context.ApproachRetreat.Active || Context.MoveWindup.HoldsAttacks) return false;
 
             if (AttackLockedByCycles) return false;
+            if (Time.time < aggroAttackBlockUntil) return false;
+            if (waitingInQueue) return false;
  
             float totalWeight = attacks.Where(a => a.IsValid && !a.ManualOnly).Sum(a => a.Weight);
             if (totalWeight <= 0f) return false;
@@ -841,9 +934,97 @@ namespace Enemies
             transform.localScale = new Vector3(flip ? -1f : 1f, 1f, 1f);
         }
 
+        private Vector3 GetAggroEffectPosition(bool faceTarget = false)
+        {
+            bool faceRight = transform.lossyScale.x >= 0f;
+
+            if (faceTarget && Context != null && Context.Target != null)
+                faceRight = Context.Target.position.x >= transform.position.x;
+
+            float x = Mathf.Abs(transform.lossyScale.x) * aggroEffectOffset.x * (faceRight ? 1f : -1f);
+            float y = transform.lossyScale.y * aggroEffectOffset.y;
+            return transform.position + new Vector3(x, y, 0f);
+        }
+
+        private void LateUpdate()
+        {
+            UpdateOverlapSorting();
+            UpdateAggroEffectFollow();
+        }
+
+        private void UpdateAggroEffectFollow()
+        {
+            if (aggroEffect == null) return;
+
+            if (!aggroEffectFollowsEnemy || !aggroEffect.gameObject.activeInHierarchy || Time.time >= aggroAttackBlockUntil + 1f)
+            {
+                aggroEffect = null;
+                return;
+            }
+
+            aggroEffect.transform.position = GetAggroEffectPosition();
+        }
+
+        private void SetupOverlapSorting()
+        {
+            if (spriteRenderer == null) return;
+
+            if (sortingGroup == null)
+            {
+                sortingGroup = GetComponent<SortingGroup>();
+                if (sortingGroup == null)
+                {
+                    sortingGroup = gameObject.AddComponent<SortingGroup>();
+                    sortingGroup.sortingLayerID = spriteRenderer.sortingLayerID;
+                    sortingGroup.sortingOrder = spriteRenderer.sortingOrder;
+                }
+                baseSortingOrder = sortingGroup.sortingOrder;
+            }
+
+            if (!sortedEnemies.Contains(this)) sortedEnemies.Add(this);
+        }
+
+        private void UpdateOverlapSorting()
+        {
+            if (!raiseSortingWhenOverlapping || sortingGroup == null || spriteRenderer == null) return;
+
+            Bounds bounds = spriteRenderer.bounds;
+            bounds.Expand(overlapPadding * 2f);
+            int rank = 0;
+
+            for (int i = 0; i < sortedEnemies.Count; i++)
+            {
+                Enemy other = sortedEnemies[i];
+                if (other == null || other == this || other.spriteRenderer == null || other.sortingGroup == null) continue;
+                if (other.sortingGroup.sortingLayerID != sortingGroup.sortingLayerID) continue;
+                if (other.baseSortingOrder != baseSortingOrder) continue;
+                if (!other.spriteRenderer.enabled || !bounds.Intersects(other.spriteRenderer.bounds)) continue;
+                if (WinsSortingAgainst(other)) rank++;
+            }
+
+            int order = baseSortingOrder + rank;
+            if (sortingGroup.sortingOrder != order) sortingGroup.sortingOrder = order;
+        }
+
+        private bool WinsSortingAgainst(Enemy other)
+        {
+            if (IsAttacking != other.IsAttacking) return IsAttacking;
+            return GetInstanceID() > other.GetInstanceID();
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            Vector3 point = GetAggroEffectPosition();
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(point, 0.15f);
+            Gizmos.DrawLine(point + Vector3.left * 0.25f, point + Vector3.right * 0.25f);
+            Gizmos.DrawLine(point + Vector3.down * 0.25f, point + Vector3.up * 0.25f);
+        }
+
         public void MarkAttackStarted()
         {
             Context.ApproachRetreat.Finish();
+            Context.AttackEvents?.CloseBonusWindow();
 
             if (Context.Target != null)
                 FaceTowards(Context.Target.position.x);
@@ -860,6 +1041,8 @@ namespace Enemies
         public void MarkAttackEnded()
         {
             IsAttacking = false;
+            if (wasAttacking && queueAttackers) queueYieldUntil = Time.time + queueYieldTime;
+            Context.AttackEvents?.CloseBonusWindow();
             Context.IsAttacking = false;
             attackCooldownTimer = Mathf.Max(attackCooldown, attackCooldownTimer);
         }

@@ -19,13 +19,49 @@ namespace Enemies.ModuleScripts.Attacks
         [SerializeField] private string attackStateName = "Attack";
 
         [SerializeField] private EventReference launchEvent;
+
+        [Header("Anticipation")]
+        [SerializeField] private bool playAnticipation = true;
+        [SerializeField] private AttackForce attackForce = AttackForce.Light;
+        [SerializeField, Min(0f)] private float anticipationDelay = 0.3f;
         
         public override void Begin(EnemyContext ctx)
         {
             ctx.OverrideController[ctx.PlaceholderClip] = clip;
             ctx.Animator.Play(attackStateName, 0, 0f);
             ctx.Animator.Update(0f);
-            
+
+            ctx.CurrentAttackForce = attackForce;
+            if (ctx.AttackEvents != null) ctx.AttackEvents.CurrentAttackForce = attackForce;
+
+            if (projectilePrefab != null && projectilePrefab.HandlesOwnAnticipation)
+            {
+                ctx.ProjectilePending = false;
+                Fire(ctx);
+                return;
+            }
+
+            if (playAnticipation && ctx.AttackEvents != null)
+            {
+                ctx.AttackEvents.PlayAnticipation();
+                ctx.AttackEvents.HoldCharge(anticipationDelay);
+            }
+
+            if (playAnticipation && anticipationDelay > 0f)
+            {
+                ctx.ProjectilePending = true;
+                ctx.ProjectileFireTime = Time.time + anticipationDelay;
+                return;
+            }
+
+            ctx.ProjectilePending = false;
+            Fire(ctx);
+        }
+
+        private void Fire(EnemyContext ctx)
+        {
+            if (ctx.AttackEvents != null) ctx.AttackEvents.StopCharge();
+
             AudioManager.PlaySFXAttached(launchEvent, ctx.Self.gameObject);
             
             int facing = ctx.FacingRight ? 1 : -1;
@@ -43,6 +79,15 @@ namespace Enemies.ModuleScripts.Attacks
 
         public override bool IsFinished(EnemyContext ctx)
         {
+            if (ctx.ProjectilePending)
+            {
+                if (Time.time < ctx.ProjectileFireTime) return false;
+
+                ctx.ProjectilePending = false;
+                Fire(ctx);
+                return false;
+            }
+
             var state = ctx.Animator.GetCurrentAnimatorStateInfo(0);
             return state.normalizedTime >= 1f || !state.IsName("Attack");
         }
