@@ -10,37 +10,57 @@ namespace Enemies.ModuleScripts.Movement
         public float Elapsed;
         public float RetreatStartX;
         public int RetreatDir;
+        public float LockedTargetX;
+        public bool SkipRetreat;
+        public bool Interrupted;
 
         public bool Active => Phase == ApproachPhase.Approach || Phase == ApproachPhase.Retreat;
-        public void Finish() { if (Active) Phase = ApproachPhase.Done; }
-        public void Reset() => Phase = ApproachPhase.None;
+
+        public void Finish()
+        {
+            if (Active)
+            {
+                Phase = ApproachPhase.Done;
+                Interrupted = true;
+            }
+        }
+
+        public void Reset()
+        {
+            Phase = ApproachPhase.None;
+            Interrupted = false;
+        }
     }
 
     [CreateAssetMenu(menuName = "Enemies/Movement/Approach Retreat")]
     public class ApproachRetreatMovementSO : EnemyMovementSO
     {
-        [Tooltip("Chance this runs when the node starts. 1 = always. If the roll fails the node finishes instantly.")]
-        [Range(0f, 1f)] [SerializeField] private float chance = 1f;
         [SerializeField] private float approachSpeed = 5f;
         [SerializeField] private float approachStopDistance = 0.5f;
         [SerializeField] private float retreatSpeed = 4f;
         [SerializeField] private float retreatDistance = 4f;
         [Min(0.5f)] [SerializeField] private float timeout = 6f;
+        [SerializeField] private bool lockTargetOnMoveStart = true;
         [SerializeField] private bool endOnApproachWhenCyclesSatisfied = true;
         [SerializeField] private MoveWindupSettings windup = new MoveWindupSettings();
         [SerializeField] private bool debugLog = false;
 
-        public void Begin(EnemyContext ctx)
+        public void Begin(EnemyContext ctx, bool skipRetreat = false)
         {
             ApproachRetreatState st = ctx.ApproachRetreat;
             st.Elapsed = 0f;
+            st.SkipRetreat = skipRetreat;
+            st.Interrupted = false;
+
+            if (ctx.Target != null)
+                st.LockedTargetX = ctx.Target.position.x;
 
             bool canRun = ctx.Target != null && (ctx.Health == null || ctx.Health.CurrentHealth > 0);
-            bool rolled = chance >= 1f || (chance > 0f && Random.value < chance);
 
-            if (!canRun || !rolled)
+            if (!canRun)
             {
-                Log(ctx, $"skipped (canRun {canRun}, rolled {rolled})");
+                Log(ctx, "skipped: not target or dead");
+                st.Interrupted = true;
                 st.Phase = ApproachPhase.Done;
                 return;
             }
@@ -50,6 +70,7 @@ namespace Enemies.ModuleScripts.Movement
         }
 
         public bool IsFinished(EnemyContext ctx) => ctx.ApproachRetreat.Phase == ApproachPhase.Done;
+        public bool WasInterrupted(EnemyContext ctx) => ctx.ApproachRetreat.Interrupted;
 
         public override void Tick(EnemyContext ctx, float dt)
         {
@@ -68,8 +89,14 @@ namespace Enemies.ModuleScripts.Movement
 
             st.Elapsed += dt;
 
+            MoveWindupState w = ctx.MoveWindup;
+
+            if (!w.Moving && !w.WindingUp && !w.WindingDown)
+                st.LockedTargetX = ctx.Target.position.x;
+
             float selfX = ctx.Self.position.x;
-            float dx = ctx.Target.position.x - selfX;
+            float targetX = lockTargetOnMoveStart ? st.LockedTargetX : ctx.Target.position.x;
+            float dx = targetX - selfX;
             int toTarget = dx >= 0f ? 1 : -1;
             bool timedOut = st.Elapsed >= timeout;
             float velocityX = 0f;
@@ -85,7 +112,7 @@ namespace Enemies.ModuleScripts.Movement
                 {
                     Log(ctx, $"approach done (reached {reached}, blocked {blocked}, timed out {timedOut})");
 
-                    if (endOnApproachWhenCyclesSatisfied && ctx.ApproachCyclesSatisfied)
+                    if (st.SkipRetreat)
                     {
                         st.Phase = ApproachPhase.Done;
                     }
@@ -106,7 +133,6 @@ namespace Enemies.ModuleScripts.Movement
                 if (travelled || blocked || timedOut)
                 {
                     Log(ctx, $"retreat done (travelled {travelled}, blocked {blocked}, timed out {timedOut})");
-                    ctx.ApproachCyclesSinceAttack++;
                     st.Phase = ApproachPhase.Done;
                 }
                 else velocityX = st.RetreatDir * retreatSpeed;

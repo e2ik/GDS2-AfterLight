@@ -40,8 +40,6 @@ namespace Enemies
 
         public MoveWindupState MoveWindup = new MoveWindupState();
         public ApproachRetreatState ApproachRetreat = new ApproachRetreatState();
-        public int ApproachCyclesSinceAttack;
-        public bool ApproachCyclesSatisfied;
         
         public bool IgnoreTerrainChecks;
         public LayerMask GroundMask;

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f5ae828e1d92a54c9ebad168293629e, type: 3}
+  m_Name: DRBuzzProjectileSO
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.ProjectileAttackSO
+  range: 10
+  cooldownDuration: 3
+  projectilePrefab: {fileID: -4014174415143715826, guid: 7215074949f70bf40ba4e978b21ba15d, type: 3}
+  damage: 20
+  launchAngleDegrees: 55
+  launchSpeed: 8
+  shotSpacingDegrees: 12
+  shotCount: 5
+  clip: {fileID: 0}
+  placeholderClipName: EmptyAttack
+  attackStateName: Attack
+  launchEvent:
+    Guid:
+      Data1: -1597026466
+      Data2: 1110444166
+      Data3: -1823744120
+      Data4: -1124302290
+    Path: event:/CombatSFXEvents/Projectile Spawn Event
+  playAnticipation: 1
+  attackForce: 1
+  anticipationDelay: 0.3

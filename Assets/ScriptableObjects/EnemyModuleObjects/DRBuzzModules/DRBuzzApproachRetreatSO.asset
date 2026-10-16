@@ -12,12 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e56a9ea14a346d39bd0019e0ca0aac9, type: 3}
   m_Name: DRBuzzApproachRetreatSO
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Movement.ApproachRetreatMovementSO
-  chance: 1
-  approachSpeed: 5
+  approachSpeed: 8
   approachStopDistance: 0.5
-  retreatSpeed: 4
+  retreatSpeed: 6
   retreatDistance: 4
   timeout: 6
+  lockTargetOnMoveStart: 1
+  endOnApproachWhenCyclesSatisfied: 1
   windup:
     enabled: 1
     windupTrigger: MoveWindup

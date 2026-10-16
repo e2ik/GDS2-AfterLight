@@ -1,4 +1,3 @@
-using Enemies.ModuleScripts.Movement;
 using UnityEngine;
 
 namespace Enemies.ModuleScripts
@@ -8,7 +7,6 @@ namespace Enemies.ModuleScripts
     {
         [SerializeField] private float moveSpeed = 3.5f;
         [SerializeField] private float facingDeadZone = 0.15f;
-        [SerializeField] private MoveWindupSettings windup = new MoveWindupSettings();
 
         [Header("Back Up")]
         [SerializeField] private float backUpDistance = 0f;
