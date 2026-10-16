@@ -147,6 +147,7 @@ public class PlayerCombatController : MonoBehaviour
     public bool IsAttacking => isAttacking;
     public bool AttackStartedGrounded => attackStartedGrounded;
     public bool IsPlunging => isPlunging;
+    public int PlungeHitCount { get; private set; }
     public bool WasRecentlyPlunging => plungeGraceTimer > 0f;
     public bool IsParrying => isParrying || isParryInRecovery;
     public bool IsParrySuccess => isParrySuccess;
@@ -638,6 +639,7 @@ public class PlayerCombatController : MonoBehaviour
             if (validHurtboxes.Length > 0)
             {
                 isPlunging = false;
+                PlungeHitCount++;
                 plungeGraceTimer = plungeGraceWindow;
                 plungeRecoveryTimer = plungeRecoveryDuration;
 

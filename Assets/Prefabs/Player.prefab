@@ -582,6 +582,10 @@ MonoBehaviour:
   chargeGlowStart: 2
   chargeGlowEnd: 4
   plungeLandEffect: JumpDust
+  plungeHitHoldTime: 0.25
+  bounceAfterHoldTime: 0.15
+  plungeStateName: p_plunge
+  debugPlungeHold: 0
   healingParticleSystem: {fileID: 7597425522677704758}
   healingEffectDuration: 1.5
   ignoreRespawnRefill: 1

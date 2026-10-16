@@ -58,8 +58,84 @@ public class PlayerAnimation : MonoBehaviour
     private int chargeGlowPropertyId;
     private float chargeBaseAlpha = 1f;
 
+    private void ApplyPlungeHitHold(ref bool isPlunging, ref bool isBouncing)
+    {
+        int hitCount = player.CombatController.PlungeHitCount;
+        bool plungeHit = hitCount != lastPlungeHitCount;
+        lastPlungeHitCount = hitCount;
+
+        if (plungeHit && plungeHitHoldTime > 0f)
+        {
+            plungeHoldUntil = Time.time + plungeHitHoldTime;
+            bounceAnimUntil = plungeHoldUntil + bounceAfterHoldTime;
+            if (debugPlungeHold) Debug.Log($"[PlungeHold] hit, holding until {plungeHoldUntil:F2}", this);
+        }
+
+        if (Time.time >= bounceAnimUntil) return;
+
+        string reason = GetPlungeHoldCancelReason();
+        if (reason != null && !plungeHit)
+        {
+            if (debugPlungeHold) Debug.Log($"[PlungeHold] cancelled: {reason}", this);
+            plungeHoldUntil = 0f;
+            bounceAnimUntil = 0f;
+            return;
+        }
+
+        if (Time.time < plungeHoldUntil)
+        {
+            isPlunging = true;
+            isBouncing = false;
+            ForcePlungeState();
+        }
+        else
+        {
+            isBouncing = true;
+        }
+    }
+
+    private string GetPlungeHoldCancelReason()
+    {
+        if (player.Controller.IsGrounded && rb.linearVelocityY <= 0.01f) return "grounded";
+        if (player.Controller.IsDashing) return "dashing";
+        if (player.Controller.IsWallSliding) return "wall sliding";
+        if (player.Controller.IsClimbing) return "climbing";
+        if (Time.time < hurtHoldUntil) return "hurt";
+        if (player.CombatController.IsPlunging) return "plunging again";
+        if (player.CombatController.IsAttacking) return "attacking";
+        if (player.CombatController.IsSkilling) return "skilling";
+        if (player.CombatController.IsParrying) return "parrying";
+        return null;
+    }
+
+    private void ForcePlungeState()
+    {
+        if (string.IsNullOrEmpty(plungeStateName)) return;
+
+        int hash = Animator.StringToHash(plungeStateName);
+        if (!animator.HasState(0, hash)) return;
+
+        AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(0);
+        bool inPlunge = current.shortNameHash == hash;
+        bool leaving = animator.IsInTransition(0) && animator.GetNextAnimatorStateInfo(0).shortNameHash != hash;
+
+        if (inPlunge && !leaving) return;
+
+        float time = inPlunge ? current.normalizedTime : 1f;
+        animator.Play(hash, 0, time);
+    }
+
     [Header("Plunge Land Effect")]
     [SerializeField] private string plungeLandEffect = "JumpDust";
+
+    [Header("Plunge Hit Hold")]
+    [SerializeField, Min(0f)] private float plungeHitHoldTime = 0.5f;
+    [SerializeField, Min(0f)] private float bounceAfterHoldTime = 0.25f;
+    [SerializeField] private string plungeStateName = "Plunge";
+    [SerializeField] private bool debugPlungeHold = false;
+    private int lastPlungeHitCount;
+    private float plungeHoldUntil;
+    private float bounceAnimUntil;
 
     [Header("Healing Effect")]
     [SerializeField] private ParticleSystem healingParticleSystem;
@@ -409,6 +485,7 @@ public class PlayerAnimation : MonoBehaviour
         bool isSkilling = player.CombatController.IsSkilling;
         bool isPlunging = player.CombatController.IsPlunging;
         bool isBouncing = player.Controller.IsBouncing;
+        ApplyPlungeHitHold(ref isPlunging, ref isBouncing);
 
         bool isAttacking = (isParrying || isSkilling || isPlunging) ? false : player.CombatController.IsAttacking;
         int attackIndex = (isParrying || isSkilling || isPlunging) ? 0 : player.CombatController.CurrentComboIndex;
