@@ -13,17 +13,14 @@ public partial class MixedAttackAction : Action
     
     [Tooltip("Leave empty for melee only.")]
     [SerializeReference] public BlackboardVariable<EnemyAttackSO> ProjectileAttack;
-    [SerializeReference] public BlackboardVariable<float> ProjectileChance; 
-    [SerializeReference] public BlackboardVariable<int> GuaranteeMeleeAfter; 
+    [SerializeReference] public BlackboardVariable<bool> ProjectilePlanned;
     [SerializeReference] public BlackboardVariable<float> WaitTimeout; 
     
     private Enemy _enemy;
     private AttackInstance _running;
     private bool _preferProjectile;
-    private bool _forceMelee;
     private bool _hasProjectile;
     private float _waited;
-    private int _projectileStreak;
 
     protected override Status OnStart()
     {
@@ -43,11 +40,7 @@ public partial class MixedAttackAction : Action
         _waited = 0f;
         _hasProjectile = ProjectileAttack != null && ProjectileAttack.Value != null;
 
-        int pityAfter = GuaranteeMeleeAfter != null ? GuaranteeMeleeAfter.Value : 0;
-        _forceMelee = pityAfter > 0 && _projectileStreak >= pityAfter;
-        float chance = ProjectileChance != null ? Mathf.Clamp01(ProjectileChance.Value) : 0f;
-        _preferProjectile = _hasProjectile && !_forceMelee && UnityEngine.Random.value < chance;
-        Debug.Log($"MixedAttack roll: chance {chance}, projectileStreak {_projectileStreak}, preferProjectile {_preferProjectile}, forceMelee {_forceMelee}");
+        _preferProjectile = _hasProjectile && ProjectilePlanned != null && ProjectilePlanned.Value;
 
         TryBegin();
         return Status.Running;
@@ -99,8 +92,6 @@ public partial class MixedAttackAction : Action
                 return false;
             useProjectile = true;
         }
-        else if (_forceMelee)
-            useProjectile = false;
         else
             useProjectile = !meleeValid && projectileValid;
 
@@ -111,8 +102,6 @@ public partial class MixedAttackAction : Action
         _enemy.MarkAttackStarted();
         chosen.Begin(ctx);
         _running = chosen;
-
-        _projectileStreak = useProjectile ? _projectileStreak + 1 : 0;
         
         return true;
     }

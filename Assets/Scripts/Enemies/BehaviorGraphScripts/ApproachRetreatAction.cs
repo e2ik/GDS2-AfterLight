@@ -15,6 +15,7 @@ public partial class ApproachRetreatAction : Action
     [SerializeReference] public BlackboardVariable<ApproachRetreatMovementSO> Module;
     [SerializeReference] public BlackboardVariable<int> Cycles;
     [SerializeReference] public BlackboardVariable<bool> EndWithApproach;
+    [SerializeReference] public BlackboardVariable<bool> RetreatAfterFinalApproach;
 
     private Enemy _enemy;
     private int _cyclesDone;
@@ -79,7 +80,8 @@ public partial class ApproachRetreatAction : Action
         if (endWithApproach && cycles > 0 && !_finalApproachStarted)
         {
             _finalApproachStarted = true;
-            Module.Value.Begin(ctx, skipRetreat: true);
+            bool retreat = RetreatAfterFinalApproach != null && RetreatAfterFinalApproach.Value;
+            Module.Value.Begin(ctx, skipRetreat: !retreat);
             return true;
         }
 
