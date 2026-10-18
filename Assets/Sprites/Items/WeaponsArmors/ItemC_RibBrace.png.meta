@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: bdcfcf33f052ea14b939eac8cdf143f2
+guid: f70a12170948746ea9d979ac87ee4ac5
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1444500408236366343
-    second: ItemSO_primary_0
+      213: 5610526550766531280
+    second: ItemSO_armor_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -122,17 +122,56 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: tvOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ItemSO_primary_0
+      name: ItemSO_armor_0
       rect:
         serializedVersion: 2
         x: 1
         y: 1
         width: 14
-        height: 14
+        height: 13
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +180,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 70ad5dec775eb0410800000000000000
-      internalID: 1444500408236366343
+      spriteID: 0d2365d0c289cdd40800000000000000
+      internalID: 5610526550766531280
       vertices: []
       indices: 
       edges: []
@@ -161,7 +200,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ItemSO_primary_0: 1444500408236366343
+      ItemSO_armor_0: 5610526550766531280
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
