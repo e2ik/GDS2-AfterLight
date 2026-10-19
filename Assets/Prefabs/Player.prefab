@@ -595,17 +595,17 @@ MonoBehaviour:
   attackGlowOutline: {fileID: 340676937458263144}
   comboGlows:
   - enabled: 1
-    color: {r: 1, g: 1, b: 1, a: 1}
+    color: {r: 0.9650088, g: 0.9811321, b: 0.73122096, a: 1}
     intensity: 4
     checkerLow: 0.5
     checkerSize: 1
   - enabled: 1
-    color: {r: 1, g: 0.37448022, b: 0.027450979, a: 1}
+    color: {r: 1, g: 0.7041616, b: 0.27358478, a: 1}
     intensity: 5
     checkerLow: 0.5
     checkerSize: 1
   - enabled: 1
-    color: {r: 1, g: 0.8482716, b: 0, a: 1}
+    color: {r: 1, g: 0.489678, b: 0.34276712, a: 1}
     intensity: 4.5
     checkerLow: 0.5
     checkerSize: 1
@@ -997,10 +997,10 @@ MonoBehaviour:
   lineStrength: 0.5
   lineDiagonals: 0
   sortingOrderOffset: -1
-  glowColor: 0
-  glowMaterial: {fileID: 0}
+  glowColor: 1
+  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
   matchColor: {r: 1, g: 1, b: 1, a: 1}
-  matchTolerance: 0.1
+  matchTolerance: 0.658
   replaceColor: {r: 1, g: 1, b: 1, a: 1}
   glowIntensity: 2
   glowCheckerLow: 0.5
