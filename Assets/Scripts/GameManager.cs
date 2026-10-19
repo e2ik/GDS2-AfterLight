@@ -74,8 +74,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private InputActionReference unlockAllFastTravelAction;
     [SerializeField] private bool disableTutorials = false;
     [SerializeField] private bool skipCutscenes = false;
+    [SerializeField] private bool oneHitKillEnemies = false;
 
     public bool TutorialsDisabled => disableTutorials;
+    public bool OneHitKillEnemies => oneHitKillEnemies;
 
     [Header("Parry")]
     [SerializeField] private bool projectilesIgnoreParryDirection = false;

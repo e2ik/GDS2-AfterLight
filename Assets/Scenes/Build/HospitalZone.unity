@@ -12547,9 +12547,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 733773781cebc44489f7bf051b37a7e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldZoneTrigger
-  sceneToLoad: Tutorial_next
-  sourceAnchorID: start
-  targetAnchorID: firsttravel
+  sceneToLoad: TowerZone
+  sourceAnchorID: Start
+  targetAnchorID: TowerZone
 --- !u!61 &223651042
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -12605,7 +12605,7 @@ Transform:
   m_GameObject: {fileID: 223651040}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 290.2, y: -11, z: 0}
+  m_LocalPosition: {x: 280.55, y: -11, z: 0}
   m_LocalScale: {x: 6.0609, y: 9.3674, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -22916,6 +22916,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1294937927}
     m_Modifications:
+    - target: {fileID: 2489517752027057305, guid: 235f4f6e0b34b874b9a710fd28b9f18a, type: 3}
+      propertyPath: m_Size.x
+      value: 1.1882324
+      objectReference: {fileID: 0}
+    - target: {fileID: 2489517752027057305, guid: 235f4f6e0b34b874b9a710fd28b9f18a, type: 3}
+      propertyPath: m_Offset.x
+      value: -0.49046326
+      objectReference: {fileID: 0}
     - target: {fileID: 7248274016761712773, guid: 235f4f6e0b34b874b9a710fd28b9f18a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 277.88
@@ -41383,7 +41391,7 @@ Transform:
   m_GameObject: {fileID: 1264222261}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 287.8, y: -15, z: 0}
+  m_LocalPosition: {x: 283.839, y: -14.21, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -41401,7 +41409,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73c98ca16f3f5924891b42cbc07405ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneAnchor
-  anchorID: start
+  anchorID: Start
   sceneRoot: {fileID: 1085938262}
   tileSize: {x: 2, y: 2}
 --- !u!1001 &1264750421
@@ -42504,7 +42512,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1276452636314518496, guid: af074f92b6b65c64090d7441032f20b8, type: 3}
       propertyPath: doorMode
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1276452636314518496, guid: af074f92b6b65c64090d7441032f20b8, type: 3}
       propertyPath: brokenMessage
@@ -66261,6 +66269,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1294937927}
     m_Modifications:
+    - target: {fileID: 2489517752027057305, guid: 235f4f6e0b34b874b9a710fd28b9f18a, type: 3}
+      propertyPath: m_Size.x
+      value: 1.2595215
+      objectReference: {fileID: 0}
+    - target: {fileID: 2489517752027057305, guid: 235f4f6e0b34b874b9a710fd28b9f18a, type: 3}
+      propertyPath: m_Offset.x
+      value: 0.46447754
+      objectReference: {fileID: 0}
     - target: {fileID: 7248274016761712773, guid: 235f4f6e0b34b874b9a710fd28b9f18a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 306.14

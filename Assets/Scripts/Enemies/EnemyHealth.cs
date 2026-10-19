@@ -127,9 +127,14 @@ namespace Enemies
             if (Invulnerable) return;
 
             int blocked = 0;
-            bool bonus = attackEvents != null && attackEvents.IsPlayerBonusActive();
+            bool oneHitKill = GameManager.Instance != null && GameManager.Instance.OneHitKillEnemies;
+            bool bonus = !oneHitKill && attackEvents != null && attackEvents.IsPlayerBonusActive();
 
-            if (bonus)
+            if (oneHitKill)
+            {
+                damage = Mathf.Max(damage, CurrentHealth);
+            }
+            else if (bonus)
             {
                 damage = Mathf.RoundToInt(damage * attackEvents.BonusDamageMultiplier);
             }
