@@ -211,6 +211,7 @@ GameObject:
   - component: {fileID: 3239858076674932586}
   - component: {fileID: 340676937458263144}
   - component: {fileID: -6613351761212177417}
+  - component: {fileID: 2500322680457246142}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -1063,6 +1064,31 @@ MonoBehaviour:
   sortingOrderOffset: 1
   holdFadeDuration: 0.15
   holdPulseMinAmount: 0.4
+--- !u!114 &2500322680457246142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6310612592100663882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8df5082073ca7b4686eb5ffa1321f3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LightRim
+  rimMaterial: {fileID: 2100000, guid: 1816ea9bcb3f8e0419743ad5dfd0b6f5, type: 2}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 1.7
+  depth: 2
+  fadePower: 3.13
+  includeDiagonals: 0
+  sortingOrderOffset: 2
+  sampleOffset: {x: 0, y: 0.5}
+  falloffPower: 0.25
+  minimumLight: 0
+  maxBrightness: 0.5
+  colorSmoothing: 12
+  lightRefreshInterval: 0.5
 --- !u!1 &8844592283841214288
 GameObject:
   m_ObjectHideFlags: 0

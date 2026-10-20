@@ -208,6 +208,8 @@ MonoBehaviour:
   nearAlpha: 0.4
   farAlpha: 0
   farScaleMultiplier: 0.5
+  climbFadeOutTime: 0.1
+  climbFadeInTime: 0.25
 --- !u!1 &2233836205045440160
 GameObject:
   m_ObjectHideFlags: 0
@@ -393,34 +395,11 @@ MonoBehaviour:
   wallCheckDistance: 0.3
   wallCheckHeight: 0.1
   spriteFacesLeft: 0
-  separateFromEnemies: 1
-  separationRadius: 1
-  separationStrength: 3
-  separationMask:
-    serializedVersion: 2
-    m_Bits: 4608
-  useMoveWindup: 0
-  moveWindupTrigger: MoveWindup
-  moveWindupState: MoveWindup
-  moveWinddownTrigger: MoveWinddown
-  moveWinddownState: MoveWinddown
-  moveWindupTimeout: 3
-  moveStartDelay: 0.15
-  windupOnDirectionChange: 1
-  holdAttacksUntilStopped: 1
-  lockTargetOnMoveStart: 1
-  lockedArriveDistance: 0.5
-  approachRetreatChance: 0.3
-  approachOnAggro: 1
-  approachSpeed: 5
-  approachStopDistance: 0.5
-  maxAttacksWithoutApproach: 2
-  retreatChance: 0.5
-  noBackToBackRetreats: 1
-  retreatSpeed: 4
-  retreatDistance: 4
-  approachRetreatTimeout: 6
-  debugApproachRetreat: 0
+  raiseSortingWhenOverlapping: 1
+  overlapPadding: 0
+  queueAttackers: 0
+  queueSpacing: 1.5
+  queueYieldTime: 1.5
   moveHitDamage: 10
   moveHitForce: 2
   moveHitParryDirection: 2
@@ -457,6 +436,7 @@ MonoBehaviour:
   flashColor: {r: 1.6621785, g: 0, b: 0, a: 1}
   blockedFlashColor: {r: 1, g: 1, b: 1, a: 1}
   flashDuration: 0.15
+  projectileSpawnPoint: {fileID: 0}
   bossBounds: {fileID: 0}
   attacksPerTeleport: 3
   teleportMinCooldown: 8
@@ -643,6 +623,7 @@ GameObject:
   - component: {fileID: 8534714332133621480}
   - component: {fileID: 8607045623648066577}
   - component: {fileID: 8682135288823320430}
+  - component: {fileID: 555958320924481389}
   m_Layer: 12
   m_Name: Graphics
   m_TagString: Untagged
@@ -895,6 +876,31 @@ MonoBehaviour:
   fadeDuration: 0.08
   useUnscaledTime: 0
   sortingOrderOffset: 1
+--- !u!114 &555958320924481389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8df5082073ca7b4686eb5ffa1321f3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LightRim
+  rimMaterial: {fileID: 2100000, guid: 1816ea9bcb3f8e0419743ad5dfd0b6f5, type: 2}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 1.7
+  depth: 2
+  fadePower: 3.13
+  includeDiagonals: 0
+  sortingOrderOffset: 2
+  sampleOffset: {x: 0, y: 0.5}
+  falloffPower: 0.25
+  minimumLight: 0
+  maxBrightness: 0.5
+  colorSmoothing: 12
+  lightRefreshInterval: 0.5
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0
