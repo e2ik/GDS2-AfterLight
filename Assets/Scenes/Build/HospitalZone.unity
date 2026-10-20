@@ -12550,6 +12550,10 @@ MonoBehaviour:
   sceneToLoad: TowerZone
   sourceAnchorID: Start
   targetAnchorID: TowerZone
+  onEnterFromLeft: 1
+  onEnterFromRight: 0
+  onExitLeft: 2
+  onExitRight: 0
 --- !u!61 &223651042
 BoxCollider2D:
   m_ObjectHideFlags: 0

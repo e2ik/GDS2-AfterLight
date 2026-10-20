@@ -10,6 +10,7 @@ public class MasterNavMeshController : MonoBehaviour
     [SerializeField] private NavMeshPlus.Components.NavMeshSurface navMeshSurface;
     [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private float navMeshCheckRadius = 0.5f;
+    [SerializeField] private bool asyncBake = true;
 
     private Scene currentScene;
     private bool hasCurrentScene;
@@ -17,6 +18,8 @@ public class MasterNavMeshController : MonoBehaviour
     private Transform playerTransform;
     private bool subscribedToAreaSide;
     private bool subscribedToStreamer;
+    private AsyncOperation pendingBake;
+    private readonly HashSet<int> preparedScenes = new HashSet<int>();
 
     void Awake()
     {
@@ -163,6 +166,12 @@ public class MasterNavMeshController : MonoBehaviour
 
     void LateUpdate()
     {
+        if (pendingBake != null)
+        {
+            if (!pendingBake.isDone) return;
+            FinishAsyncBake();
+        }
+
         if (!dirty || !hasCurrentScene) return;
 
         if (!IsUsable(currentScene))
@@ -193,10 +202,39 @@ public class MasterNavMeshController : MonoBehaviour
             navMeshSurface.transform.position = playerTransform.position;
         }
 
+        if (preparedScenes.Add(scene.handle)) PrepareModifiers(scene);
+
+        if (navMeshSurface == null)
+        {
+            Debug.LogWarning("[MasterNavMeshController] NavMeshSurface reference is missing.");
+            return;
+        }
+
+        if (asyncBake && navMeshSurface.navMeshData != null)
+        {
+            pendingBake = navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
+            if (pendingBake == null) navMeshSurface.BuildNavMesh();
+        }
+        else
+        {
+            navMeshSurface.BuildNavMesh();
+        }
+    }
+
+    private void FinishAsyncBake()
+    {
+        pendingBake = null;
+        if (navMeshSurface == null) return;
+
+        navMeshSurface.RemoveData();
+        navMeshSurface.AddData();
+    }
+
+    private void PrepareModifiers(Scene scene)
+    {
         List<GameObject> sceneObjects = new List<GameObject>();
         foreach (GameObject root in scene.GetRootGameObjects())
         {
-            sceneObjects.Add(root);
             foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
             {
                 sceneObjects.Add(child.gameObject);
@@ -229,15 +267,6 @@ public class MasterNavMeshController : MonoBehaviour
             }
             modifier.overrideArea = true;
             modifier.area = 1;
-        }
-
-        if (navMeshSurface != null)
-        {
-            navMeshSurface.BuildNavMesh();
-        }
-        else
-        {
-            Debug.LogWarning("[MasterNavMeshController] NavMeshSurface reference is missing.");
         }
     }
 }

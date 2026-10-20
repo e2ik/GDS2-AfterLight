@@ -230,6 +230,8 @@ public class GameManager : MonoBehaviour
 
         FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
+        if (WorldStreamer.Instance != null) yield return WorldStreamer.Instance.PreloadScenes();
+
         if (WillPlayIntroCutscene()) CutscenePlayer.Instance.SetCutsceneUIHidden(true);
 
         yield return PlayIntroCutscene();
@@ -283,6 +285,8 @@ public class GameManager : MonoBehaviour
         yield return LoadMasterSceneSingle();
 
         FadeCanvasController.Instance?.FadeTo(1f, 0f);
+
+        if (WorldStreamer.Instance != null) yield return WorldStreamer.Instance.PreloadScenes();
 
         SpawnPlayer();
 
