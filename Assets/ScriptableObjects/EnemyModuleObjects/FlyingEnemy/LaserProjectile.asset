@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f5ae828e1d92a54c9ebad168293629e, type: 3}
+  m_Name: LaserProjectile
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.ProjectileAttackSO
+  range: 10
+  cooldownDuration: 3
+  projectilePrefab: {fileID: 64684783344483869, guid: ac141771e8e49e0429aab1a3886656d3, type: 3}
+  damage: 35
+  launchAngleDegrees: 55
+  launchSpeed: 8
+  shotSpacingDegrees: 12
+  shotCount: 1
+  clip: {fileID: 0}
+  placeholderClipName: AttackPlaceholder
+  attackStateName: Attack
+  launchEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  playAnticipation: 1
+  attackForce: 1
+  anticipationDelay: 0.3

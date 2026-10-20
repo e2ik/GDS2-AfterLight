@@ -24,12 +24,22 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int IsSkillingHash = Animator.StringToHash("isSkilling");
     private static readonly int IsPlungingHash = Animator.StringToHash("isPlunging");
     private static readonly int IsHurtHash = Animator.StringToHash("Hurt");
+    private static readonly int IsHurtHeldHash = Animator.StringToHash("isHurtHeld");
     private static readonly int AttackIndexHash = Animator.StringToHash("AttackIndex");
     private static readonly int IsAboutToLandHash = Animator.StringToHash("isAboutToLand");
     private static readonly int ChargeProgressHash = Animator.StringToHash("ChargeProgress");
     private static readonly int IsDeadHash = Animator.StringToHash("isDead");
     private static readonly int IsClimbingHash = Animator.StringToHash("isClimbing");
     private static readonly int IsHealingHash = Animator.StringToHash("isHealing");
+
+    [Header("Hurt Variants")]
+    [SerializeField] private AnimationClip defaultHurtClip;
+    [SerializeField] private bool holdHurtInAir = true;
+    [SerializeField, Min(0f)] private float minHurtHoldTime = 0f;
+    private float hurtHoldUntil;
+    private bool hasHurtHeldParam;
+    private AnimatorOverrideController hurtOverride;
+    private AnimationClip activeHurtClip;
 
     [Header("particle prefabs")]
     [SerializeField] private ParticleSystem wallSlideParticleSystem;
@@ -48,8 +58,84 @@ public class PlayerAnimation : MonoBehaviour
     private int chargeGlowPropertyId;
     private float chargeBaseAlpha = 1f;
 
+    private void ApplyPlungeHitHold(ref bool isPlunging, ref bool isBouncing)
+    {
+        int hitCount = player.CombatController.PlungeHitCount;
+        bool plungeHit = hitCount != lastPlungeHitCount;
+        lastPlungeHitCount = hitCount;
+
+        if (plungeHit && plungeHitHoldTime > 0f)
+        {
+            plungeHoldUntil = Time.time + plungeHitHoldTime;
+            bounceAnimUntil = plungeHoldUntil + bounceAfterHoldTime;
+            if (debugPlungeHold) Debug.Log($"[PlungeHold] hit, holding until {plungeHoldUntil:F2}", this);
+        }
+
+        if (Time.time >= bounceAnimUntil) return;
+
+        string reason = GetPlungeHoldCancelReason();
+        if (reason != null && !plungeHit)
+        {
+            if (debugPlungeHold) Debug.Log($"[PlungeHold] cancelled: {reason}", this);
+            plungeHoldUntil = 0f;
+            bounceAnimUntil = 0f;
+            return;
+        }
+
+        if (Time.time < plungeHoldUntil)
+        {
+            isPlunging = true;
+            isBouncing = false;
+            ForcePlungeState();
+        }
+        else
+        {
+            isBouncing = true;
+        }
+    }
+
+    private string GetPlungeHoldCancelReason()
+    {
+        if (player.Controller.IsGrounded && rb.linearVelocityY <= 0.01f) return "grounded";
+        if (player.Controller.IsDashing) return "dashing";
+        if (player.Controller.IsWallSliding) return "wall sliding";
+        if (player.Controller.IsClimbing) return "climbing";
+        if (Time.time < hurtHoldUntil) return "hurt";
+        if (player.CombatController.IsPlunging) return "plunging again";
+        if (player.CombatController.IsAttacking) return "attacking";
+        if (player.CombatController.IsSkilling) return "skilling";
+        if (player.CombatController.IsParrying) return "parrying";
+        return null;
+    }
+
+    private void ForcePlungeState()
+    {
+        if (string.IsNullOrEmpty(plungeStateName)) return;
+
+        int hash = Animator.StringToHash(plungeStateName);
+        if (!animator.HasState(0, hash)) return;
+
+        AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(0);
+        bool inPlunge = current.shortNameHash == hash;
+        bool leaving = animator.IsInTransition(0) && animator.GetNextAnimatorStateInfo(0).shortNameHash != hash;
+
+        if (inPlunge && !leaving) return;
+
+        float time = inPlunge ? current.normalizedTime : 1f;
+        animator.Play(hash, 0, time);
+    }
+
     [Header("Plunge Land Effect")]
     [SerializeField] private string plungeLandEffect = "JumpDust";
+
+    [Header("Plunge Hit Hold")]
+    [SerializeField, Min(0f)] private float plungeHitHoldTime = 0.5f;
+    [SerializeField, Min(0f)] private float bounceAfterHoldTime = 0.25f;
+    [SerializeField] private string plungeStateName = "Plunge";
+    [SerializeField] private bool debugPlungeHold = false;
+    private int lastPlungeHitCount;
+    private float plungeHoldUntil;
+    private float bounceAnimUntil;
 
     [Header("Healing Effect")]
     [SerializeField] private ParticleSystem healingParticleSystem;
@@ -104,6 +190,12 @@ public class PlayerAnimation : MonoBehaviour
     {
         player = GetComponentInParent<Player>();
         animator = GetComponent<Animator>();
+        SetupHurtOverride();
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+        {
+            if (parameter.nameHash == IsHurtHeldHash && parameter.type == AnimatorControllerParameterType.Bool)
+                hasHurtHeldParam = true;
+        }
         if (rb == null) rb = GetComponentInParent<Rigidbody2D>();
         if (sr == null)
         {
@@ -393,6 +485,7 @@ public class PlayerAnimation : MonoBehaviour
         bool isSkilling = player.CombatController.IsSkilling;
         bool isPlunging = player.CombatController.IsPlunging;
         bool isBouncing = player.Controller.IsBouncing;
+        ApplyPlungeHitHold(ref isPlunging, ref isBouncing);
 
         bool isAttacking = (isParrying || isSkilling || isPlunging) ? false : player.CombatController.IsAttacking;
         int attackIndex = (isParrying || isSkilling || isPlunging) ? 0 : player.CombatController.CurrentComboIndex;
@@ -412,10 +505,14 @@ public class PlayerAnimation : MonoBehaviour
             ? player.CombatController.AttackStartedGrounded
             : player.Controller.IsGrounded;
 
+        bool holdingHurt = Time.time < hurtHoldUntil;
+        if (holdingHurt) groundedForAnim = true;
+        if (hasHurtHeldParam) animator.SetBool(IsHurtHeldHash, holdingHurt);
+
         SyncParryAcrossGroundChange(isParrying, groundedForAnim);
 
         animator.SetFloat(SpeedHash, Mathf.Abs(rb.linearVelocityX));
-        animator.SetFloat(YVelocityHash, rb.linearVelocityY);
+        animator.SetFloat(YVelocityHash, holdingHurt ? 0f : rb.linearVelocityY);
         animator.SetBool(IsGroundedHash, groundedForAnim);
         animator.SetBool(IsWallSlidingHash, player.Controller.IsWallSliding);
         animator.SetBool(IsBouncingHash, isBouncing);
@@ -458,22 +555,44 @@ public class PlayerAnimation : MonoBehaviour
 
     #region Hit & Knockback Animation
 
-    public void PlayHurtAnimation()
+    private void SetupHurtOverride()
     {
+        if (defaultHurtClip == null || animator == null || animator.runtimeAnimatorController == null) return;
+
+        hurtOverride = animator.runtimeAnimatorController as AnimatorOverrideController;
+        if (hurtOverride == null)
+        {
+            hurtOverride = new AnimatorOverrideController(animator.runtimeAnimatorController);
+            animator.runtimeAnimatorController = hurtOverride;
+        }
+    }
+
+    public void PlayHurtAnimation(AnimationClip hurtClip = null, Color? flashColor = null)
+    {
+        if (hurtOverride != null && hurtClip != activeHurtClip)
+        {
+            hurtOverride[defaultHurtClip] = hurtClip;
+            activeHurtClip = hurtClip;
+        }
+
+        AnimationClip shownClip = hurtClip != null ? hurtClip : defaultHurtClip;
+        if (holdHurtInAir && shownClip != null)
+            hurtHoldUntil = Time.time + Mathf.Max(shownClip.length, minHurtHoldTime);
+
         animator.SetTrigger(IsHurtHash);
-        FlashRedOnHit();
+        FlashRedOnHit(flashColor);
         CamControls.Shake(0.1f, 0.8f);
     }
 
-    public void FlashRedOnHit()
+    public void FlashRedOnHit(Color? flashColor = null)
     {
         if (ResolveHitFlash() != null)
         {
-            hitFlash.Flash(hitFlashColor);
+            hitFlash.Flash(flashColor ?? hitFlashColor);
             return;
         }
 
-        StartFlashColor(Color.red, 0.1f);
+        StartFlashColor(flashColor ?? Color.red, 0.1f);
     }
 
     public void FlashOnHeal()

@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingOrder: 15
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: caa6d7edf0bc6ab45881a8286a3b5f20, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -199,7 +199,7 @@ SpriteRenderer:
   m_SortingOrder: 14
   m_MaskInteraction: 0
   m_Sprite: {fileID: 311756765435210426, guid: 49dfabf1d39411e47b10534d29e99bad, type: 3}
-  m_Color: {r: 0.79687494, g: 1, b: 0.49999988, a: 1}
+  m_Color: {r: 0.8867924, g: 0.885971, b: 0.7501483, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -245,6 +245,10 @@ MonoBehaviour:
   hitbox: {fileID: 8255842453170479238}
   hurtbox: {fileID: 2803622147759670400}
   vfxBox: {fileID: 5833334447470874059}
+  groundObjs: []
+  bonusZones: []
+  bonusDamageMultiplier: 2
+  debugBonus: 0
 --- !u!114 &4177682658357240554
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -325,6 +329,8 @@ MonoBehaviour:
   edgeWidth: 1
   useUnscaledTime: 1
   sortingOrderOffset: 1
+  holdFadeDuration: 0.15
+  holdPulseMinAmount: 0.4
 --- !u!1 &1508996274877242485
 GameObject:
   m_ObjectHideFlags: 0
@@ -376,6 +382,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
   maxHealth: 60
+  blockDamageOutsideBonus: 0
+  blockedHitDamage: 1
 --- !u!114 &5011396066847478461
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -413,6 +421,43 @@ MonoBehaviour:
     m_Bits: 0
   ledgeCheckDistance: 0.5
   ledgeCheckDepth: 1
+  wallCheckDistance: 0.3
+  wallCheckHeight: 0.1
+  spriteFacesLeft: 0
+  raiseSortingWhenOverlapping: 1
+  overlapPadding: 0
+  queueAttackers: 0
+  queueSpacing: 1.5
+  queueYieldTime: 1.5
+  useMoveWindup: 0
+  moveWindupTrigger: MoveWindup
+  moveWindupState: MoveWindup
+  moveWinddownTrigger: MoveWinddown
+  moveWinddownState: MoveWinddown
+  moveWindupTimeout: 3
+  moveStartDelay: 0.15
+  windupOnDirectionChange: 1
+  holdAttacksUntilStopped: 1
+  lockTargetOnMoveStart: 1
+  lockedArriveDistance: 0.5
+  approachRetreatChance: 0.3
+  approachOnAggro: 1
+  approachSpeed: 5
+  approachStopDistance: 0.5
+  maxAttacksWithoutApproach: 2
+  retreatChance: 0.5
+  noBackToBackRetreats: 1
+  retreatSpeed: 4
+  retreatDistance: 4
+  approachRetreatTimeout: 6
+  debugApproachRetreat: 0
+  moveHitDamage: 10
+  moveHitForce: 2
+  moveHitParryDirection: 2
+  stayStillUntilAggro: 0
+  aggroEffectOffset: {x: 0, y: 1}
+  aggroEffectFollowsEnemy: 1
+  aggroAttackDelay: 0.7
   canDropAggro: 1
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
@@ -421,6 +466,8 @@ MonoBehaviour:
   staggerImmunityDuration: 2
   staggerStunDuration: 0.5
   postStaggerAttackDelay: 0.5
+  playHurtOnHit: 1
+  hitTrigger: Hurt
   hitEvent:
     Guid:
       Data1: 515442699
@@ -438,6 +485,7 @@ MonoBehaviour:
   spriteRenderer: {fileID: 1090804381515645337}
   hitFlash: {fileID: 8712309141885016006}
   flashColor: {r: 1.6621785, g: 0, b: 0, a: 1}
+  blockedFlashColor: {r: 1, g: 1, b: 1, a: 1}
   flashDuration: 0.15
   bossBounds: {fileID: 0}
   attacksPerTeleport: 3
@@ -445,6 +493,8 @@ MonoBehaviour:
   canTeleport: 0
   teleportToTargetWhenOutOfRange: 1
   outOfRangeTeleportDelay: 4
+  teleportAfterDamagePercent: 0
+  teleportInvulnerabilityFailsafe: 6
   hasDeathAnimation: 0
   deathTrigger: Death
   deathStateName: Death
@@ -827,7 +877,18 @@ MonoBehaviour:
   hitFlash: {fileID: 8712309141885016006}
   flashMode: 1
   flashIntensity: 1.25
+  overrideColors: 0
   zeroColor: {r: 1, g: 1, b: 1, a: 1}
   lightColor: {r: 0, g: 1, b: 1, a: 1}
   mediumColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   heavyColor: {r: 1, g: 0, b: 0, a: 1}
+  chargeParticles: {fileID: 5497425098577746589, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
+  tintChargeByForce: 1
+  chargeEmissionRate: 15
+  chargeShapeScale: 0.7
+  chargeParticleSize: 0.7
+  chargeSimulationSpeed: 5
+  overrideAnticipationScale: 0
+  anticipationScale: 1
+  chargeGlowProperty: _Intensity
+  chargeGlowIntensity: 2

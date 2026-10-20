@@ -75,7 +75,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 9
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -219,8 +219,8 @@ TextureImporter:
       name: temp_enemySwipe_3
       rect:
         serializedVersion: 2
-        x: 0
-        y: 32
+        x: 192
+        y: 64
         width: 64
         height: 32
       alignment: 0
@@ -241,7 +241,7 @@ TextureImporter:
       name: temp_enemySwipe_4
       rect:
         serializedVersion: 2
-        x: 64
+        x: 0
         y: 32
         width: 64
         height: 32
@@ -263,7 +263,7 @@ TextureImporter:
       name: temp_enemySwipe_5
       rect:
         serializedVersion: 2
-        x: 128
+        x: 64
         y: 32
         width: 64
         height: 32
@@ -285,8 +285,8 @@ TextureImporter:
       name: temp_enemySwipe_6
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
+        x: 128
+        y: 32
         width: 64
         height: 32
       alignment: 0
@@ -307,8 +307,8 @@ TextureImporter:
       name: temp_enemySwipe_7
       rect:
         serializedVersion: 2
-        x: 64
-        y: 0
+        x: 192
+        y: 32
         width: 64
         height: 32
       alignment: 0
@@ -329,7 +329,7 @@ TextureImporter:
       name: temp_enemySwipe_8
       rect:
         serializedVersion: 2
-        x: 128
+        x: 0
         y: 0
         width: 64
         height: 32
@@ -343,6 +343,50 @@ TextureImporter:
       bones: []
       spriteID: e95e8ea0a5d111950800000000000000
       internalID: 6417943216546964894
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: temp_enemySwipe_9
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d9a215a3d63974f45a5d8cdcccb63c56
+      internalID: 572111457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: temp_enemySwipe_10
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 30980bdc45998e24289a6d578b80e30b
+      internalID: -241448855
       vertices: []
       indices: 
       edges: []
@@ -365,6 +409,7 @@ TextureImporter:
     nameFileIdTable:
       temp_enemySwipe_0: -1057977248688778585
       temp_enemySwipe_1: 1821377157883617586
+      temp_enemySwipe_10: -241448855
       temp_enemySwipe_2: -5920338836364824361
       temp_enemySwipe_3: 8614375893567362049
       temp_enemySwipe_4: -4794941855012943846
@@ -372,6 +417,7 @@ TextureImporter:
       temp_enemySwipe_6: -8987642928493216654
       temp_enemySwipe_7: 2584660274531513299
       temp_enemySwipe_8: 6417943216546964894
+      temp_enemySwipe_9: 572111457
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -35,6 +35,15 @@ public class ParallaxBackground : MonoBehaviour
 
         [System.NonSerialized] public SpriteRenderer renderer;
         [System.NonSerialized] public Vector2 scroll;
+        [System.NonSerialized] public Color baseColor;
+        [System.NonSerialized] public Color targetColor;
+    }
+
+    [System.Serializable]
+    public class LayerColor
+    {
+        public string layerName = "Layer";
+        public Color color = Color.white;
     }
 
     [SerializeField] private List<ParallaxLayer> layers = new List<ParallaxLayer>();
@@ -42,6 +51,9 @@ public class ParallaxBackground : MonoBehaviour
     [Header("Area Tint")]
     [SerializeField] private Color exteriorTint = Color.white;
     [SerializeField] private Color interiorTint = new Color(0.4f, 0.4f, 0.4f);
+
+    [Header("Layer Colors")]
+    [SerializeField, Min(0f)] private float colorBlendTime = 1f;
 
     [Header("World Anchor")]
     [SerializeField] private Vector2 worldOrigin = Vector2.zero;
@@ -55,6 +67,7 @@ public class ParallaxBackground : MonoBehaviour
     private GameManager subscribedManager;
     private bool hasAppliedSide;
     private AreaSide appliedSide;
+    private IList<LayerColor> activeLayerColors;
 
     private void Awake()
     {
@@ -76,12 +89,77 @@ public class ParallaxBackground : MonoBehaviour
             sr.color = layer.color;
 
             layer.renderer = sr;
+            layer.baseColor = layer.color;
+            layer.targetColor = layer.color;
         }
     }
 
     private void OnDisable()
     {
         Unsubscribe();
+    }
+
+    public void SetLayerColors(IList<LayerColor> colors, bool instant = false)
+    {
+        activeLayerColors = colors;
+        RefreshLayerColors(instant);
+    }
+
+    public void ResetLayerColors(bool instant = false)
+    {
+        activeLayerColors = null;
+        RefreshLayerColors(instant);
+    }
+
+    private void RefreshLayerColors(bool instant)
+    {
+        foreach (ParallaxLayer layer in layers)
+        {
+            Color target = layer.color;
+
+            if (activeLayerColors != null)
+            {
+                foreach (LayerColor entry in activeLayerColors)
+                {
+                    if (entry != null && entry.layerName == layer.name)
+                    {
+                        target = new Color(entry.color.r, entry.color.g, entry.color.b, layer.color.a);
+                        break;
+                    }
+                }
+            }
+
+            layer.targetColor = target;
+            if (instant || colorBlendTime <= 0f || content == null || !content.gameObject.activeSelf) layer.baseColor = target;
+        }
+
+        ApplyColors();
+    }
+
+    private void BlendLayerColors()
+    {
+        if (colorBlendTime <= 0f) return;
+
+        float step = Time.unscaledDeltaTime / colorBlendTime;
+        bool changed = false;
+
+        foreach (ParallaxLayer layer in layers)
+        {
+            if (layer.baseColor == layer.targetColor) continue;
+            layer.baseColor = Vector4.MoveTowards(layer.baseColor, layer.targetColor, step);
+            changed = true;
+        }
+
+        if (changed) ApplyColors();
+    }
+
+    private void ApplyColors()
+    {
+        foreach (ParallaxLayer layer in layers)
+        {
+            if (layer.renderer == null) continue;
+            layer.renderer.color = layer.useAreaTint ? layer.baseColor * currentTint : layer.baseColor;
+        }
     }
 
     public void ResetParallax()
@@ -91,12 +169,7 @@ public class ParallaxBackground : MonoBehaviour
     public void SetTint(Color tint)
     {
         currentTint = tint;
-
-        foreach (ParallaxLayer layer in layers)
-        {
-            if (layer.renderer == null) continue;
-            layer.renderer.color = layer.useAreaTint ? layer.color * tint : layer.color;
-        }
+        ApplyColors();
     }
 
     private void TrySubscribe()
@@ -139,11 +212,16 @@ public class ParallaxBackground : MonoBehaviour
         if (content.gameObject.activeSelf != visible)
         {
             content.gameObject.SetActive(visible);
-            if (visible) hasAppliedSide = false;
+            if (visible)
+            {
+                hasAppliedSide = false;
+                RefreshLayerColors(true);
+            }
         }
         if (!visible) return;
 
         SyncAreaTint();
+        BlendLayerColors();
 
         if (cam == null || !cam.isActiveAndEnabled) cam = Camera.main;
         if (cam == null) return;

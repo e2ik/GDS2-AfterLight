@@ -15,11 +15,14 @@ namespace Enemies
         public ERollTier RollTier;
         public bool IsComboFinisher;
         public Vector3 Position;
+        public int Blocked;
     }
 
     public class EnemyHealth : MonoBehaviour
     {
         [SerializeField] private int maxHealth = 10;
+        [SerializeField] private bool blockDamageOutsideBonus = false;
+        [SerializeField, Min(0)] private int blockedHitDamage = 1;
         public int CurrentHealth { get; private set; }
         public int MaxHealth => maxHealth;
 
@@ -34,7 +37,13 @@ namespace Enemies
 
         public static event Action<EnemyHealth, DamageInfo> AnyEnemyDamaged;
 
-        private void Awake() => CurrentHealth = maxHealth;
+        private AttackEvents attackEvents;
+
+        private void Awake()
+        {
+            CurrentHealth = maxHealth;
+            attackEvents = GetComponentInChildren<AttackEvents>(true);
+        }
         private Coroutine dotRoutine;
 
         private class DotStack
@@ -117,9 +126,28 @@ namespace Enemies
         {
             if (Invulnerable) return;
 
+            int blocked = 0;
+            bool oneHitKill = GameManager.Instance != null && GameManager.Instance.OneHitKillEnemies;
+            bool bonus = !oneHitKill && attackEvents != null && attackEvents.IsPlayerBonusActive();
+
+            if (oneHitKill)
+            {
+                damage = Mathf.Max(damage, CurrentHealth);
+            }
+            else if (bonus)
+            {
+                damage = Mathf.RoundToInt(damage * attackEvents.BonusDamageMultiplier);
+            }
+            else if (blockDamageOutsideBonus && damage > blockedHitDamage)
+            {
+                blocked = damage - blockedHitDamage;
+                damage = blockedHitDamage;
+            }
+
             ApplyDamage(new DamageInfo
             {
                 Amount = damage,
+                Blocked = blocked,
                 DamageType = context.DamageType,
                 IsCrit = isCrit,
                 HasRoll = context.HasRoll,

@@ -24,13 +24,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c91538e2d1ed2484ca95b6ecf470d43d, type: 2}
   canRepeat: 0
   uninterruptible: 1
-  queueBlockedSequences: 1
   keepEnemiesAlive: 1
+  lockMapCloseUntilCloseStep: 0
+  allowMenus: 0
   reactions:
   - eventKey: PlayerHit
     speechText: Ouch!
     effect: 2
-    duration: 1
+    duration: 1.5
     onlyOnce: 1
   - eventKey: EnemyKilled
     speechText: Thank god...

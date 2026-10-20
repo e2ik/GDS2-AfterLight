@@ -13,6 +13,14 @@ public class WorldStreamer : MonoBehaviour
     private string currentLoadedStreamedScene;
 
     private HashSet<string> loadingScenes = new HashSet<string>();
+    private readonly HashSet<string> unloadingScenes = new HashSet<string>();
+
+    [SerializeField] private bool debugStreaming = false;
+
+    [Header("Preload")]
+    [SerializeField] private List<string> preloadScenes = new List<string>();
+
+    public bool IsPreloading { get; private set; }
 
     public event Action<Scene> OnSceneStreamed;
 
@@ -30,9 +38,37 @@ public class WorldStreamer : MonoBehaviour
     {
         if (IsFastTraveling) return;
         if (string.IsNullOrEmpty(sceneToLoad)) return;
+        if (unloadingScenes.Contains(sceneToLoad)) return;
         if (SceneManager.GetSceneByName(sceneToLoad).isLoaded || loadingScenes.Contains(sceneToLoad)) return;
 
+        Log($"loading {sceneToLoad}");
         StartCoroutine(StreamAndAlignRoutine(sceneToLoad, sourceAnchorID, targetAnchorID));
+    }
+
+    public void UnloadStreamedScene(string sceneName)
+    {
+        if (IsFastTraveling) return;
+        if (string.IsNullOrEmpty(sceneName)) return;
+        if (loadingScenes.Contains(sceneName) || unloadingScenes.Contains(sceneName)) return;
+
+        Scene scene = SceneManager.GetSceneByName(sceneName);
+        if (!scene.isLoaded || scene == SceneManager.GetActiveScene()) return;
+
+        Log($"unloading {sceneName}");
+        StartCoroutine(UnloadRoutine(sceneName));
+    }
+
+    private IEnumerator UnloadRoutine(string sceneName)
+    {
+        unloadingScenes.Add(sceneName);
+
+        AsyncOperation unload = SceneManager.UnloadSceneAsync(sceneName);
+        if (unload != null)
+        {
+            while (!unload.isDone) yield return null;
+        }
+
+        unloadingScenes.Remove(sceneName);
     }
 
     private IEnumerator StreamAndAlignRoutine(string sceneToLoad, string sourceAnchorID, string targetAnchorID)
@@ -91,6 +127,42 @@ public class WorldStreamer : MonoBehaviour
         IsAligning = false;
 
         OnSceneStreamed?.Invoke(newlyLoadedScene);
+    }
+
+    public IEnumerator PreloadScenes()
+    {
+        if (preloadScenes == null || preloadScenes.Count == 0) yield break;
+
+        IsPreloading = true;
+
+        foreach (string sceneName in preloadScenes)
+        {
+            if (string.IsNullOrEmpty(sceneName)) continue;
+            if (SceneManager.GetSceneByName(sceneName).isLoaded || loadingScenes.Contains(sceneName)) continue;
+
+            Log($"preloading {sceneName}");
+
+            AsyncOperation load = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            if (load == null) continue;
+            while (!load.isDone) yield return null;
+
+            Scene scene = SceneManager.GetSceneByName(sceneName);
+            if (!scene.isLoaded) continue;
+
+            foreach (GameObject root in scene.GetRootGameObjects())
+                root.SetActive(false);
+
+            AsyncOperation unload = SceneManager.UnloadSceneAsync(scene);
+            if (unload == null) continue;
+            while (!unload.isDone) yield return null;
+        }
+
+        IsPreloading = false;
+    }
+
+    private void Log(string message)
+    {
+        if (debugStreaming) Debug.Log($"[WorldStreamer] {message}", this);
     }
 
     private SceneAnchor FindAnchor(string anchorID)

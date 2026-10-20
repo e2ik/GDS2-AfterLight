@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using FMOD.Studio;
 using FMODUnity;
-using Unity.VisualScripting;
 using UnityEngine;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
 
@@ -24,6 +23,7 @@ public class MusicManager : MonoBehaviour
     public bool IsBossMusicActive => _bossMode;
 
     private Coroutine _crossfadeRoutine;
+    private EventInstance _fadingOutInstance;
     
     private PARAMETER_ID _intensityParamId;
     private PARAMETER_ID _pauseParamId;
@@ -107,7 +107,11 @@ public class MusicManager : MonoBehaviour
             newInstance.start();
 
             if (_crossfadeRoutine != null)
+            {
                 StopCoroutine(_crossfadeRoutine);
+                _crossfadeRoutine = null;
+                ReleaseFadingOut();
+            }
 
             _crossfadeRoutine = StartCoroutine(CrossfadeRoutine(previousInstance, newInstance));
         }
@@ -132,8 +136,18 @@ public class MusicManager : MonoBehaviour
             _loopParamId = loopDesc.id;
     }
 
+    private void ReleaseFadingOut()
+    {
+        if (!_fadingOutInstance.isValid()) return;
+
+        _fadingOutInstance.stop(STOP_MODE.IMMEDIATE);
+        _fadingOutInstance.release();
+        _fadingOutInstance.clearHandle();
+    }
+
     private IEnumerator CrossfadeRoutine(EventInstance fadingOut, EventInstance fadingIn)
     {
+        _fadingOutInstance = fadingOut;
         float t = 0f;
 
         while (t < crossfadeDuration)
@@ -150,11 +164,7 @@ public class MusicManager : MonoBehaviour
             yield return null;
         }
 
-        if (fadingOut.isValid())
-        {
-            fadingOut.stop(STOP_MODE.IMMEDIATE);
-            fadingOut.release();
-        }
+        ReleaseFadingOut();
 
         if (fadingIn.isValid())
             fadingIn.setVolume(1f);
@@ -235,6 +245,7 @@ public class MusicManager : MonoBehaviour
         {
             StopCoroutine(_crossfadeRoutine);
             _crossfadeRoutine = null;
+            ReleaseFadingOut();
         }
         
         StopMusic(fadeout: true);

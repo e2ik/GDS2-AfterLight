@@ -64,7 +64,7 @@ public class PlayerHurtBox : MonoBehaviour
 
         HitBox hitbox = pendingHitbox;
 
-        if (hitbox.HasBeenParried || stats == null || stats.IsDead)
+        if (hitbox.HasBeenParried || hitbox.HasHit || stats == null || stats.IsDead)
         {
             pendingHitbox = null;
             return;
@@ -110,14 +110,14 @@ public class PlayerHurtBox : MonoBehaviour
                 ReportDodge(hitbox, playerController.IsInPerfectDodgeWindow);
             return false;
         }
-        if (hitbox.HasBeenParried) return false;
+        if (hitbox.HasBeenParried || hitbox.HasHit) return false;
 
         playerController.CancelHeal();
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
         bool isUnparryable = hitbox.AttackForce == AttackForce.Heavy && (combatController == null || !combatController.CanParryHeavy);
         bool isProjectile = hitbox.GetComponentInParent<Enemies.ProjectileScripts.Projectile>() != null;
-        bool ignoreParryDirection = GameManager.Instance != null && GameManager.Instance.ProjectilesIgnoreParryDirection
-                                    && isProjectile;
+        bool ignoreParryDirection = hitbox.IgnoreParryDirection
+                                    || (GameManager.Instance != null && GameManager.Instance.ProjectilesIgnoreParryDirection && isProjectile);
 
         if (parryWindowOpen && !isUnparryable && combatController != null && combatController.CheckParry(hitbox.ParryDirection, ignoreParryDirection))
         {
@@ -149,6 +149,8 @@ public class PlayerHurtBox : MonoBehaviour
                                     (combatController.GetComponentInParent<Player>()?.Equipment?.SpecialAttackDef?.SkillExecutionType == SkillExecutionType.Charged);
 
         if (isChargedSkillExecuting) return false;
+
+        hitbox.MarkHit();
 
         bool hyperArmor = combatController != null && combatController.HasAttackHyperArmor;
 
@@ -194,7 +196,7 @@ public class PlayerHurtBox : MonoBehaviour
         AnyAttackDodged?.Invoke(hitbox, isPerfect);
     }
 
-    public bool TakeHazardHit(float damage, Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null, bool dealsDamage = true, bool resetsPlayer = false)
+    public bool TakeHazardHit(float damage, Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null, bool dealsDamage = true, bool resetsPlayer = false, AnimationClip hurtClip = null, Color? hurtFlashColor = null)
     {
         if (Invulnerable) return false;
         if (stats == null || playerController == null || stats.IsDead) return false;
@@ -209,7 +211,7 @@ public class PlayerHurtBox : MonoBehaviour
 
         stats.TakeDamage(damage);
         PSpawner.Spawn("PlayerHit", transform.position);
-        if (playerAnimation != null) playerAnimation.PlayHurtAnimation();
+        if (playerAnimation != null) playerAnimation.PlayHurtAnimation(hurtClip, hurtFlashColor);
 
         return true;
     }

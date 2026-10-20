@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 1184950903686630149}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.985, y: -0.447, z: 0}
+  m_LocalPosition: {x: 0.67, y: -0.447, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -198,6 +198,7 @@ GameObject:
   - component: {fileID: 7603609893098896341}
   - component: {fileID: 2968184197812120870}
   - component: {fileID: 59898807662759673}
+  - component: {fileID: 7968068013482350995}
   m_Layer: 9
   m_Name: test3
   m_TagString: Untagged
@@ -214,7 +215,7 @@ Transform:
   m_GameObject: {fileID: 4998036943446194957}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 19.90488, y: 6.05121, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -234,6 +235,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
   maxHealth: 100
+  blockDamageOutsideBonus: 0
+  blockedHitDamage: 1
 --- !u!114 &2819779926548626800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -267,6 +270,21 @@ MonoBehaviour:
     m_Bits: 64
   ledgeCheckDistance: 0.5
   ledgeCheckDepth: 0.3
+  wallCheckDistance: 0.3
+  wallCheckHeight: 0.1
+  spriteFacesLeft: 0
+  raiseSortingWhenOverlapping: 1
+  overlapPadding: 0
+  queueAttackers: 1
+  queueSpacing: 1.5
+  queueYieldTime: 1.5
+  moveHitDamage: 10
+  moveHitForce: 2
+  moveHitParryDirection: 2
+  stayStillUntilAggro: 0
+  aggroEffectOffset: {x: -0.5, y: 0.5}
+  aggroEffectFollowsEnemy: 1
+  aggroAttackDelay: 0.7
   canDropAggro: 1
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
@@ -275,6 +293,8 @@ MonoBehaviour:
   staggerImmunityDuration: 3
   staggerStunDuration: 0.5
   postStaggerAttackDelay: 0.5
+  playHurtOnHit: 1
+  hitTrigger: Hurt
   hitEvent:
     Guid:
       Data1: 515442699
@@ -292,14 +312,18 @@ MonoBehaviour:
   spriteRenderer: {fileID: 5107996575365250629}
   hitFlash: {fileID: 4849572205173769118}
   flashColor: {r: 1.6621785, g: 0, b: 0, a: 1}
+  blockedFlashColor: {r: 1, g: 1, b: 1, a: 1}
   flashDuration: 0.15
+  projectileSpawnPoint: {fileID: 0}
   bossBounds: {fileID: 0}
   attacksPerTeleport: 3
   teleportMinCooldown: 8
   canTeleport: 0
   teleportToTargetWhenOutOfRange: 1
   outOfRangeTeleportDelay: 4
-  hasDeathAnimation: 0
+  teleportAfterDamagePercent: 0
+  teleportInvulnerabilityFailsafe: 6
+  hasDeathAnimation: 1
   deathTrigger: Death
   deathStateName: Death
   deathAnimationTimeout: 5
@@ -393,9 +417,74 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.26752758, y: -0.6394062}
-  m_Size: {x: 1.1225452, y: 1.763773}
-  m_Direction: 0
+  m_Offset: {x: 0.19515137, y: -0.763201}
+  m_Size: {x: 2.6542542, y: 1.4257172}
+  m_Direction: 1
+--- !u!114 &7968068013482350995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4998036943446194957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561b6f6388a42344dbfeddb4154aceba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttackGlow
+  enemy: {fileID: 2819779926548626800}
+  multiplyOutline: {fileID: 2334498772139121146}
+  colorGlow: {fileID: 2791081436792977229}
+  colorSource: {fileID: 69754505853120667}
+  useVfxBoxColors: 1
+  onlyDuringAttackAnimation: 1
+  attackStateNames:
+  - Attack
+  stopAtClipEnd: 1
+  lightGlow:
+    enabled: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 2
+    checkerLow: 0.5
+    checkerSize: 1
+  mediumGlow:
+    enabled: 1
+    color: {r: 1, g: 0.8, b: 0.2, a: 1}
+    intensity: 2
+    checkerLow: 0.5
+    checkerSize: 1
+  heavyGlow:
+    enabled: 1
+    color: {r: 1, g: 0.15, b: 0.1, a: 1}
+    intensity: 3
+    checkerLow: 0.5
+    checkerSize: 1
+  zeroForceGlow:
+    enabled: 0
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 2
+    checkerLow: 0.5
+    checkerSize: 1
+  parryIntensityBoost: 2
+  parryBoostFadeSpeed: 30
+  heavyGetsParryBoost: 0
+  boostIntensity: 1
+  intensityBoost: 1
+  comboIntensityBoost: 1
+  vulnerableGlow:
+    enabled: 1
+    color: {r: 0.3, g: 1, b: 0.4, a: 1}
+    intensity: 2.5
+    checkerLow: 0.5
+    checkerSize: 1
+  vulnerablePulseSpeed: 3
+  vulnerablePulseMin: 0.3
+  moveWindupGlow:
+    enabled: 1
+    color: {r: 0.3, g: 0.8, b: 1, a: 1}
+    intensity: 1.5
+    checkerLow: 0.5
+    checkerSize: 1
 --- !u!1 &5835482462216775301
 GameObject:
   m_ObjectHideFlags: 0
@@ -411,6 +500,8 @@ GameObject:
   - component: {fileID: 7276209283235879916}
   - component: {fileID: 2334498772139121146}
   - component: {fileID: 4849572205173769118}
+  - component: {fileID: 2791081436792977229}
+  - component: {fileID: 3337730118532109499}
   m_Layer: 9
   m_Name: Graphics
   m_TagString: Untagged
@@ -487,7 +578,7 @@ SpriteRenderer:
   m_SortingOrder: 15
   m_MaskInteraction: 0
   m_Sprite: {fileID: 4301079142537974084, guid: 8bb048460e48a744ea912e71d145c89d, type: 3}
-  m_Color: {r: 0.37421376, g: 1, b: 0.9843553, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -533,6 +624,10 @@ MonoBehaviour:
   hitbox: {fileID: 6096227191426472029}
   hurtbox: {fileID: 8107799500015843298}
   vfxBox: {fileID: 69754505853120667}
+  groundObjs: []
+  bonusZones: []
+  bonusDamageMultiplier: 2
+  debugBonus: 0
 --- !u!114 &7276209283235879916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -636,6 +731,54 @@ MonoBehaviour:
   sortingOrderOffset: 1
   holdFadeDuration: 0.15
   holdPulseMinAmount: 0.4
+--- !u!114 &2791081436792977229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 552c61b0b3d01574a9c690c9cfa647a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorGlow
+  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  startActive: 1
+  matchColor: {r: 0.7960785, g: 0.64705884, b: 0.32941177, a: 1}
+  matchTolerance: 0.452
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 2
+  checkerLow: 0.768
+  checkerSize: 1
+  fadeDuration: 0.08
+  useUnscaledTime: 0
+  sortingOrderOffset: 2
+--- !u!114 &3337730118532109499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8df5082073ca7b4686eb5ffa1321f3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LightRim
+  rimMaterial: {fileID: 2100000, guid: 1816ea9bcb3f8e0419743ad5dfd0b6f5, type: 2}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 1.7
+  depth: 2
+  fadePower: 3.13
+  includeDiagonals: 0
+  sortingOrderOffset: 2
+  sampleOffset: {x: 0, y: 0.5}
+  falloffPower: 0.25
+  minimumLight: 0
+  maxBrightness: 0.5
+  colorSmoothing: 12
+  lightRefreshInterval: 0.5
 --- !u!1 &6227203108546427660
 GameObject:
   m_ObjectHideFlags: 0
@@ -752,6 +895,8 @@ MonoBehaviour:
   nearAlpha: 0.4
   farAlpha: 0
   farScaleMultiplier: 0.5
+  climbFadeOutTime: 0.1
+  climbFadeInTime: 0.25
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0
@@ -854,7 +999,18 @@ MonoBehaviour:
   hitFlash: {fileID: 4849572205173769118}
   flashMode: 1
   flashIntensity: 1.25
+  overrideColors: 0
   zeroColor: {r: 1, g: 1, b: 1, a: 1}
   lightColor: {r: 0, g: 1, b: 1, a: 1}
   mediumColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   heavyColor: {r: 1, g: 0, b: 0, a: 1}
+  chargeParticles: {fileID: 5497425098577746589, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
+  tintChargeByForce: 1
+  chargeEmissionRate: 15
+  chargeShapeScale: 0.7
+  chargeParticleSize: 0.7
+  chargeSimulationSpeed: 5
+  overrideAnticipationScale: 0
+  anticipationScale: 1
+  chargeGlowProperty: _Intensity
+  chargeGlowIntensity: 1

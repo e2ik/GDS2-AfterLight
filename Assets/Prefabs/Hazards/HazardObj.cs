@@ -11,6 +11,9 @@ public class HazardObj : MonoBehaviour
     [SerializeField, Min(0f)] private float knockbackForce = 12f;
     [SerializeField, Min(0f)] private float staggerDuration = 0.3f;
     [SerializeField] private DirectionMode directionMode = DirectionMode.Default;
+    [SerializeField] private AnimationClip hurtClipOverride;
+    [SerializeField] private bool overrideHurtFlashColor = false;
+    [SerializeField, ColorUsage(false, true)] private Color hurtFlashColor = new Color(0.4f, 0.8f, 2f, 1f);
     [SerializeField, Range(0f, 1f)] private float centerZone = 0.3f;
     [SerializeField, Range(0f, 90f)] private float maxAngle = 60f;
     [SerializeField] private bool debugLogs = false;
@@ -74,7 +77,8 @@ public class HazardObj : MonoBehaviour
             return;
         }
 
-        bool hit = hurtBox.TakeHazardHit(damage, contactPoint, knockbackForce, staggerDuration, direction, damagesPlayer, resetsPlayer);
+        bool hit = hurtBox.TakeHazardHit(damage, contactPoint, knockbackForce, staggerDuration, direction, damagesPlayer, resetsPlayer, hurtClipOverride,
+            overrideHurtFlashColor ? hurtFlashColor : (Color?)null);
         if (hit)
             Log($"hit: damages {damagesPlayer} (damage {damage}), force {knockbackForce}, stagger {staggerDuration}, direction {direction}");
     }

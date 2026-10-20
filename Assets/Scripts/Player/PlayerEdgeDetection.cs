@@ -11,14 +11,18 @@ public class PlayerEdgeDetection : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float grabZoneTopFraction = 0.15f;
     [SerializeField, Range(0f, 1f)] private float grabZoneBottomFraction = 0.25f;
     [SerializeField, Range(0.05f, 2f)] private float reachFraction = 0.5f;
+    [SerializeField, Range(0f, 1f)] private float groundedZoneBottomFraction = 0.6f;
 
     [Header("Surface Checks")]
     [SerializeField, Range(0f, 1f)] private float ledgeTopNormalThreshold = 0.7f;
     [SerializeField, Range(0f, 1f)] private float wallNormalThreshold = 0.7f;
     [SerializeField, Range(0.5f, 1f)] private float clearanceScale = 0.9f;
 
+    [Header("Corner Precision")]
+    [SerializeField, Min(0f)] private float ledgeTopInset = 0.1f;
+    [SerializeField, Min(0.01f)] private float wallProbeDepth = 0.05f;
+
     private const float Skin = 0.02f;
-    private const float WallProbeDepth = 0.05f;
 
     private LayerMask groundLayer;
 
@@ -29,6 +33,7 @@ public class PlayerEdgeDetection : MonoBehaviour
     private bool hasLastQuery;
     private Bounds lastBody;
     private int lastDir;
+    private bool lastGrounded;
     private bool lastFound;
     private Vector2 lastCorner;
     private Vector2 lastStandCenter;
@@ -46,13 +51,16 @@ public class PlayerEdgeDetection : MonoBehaviour
         filter.SetLayerMask(groundLayer);
     }
 
-    public bool TryFindLedge(Bounds body, int dir, out Vector2 corner)
+    public bool TryFindLedge(Bounds body, int dir, out Vector2 corner) => TryFindLedge(body, dir, false, out corner);
+
+    public bool TryFindLedge(Bounds body, int dir, bool grounded, out Vector2 corner)
     {
         corner = default;
 
         hasLastQuery = true;
         lastBody = body;
         lastDir = dir;
+        lastGrounded = grounded;
         lastFound = false;
         lastStandSize = Vector2.zero;
 
@@ -61,7 +69,7 @@ public class PlayerEdgeDetection : MonoBehaviour
         float reach = Reach(body);
         float front = dir > 0 ? body.max.x : body.min.x;
         float zoneTopY = body.max.y + body.size.y * grabZoneTopFraction;
-        float zoneBottomY = body.max.y - body.size.y * grabZoneBottomFraction;
+        float zoneBottomY = body.max.y - body.size.y * BottomFraction(grounded);
 
         Vector2 topOrigin = new(front + dir * reach, zoneTopY);
         if (!CastClosest(topOrigin, Vector2.down, zoneTopY - zoneBottomY, out RaycastHit2D top)) return false;
@@ -70,10 +78,15 @@ public class PlayerEdgeDetection : MonoBehaviour
 
         float ledgeY = top.point.y;
 
-        Vector2 wallOrigin = new(body.center.x, ledgeY - WallProbeDepth);
-        float wallDistance = body.extents.x + reach + WallProbeDepth;
+        Vector2 wallOrigin = new(body.center.x, ledgeY - wallProbeDepth);
+        float wallDistance = body.extents.x + reach + wallProbeDepth;
         if (!CastClosest(wallOrigin, Vector2.right * dir, wallDistance, out RaycastHit2D wall)) return false;
         if (wall.distance <= 0f || Mathf.Abs(wall.normal.x) < wallNormalThreshold) return false;
+
+        Vector2 insetOrigin = new(wall.point.x + dir * ledgeTopInset, zoneTopY);
+        if (CastClosest(insetOrigin, Vector2.down, zoneTopY - zoneBottomY + wallProbeDepth, out RaycastHit2D insetTop)
+            && insetTop.distance > 0f && insetTop.normal.y >= ledgeTopNormalThreshold)
+            ledgeY = insetTop.point.y;
 
         Vector2 standSize = (Vector2)body.size * clearanceScale;
         Vector2 standCenter = new(wall.point.x + dir * (body.extents.x + Skin), ledgeY + body.extents.y + Skin);
@@ -87,6 +100,8 @@ public class PlayerEdgeDetection : MonoBehaviour
         lastCorner = corner;
         return true;
     }
+
+    private float BottomFraction(bool grounded) => grounded ? Mathf.Max(grabZoneBottomFraction, groundedZoneBottomFraction) : grabZoneBottomFraction;
 
     private float Reach(Bounds body) => Mathf.Max(0.01f, body.extents.x * reachFraction);
 
@@ -125,7 +140,7 @@ public class PlayerEdgeDetection : MonoBehaviour
         float front = lastDir > 0 ? lastBody.max.x : lastBody.min.x;
         float x = front + lastDir * Reach(lastBody);
         float top = lastBody.max.y + lastBody.size.y * grabZoneTopFraction;
-        float bottom = lastBody.max.y - lastBody.size.y * grabZoneBottomFraction;
+        float bottom = lastBody.max.y - lastBody.size.y * BottomFraction(lastGrounded);
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawLine(new Vector3(x, top), new Vector3(x, bottom));

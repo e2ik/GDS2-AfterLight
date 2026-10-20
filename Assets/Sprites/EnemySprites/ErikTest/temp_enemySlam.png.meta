@@ -81,7 +81,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 9
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -247,8 +247,8 @@ TextureImporter:
       name: temp_enemySlam_4
       rect:
         serializedVersion: 2
-        x: 0
-        y: 32
+        x: 256
+        y: 64
         width: 64
         height: 32
       alignment: 0
@@ -269,7 +269,7 @@ TextureImporter:
       name: temp_enemySlam_5
       rect:
         serializedVersion: 2
-        x: 64
+        x: 0
         y: 32
         width: 64
         height: 32
@@ -291,7 +291,7 @@ TextureImporter:
       name: temp_enemySlam_6
       rect:
         serializedVersion: 2
-        x: 128
+        x: 64
         y: 32
         width: 64
         height: 32
@@ -313,7 +313,7 @@ TextureImporter:
       name: temp_enemySlam_7
       rect:
         serializedVersion: 2
-        x: 192
+        x: 128
         y: 32
         width: 64
         height: 32
@@ -335,8 +335,8 @@ TextureImporter:
       name: temp_enemySlam_8
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
+        x: 192
+        y: 32
         width: 64
         height: 32
       alignment: 0
@@ -357,8 +357,8 @@ TextureImporter:
       name: temp_enemySlam_9
       rect:
         serializedVersion: 2
-        x: 64
-        y: 0
+        x: 256
+        y: 32
         width: 64
         height: 32
       alignment: 0
@@ -379,7 +379,7 @@ TextureImporter:
       name: temp_enemySlam_10
       rect:
         serializedVersion: 2
-        x: 128
+        x: 0
         y: 0
         width: 64
         height: 32
@@ -393,6 +393,72 @@ TextureImporter:
       bones: []
       spriteID: 28d4cc90472e37f70800000000000000
       internalID: 9183933053147041154
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: temp_enemySlam_11
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 74dbab90bcf558644a55fc00acec0766
+      internalID: 602783086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: temp_enemySlam_12
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6354a23d92faf35439f2982e5d0d09f4
+      internalID: 1298119565
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: temp_enemySlam_13
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 64
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0f5bc3452ea61de40ae4f66fce6560c3
+      internalID: 790793070
       vertices: []
       indices: 
       edges: []
@@ -416,6 +482,9 @@ TextureImporter:
       temp_enemySlam_0: -7085576235996758725
       temp_enemySlam_1: 8909300745332751116
       temp_enemySlam_10: 9183933053147041154
+      temp_enemySlam_11: 602783086
+      temp_enemySlam_12: 1298119565
+      temp_enemySlam_13: 790793070
       temp_enemySlam_2: 1678285497432626744
       temp_enemySlam_3: -7457975699328513850
       temp_enemySlam_4: -4425067935749213777

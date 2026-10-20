@@ -234,6 +234,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
   maxHealth: 800
+  blockDamageOutsideBonus: 0
+  blockedHitDamage: 1
 --- !u!114 &2819779926548626800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,6 +283,19 @@ MonoBehaviour:
   ledgeCheckDepth: 1
   wallCheckDistance: 0.3
   wallCheckHeight: 0.1
+  spriteFacesLeft: 0
+  raiseSortingWhenOverlapping: 1
+  overlapPadding: 0
+  queueAttackers: 0
+  queueSpacing: 1.5
+  queueYieldTime: 1.5
+  moveHitDamage: 10
+  moveHitForce: 2
+  moveHitParryDirection: 2
+  stayStillUntilAggro: 0
+  aggroEffectOffset: {x: 0, y: 0}
+  aggroEffectFollowsEnemy: 1
+  aggroAttackDelay: 0.5
   canDropAggro: 0
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
@@ -289,6 +304,8 @@ MonoBehaviour:
   staggerImmunityDuration: 4
   staggerStunDuration: 0.5
   postStaggerAttackDelay: 0.5
+  playHurtOnHit: 1
+  hitTrigger: Hurt
   hitEvent:
     Guid:
       Data1: 515442699
@@ -306,7 +323,9 @@ MonoBehaviour:
   spriteRenderer: {fileID: 5107996575365250629}
   hitFlash: {fileID: 8447035490974730339}
   flashColor: {r: 1.7814789, g: 0, b: 0, a: 1}
+  blockedFlashColor: {r: 1, g: 1, b: 1, a: 1}
   flashDuration: 0.15
+  projectileSpawnPoint: {fileID: 0}
   bossBounds: {fileID: 0}
   attacksPerTeleport: 3
   teleportMinCooldown: 3
@@ -428,6 +447,7 @@ GameObject:
   - component: {fileID: 8447035490974730339}
   - component: {fileID: 1514995599007304358}
   - component: {fileID: 3609489035518637061}
+  - component: {fileID: 8679947247369444069}
   m_Layer: 12
   m_Name: Graphics
   m_TagString: Untagged
@@ -549,6 +569,10 @@ MonoBehaviour:
   hitbox: {fileID: 6096227191426472029}
   hurtbox: {fileID: 8107799500015843298}
   vfxBox: {fileID: 69754505853120667}
+  groundObjs: []
+  bonusZones: []
+  bonusDamageMultiplier: 2
+  debugBonus: 0
 --- !u!114 &3772755303928414562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -709,7 +733,46 @@ MonoBehaviour:
   parryIntensityBoost: 1
   parryBoostFadeSpeed: 30
   heavyGetsParryBoost: 0
+  boostIntensity: 0
+  intensityBoost: 1
   comboIntensityBoost: 2
+  vulnerableGlow:
+    enabled: 1
+    color: {r: 0.3, g: 1, b: 0.4, a: 1}
+    intensity: 2.5
+    checkerLow: 0.5
+    checkerSize: 1
+  vulnerablePulseSpeed: 3
+  vulnerablePulseMin: 0.3
+  moveWindupGlow:
+    enabled: 1
+    color: {r: 0.3, g: 0.8, b: 1, a: 1}
+    intensity: 1.5
+    checkerLow: 0.5
+    checkerSize: 1
+--- !u!114 &8679947247369444069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5835482462216775301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8df5082073ca7b4686eb5ffa1321f3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LightRim
+  rimMaterial: {fileID: 2100000, guid: 1816ea9bcb3f8e0419743ad5dfd0b6f5, type: 2}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  intensity: 1.7
+  width: 1
+  includeDiagonals: 0
+  sortingOrderOffset: 2
+  sampleOffset: {x: 0, y: 0.5}
+  falloffPower: 0.25
+  minimumLight: 0
+  colorSmoothing: 12
+  lightRefreshInterval: 0.5
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0
@@ -817,3 +880,13 @@ MonoBehaviour:
   lightColor: {r: 0, g: 1, b: 1, a: 1}
   mediumColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   heavyColor: {r: 1, g: 0, b: 0, a: 1}
+  chargeParticles: {fileID: 5497425098577746589, guid: cd85befe398ce8f4fa7f9b6457c31ddf, type: 3}
+  tintChargeByForce: 1
+  chargeEmissionRate: 15
+  chargeShapeScale: 0.7
+  chargeParticleSize: 0.7
+  chargeSimulationSpeed: 4
+  overrideAnticipationScale: 0
+  anticipationScale: 1
+  chargeGlowProperty: _Intensity
+  chargeGlowIntensity: 2

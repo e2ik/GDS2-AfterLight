@@ -46,6 +46,7 @@ public class PlayerController : MonoBehaviour
     [Header("Wall Settings")]
     [SerializeField] private float wallSlideSpeed = 2f;
     [SerializeField] private float wallSlideGracePeriod = 0.5f;
+    [SerializeField, Min(0f)] private float wallSlideReleaseGrace = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     [SerializeField] private float wallCheckNormalThreshold = 0.5f;
@@ -67,6 +68,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashSkillEnergyCost = 0.1f;
     [SerializeField] private float neutralDashInvulnExtension = 0.1f;
     [SerializeField] private bool directionalDashInvulnerable = true;
+    [SerializeField] private bool preventDashBump = true;
+    [SerializeField, Range(0f, 1f)] private float dashFlatGroundNormalY = 0.98f;
+    private float lastJumpTime = float.NegativeInfinity;
+    private Collider2D lastGroundCollider;
+    private bool groundIsDropPlatform;
+    public bool IsOnDropPlatform { get; private set; }
     [SerializeField] private float perfectDodgeWindow = 0.1f;
     private float neutralDashStartTime = float.NegativeInfinity;
     private float neutralDashInvulnTimer;
@@ -104,6 +111,9 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Where the player ends up when the climb finishes, relative to the ledge corner (x is mirrored by facing).")]
     [SerializeField] private Vector2 climbEndOffset;
     [SerializeField] private bool climbEndFeetOnLedge = true;
+    [SerializeField] private bool useGroundedClimbStartOffset = false;
+    [SerializeField] private Vector2 groundedClimbStartOffset;
+    [SerializeField] private bool debugClimb = false;
     [SerializeField, Min(0f)] private float climbEndClearance = 0.01f;
     [Tooltip("Safety net: finishes the climb if the Climb animation event hasn't fired after this long (e.g. the animation got interrupted). Set it a little above the climb clip's length.")]
     [SerializeField] private float climbTimeout = 1.5f;
@@ -113,6 +123,7 @@ public class PlayerController : MonoBehaviour
     private PlayerEdgeDetection edgeDetection;
     private Vector2 climbStartPos;
     private Vector2 climbEndPos;
+    private bool climbMadeKinematic;
     private float climbStartTime;
     private bool canClimbEdge = true;
     private bool isClimbing;
@@ -142,6 +153,7 @@ public class PlayerController : MonoBehaviour
     private Collider2D groundCollider;
 
     private float horizontalInput, verticalInput, coyoteTimeCounter, wallCoyoteTimer, wallJumpTimer, wallContactTimer;
+    private float wallReleaseTimer;
     private float dashTimer, dashDirection, wallJumpDirection, wallSide;
     private bool wasWallSliding;
     private float jumpBufferTimer;
@@ -327,6 +339,7 @@ public class PlayerController : MonoBehaviour
         UpdatePendingJumpEffect();
 
         GroundCheckUpdate();
+        UpdateDropPlatformCheck();
         WallCheckUpdate();
 
         HandleEdgeClimb();
@@ -337,6 +350,7 @@ public class PlayerController : MonoBehaviour
         HandleJump();
         HandleWallJump();
         HandleDash();
+        PreventDashBump();
         HandlePlunge();
 
         UpdateGravity();
@@ -534,6 +548,7 @@ public class PlayerController : MonoBehaviour
 
             if (!isGrounded || rb.linearVelocityY < 0f) rb.linearVelocityY = 0f;
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            lastJumpTime = Time.fixedTime;
 
             QueueJumpEffect();
             Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerJumped);
@@ -627,10 +642,14 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        wallCoyoteTimer = (onWall && !isGrounded && Mathf.Abs(horizontalInput) > InputDeadzone) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
+        bool holdingInput = Mathf.Abs(horizontalInput) > InputDeadzone;
+        wallCoyoteTimer = (onWall && !isGrounded && holdingInput) ? coyoteTime : wallCoyoteTimer - Time.fixedDeltaTime;
+
+        wallReleaseTimer = holdingInput || !isWallSliding ? wallSlideReleaseGrace : wallReleaseTimer - Time.fixedDeltaTime;
+        bool releaseGrace = isWallSliding && !holdingInput && verticalInput > -0.5f && wallReleaseTimer > 0f;
 
         bool wallJustLeft = isWallJumping && wallSide == -wallJumpDirection;
-        bool touchingWall = onWall && !isGrounded && wallCoyoteTimer > 0f && !wallJustLeft;
+        bool touchingWall = onWall && !isGrounded && (wallCoyoteTimer > 0f || releaseGrace) && !wallJustLeft;
         wallContactTimer = touchingWall ? wallContactTimer + Time.fixedDeltaTime : 0f;
 
         if (touchingWall && wallContactTimer >= wallSlideGracePeriod)
@@ -775,6 +794,43 @@ public class PlayerController : MonoBehaviour
         if (dashReleased) ConsumeDashInput();
     }
 
+    private void PreventDashBump()
+    {
+        if (!preventDashBump || !isDashing || !isGrounded) return;
+        if (Time.fixedTime - lastJumpTime < 0.1f) return;
+        if (currentSurfaceNormal.y < dashFlatGroundNormalY) return;
+        if (rb.linearVelocityY <= 0f) return;
+
+        rb.linearVelocityY = 0f;
+    }
+
+    public bool ForceNeutralDash()
+    {
+        if (IsMovementFrozen || isClimbing || isStaggered) return false;
+
+        if (combat.IsParrying) combat.CancelParry();
+        if (combat.IsAttacking) combat.ForceCancelAttack();
+
+        isDashing = true;
+        isDashLocked = false;
+        IsDirectionalDash = false;
+        neutralDashStartTime = Time.time;
+        dashDirection = -FacingDirection;
+
+        float activeDuration = dashDuration * backDashMultiplier;
+
+        IgnoreAllAirOnlyPlatformsDuringDash(activeDuration);
+
+        rb.linearVelocity = new Vector2(dashDirection * dashVelocity, rb.linearVelocity.y);
+        playerAnimation.TriggerDashEffect();
+
+        ConsumeDashInput();
+
+        CancelInvoke(nameof(StopDashing));
+        Invoke(nameof(StopDashing), activeDuration);
+        return true;
+    }
+
     private void IgnoreAllAirOnlyPlatformsDuringDash(float duration)
     {
         AirOnlyCollisionPlatform[] platforms = FindObjectsByType<AirOnlyCollisionPlatform>(FindObjectsSortMode.None);
@@ -840,7 +896,8 @@ public class PlayerController : MonoBehaviour
         bool pressing = Mathf.Abs(horizontalInput) > InputDeadzone;
         int dir = pressing ? (horizontalInput > 0f ? 1 : -1) : FacingDirection;
 
-        if (!edgeDetection.TryFindLedge(cachedBounds, dir, out Vector2 corner)) return;
+        bool groundedSearch = useGroundedClimbStartOffset && isGrounded;
+        if (!edgeDetection.TryFindLedge(cachedBounds, dir, groundedSearch, out Vector2 corner)) return;
         onEdge = true;
 
         // Only climb while holding toward the ledge.
@@ -867,7 +924,11 @@ public class PlayerController : MonoBehaviour
             transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
         }
 
-        climbStartPos = corner + new Vector2(climbStartOffset.x * dir, climbStartOffset.y);
+        bool groundedClimb = useGroundedClimbStartOffset && isGrounded;
+        Vector2 startOffset = groundedClimb ? groundedClimbStartOffset : climbStartOffset;
+        climbStartPos = corner + new Vector2(startOffset.x * dir, startOffset.y);
+
+        if (debugClimb) Debug.Log($"[Climb] {(groundedClimb ? "grounded" : "air")} climb, ledge height above feet {corner.y - cachedBounds.min.y:F2}", this);
         climbEndPos = corner + new Vector2(climbEndOffset.x * dir, climbEndOffset.y);
 
         if (climbEndFeetOnLedge)
@@ -878,6 +939,13 @@ public class PlayerController : MonoBehaviour
 
         rb.linearVelocity = Vector2.zero;
         rb.gravityScale = 0f;
+
+        if (groundedClimb && rb.bodyType == RigidbodyType2D.Dynamic)
+        {
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            climbMadeKinematic = true;
+        }
+
         TeleportTo(climbStartPos);
     }
 
@@ -888,6 +956,7 @@ public class PlayerController : MonoBehaviour
 
         isClimbing = false;
         TeleportTo(climbEndPos);
+        RestoreClimbBodyType();
         rb.linearVelocity = Vector2.zero;
         Invoke(nameof(AllowClimb), climbCooldown);
     }
@@ -898,7 +967,16 @@ public class PlayerController : MonoBehaviour
         if (!isClimbing) return;
 
         isClimbing = false;
+        RestoreClimbBodyType();
         Invoke(nameof(AllowClimb), climbCooldown);
+    }
+
+    private void RestoreClimbBodyType()
+    {
+        if (!climbMadeKinematic) return;
+
+        climbMadeKinematic = false;
+        rb.bodyType = RigidbodyType2D.Dynamic;
     }
 
     private void AllowClimb() => canClimbEdge = true;
@@ -1039,6 +1117,7 @@ public class PlayerController : MonoBehaviour
             Vector2 dir = directionOverride.HasValue
                 ? directionOverride.Value.normalized
                 : ((Vector2)transform.position - sourcePosition).normalized;
+            if (isDashing) CancelDash();
             rb.linearVelocity = Vector2.zero;
             rb.AddForce(dir * force, ForceMode2D.Impulse);
         }
@@ -1068,6 +1147,15 @@ public class PlayerController : MonoBehaviour
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
         rb.linearVelocity = Vector2.zero;
         rb.AddForce(dir * force, ForceMode2D.Impulse);
+    }
+
+    public void ApplyBounceImpulseInDirection(Vector2 direction, float force)
+    {
+        if (physicsSuspended) return;
+
+        CancelClimb();
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce(direction.normalized * force, ForceMode2D.Impulse);
     }
 
     public void TriggerBounce(Vector2 sourcePosition, float force, float duration)
@@ -1292,6 +1380,14 @@ public class PlayerController : MonoBehaviour
         return dropThrough != null && dropThrough.IsMovingPlatform;
     }
 
+    private static bool IsMovingPlatformCollider(Collider2D platform)
+    {
+        if (platform.GetComponentInParent<PositionSwitch>() != null) return true;
+
+        DropThroughPlatform dropThrough = platform.GetComponentInParent<DropThroughPlatform>();
+        return dropThrough != null && dropThrough.IsMovingPlatform;
+    }
+
     private bool IsRidingPlatform(Collider2D platform)
     {
         DropThroughPlatform dropThrough = platform.GetComponentInParent<DropThroughPlatform>();
@@ -1481,6 +1577,23 @@ public class PlayerController : MonoBehaviour
         return found ? b : new Bounds(transform.position, Vector3.one);
     }
 
+    private void UpdateDropPlatformCheck()
+    {
+        if (groundCollider != lastGroundCollider)
+        {
+            lastGroundCollider = groundCollider;
+            groundIsDropPlatform = groundCollider != null
+                && groundCollider.GetComponent<PlatformEffector2D>() != null
+                && !IsMovingPlatformCollider(groundCollider);
+        }
+
+        bool onDropPlatform = isGrounded && groundIsDropPlatform;
+        if (onDropPlatform && !IsOnDropPlatform)
+            Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerOnDropPlatform);
+
+        IsOnDropPlatform = onDropPlatform;
+    }
+
     private bool TryPassThroughPlatform()
     {
         Bounds bounds = cachedBounds;
@@ -1530,7 +1643,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleStandingOnEnemy(Collision2D col)
     {
-        if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
+        if (((1 << col.collider.gameObject.layer) & combat.enemyLayer) == 0) return;
 
         if (!IsTopContact(col) || !IsTallEnemy(col.collider) || lastBouncedEnemy != col.collider)
         {
@@ -1627,7 +1740,7 @@ public class PlayerController : MonoBehaviour
     private void HandleEnemyBodyCollision(Collision2D col)
     {
         if (!enemyBodyCollisionKnockback) return;
-        if (((1 << col.gameObject.layer) & combat.enemyLayer) == 0) return;
+        if (((1 << col.collider.gameObject.layer) & combat.enemyLayer) == 0) return;
         if (!col.collider.transform.root.TryGetComponent(out EnemyHealth _)) return;
 
         if (IsTopContact(col) && IsTallEnemy(col.collider))
@@ -1663,6 +1776,7 @@ public class PlayerController : MonoBehaviour
         CancelClimb();
         CancelHeal();
         combat.ForceCancelAttack();
+        if (isDashing) CancelDash();
 
         rb.linearVelocity = Vector2.zero;
         Vector2 dir = directionOverride ?? new Vector2(transform.position.x >= contactPoint.x ? 1f : -1f, 1f);

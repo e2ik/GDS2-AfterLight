@@ -27,6 +27,7 @@ namespace Tutorial
         [SerializeField] private bool keepEnemiesAlive = false;
         [SerializeField] private bool lockMapCloseUntilCloseStep = false;
         [SerializeField] private bool allowMenus = false;
+        [SerializeField] private bool neutralDashOnComplete = false;
 
         [SerializeField] private SequenceReaction[] reactions;
 
@@ -38,6 +39,7 @@ namespace Tutorial
         public bool KeepEnemiesAlive => keepEnemiesAlive;
         public bool LockMapCloseUntilCloseStep => lockMapCloseUntilCloseStep;
         public bool AllowMenus => allowMenus;
+        public bool NeutralDashOnComplete => neutralDashOnComplete;
 
         private void OnValidate()
         {

@@ -28,6 +28,7 @@ public class DamageNumber : MonoBehaviour
     [SerializeField] private DamageStyle reflectStyle = new DamageStyle { color = new Color(0.35f, 0.65f, 1f) };
     [SerializeField] private DamageStyle dodgeStyle = new DamageStyle { format = "Dodged", color = new Color(0.85f, 0.85f, 0.85f), scale = 0.9f };
     [SerializeField] private DamageStyle perfectDodgeStyle = new DamageStyle { format = "Perfect!", color = new Color(1f, 0.84f, 0f), scale = 1.2f };
+    [SerializeField] private string blockedFormat = " ({blocked} Blocked)";
     [Header("Gamble Roll")]
     [SerializeField] private bool tintByRoll = true;
     [SerializeField] private Color lowRollColor = Color.gray;
@@ -76,6 +77,7 @@ public class DamageNumber : MonoBehaviour
         sb.Clear();
         sb.Append(style.format);
         sb.Replace("{amount}", info.Amount.ToString());
+        if (info.Blocked > 0) sb.Append(blockedFormat.Replace("{blocked}", info.Blocked.ToString()));
         rainbowStartIndex = -1;
 
         if (info.HasRoll && (info.DamageType == EDamageType.Base || info.DamageType == EDamageType.Skill))

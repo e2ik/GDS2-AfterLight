@@ -57,7 +57,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.5
-        value: 1.29
+        value: 2.9
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -117,7 +117,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.5
-        value: 2.78
+        value: 3.78
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -250,19 +250,21 @@ AnimationClip:
     - time: 0.2
       value: {fileID: 5656464496037513712, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
     - time: 0.3
-      value: {fileID: 5656464496037513712, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
-    - time: 0.4
       value: {fileID: 7938807191078430938, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
-    - time: 0.5
+    - time: 0.4
       value: {fileID: 2583302798940506181, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
-    - time: 0.6
+    - time: 0.5
       value: {fileID: 5022442160475461551, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
+    - time: 0.6
+      value: {fileID: -4801363921110571985, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
     - time: 0.7
-      value: {fileID: -4801363921110571985, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
-    - time: 0.8
-      value: {fileID: -4801363921110571985, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
-    - time: 0.9
       value: {fileID: -5710633221857692770, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
+    - time: 0.8
+      value: {fileID: 839599460, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
+    - time: 0.9
+      value: {fileID: 1359035089, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
+    - time: 1
+      value: {fileID: 2051121607, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
@@ -351,19 +353,20 @@ AnimationClip:
     - {fileID: -6815111790163175923, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
     - {fileID: -8332997452052448036, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
     - {fileID: 5656464496037513712, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
-    - {fileID: 5656464496037513712, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
     - {fileID: 7938807191078430938, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
     - {fileID: 2583302798940506181, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
     - {fileID: 5022442160475461551, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
     - {fileID: -4801363921110571985, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
-    - {fileID: -4801363921110571985, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
     - {fileID: -5710633221857692770, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
+    - {fileID: 839599460, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
+    - {fileID: 1359035089, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
+    - {fileID: 2051121607, guid: 52dcee0650438cf47a54d38f976085ea, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 1
+    m_StopTime: 1.1
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -394,7 +397,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.5
-        value: 1.29
+        value: 2.9
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -544,7 +547,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.5
-        value: 2.78
+        value: 3.78
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -671,42 +674,42 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 0.1
+  - time: 0.2
     functionName: PlayAnticipation
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 0.4
+  - time: 0.5
     functionName: OpenParryWindow
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 0.5
+  - time: 0.6
     functionName: PlaySFXEventAttached
     data: AttackEvent
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 0.6
+  - time: 0.7
     functionName: EnableHitbox
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 0.7
+  - time: 0.8
     functionName: CloseParryWindow
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 0.8
+  - time: 0.9
     functionName: DisableHitbox
     data: 
     objectReferenceParameter: {fileID: 0}

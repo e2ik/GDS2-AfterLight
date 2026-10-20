@@ -250,7 +250,7 @@ RectTransform:
   m_GameObject: {fileID: 689574662535555453}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.7, y: 0.7, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8294944999056810779}
@@ -262,9 +262,9 @@ RectTransform:
   - {fileID: 9121090822705856499}
   m_Father: {fileID: 6491585296208085341}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 200, y: 60}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: -368, y: 66}
   m_SizeDelta: {x: 525, y: 125}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1113752717241946580
@@ -1874,6 +1874,7 @@ MonoBehaviour:
   onlyForWindows: []
   fadeDuration: 0.15
   blockRaycastsWhileHidden: 1
+  hideDuringDialogue: 1
 --- !u!225 &455881373424233668
 CanvasGroup:
   m_ObjectHideFlags: 0

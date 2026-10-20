@@ -8,6 +8,11 @@ namespace Enemies.ModuleScripts
         [SerializeField] private float moveSpeed = 3.5f;
         [SerializeField] private float facingDeadZone = 0.15f;
 
+        [Header("Back Up")]
+        [SerializeField] private float backUpDistance = 0f;
+        [SerializeField] private float backUpSpeed = 2f;
+        [SerializeField] private bool backUpFacesTarget = true;
+
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
             if (ctx.IsAttacking)
@@ -32,6 +37,20 @@ namespace Enemies.ModuleScripts
             int dir = ctx.FacingRight ? 1 : -1;
 
             float moveX = ctx.TargetInRange || arrived ? 0f : dir * moveSpeed;
+
+            if (backUpDistance > 0f && Mathf.Abs(diff) < backUpDistance)
+            {
+                int backDir = -dir;
+                if (!ctx.IgnoreTerrainChecks && EnemyTerrainProbe.IsBlocked(ctx, backDir))
+                {
+                    ctx.Body.linearVelocity = new Vector2(0f, ctx.Body.linearVelocity.y);
+                    return;
+                }
+
+                if (!backUpFacesTarget) ctx.FacingRight = backDir > 0;
+                ctx.Body.linearVelocity = new Vector2(backDir * backUpSpeed, ctx.Body.linearVelocity.y);
+                return;
+            }
 
             if (moveX != 0f && !ctx.IgnoreTerrainChecks && EnemyTerrainProbe.IsBlocked(ctx, dir))
             {

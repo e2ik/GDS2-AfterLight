@@ -25,6 +25,7 @@ namespace Tutorial
         public const string PlayerHealed = "PlayerHealed";
         public const string PlayerHit = "PlayerHit";
         public const string PlayerDroppedThrough = "PlayerDroppedThrough";
+        public const string PlayerOnDropPlatform = "PlayerOnDropPlatform";
 
         public const string InventoryOpened = "InventoryOpened";
         public const string WindowOpenedPrefix = "WindowOpened:";
@@ -39,6 +40,8 @@ namespace Tutorial
         public const string EnemySkillHit = "EnemySkillHit";
         public const string EnemyReflectHit = "EnemyReflectHit";
         public const string EnemyKilled = "EnemyKilled";
+        public const string EnemyAggroed = "EnemyAggroed";
+        public const string EnemyHeavyAttack = "EnemyHeavyAttack";
 
         public static event Action<string> OnRaised;
 
