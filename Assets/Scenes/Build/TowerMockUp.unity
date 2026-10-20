@@ -1242,6 +1242,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
+  isMovingPlatform: 0
+  rideTolerance: 1
+  climbable: 0
 --- !u!251 &300635276
 PlatformEffector2D:
   m_ObjectHideFlags: 0
@@ -2352,7 +2355,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 30.7, y: -145.7}
+  m_AnchoredPosition: {x: -13.8, y: -176.7}
   m_SizeDelta: {x: 50, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &584687249
@@ -3022,6 +3025,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
+  isMovingPlatform: 0
+  rideTolerance: 1
+  climbable: 0
 --- !u!251 &771180574
 PlatformEffector2D:
   m_ObjectHideFlags: 0
@@ -4620,6 +4626,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
+  isMovingPlatform: 0
+  rideTolerance: 1
+  climbable: 0
 --- !u!251 &1002569398
 PlatformEffector2D:
   m_ObjectHideFlags: 0
@@ -16145,7 +16154,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -284.62, y: -239.1}
+  m_AnchoredPosition: {x: 30.2, y: -145.5}
   m_SizeDelta: {x: 50, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1215271441
@@ -16703,6 +16712,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
+  isMovingPlatform: 0
+  rideTolerance: 1
+  climbable: 0
 --- !u!251 &1286785668
 PlatformEffector2D:
   m_ObjectHideFlags: 0
@@ -19207,6 +19219,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
+  isMovingPlatform: 0
+  rideTolerance: 1
+  climbable: 0
 --- !u!251 &1635634885
 PlatformEffector2D:
   m_ObjectHideFlags: 0
@@ -19541,6 +19556,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
+  isMovingPlatform: 0
+  rideTolerance: 1
+  climbable: 0
 --- !u!251 &1684119495
 PlatformEffector2D:
   m_ObjectHideFlags: 0
@@ -19927,6 +19945,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
+  isMovingPlatform: 0
+  rideTolerance: 1
+  climbable: 0
 --- !u!251 &1718491587
 PlatformEffector2D:
   m_ObjectHideFlags: 0
@@ -29171,6 +29192,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e470b4785041374cbbad6aaebf3faac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DropThroughPlatform
+  isMovingPlatform: 0
+  rideTolerance: 1
+  climbable: 0
 --- !u!251 &2092905680
 PlatformEffector2D:
   m_ObjectHideFlags: 0
