@@ -1301,8 +1301,8 @@ public class InventoryDisplay : GameUI.UIWindow
         return currentFilter switch
         {
             InventoryFilter.GearAndWeapons => "No Weapons or Gear found yet.",
-            InventoryFilter.Primary => "No Primary Gems found yet.",
-            InventoryFilter.Secondary => "No Secondary Gems found yet.",
+            InventoryFilter.Primary => "No Skills found yet.",
+            InventoryFilter.Secondary => "No Mods found yet.",
             InventoryFilter.Special => "No Keys or Lore Fragments found yet.",
             _ => "No items found yet."
         };
