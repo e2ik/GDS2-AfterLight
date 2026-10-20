@@ -526,6 +526,7 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(weaponDef);
                         break;
                     }
+                    AudioManager.PlaySFX(weaponLoot.pickupSound, transform.position);
 
                     if (player.Equipment.IsWeaponSlotEmpty())
                         player.Equipment.EquipWeapon(weaponLoot);
@@ -550,6 +551,7 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(gearDef);
                         break;
                     }
+                    AudioManager.PlaySFX(gearLoot.pickupSound, transform.position);
 
                     if (player.Equipment.IsGearSlotEmpty(gearDef.Slot))
                         player.Equipment.EquipGear(gearDef.Slot, gearLoot);
@@ -572,6 +574,7 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(keyDef);
                         break;
                     }
+                    AudioManager.PlaySFX(keyLoot.pickupSound, transform.position);
 
                     LootPickupDisplay.Instance?.AddPickup(
                         keyDef.UISprite, keyDef.UIName, null,
@@ -591,6 +594,7 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(loreDef);
                         break;
                     }
+                    AudioManager.PlaySFX(loreLoot.pickupSound, transform.position);
 
                     LootPickupDisplay.Instance?.AddPickup(
                         loreDef.UISprite, loreDef.UIName, null,

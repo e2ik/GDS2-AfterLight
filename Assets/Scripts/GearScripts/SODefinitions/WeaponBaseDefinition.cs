@@ -1,3 +1,4 @@
+using FMODUnity;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "WeaponDefinition", menuName = "ScriptableObjects/WeaponDefinition")]
@@ -51,6 +52,8 @@ public class WeaponDefinition : InventoryItemBase
         Legendary = new Vector2(5f, 8f)
     };
 
+    public EventReference pickupSound;
+
     public WeaponInstance CreateInstance(ERarity rarity) => Roll(RarityLineRoller.Fixed(rarity));
 
     public WeaponInstance Roll(RarityLineRoller roller)
@@ -63,7 +66,8 @@ public class WeaponDefinition : InventoryItemBase
             InstRolledRange = roller.RollValue(RangeByRarity),
             InstRolledCrit = roller.RollValue(CritByRarity),
             InstRolledAttack = Mathf.Round(roller.RollValue(AttackByRarity)),
-            InstRolledDefense = CanRollDefense ? Mathf.Round(roller.RollValue(DefenseByRarity)) : 0f
+            InstRolledDefense = CanRollDefense ? Mathf.Round(roller.RollValue(DefenseByRarity)) : 0f,
+            pickupSound = pickupSound
         };
 
         newInstance.Rarity = roller.Final;

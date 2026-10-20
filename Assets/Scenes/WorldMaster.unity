@@ -446,18 +446,18 @@ MonoBehaviour:
   bouncesPerSecond: 2
   promptShowEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: -199391582
+      Data2: 1264903019
+      Data3: -1191673689
+      Data4: 1753027029
+    Path: event:/Interface Events/Show Tutorial Event
   successEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: 47880483
+      Data2: 1256785417
+      Data3: 622438294
+      Data4: 1861662333
+    Path: event:/Interface Events/Tutorial Success Event
 --- !u!223 &71793611
 Canvas:
   m_ObjectHideFlags: 0
@@ -871,6 +871,10 @@ MonoBehaviour:
   spawnOffset: {x: 0, y: 1, z: 0}
   randomSpawnRangeX: 0.5
   showDodges: 1
+  dodgeCooldown: 0.25
+  playerSpawnOffset: {x: 0, y: 1.5, z: 0}
+  showRollTiers: 1
+  rollTierCooldown: 0.15
 --- !u!114 &358202639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4119,7 +4123,7 @@ Camera:
     x: 0
     y: 0
     width: 1
-    height: 1
+    height: 0.99976003
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -6068,7 +6072,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2460971783503414339, guid: c4e4ecf358592904882e8ce7f5a3a006, type: 3}
       propertyPath: orthographic size
-      value: 9
+      value: 8.683333
       objectReference: {fileID: 0}
     - target: {fileID: 7132419878304221177, guid: c4e4ecf358592904882e8ce7f5a3a006, type: 3}
       propertyPath: m_Name

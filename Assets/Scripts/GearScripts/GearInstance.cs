@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FMODUnity;
 
 [Serializable]
 public class GearInstance
@@ -17,4 +18,6 @@ public class GearInstance
 
     public int PickupOrder;
     public bool IsNew = true;
+
+    public EventReference pickupSound;
 }

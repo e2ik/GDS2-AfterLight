@@ -1,3 +1,4 @@
+using FMODUnity;
 using UnityEngine;
 
 public enum EKeyClearance
@@ -17,12 +18,15 @@ public class KeyDefinition : InventoryItemBase
     [TextArea(2, 5)]
     public string Description;
 
+    public EventReference pickupSound;
+
     public KeyInstance CreateInstance()
     {
         return new KeyInstance
         {
             InstanceGUID = System.Guid.NewGuid().ToString(),
-            InstItemID = ItemID
+            InstItemID = ItemID,
+            pickupSound = pickupSound
         };
     }
 }

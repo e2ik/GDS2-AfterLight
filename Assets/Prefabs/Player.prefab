@@ -446,6 +446,13 @@ MonoBehaviour:
   bodyCollider: {fileID: 0}
   boundsIgnoreTriggers: 0
   drawDetectionGizmos: 1
+  dashEvent:
+    Guid:
+      Data1: 592182341
+      Data2: 1095649977
+      Data3: 1368063420
+      Data4: -1604961005
+    Path: event:/PlayerMovementSFX Events/Dash
   fadeDuration: 0.2
   healDuration: 0.1
 --- !u!114 &3547647608137716798
@@ -697,6 +704,13 @@ MonoBehaviour:
     LineRarities: 
     PickupOrder: 0
     IsNew: 1
+    pickupSound:
+      Guid:
+        Data1: 0
+        Data2: 0
+        Data3: 0
+        Data4: 0
+      Path: 
   specialAttackDef: {fileID: 0}
   secondaryGem:
     InstTemplateID: 
@@ -721,39 +735,39 @@ MonoBehaviour:
       Path: 
   equipSound:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: 1472655642
+      Data2: 1332217190
+      Data3: 1257763513
+      Data4: 638876661
+    Path: event:/Interface Events/General Equip Event
   weaponEquipSound:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: 1472655642
+      Data2: 1332217190
+      Data3: 1257763513
+      Data4: 638876661
+    Path: event:/Interface Events/General Equip Event
   gearEquipSound:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: 1472655642
+      Data2: 1332217190
+      Data3: 1257763513
+      Data4: 638876661
+    Path: event:/Interface Events/General Equip Event
   skillEquipSound:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: -19676315
+      Data2: 1339628651
+      Data3: 1709505983
+      Data4: -1503677977
+    Path: event:/Interface Events/Main Slot Equip Event
   gemEquipSound:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: 1472655642
+      Data2: 1332217190
+      Data3: 1257763513
+      Data4: 638876661
+    Path: event:/Interface Events/General Equip Event
   equippedGearDebug: []
 --- !u!114 &4056446563424932215
 MonoBehaviour:

@@ -219,7 +219,7 @@ public class PlayerController : MonoBehaviour
 
     private int lastFacingDirection;
 
-    public EventReference landSound;
+    public EventReference dashEvent;
 
     private void Awake()
     {
@@ -730,6 +730,7 @@ public class PlayerController : MonoBehaviour
             if (combat.IsAttacking) combat.ForceCancelAttack();
 
             combat.ChargeSkillMeter(-dashSkillEnergyCost);
+            AudioManager.PlaySFX(dashEvent);
 
             isDashing = true;
             isDashLocked = false;

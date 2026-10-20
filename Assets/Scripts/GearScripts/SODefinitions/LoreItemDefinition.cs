@@ -1,3 +1,4 @@
+using FMODUnity;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewLoreItemDefinition", menuName = "ScriptableObjects/LoreItemDefinition")]
@@ -24,12 +25,15 @@ public class LoreItemDefinition : InventoryItemBase
     [TextArea(5, 15)]
     public string ItemText;
 
+    public EventReference pickupSound;
+
     public LoreItemInstance CreateInstance()
     {
         return new LoreItemInstance
         {
             InstanceGUID = System.Guid.NewGuid().ToString(),
-            InstItemID = ItemID
+            InstItemID = ItemID,
+            pickupSound = pickupSound
         };
     }
 }

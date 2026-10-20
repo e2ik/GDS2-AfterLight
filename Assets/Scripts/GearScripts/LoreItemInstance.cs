@@ -1,4 +1,5 @@
 using System;
+using FMODUnity;
 
 [Serializable]
 public class LoreItemInstance
@@ -8,4 +9,6 @@ public class LoreItemInstance
 
     public int PickupOrder;
     public bool IsNew = true;
+
+    public EventReference pickupSound;
 }

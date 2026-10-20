@@ -1,3 +1,4 @@
+using FMODUnity;
 using UnityEngine;
 
 public enum EGearSlot
@@ -46,6 +47,8 @@ public class GearDefinition : InventoryItemBase
         Legendary = new Vector2(0.15f, 0.20f)
     };
 
+    public EventReference pickupSound;
+
     public GearInstance CreateInstance(ERarity rarity) => Roll(RarityLineRoller.Fixed(rarity));
 
     public GearInstance Roll(RarityLineRoller roller)
@@ -61,6 +64,7 @@ public class GearDefinition : InventoryItemBase
             InstBonusAttack = RollAttack ? RollLine(roller, AttackRanges, out attackRarity) : 0f,
             InstBonusDefense = RollDefense ? RollLine(roller, DefenseRanges, out defenseRarity) : 0f,
             InstBonusCrit = RollCrit ? RollLine(roller, CritRanges, out critRarity) : 0f,
+            pickupSound = pickupSound
         };
 
         newInstance.Rarity = roller.Final;

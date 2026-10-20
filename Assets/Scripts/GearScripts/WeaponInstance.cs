@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FMODUnity;
 
 [System.Serializable]
 public class WeaponInstance
@@ -14,4 +15,6 @@ public class WeaponInstance
     public List<ERarity> LineRarities = new List<ERarity>();
     public int PickupOrder;
     public bool IsNew = true;
+    
+    public EventReference pickupSound;
 }
