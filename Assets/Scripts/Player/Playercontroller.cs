@@ -110,6 +110,9 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Where the player ends up when the climb finishes, relative to the ledge corner (x is mirrored by facing).")]
     [SerializeField] private Vector2 climbEndOffset;
     [SerializeField] private bool climbEndFeetOnLedge = true;
+    [SerializeField] private bool useGroundedClimbStartOffset = false;
+    [SerializeField] private Vector2 groundedClimbStartOffset;
+    [SerializeField] private bool debugClimb = false;
     [SerializeField, Min(0f)] private float climbEndClearance = 0.01f;
     [Tooltip("Safety net: finishes the climb if the Climb animation event hasn't fired after this long (e.g. the animation got interrupted). Set it a little above the climb clip's length.")]
     [SerializeField] private float climbTimeout = 1.5f;
@@ -119,6 +122,7 @@ public class PlayerController : MonoBehaviour
     private PlayerEdgeDetection edgeDetection;
     private Vector2 climbStartPos;
     private Vector2 climbEndPos;
+    private bool climbMadeKinematic;
     private float climbStartTime;
     private bool canClimbEdge = true;
     private bool isClimbing;
@@ -888,7 +892,8 @@ public class PlayerController : MonoBehaviour
         bool pressing = Mathf.Abs(horizontalInput) > InputDeadzone;
         int dir = pressing ? (horizontalInput > 0f ? 1 : -1) : FacingDirection;
 
-        if (!edgeDetection.TryFindLedge(cachedBounds, dir, out Vector2 corner)) return;
+        bool groundedSearch = useGroundedClimbStartOffset && isGrounded;
+        if (!edgeDetection.TryFindLedge(cachedBounds, dir, groundedSearch, out Vector2 corner)) return;
         onEdge = true;
 
         // Only climb while holding toward the ledge.
@@ -915,7 +920,11 @@ public class PlayerController : MonoBehaviour
             transform.localScale = new Vector3(FacingDirection, transform.localScale.y, transform.localScale.z);
         }
 
-        climbStartPos = corner + new Vector2(climbStartOffset.x * dir, climbStartOffset.y);
+        bool groundedClimb = useGroundedClimbStartOffset && isGrounded;
+        Vector2 startOffset = groundedClimb ? groundedClimbStartOffset : climbStartOffset;
+        climbStartPos = corner + new Vector2(startOffset.x * dir, startOffset.y);
+
+        if (debugClimb) Debug.Log($"[Climb] {(groundedClimb ? "grounded" : "air")} climb, ledge height above feet {corner.y - cachedBounds.min.y:F2}", this);
         climbEndPos = corner + new Vector2(climbEndOffset.x * dir, climbEndOffset.y);
 
         if (climbEndFeetOnLedge)
@@ -926,6 +935,13 @@ public class PlayerController : MonoBehaviour
 
         rb.linearVelocity = Vector2.zero;
         rb.gravityScale = 0f;
+
+        if (groundedClimb && rb.bodyType == RigidbodyType2D.Dynamic)
+        {
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            climbMadeKinematic = true;
+        }
+
         TeleportTo(climbStartPos);
     }
 
@@ -936,6 +952,7 @@ public class PlayerController : MonoBehaviour
 
         isClimbing = false;
         TeleportTo(climbEndPos);
+        RestoreClimbBodyType();
         rb.linearVelocity = Vector2.zero;
         Invoke(nameof(AllowClimb), climbCooldown);
     }
@@ -946,7 +963,16 @@ public class PlayerController : MonoBehaviour
         if (!isClimbing) return;
 
         isClimbing = false;
+        RestoreClimbBodyType();
         Invoke(nameof(AllowClimb), climbCooldown);
+    }
+
+    private void RestoreClimbBodyType()
+    {
+        if (!climbMadeKinematic) return;
+
+        climbMadeKinematic = false;
+        rb.bodyType = RigidbodyType2D.Dynamic;
     }
 
     private void AllowClimb() => canClimbEdge = true;

@@ -116,6 +116,8 @@ MonoBehaviour:
   nearAlpha: 0.4
   farAlpha: 0
   farScaleMultiplier: 0.5
+  climbFadeOutTime: 0.1
+  climbFadeInTime: 0.25
 --- !u!1 &3610837456973314076
 GameObject:
   m_ObjectHideFlags: 0
@@ -431,9 +433,12 @@ MonoBehaviour:
   mediumStaggerDuration: 0.2
   heavyForce: 8
   heavyStaggerDuration: 0.4
-  climbStartOffset: {x: -1, y: -1.1}
-  climbEndOffset: {x: 0.5, y: 1}
+  climbStartOffset: {x: 0, y: -1.1}
+  climbEndOffset: {x: 0.75, y: 1}
   climbEndFeetOnLedge: 1
+  useGroundedClimbStartOffset: 1
+  groundedClimbStartOffset: {x: -0.5, y: -1}
+  debugClimb: 1
   climbEndClearance: 0.01
   climbTimeout: 1.5
   climbCooldown: 0.1
@@ -554,9 +559,12 @@ MonoBehaviour:
   grabZoneTopFraction: 0.2
   grabZoneBottomFraction: 0.3
   reachFraction: 0.5
+  groundedZoneBottomFraction: 0.6
   ledgeTopNormalThreshold: 0.7
   wallNormalThreshold: 0.7
   clearanceScale: 0.9
+  ledgeTopInset: 0.1
+  wallProbeDepth: 0.05
 --- !u!114 &4877809276059888347
 MonoBehaviour:
   m_ObjectHideFlags: 0
