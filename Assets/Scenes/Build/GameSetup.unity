@@ -247,6 +247,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da1972d6c136bc94b8b35266ba6693f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldStreamer
+  debugStreaming: 0
+  preloadScenes:
+  - HospitalZone
+  - TowerZone
 --- !u!114 &78526261
 MonoBehaviour:
   m_ObjectHideFlags: 0
