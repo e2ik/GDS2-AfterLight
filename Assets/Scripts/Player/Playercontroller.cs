@@ -49,6 +49,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     [SerializeField] private float wallCheckNormalThreshold = 0.5f;
+    [SerializeField, Min(0f)] private float airOnlyWallOverlapTolerance = 0.05f;
     [SerializeField] private Vector2 wallJumpForce = new(8f, 16f);
     [SerializeField] private float wallJumpDuration = 0.4f;
     [SerializeField] private float wallJumpBufferTime = 0.2f;
@@ -1464,8 +1465,11 @@ public class PlayerController : MonoBehaviour
     {
         RaycastHit2D hit = RaycastIgnoringSelf(origin, Vector2.right * dir, len);
         if (hit.collider == null || Mathf.Abs(hit.normal.x) <= wallCheckNormalThreshold) return false;
-        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
-            return false;
+        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform))
+        {
+            if (!platform.AllowsSolidContactFrom(hit.normal)) return false;
+            if (hit.distance < cachedBounds.extents.x - airOnlyWallOverlapTolerance) return false;
+        }
 
         currentSurfaceNormal = hit.normal;
         lastHitPoint = hit.point;

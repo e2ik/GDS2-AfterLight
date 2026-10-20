@@ -129,7 +129,8 @@ public class PlayerEdgeDetection : MonoBehaviour
     {
         if (col == null) return false;
         if (col.TryGetComponent(out AirOnlyCollisionPlatform _)) return false;
-        if (col.TryGetComponent(out DropThroughPlatform _)) return false;
+        DropThroughPlatform dropThrough = col.GetComponentInParent<DropThroughPlatform>();
+        if (dropThrough != null) return dropThrough.IsClimbable;
         return true;
     }
 

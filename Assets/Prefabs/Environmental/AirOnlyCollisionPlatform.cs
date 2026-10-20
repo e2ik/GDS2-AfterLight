@@ -1,23 +1,29 @@
 using UnityEngine;
-using System.Collections;
 
 [RequireComponent(typeof(Collider2D))]
 public class AirOnlyCollisionPlatform : MonoBehaviour
 {
     [SerializeField] private Vector2 solidLocalDirection = Vector2.up;
-    [SerializeField] private float ignoreDuration = 0.75f;
     [SerializeField] private LayerMask enemyLayer;
+    [SerializeField, Min(0f)] private float overlapTolerance = 0.02f;
 
     private Collider2D platformCollider;
     private BoxCollider2D boxCollider;
     private Player cachedPlayer;
     private Collider2D[] playerColliders;
-    private Coroutine ignoreRoutine;
+    private bool ignoring;
+    private float forceIgnoreUntil = float.NegativeInfinity;
 
     private void Awake()
     {
         platformCollider = GetComponent<Collider2D>();
         boxCollider = platformCollider as BoxCollider2D;
+    }
+
+    private void OnDisable()
+    {
+        if (ignoring) SetIgnore(playerColliders, false);
+        ignoring = false;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -35,36 +41,54 @@ public class AirOnlyCollisionPlatform : MonoBehaviour
             cachedPlayer = FindFirstObjectByType<Player>();
             if (cachedPlayer == null) return;
             playerColliders = cachedPlayer.GetComponentsInChildren<Collider2D>(true);
+            ignoring = false;
         }
 
-        bool wrongSide = cachedPlayer.Controller.IsGrounded || cachedPlayer.Controller.IsDashing || !IsNearSolidFace();
+        bool shouldIgnore = Time.time < forceIgnoreUntil
+                            || cachedPlayer.Controller.IsGrounded
+                            || cachedPlayer.Controller.IsDashing
+                            || !IsNearSolidFace()
+                            || IsOverlapping(playerColliders);
 
-        if (wrongSide && ignoreRoutine == null)
-        {
-            IgnoreCollisionFor(playerColliders, ignoreDuration);
-        }
+        if (shouldIgnore == ignoring) return;
+
+        SetIgnore(playerColliders, shouldIgnore);
+        ignoring = shouldIgnore;
     }
 
     public void IgnoreCollisionFor(Collider2D[] colliders, float duration)
     {
-        if (ignoreRoutine != null) StopCoroutine(ignoreRoutine);
-        ignoreRoutine = StartCoroutine(IgnoreCollisionRoutine(colliders, duration));
-    }
+        if (playerColliders == null) playerColliders = colliders;
 
-    private IEnumerator IgnoreCollisionRoutine(Collider2D[] colliders, float duration)
-    {
-        SetIgnore(colliders, true);
-        yield return new WaitForSeconds(duration);
-        SetIgnore(colliders, false);
-        ignoreRoutine = null;
+        forceIgnoreUntil = Mathf.Max(forceIgnoreUntil, Time.time + duration);
+
+        SetIgnore(playerColliders, true);
+        ignoring = true;
     }
 
     private void SetIgnore(Collider2D[] colliders, bool ignore)
     {
+        if (colliders == null) return;
+
         foreach (var col in colliders)
         {
             if (col != null) Physics2D.IgnoreCollision(col, platformCollider, ignore);
         }
+    }
+
+    private bool IsOverlapping(Collider2D[] colliders)
+    {
+        if (colliders == null || platformCollider == null || !platformCollider.enabled) return false;
+
+        foreach (var col in colliders)
+        {
+            if (col == null || !col.enabled || col.isTrigger || !col.gameObject.activeInHierarchy) continue;
+
+            ColliderDistance2D distance = col.Distance(platformCollider);
+            if (distance.isValid && distance.distance < -overlapTolerance) return true;
+        }
+
+        return false;
     }
 
     private bool IsNearSolidFace()
