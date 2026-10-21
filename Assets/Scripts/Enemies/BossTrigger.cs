@@ -86,7 +86,7 @@ namespace Enemies
             ReleaseCamera();
             SetDoorsLocked(false);
             BossHealthBarUI.Instance?.Hide();
-
+            
             if (MusicManager.Instance != null && MusicManager.Instance.IsBossMusicActive)
                 MusicManager.Instance.ExitBossMusicToPrevious();
 
@@ -222,7 +222,13 @@ namespace Enemies
                 if (playDeathDialogue)
                 {
                     bossEnemy.Context.Health.DeferDeath = true;
-                    onHealthDepleted = () => StartCoroutine(PlayDeathDialogueThenFinalize(bossEnemy, player));
+                    onHealthDepleted = () =>
+                    {
+                        if (playMusic)
+                            MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
+                        
+                        StartCoroutine(PlayDeathDialogueThenFinalize(bossEnemy, player));
+                    };
                     bossEnemy.Context.Health.OnHealthDepleted += onHealthDepleted;
                 }
 
@@ -335,6 +341,7 @@ namespace Enemies
             bossyEnemy.FreezeForDeathSequence();
             
             player.Controller.FreezeMovement(true);
+            
 
             if (deathDialogue != null && DialogueManager.Instance != null)
             {

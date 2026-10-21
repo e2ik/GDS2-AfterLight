@@ -143,7 +143,7 @@ namespace Enemies
         [SerializeField] private string deathTrigger = "Death";
         [SerializeField] private string deathStateName = "Death";
         [SerializeField] private float deathAnimationTimeout = 5f;
-
+        [SerializeField] private bool hasSpecialBossFreeze = false;
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
         public bool AttackReady { get; private set; }
@@ -994,6 +994,9 @@ namespace Enemies
         {
             if (behaviorAgent != null)
                 behaviorAgent.enabled = false;
+            
+            if(hasSpecialBossFreeze)
+                animator.SetTrigger("Freeze");
 
             rb2D.linearVelocity = Vector2.zero;
             IsAttacking = false;
