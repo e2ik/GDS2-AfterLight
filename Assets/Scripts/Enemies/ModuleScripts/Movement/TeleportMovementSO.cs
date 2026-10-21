@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using FMODUnity;
+using Unity.VisualScripting;
+using UnityEngine;
 
 namespace Enemies.ModuleScripts.Movement
 {
@@ -36,13 +38,15 @@ namespace Enemies.ModuleScripts.Movement
         [SerializeField] private bool invulnerableWhileTeleporting = true;
         [SerializeField] private bool disableCollisionWhileTeleporting = true;
 
+        [Header("SFX")]
+        [SerializeField] private EventReference disappearSound;
+
 
         public void Begin(EnemyContext ctx)
         {
             ctx.Body.linearVelocity = Vector2.zero;
             ctx.TeleportDestination = ClampInsideBounds(ctx, PickDestination(ctx));
             MarkUsed(ctx);
-
             if (invulnerableWhileTeleporting && ctx.Health != null) ctx.Health.Invulnerable = true;
             if (disableCollisionWhileTeleporting) ctx.Body.simulated = false;
             ctx.TeleportStartedTime = Time.time;
@@ -64,6 +68,7 @@ namespace Enemies.ModuleScripts.Movement
                     if ((state.IsName(teleportOutStateName) && state.normalizedTime >= 1f) || ctx.TeleportTimer <= 0f)
                     {
                         Vector2 destination = ctx.TeleportDestination;
+                        AudioManager.PlaySFX(disappearSound);
                         SetHidden(ctx, true);
                         ctx.Self.position = destination;
                         ctx.TeleportPhase = TeleportPhase.Hidden;

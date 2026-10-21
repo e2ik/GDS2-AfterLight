@@ -315,11 +315,11 @@ MonoBehaviour:
     Path: event:/CombatSFXEvents/EnemyHitEvent
   attackEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: -2088756105
+      Data2: 1120216882
+      Data3: 1814795399
+      Data4: -1736691900
+    Path: event:/CombatSFXEvents/CannedHeat Attack Event
   spriteRenderer: {fileID: 5107996575365250629}
   hitFlash: {fileID: 8447035490974730339}
   flashColor: {r: 1.7814789, g: 0, b: 0, a: 1}
@@ -589,19 +589,27 @@ MonoBehaviour:
   - id: AttackEvent
     sfxEvent:
       Guid:
-        Data1: -371307370
-        Data2: 1180612900
-        Data3: -1733081435
-        Data4: -1406247420
-      Path: event:/CombatSFXEvents/WhipAttackEvent
+        Data1: -2088756105
+        Data2: 1120216882
+        Data3: 1814795399
+        Data4: -1736691900
+      Path: event:/CombatSFXEvents/CannedHeat Attack Event
   - id: HeavyAttack
     sfxEvent:
       Guid:
-        Data1: 873030172
-        Data2: 1164482081
-        Data3: -2010547302
-        Data4: 1697953371
-      Path: event:/CombatSFXEvents/EnemyMeleeAttackEvent
+        Data1: 1739630346
+        Data2: 1283924578
+        Data3: -261085565
+        Data4: -1791523683
+      Path: event:/CombatSFXEvents/HammerAttackEvent
+  - id: VanishEvent
+    sfxEvent:
+      Guid:
+        Data1: -533370710
+        Data2: 1340534553
+        Data3: -47922758
+        Data4: 1055135207
+      Path: event:/CombatSFXEvents/CannedHeat Vanish Event
 --- !u!114 &8447035490974730339
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -765,14 +773,15 @@ MonoBehaviour:
   rimMaterial: {fileID: 2100000, guid: 1816ea9bcb3f8e0419743ad5dfd0b6f5, type: 2}
   tint: {r: 1, g: 1, b: 1, a: 1}
   intensity: 1.7
-  width: 1
+  depth: 3
+  fadePower: 1
   includeDiagonals: 0
   sortingOrderOffset: 2
   sampleOffset: {x: 0, y: 0.5}
   falloffPower: 0.25
   minimumLight: 0
+  maxBrightness: 1
   colorSmoothing: 12
-  lightRefreshInterval: 0.5
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0

@@ -35,6 +35,7 @@ namespace Enemies.ProjectileScripts
 
         [Header("Detonation")]
         [SerializeField] private SpriteRenderer trapSprite;
+        [SerializeField] private EventReference explodeEvent;
 
         [Header("Trigger / Warning")] 
         [SerializeField] private float warningDelay = 0.6f;
@@ -339,7 +340,7 @@ namespace Enemies.ProjectileScripts
         {
             warningTimer -= Time.fixedDeltaTime;
             if(warningTimer <= 0f)
-                Fire();
+                Fire();         
         }
 
         private void Fire()
@@ -354,10 +355,11 @@ namespace Enemies.ProjectileScripts
             if (trapSprite != null) trapSprite.enabled = false;
             if (armedGlow != null) armedGlow.ReleaseHold(true);
             glowActive = false;
-
+            
             foreach (HitBox beam in beamHitBoxes)
             {
                 Vector2 direction = beam.transform.right;
+                AudioManager.PlaySFX(explodeEvent);
                 beam.Enable(Damage, CombatUtility.GetDirectionFromVelocity(direction), beamAttackForce);
                 var vfx = beam.GetComponent<LaserBeamVFX>();
                 vfx?.HideWarning();

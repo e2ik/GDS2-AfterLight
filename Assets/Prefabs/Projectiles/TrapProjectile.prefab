@@ -193,6 +193,10 @@ MonoBehaviour:
   hitbox: {fileID: 0}
   hurtbox: {fileID: 0}
   vfxBox: {fileID: 0}
+  groundObjs: []
+  bonusZones: []
+  bonusDamageMultiplier: 2
+  debugBonus: 0
 --- !u!114 &3971712004336234337
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,6 +211,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ProjectileScripts.TrapProjectile
   lifetime: 3.4028235e+38
   attackForce: 1
+  damagesEnemies: 0
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 0
   gravityScale: 2
   landEvent:
     Guid:
@@ -215,6 +223,7 @@ MonoBehaviour:
       Data3: -257892426
       Data4: 2053622759
     Path: event:/Interface Events/Dialogue Event
+  despawnWhenParried: 1
   hoverAmplitude: {x: 0.5, y: 0.5}
   hoverSpeed: 0.6
   hoverBlendSpeed: 4
@@ -262,6 +271,13 @@ MonoBehaviour:
   beamAttackForce: 0
   beamsHitOnce: 1
   trapSprite: {fileID: 0}
+  explodeEvent:
+    Guid:
+      Data1: -347758787
+      Data2: 1256844490
+      Data3: 520570047
+      Data4: -807845951
+    Path: event:/CombatSFXEvents/Projectile Explosion Event
   warningDelay: 0.6
   warningEvent:
     Guid:

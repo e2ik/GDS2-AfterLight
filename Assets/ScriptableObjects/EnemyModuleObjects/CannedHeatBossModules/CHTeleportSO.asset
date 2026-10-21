@@ -30,3 +30,13 @@ MonoBehaviour:
   teleportOutStateName: TeleportOut
   teleportInStateName: TeleportIn
   hiddenDuration: 1.5
+  animationTimeout: 2
+  invulnerableWhileTeleporting: 1
+  disableCollisionWhileTeleporting: 1
+  disappearSound:
+    Guid:
+      Data1: -533370710
+      Data2: 1340534553
+      Data3: -47922758
+      Data4: 1055135207
+    Path: event:/CombatSFXEvents/CannedHeatVanishEvent
