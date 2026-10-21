@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b04170c91f3eb046ad7a20b2defbb91, type: 3}
   m_Name: ObservationDogEnemy
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Observation.FacingRangeObservationSO
-  viewDistance: 5
+  viewDistance: 8
   viewHeight: 1
   targetMask:
     serializedVersion: 2
@@ -20,5 +20,5 @@ MonoBehaviour:
   obstructionMask:
     serializedVersion: 2
     m_Bits: 64
-  proximityRadius: 5
+  proximityRadius: 6
   memoryDuration: 2.5

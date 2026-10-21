@@ -397,6 +397,7 @@ MonoBehaviour:
   wallJumpCounterStrength: 0.1
   wallSlideUpwardDampening: 0.9
   wallCheckNormalThreshold: 0.5
+  airOnlyWallOverlapTolerance: 0.05
   wallJumpForce: {x: 8, y: 16}
   wallJumpDuration: 0.4
   wallJumpBufferTime: 0.2
@@ -488,7 +489,7 @@ MonoBehaviour:
   plungeBounceForce: 15
   plungeBounceSideAmount: 0.25
   plungeRecoveryDuration: 1
-  attackWidth: 2
+  attackWidth: 3
   attackDuration: 0.4
   attackCoolDown: 0.1
   attackBufferTime: 0.15
@@ -1088,7 +1089,6 @@ MonoBehaviour:
   minimumLight: 0
   maxBrightness: 0.5
   colorSmoothing: 12
-  lightRefreshInterval: 0.5
 --- !u!1 &8844592283841214288
 GameObject:
   m_ObjectHideFlags: 0
