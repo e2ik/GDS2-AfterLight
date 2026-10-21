@@ -316,6 +316,8 @@ MonoBehaviour:
   nearAlpha: 0.4
   farAlpha: 0
   farScaleMultiplier: 0.5
+  climbFadeOutTime: 0.1
+  climbFadeInTime: 0.25
 --- !u!1 &2233836205045440160
 GameObject:
   m_ObjectHideFlags: 0
@@ -583,6 +585,8 @@ MonoBehaviour:
   spriteFacesLeft: 1
   raiseSortingWhenOverlapping: 1
   overlapPadding: 0
+  ignoreAttackCap: 0
+  attackSlotReserveTimeout: 1
   queueAttackers: 0
   queueSpacing: 1.5
   queueYieldTime: 1.5
@@ -847,8 +851,21 @@ MonoBehaviour:
   moveWindupGlow:
     enabled: 1
     color: {r: 0, g: 0.41679955, b: 1, a: 1}
+    intensity: 2.7
+    checkerLow: 0.786
+    checkerSize: 1
+  chargeGlow:
+    enabled: 1
+    color: {r: 0.10196078, g: 0.9615841, b: 1, a: 1}
     intensity: 3
-    checkerLow: 0.5
+    checkerLow: 0.821
+    checkerSize: 1
+  retreatUsesOwnGlow: 1
+  retreatGlow:
+    enabled: 1
+    color: {r: 0, g: 0.58431375, b: 1, a: 1}
+    intensity: 2.2
+    checkerLow: 0.398
     checkerSize: 1
 --- !u!1 &5835482462216775301
 GameObject:

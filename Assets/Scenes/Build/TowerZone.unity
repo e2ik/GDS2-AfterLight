@@ -9588,6 +9588,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: DRB Boss Fight
       objectReference: {fileID: 0}
+    - target: {fileID: 4831397140941519834, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 35.983257
+      objectReference: {fileID: 0}
+    - target: {fileID: 4831397140941519834, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 13.329998
+      objectReference: {fileID: 0}
     - target: {fileID: 5681199292943563232, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 160.36
@@ -9636,8 +9644,21 @@ PrefabInstance:
       propertyPath: m_WasSpriteAssigned
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7175029450576355374, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 3.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 7317828967423252655, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 35.983257
+      objectReference: {fileID: 0}
+    - target: {fileID: 7317828967423252655, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 13.33
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 5189887403319601961, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}

@@ -1,4 +1,5 @@
 using Enemies;
+using Enemies.ModuleScripts.Movement;
 using UnityEngine;
 
 public class EnemyAttackGlow : MonoBehaviour
@@ -51,6 +52,11 @@ public class EnemyAttackGlow : MonoBehaviour
     [Header("Movement Windup")]
     [SerializeField] private Style moveWindupGlow = new Style { color = new Color(0.3f, 0.8f, 1f), intensity = 1.5f };
 
+    [Header("Approach And Retreat")]
+    [SerializeField] private Style chargeGlow = new Style { color = new Color(1f, 0.4f, 0.1f), intensity = 2.5f };
+    [SerializeField] private bool retreatUsesOwnGlow = false;
+    [SerializeField] private Style retreatGlow = new Style { color = new Color(0.6f, 0.6f, 1f), intensity = 1.5f };
+
     private readonly MultiplyOutline.GlowStyle outlineStyle = new MultiplyOutline.GlowStyle();
     private readonly ColorGlow.GlowStyle colorGlowStyle = new ColorGlow.GlowStyle();
     private bool glowOn;
@@ -102,10 +108,10 @@ public class EnemyAttackGlow : MonoBehaviour
             bool canBoost = ctx.CurrentAttackForce != AttackForce.Heavy || heavyGetsParryBoost;
             parryOpen = canBoost && ctx.AttackEvents != null && ctx.AttackEvents.ParryWindowOpen;
         }
-        else if (enemy != null && enemy.InMoveWindupPhase)
+        else if (enemy != null && enemy.Context != null && (enemy.InMoveWindupPhase || enemy.Context.ApproachRetreat.Active))
         {
-            style = moveWindupGlow;
-            color = moveWindupGlow.color;
+            style = MovementStyle(enemy);
+            if (style != null) color = style.color;
         }
 
         float targetBoost = parryOpen ? parryIntensityBoost : 0f;
@@ -133,6 +139,17 @@ public class EnemyAttackGlow : MonoBehaviour
         }
 
         SetGlow(on);
+    }
+
+    private Style MovementStyle(Enemy target)
+    {
+        ApproachPhase phase = target.Context.ApproachRetreat.Phase;
+        bool usesWindup = target.UsesMoveWindup;
+        bool travelling = usesWindup ? target.IsMoveMoving : target.Context.ApproachRetreat.Active;
+
+        if (travelling && phase == ApproachPhase.Approach) return chargeGlow;
+        if (travelling && phase == ApproachPhase.Retreat && retreatUsesOwnGlow) return retreatGlow;
+        return target.InMoveWindupPhase ? moveWindupGlow : null;
     }
 
     private bool InAttackAnimation(Animator animator)
