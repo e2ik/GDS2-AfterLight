@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using FMODUnity;
 using UnityEngine;
 
 public class PlayerHeals : MonoBehaviour
@@ -7,6 +8,7 @@ public class PlayerHeals : MonoBehaviour
     private int curr;
     [SerializeField] private int max = 3;
     [SerializeField] private float healAmount = 70f;
+    [SerializeField] private EventReference healSound;
 
     private PlayerStats pStats;
     public event Action<int> OnUpdateHeals; 
@@ -51,6 +53,7 @@ public class PlayerHeals : MonoBehaviour
         if (curr <= 0) return;
         curr -= 1;
         OnUpdateHeals?.Invoke(curr);
+        AudioManager.PlaySFX(healSound);
         pStats.Heal(healAmount);
     }
 

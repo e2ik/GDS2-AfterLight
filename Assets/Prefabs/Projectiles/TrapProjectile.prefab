@@ -215,6 +215,9 @@ MonoBehaviour:
   enemyMask:
     serializedVersion: 2
     m_Bits: 0
+  playerHurtClip: {fileID: 0}
+  overrideHurtFlashColor: 0
+  playerHurtFlashColor: {r: 1, g: 1, b: 1, a: 1}
   gravityScale: 2
   landEvent:
     Guid:
@@ -281,11 +284,11 @@ MonoBehaviour:
   warningDelay: 0.6
   warningEvent:
     Guid:
-      Data1: 1184366980
-      Data2: 1163176732
-      Data3: 295247018
-      Data4: 2098668369
-    Path: event:/CombatSFXEvents/Parry Warning Event
+      Data1: -802662474
+      Data2: 1113631936
+      Data3: -1454339923
+      Data4: -1159265973
+    Path: event:/CombatSFXEvents/TrapProjectileExplosion
   armedLifetime: 8
   armedGlow: {fileID: 9146911830956874588}
   colorGlow: {fileID: 0}

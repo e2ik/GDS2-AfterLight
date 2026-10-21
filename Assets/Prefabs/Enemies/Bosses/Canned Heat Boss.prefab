@@ -286,6 +286,8 @@ MonoBehaviour:
   spriteFacesLeft: 0
   raiseSortingWhenOverlapping: 1
   overlapPadding: 0
+  ignoreAttackCap: 0
+  attackSlotReserveTimeout: 1
   queueAttackers: 0
   queueSpacing: 1.5
   queueYieldTime: 1.5
@@ -319,7 +321,7 @@ MonoBehaviour:
       Data2: 1120216882
       Data3: 1814795399
       Data4: -1736691900
-    Path: event:/CombatSFXEvents/CannedHeat Attack Event
+    Path: event:/CombatSFXEvents/CannedHeatAttackEvent
   spriteRenderer: {fileID: 5107996575365250629}
   hitFlash: {fileID: 8447035490974730339}
   flashColor: {r: 1.7814789, g: 0, b: 0, a: 1}
@@ -338,6 +340,7 @@ MonoBehaviour:
   deathTrigger: Death
   deathStateName: Death
   deathAnimationTimeout: 2
+  hasSpecialBossFreeze: 0
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -602,14 +605,6 @@ MonoBehaviour:
         Data3: -261085565
         Data4: -1791523683
       Path: event:/CombatSFXEvents/HammerAttackEvent
-  - id: VanishEvent
-    sfxEvent:
-      Guid:
-        Data1: -533370710
-        Data2: 1340534553
-        Data3: -47922758
-        Data4: 1055135207
-      Path: event:/CombatSFXEvents/CannedHeat Vanish Event
 --- !u!114 &8447035490974730339
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -755,6 +750,19 @@ MonoBehaviour:
   moveWindupGlow:
     enabled: 1
     color: {r: 0.3, g: 0.8, b: 1, a: 1}
+    intensity: 1.5
+    checkerLow: 0.5
+    checkerSize: 1
+  chargeGlow:
+    enabled: 1
+    color: {r: 1, g: 0.4, b: 0.1, a: 1}
+    intensity: 2.5
+    checkerLow: 0.5
+    checkerSize: 1
+  retreatUsesOwnGlow: 0
+  retreatGlow:
+    enabled: 1
+    color: {r: 0.6, g: 0.6, b: 1, a: 1}
     intensity: 1.5
     checkerLow: 0.5
     checkerSize: 1

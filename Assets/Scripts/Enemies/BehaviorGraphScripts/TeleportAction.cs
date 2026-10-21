@@ -5,6 +5,7 @@ using Unity.Behavior;
 using UnityEngine;
 using Action = Unity.Behavior.Action;
 using Unity.Properties;
+using FMODUnity;
 
 [Serializable, GeneratePropertyBag]
 [NodeDescription(name: "Teleport Action", story: "Agent Teleports", category: "Action", id: "535f6af4818612b752aa8fb67b6c1901")]
@@ -14,6 +15,7 @@ public partial class TeleportAction : Action
     [SerializeReference] public BlackboardVariable<TeleportMovementSO> TeleportModule;
 
     private Enemy _enemy;
+    private EventReference disappearSound;
 
     protected override Status OnStart()
     {
@@ -35,7 +37,9 @@ public partial class TeleportAction : Action
             return Status.Failure;
         }
 
+        disappearSound = RuntimeManager.PathToEventReference("event:/CombatSFXEvents/CannedHeatVanishEvent");
         TeleportModule.Value.Begin(_enemy.Context);
+       
         _enemy.MarkTeleportUsed();
         return Status.Running;
     }

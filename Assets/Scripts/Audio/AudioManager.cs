@@ -22,7 +22,6 @@ public static class AudioManager
             LogMissingEvent(context);
             return;
         }
-
         RuntimeManager.PlayOneShot(sfxEvent, position);
     }
 
@@ -35,7 +34,6 @@ public static class AudioManager
         }
 
         if (target == null) return;
-
         RuntimeManager.PlayOneShotAttached(sfxEvent, target);
     }
 

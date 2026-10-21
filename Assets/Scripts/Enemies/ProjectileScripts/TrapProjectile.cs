@@ -345,21 +345,20 @@ namespace Enemies.ProjectileScripts
 
         private void Fire()
         {
+            AudioManager.PlaySFX(explodeEvent);
             phase = TrapPhase.Firing;
             fireTimer = fireDuration;
             beamDisablePending = false;
             beamsSpent = false;
             beamGrowTimer = 0f;
             SetBeamLength(beamGrowDuration > 0f ? 0f : beamLength);
-
+            AudioManager.PlaySFX(explodeEvent, transform.position);
             if (trapSprite != null) trapSprite.enabled = false;
             if (armedGlow != null) armedGlow.ReleaseHold(true);
             glowActive = false;
-            
             foreach (HitBox beam in beamHitBoxes)
             {
                 Vector2 direction = beam.transform.right;
-                AudioManager.PlaySFX(explodeEvent);
                 beam.Enable(Damage, CombatUtility.GetDirectionFromVelocity(direction), beamAttackForce);
                 var vfx = beam.GetComponent<LaserBeamVFX>();
                 vfx?.HideWarning();

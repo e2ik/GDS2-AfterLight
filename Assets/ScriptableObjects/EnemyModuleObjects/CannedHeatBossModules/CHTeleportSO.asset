@@ -35,8 +35,15 @@ MonoBehaviour:
   disableCollisionWhileTeleporting: 1
   disappearSound:
     Guid:
-      Data1: -533370710
-      Data2: 1340534553
-      Data3: -47922758
-      Data4: 1055135207
-    Path: event:/CombatSFXEvents/CannedHeatVanishEvent
+      Data1: -2070122746
+      Data2: 1175544552
+      Data3: -52425051
+      Data4: -1223247090
+    Path: event:/CombatSFXEvents/VanishEvent
+  reappearSound:
+    Guid:
+      Data1: -2070122746
+      Data2: 1175544552
+      Data3: -52425051
+      Data4: -1223247090
+    Path: event:/CombatSFXEvents/VanishEvent

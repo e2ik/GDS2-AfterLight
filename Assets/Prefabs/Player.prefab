@@ -355,6 +355,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHeals
   max: 3
   healAmount: 70
+  healSound:
+    Guid:
+      Data1: -1667255183
+      Data2: 1250584896
+      Data3: -1208214129
+      Data4: 1472509125
+    Path: event:/CombatSFXEvents/Player Heal Event
 --- !u!114 &2301400823228123696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -465,7 +472,6 @@ MonoBehaviour:
       Data4: -1604961005
     Path: event:/PlayerMovementSFX Events/Dash
   fadeDuration: 0.2
-  healDuration: 0.1
 --- !u!114 &3547647608137716798
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -517,7 +523,7 @@ MonoBehaviour:
   attackActiveEnd: 1
   dashAttackConflictWindow: 0.03
   jumpAttackConflictWindow: 0.03
-  skillMeterAlwaysFull: 0
+  skillMeterAlwaysFull: 1
   skillCoolDown: 0.2
   chargingSkillMinDur: 0.4
   chargingSkillMaxDur: 1.5
