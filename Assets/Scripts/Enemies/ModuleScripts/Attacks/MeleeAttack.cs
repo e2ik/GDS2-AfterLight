@@ -11,7 +11,6 @@ namespace Enemies.ModuleScripts.Attacks
         [SerializeField] private AttackForce attackForce = AttackForce.Light;
         [SerializeField] private EventReference executeAttackEvent;
 
-        [SerializeField] private string placeholderClipName = "AttackPlaceholder";
         [SerializeField] private string attackStateName = "Attack";
 
         public override void Begin(EnemyContext ctx)

@@ -18,7 +18,6 @@ namespace Enemies.ModuleScripts.Attacks
         [SerializeField] private bool useCustomSpawnPoint = false;
         
         [SerializeField] private AnimationClip clip;
-        [SerializeField] private string placeholderClipName = "AttackPlaceholder";
         [SerializeField] private string attackStateName = "Attack";
 
         [SerializeField] private EventReference launchEvent;
@@ -96,7 +95,7 @@ namespace Enemies.ModuleScripts.Attacks
             }
 
             var state = ctx.Animator.GetCurrentAnimatorStateInfo(0);
-            return state.normalizedTime >= 1f || !state.IsName("Attack");
+            return state.normalizedTime >= 1f || !state.IsName(attackStateName);
         }
     }
 }

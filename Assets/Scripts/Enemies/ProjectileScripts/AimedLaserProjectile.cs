@@ -89,6 +89,7 @@ namespace Enemies.ProjectileScripts
         protected override void OnLaunch(Vector2 initialVelocity)
         {
             BuildSegments();
+            foreach (BeamSegment segment in segments) ApplyHurtOverride(segment.HitBox);
             anticipationPlayed = false;
 
             Rb.gravityScale = 0f;
@@ -445,9 +446,8 @@ namespace Enemies.ProjectileScripts
 
         private void HitPlayersInsideBeam()
         {
-            ContactFilter2D filter = new ContactFilter2D();
+            ContactFilter2D filter = ContactFilter2D.noFilter;
             filter.useTriggers = true;
-            filter.NoFilter();
 
             for (int i = 0; i < segments.Count && i < path.Count; i++)
             {

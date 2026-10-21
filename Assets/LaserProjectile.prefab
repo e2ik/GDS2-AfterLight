@@ -284,6 +284,9 @@ MonoBehaviour:
   enemyMask:
     serializedVersion: 2
     m_Bits: 4608
+  playerHurtClip: {fileID: 7400000, guid: f1c88c6146126d945bebed0966f0111a, type: 2}
+  overrideHurtFlashColor: 1
+  playerHurtFlashColor: {r: 1.781479, g: 1.0863637, b: 0.39775145, a: 1}
   travelDuration: 0
   bodyHitsPlayer: 0
   targetOffset: {x: 0, y: 0.5}

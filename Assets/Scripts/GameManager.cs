@@ -79,6 +79,19 @@ public class GameManager : MonoBehaviour
     public bool TutorialsDisabled => disableTutorials;
     public bool OneHitKillEnemies => oneHitKillEnemies;
 
+    [Header("Enemy Attack Cap")]
+    [SerializeField, Min(0)] private int maxConcurrentAttackers = 2;
+    [SerializeField, Min(0f)] private float attackSlotCooldown = 0.3f;
+    [SerializeField, Range(0f, 1f)] private float extraAttackerChance = 0.25f;
+    [SerializeField, Min(0)] private int maxExtraAttackers = 1;
+    [SerializeField, Min(0.1f)] private float extraAttackerRollInterval = 1f;
+
+    public int MaxConcurrentAttackers => maxConcurrentAttackers;
+    public float AttackSlotCooldown => attackSlotCooldown;
+    public float ExtraAttackerChance => extraAttackerChance;
+    public int MaxExtraAttackers => maxExtraAttackers;
+    public float ExtraAttackerRollInterval => extraAttackerRollInterval;
+
     [Header("Parry")]
     [SerializeField] private bool projectilesIgnoreParryDirection = false;
 
@@ -460,6 +473,12 @@ public class GameManager : MonoBehaviour
 
         foreach (Scene scene in scenesToUnload)
         {
+            if (WorldStreamer.Instance != null && WorldStreamer.Instance.UsesResidentScenes)
+            {
+                WorldStreamer.Instance.MakeResident(scene);
+                continue;
+            }
+
             AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(scene);
             if (asyncUnload != null)
             {
@@ -507,6 +526,8 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator LoadSceneAdditive(string sceneName)
     {
+        if (WorldStreamer.Instance != null && WorldStreamer.Instance.ActivateResident(sceneName)) yield break;
+
         if (!SceneManager.GetSceneByName(sceneName).isLoaded)
         {
             AsyncOperation load = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);

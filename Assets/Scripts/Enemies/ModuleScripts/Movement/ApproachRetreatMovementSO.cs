@@ -41,7 +41,6 @@ namespace Enemies.ModuleScripts.Movement
         [SerializeField] private float retreatDistance = 4f;
         [Min(0.5f)] [SerializeField] private float timeout = 6f;
         [SerializeField] private bool lockTargetOnMoveStart = true;
-        [SerializeField] private bool endOnApproachWhenCyclesSatisfied = true;
         [SerializeField] private MoveWindupSettings windup = new MoveWindupSettings();
         [SerializeField] private bool debugLog = false;
 

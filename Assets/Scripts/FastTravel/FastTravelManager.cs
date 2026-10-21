@@ -89,7 +89,9 @@ public class FastTravelManager : MonoBehaviour
             SceneManager.SetActiveScene(masterScene);
         }
 
-        if (!SceneManager.GetSceneByName(targetScene).isLoaded)
+        bool activatedResident = WorldStreamer.Instance != null && WorldStreamer.Instance.ActivateResident(targetScene);
+
+        if (!activatedResident && !SceneManager.GetSceneByName(targetScene).isLoaded)
         {
             AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetScene, LoadSceneMode.Additive);
             while (!asyncLoad.isDone)
@@ -111,6 +113,12 @@ public class FastTravelManager : MonoBehaviour
 
         foreach (Scene scene in scenesToUnload)
         {
+            if (WorldStreamer.Instance != null && WorldStreamer.Instance.UsesResidentScenes)
+            {
+                WorldStreamer.Instance.MakeResident(scene);
+                continue;
+            }
+
             AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(scene);
             if (asyncUnload != null)
             {
