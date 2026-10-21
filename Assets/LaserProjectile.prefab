@@ -288,8 +288,10 @@ MonoBehaviour:
   bodyHitsPlayer: 0
   targetOffset: {x: 0, y: 0.5}
   trackDuringWarning: 1
-  lockBeforeFire: 1
-  warningDelay: 0.6
+  lockBeforeFire: 0.15
+  aimTurnSpeed: 10
+  startAngleOffset: 0
+  warningDelay: 0.75
   warningEvent:
     Guid:
       Data1: 0
@@ -353,7 +355,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   beamHitBox: {fileID: 695440728485148311}
-  beamLength: 20
+  beamLength: 30
   beamWidth: 0.2
   beamHitboxExtraWidth: 0.25
   fireDuration: 0.5

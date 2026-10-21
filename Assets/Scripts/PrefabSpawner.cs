@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class PrefabSpawner : MonoBehaviour
@@ -71,7 +74,12 @@ public class PrefabSpawner : MonoBehaviour
         {
             previewRenderer.sprite = null;
         }
+
+        Transform preview = transform.Find(PreviewName);
+        if (preview != null) Destroy(preview.gameObject);
     }
+
+    private const string PreviewName = "__SpawnPreview";
 
     private void OnEnable()
     {
@@ -225,17 +233,75 @@ public class PrefabSpawner : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        SpriteRenderer previewRenderer = GetComponent<SpriteRenderer>();
-        if (previewRenderer == null) return;
+        if (Application.isPlaying) return;
 
-        if (prefabToSpawn == null)
+        EditorApplication.delayCall -= RebuildPreview;
+        EditorApplication.delayCall += RebuildPreview;
+    }
+
+    private void RebuildPreview()
+    {
+        if (this == null || Application.isPlaying) return;
+        if (PrefabUtility.IsPartOfPrefabAsset(this)) return;
+
+        SpriteRenderer previewRenderer = GetComponent<SpriteRenderer>();
+        if (previewRenderer != null) previewRenderer.sprite = null;
+
+        Transform existing = transform.Find(PreviewName);
+        if (existing != null) DestroyImmediate(existing.gameObject);
+
+        if (prefabToSpawn == null) return;
+
+        GameObject root = new GameObject(PreviewName);
+        root.hideFlags = HideFlags.DontSave | HideFlags.HideInHierarchy | HideFlags.NotEditable;
+        root.transform.SetParent(transform, false);
+        root.layer = gameObject.layer;
+
+        Matrix4x4 prefabToLocal = prefabToSpawn.transform.worldToLocalMatrix;
+
+        foreach (SpriteRenderer source in prefabToSpawn.GetComponentsInChildren<SpriteRenderer>(true))
         {
-            previewRenderer.sprite = null;
-            return;
+            if (source.sprite == null || !source.enabled || !IsActiveInPrefab(source.transform)) continue;
+
+            Matrix4x4 m = prefabToLocal * source.transform.localToWorldMatrix;
+
+            GameObject part = new GameObject(source.name);
+            part.hideFlags = root.hideFlags;
+            part.layer = gameObject.layer;
+            part.transform.SetParent(root.transform, false);
+            part.transform.localPosition = m.GetColumn(3);
+            part.transform.localRotation = m.rotation;
+            Vector3 rootScale = prefabToSpawn.transform.lossyScale;
+            Vector3 sourceScale = source.transform.lossyScale;
+            part.transform.localScale = new Vector3(
+                rootScale.x != 0f ? sourceScale.x / rootScale.x : sourceScale.x,
+                rootScale.y != 0f ? sourceScale.y / rootScale.y : sourceScale.y,
+                1f);
+
+            SpriteRenderer copy = part.AddComponent<SpriteRenderer>();
+            copy.sprite = source.sprite;
+            copy.color = source.color;
+            copy.flipX = source.flipX;
+            copy.flipY = source.flipY;
+            copy.sharedMaterial = source.sharedMaterial;
+            copy.sortingLayerID = source.sortingLayerID;
+            copy.sortingOrder = source.sortingOrder;
+            copy.drawMode = source.drawMode;
+            if (source.drawMode != SpriteDrawMode.Simple) copy.size = source.size;
         }
 
-        SpriteRenderer prefabSr = prefabToSpawn.GetComponentInChildren<SpriteRenderer>();
-        previewRenderer.sprite = prefabSr != null ? prefabSr.sprite : null;
+        SceneVisibilityManager.instance.DisablePicking(root, true);
+    }
+
+    private bool IsActiveInPrefab(Transform t)
+    {
+        for (Transform current = t; current != null; current = current.parent)
+        {
+            if (!current.gameObject.activeSelf) return false;
+            if (current == prefabToSpawn.transform) break;
+        }
+
+        return true;
     }
 #endif
 }

@@ -36,6 +36,8 @@ namespace Enemies.ProjectileScripts
         [SerializeField] private LayerMask collideWithMask;
         [SerializeField] private EventReference hitEvent;
         [SerializeField] private string hitEffect = "ProjectileExplode";
+        [SerializeField, Min(0f)] private float hitAnimationDuration = 0.3f;
+        [SerializeField] private string hitTrigger = "Hit";
 
         private float elapsed;
         private float pulseTime;
@@ -46,12 +48,21 @@ namespace Enemies.ProjectileScripts
         private Color currentParticleColor;
         private bool missed;
         private bool lockedOn;
+        private bool hitting;
+        private Animator animator;
 
         protected override void OnLaunch(Vector2 initialVelocity)
         {
             elapsed = 0f;
             missed = false;
             lockedOn = false;
+            hitting = false;
+            if (animator == null) animator = GetComponent<Animator>();
+            if (animator != null && animator.runtimeAnimatorController != null)
+            {
+                animator.Rebind();
+                animator.Update(0f);
+            }
             pulseTime = 0f;
             isHoming = false;
             currentGlowColor = notHomingColor;
@@ -70,6 +81,8 @@ namespace Enemies.ProjectileScripts
 
         private void FixedUpdate()
         {
+            if (hitting) return;
+
             if (HitBox.HasBeenParried)
             {
                 ReturnToPool();
@@ -180,12 +193,14 @@ namespace Enemies.ProjectileScripts
 
         protected override bool OnHitTrigger(Collider2D other)
         {
+            if (hitting) return false;
             if (other.transform.IsChildOf(transform) || (Owner != null && other.transform.IsChildOf(Owner))) return false;
+            if (IsPassThroughPlatform(other)) return false;
 
             if (TryDamageEnemy(other))
             {
                 PlayHitFeedback();
-                return true;
+                return StartHit();
             }
 
             PlayerHurtBox hurtBox = other.GetComponentInParent<PlayerHurtBox>();
@@ -196,14 +211,45 @@ namespace Enemies.ProjectileScripts
                 Collider2D ownerCollider = Owner != null ? Owner.GetComponentInChildren<Collider2D>() : null;
                 hurtBox.TakeHit(HitBox, ownerCollider);
                 PlayHitFeedback();
-                return true;
+                return StartHit();
             }
 
             if ((collideWithMask.value & (1 << other.gameObject.layer)) != 0)
             {
                 PlayHitFeedback();
-                return true;
+                return StartHit();
             }
+
+            return false;
+        }
+
+        private static bool IsPassThroughPlatform(Collider2D col)
+        {
+            return col.GetComponentInParent<DropThroughPlatform>() != null
+                   || col.GetComponentInParent<AirOnlyCollisionPlatform>() != null;
+        }
+
+        private bool StartHit()
+        {
+            if (hitAnimationDuration <= 0f) return true;
+
+            hitting = true;
+            isHoming = false;
+            Rb.linearVelocity = Vector2.zero;
+            HitBox.Disable();
+
+            if (animator != null && HasTrigger(hitTrigger)) animator.SetTrigger(hitTrigger);
+
+            Invoke(nameof(ReturnToPool), hitAnimationDuration);
+            return false;
+        }
+
+        private bool HasTrigger(string trigger)
+        {
+            if (string.IsNullOrEmpty(trigger) || animator.runtimeAnimatorController == null) return false;
+
+            foreach (AnimatorControllerParameter parameter in animator.parameters)
+                if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == trigger) return true;
 
             return false;
         }
@@ -219,6 +265,7 @@ namespace Enemies.ProjectileScripts
             base.OnPoolRelease();
             elapsed = 0f;
             missed = false;
+            hitting = false;
             lockedOn = false;
             transform.rotation = Quaternion.identity;
         }

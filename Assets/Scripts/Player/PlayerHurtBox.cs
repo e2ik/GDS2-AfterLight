@@ -111,6 +111,7 @@ public class PlayerHurtBox : MonoBehaviour
             return false;
         }
         if (hitbox.HasBeenParried || hitbox.HasHit) return false;
+        if (pendingHitbox == hitbox) return false;
 
         playerController.CancelHeal();
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;

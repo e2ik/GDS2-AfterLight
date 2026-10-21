@@ -212,6 +212,8 @@ public class MasterNavMeshController : MonoBehaviour
 
         if (asyncBake && navMeshSurface.navMeshData != null)
         {
+            navMeshSurface.navMeshData.position = navMeshSurface.transform.position;
+            navMeshSurface.navMeshData.rotation = navMeshSurface.transform.rotation;
             pendingBake = navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
             if (pendingBake == null) navMeshSurface.BuildNavMesh();
         }
@@ -243,9 +245,11 @@ public class MasterNavMeshController : MonoBehaviour
 
         foreach (GameObject obj in sceneObjects)
         {
-            AirOnlyCollisionPlatform airOnlyPlatform = obj.GetComponent<AirOnlyCollisionPlatform>();
+            bool airOnlyPlatform = obj.GetComponent<AirOnlyCollisionPlatform>() != null;
+            bool dropPlatform = obj.GetComponent<Collider2D>() != null
+                                && (obj.GetComponent<PlatformEffector2D>() != null || obj.GetComponentInParent<DropThroughPlatform>() != null);
 
-            if (airOnlyPlatform != null)
+            if (airOnlyPlatform || dropPlatform)
             {
                 NavMeshPlus.Components.NavMeshModifier airPlatformModifier = obj.GetComponent<NavMeshPlus.Components.NavMeshModifier>();
                 if (airPlatformModifier == null)

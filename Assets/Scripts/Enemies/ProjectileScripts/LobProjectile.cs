@@ -35,6 +35,9 @@ namespace Enemies.ProjectileScripts
             if (other.transform.IsChildOf(transform) || transform.IsChildOf(other.transform))
                 return false;
 
+            if (IsPassThroughPlatform(other))
+                return false;
+
             PlayerHurtBox hurtBox = other.GetComponentInParent<PlayerHurtBox>();
             if (hurtBox != null || ((1 << other.gameObject.layer) & playerMask) != 0)
             {
@@ -50,6 +53,7 @@ namespace Enemies.ProjectileScripts
             if (IsEnemyTarget(other, out _))
             {
                 hasTriggered = true;
+                TryDamageEnemy(other);
                 Explode();
                 PlayHitAnimation();
                 return false;
@@ -64,6 +68,12 @@ namespace Enemies.ProjectileScripts
             }
 
             return false;
+        }
+
+        private static bool IsPassThroughPlatform(Collider2D col)
+        {
+            return col.GetComponentInParent<DropThroughPlatform>() != null
+                   || col.GetComponentInParent<AirOnlyCollisionPlatform>() != null;
         }
 
         private void TryExplodeOrParry(PlayerHurtBox directHitBox = null)
