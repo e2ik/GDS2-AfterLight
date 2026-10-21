@@ -44,6 +44,23 @@ namespace Enemies
         private SortingGroup sortingGroup;
         private int baseSortingOrder;
 
+        [Header("Attack Cap")]
+        [SerializeField] private bool ignoreAttackCap = false;
+        [SerializeField, Min(0.1f)] private float attackSlotReserveTimeout = 1f;
+        private static int activeAttackSlots;
+        private static readonly List<float> attackSlotCooldownEnds = new List<float>();
+        private bool holdsAttackSlot;
+        private float attackSlotTakenTime;
+        private bool extraSlotApproved;
+        private float nextExtraSlotRollTime;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetAttackSlots()
+        {
+            activeAttackSlots = 0;
+            attackSlotCooldownEnds.Clear();
+        }
+
         [Header("Attack Queue")]
         [SerializeField] private bool queueAttackers = false;
         [SerializeField, Min(0f)] private float queueSpacing = 1.5f;
@@ -126,7 +143,7 @@ namespace Enemies
         [SerializeField] private string deathTrigger = "Death";
         [SerializeField] private string deathStateName = "Death";
         [SerializeField] private float deathAnimationTimeout = 5f;
-
+        [SerializeField] private bool hasSpecialBossFreeze = false;
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
         public bool AttackReady { get; private set; }
@@ -165,6 +182,56 @@ namespace Enemies
             if (sortingGroup != null) sortingGroup.sortingOrder = baseSortingOrder;
 
             if (IsAttacking) MarkAttackEnded();
+            ReleaseAttackSlot(false);
+            extraSlotApproved = false;
+        }
+
+        private bool UsesAttackCap => !ignoreAttackCap && !IsBoss
+                                      && GameManager.Instance != null && GameManager.Instance.MaxConcurrentAttackers > 0;
+
+        private bool CanTakeAttackSlot()
+        {
+            if (holdsAttackSlot || !UsesAttackCap) return true;
+
+            GameManager manager = GameManager.Instance;
+            attackSlotCooldownEnds.RemoveAll(end => Time.time >= end);
+            if (activeAttackSlots + attackSlotCooldownEnds.Count < manager.MaxConcurrentAttackers) return true;
+
+            bool extraRoom = activeAttackSlots < manager.MaxConcurrentAttackers + manager.MaxExtraAttackers;
+            if (!extraRoom) return false;
+            if (extraSlotApproved) return true;
+            if (manager.ExtraAttackerChance <= 0f || Time.time < nextExtraSlotRollTime) return false;
+
+            nextExtraSlotRollTime = Time.time + manager.ExtraAttackerRollInterval;
+            extraSlotApproved = UnityEngine.Random.value < manager.ExtraAttackerChance;
+            return extraSlotApproved;
+        }
+
+        private void TakeAttackSlot()
+        {
+            if (holdsAttackSlot || !UsesAttackCap) return;
+
+            holdsAttackSlot = true;
+            extraSlotApproved = false;
+            attackSlotTakenTime = Time.time;
+            activeAttackSlots++;
+        }
+
+        private void ReleaseAttackSlot(bool useCooldown)
+        {
+            if (!holdsAttackSlot) return;
+
+            holdsAttackSlot = false;
+            activeAttackSlots = Mathf.Max(0, activeAttackSlots - 1);
+
+            float cooldown = GameManager.Instance != null ? GameManager.Instance.AttackSlotCooldown : 0f;
+            if (useCooldown && cooldown > 0f) attackSlotCooldownEnds.Add(Time.time + cooldown);
+        }
+
+        private void UpdateAttackSlotTimeout()
+        {
+            if (holdsAttackSlot && !IsAttacking && Time.time - attackSlotTakenTime > attackSlotReserveTimeout)
+                ReleaseAttackSlot(false);
         }
 
 
@@ -318,6 +385,8 @@ namespace Enemies
             if (Time.time < aggroAttackBlockUntil) attackReady = IsAttacking;
             UpdateAttackQueue();
             if (waitingInQueue) attackReady = IsAttacking;
+            UpdateAttackSlotTimeout();
+            if (!IsAttacking && !CanTakeAttackSlot()) attackReady = false;
             
             UpdateMoveHitbox();
 
@@ -525,6 +594,7 @@ namespace Enemies
             
             if (Time.time < aggroAttackBlockUntil) return false;
             if (waitingInQueue) return false;
+            if (!CanTakeAttackSlot()) return false;
  
             float totalWeight = attacks.Where(a => a.IsValid && !a.ManualOnly).Sum(a => a.Weight);
             if (totalWeight <= 0f) return false;
@@ -540,6 +610,7 @@ namespace Enemies
                 if (roll <= cumulative)
                 {
                     selected = attack;
+                    TakeAttackSlot();
                     return true;
                 }
             }
@@ -717,6 +788,7 @@ namespace Enemies
             ApplyFacing();
 
             IsAttacking = true;
+            TakeAttackSlot();
             Context.IsAttacking = true;
             Context.Body.linearVelocity = Vector2.zero;
             attackStartedTime = Time.time;
@@ -727,6 +799,7 @@ namespace Enemies
         {
             bool wasAttacking = IsAttacking;
             IsAttacking = false;
+            ReleaseAttackSlot(wasAttacking);
             if (wasAttacking && queueAttackers) queueYieldUntil = Time.time + queueYieldTime;
             Context.AttackEvents?.CloseBonusWindow();
             Context.IsAttacking = false;
@@ -921,9 +994,13 @@ namespace Enemies
         {
             if (behaviorAgent != null)
                 behaviorAgent.enabled = false;
+            
+            if(hasSpecialBossFreeze)
+                animator.SetTrigger("Freeze");
 
             rb2D.linearVelocity = Vector2.zero;
             IsAttacking = false;
+            ReleaseAttackSlot(false);
             Context.IsAttacking = false;
 
             foreach (HitBox hitBox in GetComponentsInChildren<HitBox>())

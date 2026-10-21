@@ -1,10 +1,13 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using UnityEngine.UI;
 
 [ExecuteAlways]
-public class InputActionPrompt : MonoBehaviour
+public class InputActionPrompt : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private InputActionReference action;
     [SerializeField] private InputIconDatabase icons;
@@ -20,6 +23,12 @@ public class InputActionPrompt : MonoBehaviour
     [SerializeField] private TMP_Text keyLabel;
     [SerializeField] private bool upperCaseKeys = true;
     [SerializeField] private bool resizeWidthToSprite = false;
+
+    [Header("Click")]
+    [SerializeField] private bool clickToPerform = true;
+    [SerializeField, Min(0f)] private float clickHoldPadding = 0.05f;
+
+    private Coroutine clickRoutine;
 
     [Header("Icon Glow")]
     [SerializeField] private Color iconColor = Color.white;
@@ -51,6 +60,96 @@ public class InputActionPrompt : MonoBehaviour
     {
         InputManager.OnDeviceChanged -= HandleDeviceChanged;
         InputSystem.onActionChange -= HandleActionChange;
+        clickRoutine = null;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (!clickToPerform || !Application.isPlaying) return;
+        if (eventData.button != PointerEventData.InputButton.Left) return;
+        PerformAction();
+    }
+
+    public void PerformAction()
+    {
+        if (clickRoutine != null) return;
+
+        InputAction inputAction = CurrentAction;
+        if (inputAction == null || !inputAction.enabled) return;
+        if (!TryGetClickControl(inputAction, out ButtonControl control, out int bindingIndex)) return;
+
+        float holdTime = UsesHold(inputAction, bindingIndex) ? InputSystem.settings.defaultHoldTime + clickHoldPadding : 0f;
+        clickRoutine = StartCoroutine(ClickRoutine(control, holdTime));
+    }
+
+    private IEnumerator ClickRoutine(ButtonControl control, float holdTime)
+    {
+        control.QueueValueChange(1f);
+        yield return null;
+
+        float elapsed = 0f;
+        while (elapsed < holdTime)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (control.device != null && control.device.added) control.QueueValueChange(0f);
+        clickRoutine = null;
+    }
+
+    private bool TryGetClickControl(InputAction inputAction, out ButtonControl result, out int resultBinding)
+    {
+        result = null;
+        resultBinding = -1;
+        ButtonControl fallback = null;
+        int fallbackBinding = -1;
+        bool wantPart = !string.IsNullOrEmpty(compositePart);
+
+        foreach (InputControl control in inputAction.controls)
+        {
+            if (!(control is ButtonControl button) || control.device is Mouse) continue;
+
+            int index = inputAction.GetBindingIndexForControl(control);
+            bool partMatches = !wantPart || (index >= 0 && string.Equals(inputAction.bindings[index].name, compositePart, System.StringComparison.OrdinalIgnoreCase));
+
+            if (control.device is Keyboard && partMatches)
+            {
+                result = button;
+                resultBinding = index;
+                return true;
+            }
+
+            if (fallback == null && partMatches)
+            {
+                fallback = button;
+                fallbackBinding = index;
+            }
+        }
+
+        result = fallback;
+        resultBinding = fallbackBinding;
+        return result != null;
+    }
+
+    private static bool UsesHold(InputAction inputAction, int bindingIndex)
+    {
+        if (ContainsHold(inputAction.interactions)) return true;
+        if (bindingIndex < 0 || bindingIndex >= inputAction.bindings.Count) return false;
+
+        if (ContainsHold(inputAction.bindings[bindingIndex].effectiveInteractions)) return true;
+
+        for (int i = bindingIndex - 1; i >= 0 && inputAction.bindings[i + 1].isPartOfComposite; i--)
+        {
+            if (inputAction.bindings[i].isComposite) return ContainsHold(inputAction.bindings[i].effectiveInteractions);
+        }
+
+        return false;
+    }
+
+    private static bool ContainsHold(string interactions)
+    {
+        return !string.IsNullOrEmpty(interactions) && interactions.IndexOf("hold", System.StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private void OnDestroy()

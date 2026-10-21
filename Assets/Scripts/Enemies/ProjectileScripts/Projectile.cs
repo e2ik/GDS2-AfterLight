@@ -16,6 +16,11 @@ namespace Enemies.ProjectileScripts
         [SerializeField] private bool damagesEnemies = false;
         [SerializeField] private LayerMask enemyMask;
 
+        [Header("Player Hurt")]
+        [SerializeField] private AnimationClip playerHurtClip;
+        [SerializeField] private bool overrideHurtFlashColor = false;
+        [SerializeField, ColorUsage(false, true)] private Color playerHurtFlashColor = Color.white;
+
         protected Rigidbody2D Rb { get; private set; }
         protected HitBox HitBox { get; private set; }
         protected AttackEvents Events { get; private set; }
@@ -56,12 +61,18 @@ namespace Enemies.ProjectileScripts
             enemiesHit.Clear();
 
             HitBox.Enable(damage, CombatUtility.GetDirectionFromVelocity(initialVelocity), attackForce);
+            ApplyHurtOverride(HitBox);
             Events.OpenParryWindow();
 
             OnLaunch(initialVelocity);
         }
 
         protected abstract void OnLaunch(Vector2 initialVelocity);
+
+        protected void ApplyHurtOverride(HitBox box)
+        {
+            if (box != null) box.SetHurtOverride(playerHurtClip, overrideHurtFlashColor, playerHurtFlashColor);
+        }
 
         protected void Update()
         {

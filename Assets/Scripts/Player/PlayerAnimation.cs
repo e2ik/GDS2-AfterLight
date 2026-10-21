@@ -184,7 +184,6 @@ public class PlayerAnimation : MonoBehaviour
     [SerializeField, ColorUsage(false, true)] private Color parryFlashColor = new Color(0.3f, 2f, 0.6f, 1f);
     [SerializeField, ColorUsage(false, true)] private Color healFlashColor = new Color(0.4f, 1.5f, 2f, 1f);
     private bool wasInvulnerable;
-    private bool wasDeadLastFrame;
 
     private void Awake()
     {
@@ -465,10 +464,8 @@ public class PlayerAnimation : MonoBehaviour
             animator.SetBool(IsClimbingHash, false);
             animator.SetBool(IsHealingHash, false);
 
-            wasDeadLastFrame = true;
             return;
         }
-        wasDeadLastFrame = false;
 
         bool isParrying = player.CombatController.IsParrying;
         bool aboutToLand = player.Controller.IsAboutToLand(out RaycastHit2D hit);

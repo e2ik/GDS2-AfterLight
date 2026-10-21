@@ -17,8 +17,23 @@ public class WorldStreamer : MonoBehaviour
 
     [SerializeField] private bool debugStreaming = false;
 
+    [Header("Unload Safety")]
+    [SerializeField] private bool unloadOnWebGL = false;
+    [SerializeField, Min(0f)] private float unloadSafetyRadius = 4f;
+    [SerializeField] private bool lowBackgroundLoadingPriority = true;
+    private readonly List<Collider2D> safetyHits = new List<Collider2D>();
+
+    public enum ResidentMode { Never, WebGLOnly, Always }
+
     [Header("Preload")]
     [SerializeField] private List<string> preloadScenes = new List<string>();
+    [SerializeField] private ResidentMode keepScenesResident = ResidentMode.WebGLOnly;
+    private readonly HashSet<string> residentScenes = new HashSet<string>();
+
+    public bool UsesResidentScenes => keepScenesResident == ResidentMode.Always
+                                      || (keepScenesResident == ResidentMode.WebGLOnly && Application.platform == RuntimePlatform.WebGLPlayer);
+
+    public bool IsResident(string sceneName) => residentScenes.Contains(sceneName);
 
     public bool IsPreloading { get; private set; }
 
@@ -32,14 +47,67 @@ public class WorldStreamer : MonoBehaviour
             return;
         }
         Instance = this;
+
+        if (lowBackgroundLoadingPriority) Application.backgroundLoadingPriority = ThreadPriority.Low;
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneUnloaded += HandleSceneUnloaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneUnloaded -= HandleSceneUnloaded;
+    }
+
+    private void HandleSceneUnloaded(Scene scene)
+    {
+        residentScenes.Remove(scene.name);
+    }
+
+    public bool ActivateResident(string sceneName)
+    {
+        if (!residentScenes.Remove(sceneName)) return false;
+
+        Scene scene = SceneManager.GetSceneByName(sceneName);
+        if (!scene.isLoaded) return false;
+
+        foreach (GameObject root in scene.GetRootGameObjects())
+            root.SetActive(true);
+
+        Log($"activated resident {sceneName}");
+        return true;
+    }
+
+    public void MakeResident(Scene scene)
+    {
+        if (!scene.isLoaded || scene == SceneManager.GetActiveScene()) return;
+
+        foreach (GameObject root in scene.GetRootGameObjects())
+            root.SetActive(false);
+
+        residentScenes.Add(scene.name);
+        Log($"made {scene.name} resident");
     }
 
     public void StreamAndStitchScene(string sceneToLoad, string sourceAnchorID, string targetAnchorID)
     {
         if (IsFastTraveling) return;
         if (string.IsNullOrEmpty(sceneToLoad)) return;
-        if (unloadingScenes.Contains(sceneToLoad)) return;
-        if (SceneManager.GetSceneByName(sceneToLoad).isLoaded || loadingScenes.Contains(sceneToLoad)) return;
+        if (unloadingScenes.Contains(sceneToLoad) || loadingScenes.Contains(sceneToLoad)) return;
+
+        if (residentScenes.Contains(sceneToLoad))
+        {
+            Log($"activating resident {sceneToLoad}");
+            residentScenes.Remove(sceneToLoad);
+            IsAligning = true;
+            AlignAndActivate(SceneManager.GetSceneByName(sceneToLoad), sourceAnchorID, targetAnchorID);
+            IsAligning = false;
+            return;
+        }
+
+        if (SceneManager.GetSceneByName(sceneToLoad).isLoaded) return;
 
         Log($"loading {sceneToLoad}");
         StartCoroutine(StreamAndAlignRoutine(sceneToLoad, sourceAnchorID, targetAnchorID));
@@ -49,10 +117,24 @@ public class WorldStreamer : MonoBehaviour
     {
         if (IsFastTraveling) return;
         if (string.IsNullOrEmpty(sceneName)) return;
-        if (loadingScenes.Contains(sceneName) || unloadingScenes.Contains(sceneName)) return;
+        if (loadingScenes.Contains(sceneName) || unloadingScenes.Contains(sceneName) || residentScenes.Contains(sceneName)) return;
 
         Scene scene = SceneManager.GetSceneByName(sceneName);
         if (!scene.isLoaded || scene == SceneManager.GetActiveScene()) return;
+
+        if (IsPlayerNearScene(scene))
+        {
+            Log($"kept {sceneName} loaded, player is standing near its geometry");
+            return;
+        }
+
+        if (UsesResidentScenes)
+        {
+            MakeResident(scene);
+            return;
+        }
+
+        if (Application.platform == RuntimePlatform.WebGLPlayer && !unloadOnWebGL) return;
 
         Log($"unloading {sceneName}");
         StartCoroutine(UnloadRoutine(sceneName));
@@ -84,7 +166,14 @@ public class WorldStreamer : MonoBehaviour
         }
 
         Scene newlyLoadedScene = SceneManager.GetSceneByName(sceneToLoad);
+        AlignAndActivate(newlyLoadedScene, sourceAnchorID, targetAnchorID);
 
+        loadingScenes.Remove(sceneToLoad);
+        IsAligning = false;
+    }
+
+    private void AlignAndActivate(Scene newlyLoadedScene, string sourceAnchorID, string targetAnchorID)
+    {
         GameObject[] rootObjects = newlyLoadedScene.GetRootGameObjects();
         foreach (GameObject root in rootObjects)
         {
@@ -123,9 +212,6 @@ public class WorldStreamer : MonoBehaviour
             root.SetActive(true);
         }
 
-        loadingScenes.Remove(sceneToLoad);
-        IsAligning = false;
-
         OnSceneStreamed?.Invoke(newlyLoadedScene);
     }
 
@@ -152,12 +238,37 @@ public class WorldStreamer : MonoBehaviour
             foreach (GameObject root in scene.GetRootGameObjects())
                 root.SetActive(false);
 
+            if (UsesResidentScenes)
+            {
+                residentScenes.Add(sceneName);
+                continue;
+            }
+
             AsyncOperation unload = SceneManager.UnloadSceneAsync(scene);
             if (unload == null) continue;
             while (!unload.isDone) yield return null;
         }
 
         IsPreloading = false;
+    }
+
+    private bool IsPlayerNearScene(Scene scene)
+    {
+        if (unloadSafetyRadius <= 0f) return false;
+        if (GameManager.Instance == null || GameManager.Instance.Player == null) return false;
+
+        Vector2 center = GameManager.Instance.Player.transform.position;
+        ContactFilter2D filter = ContactFilter2D.noFilter;
+        filter.useTriggers = false;
+
+        int count = Physics2D.OverlapCircle(center, unloadSafetyRadius, filter, safetyHits);
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D hit = safetyHits[i];
+            if (hit != null && hit.gameObject.scene == scene) return true;
+        }
+
+        return false;
     }
 
     private void Log(string message)

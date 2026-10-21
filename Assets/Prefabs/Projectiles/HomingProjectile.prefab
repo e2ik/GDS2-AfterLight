@@ -257,6 +257,9 @@ MonoBehaviour:
   enemyMask:
     serializedVersion: 2
     m_Bits: 4608
+  playerHurtClip: {fileID: 7400000, guid: f1c88c6146126d945bebed0966f0111a, type: 2}
+  overrideHurtFlashColor: 1
+  playerHurtFlashColor: {r: 1.781479, g: 0.962196, b: 0.26330018, a: 1}
   speed: 6
   turnRate: 150
   homingDelay: 0.15
@@ -292,6 +295,8 @@ MonoBehaviour:
       Data4: 0
     Path: 
   hitEffect: ProjectileExplode
+  hitAnimationDuration: 0.3
+  hitTrigger: Hit
 --- !u!1 &4107188041399619664
 GameObject:
   m_ObjectHideFlags: 0

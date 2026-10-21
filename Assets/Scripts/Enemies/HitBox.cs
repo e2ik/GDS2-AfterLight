@@ -15,6 +15,10 @@ namespace Enemies
         public bool IsActive => col.enabled;
         public bool HasBeenParried { get; private set; }
         public bool HasHit { get; private set; }
+        public AnimationClip HurtClip { get; private set; }
+        public bool HasHurtFlashColor { get; private set; }
+        public Color HurtFlashColor { get; private set; }
+        public bool HasCustomHurt => HurtClip != null || HasHurtFlashColor;
 
         private void Awake()
         {
@@ -32,6 +36,13 @@ namespace Enemies
             IgnoreParryDirection = ignoreParryDirection;
             HasBeenParried = false;
             HasHit = false;
+        }
+
+        public void SetHurtOverride(AnimationClip clip, bool useFlashColor, Color flashColor)
+        {
+            HurtClip = clip;
+            HasHurtFlashColor = useFlashColor;
+            HurtFlashColor = flashColor;
         }
 
         public void UpdateParryDirection(ParryDirection direction) => ParryDirection = direction;

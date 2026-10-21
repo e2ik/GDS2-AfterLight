@@ -111,6 +111,7 @@ public class PlayerHurtBox : MonoBehaviour
             return false;
         }
         if (hitbox.HasBeenParried || hitbox.HasHit) return false;
+        if (pendingHitbox == hitbox) return false;
 
         playerController.CancelHeal();
         bool parryWindowOpen = hitbox.SourceEvents != null && hitbox.SourceEvents.ParryWindowOpen;
@@ -164,16 +165,20 @@ public class PlayerHurtBox : MonoBehaviour
         }
 
         Vector2 sourcePosition = hitbox.transform.root.transform.position;
+        bool customHurt = hitbox.HasCustomHurt && playerAnimation != null;
         if (!combatController.IsSkilling && !combatController.IsChargeInputHeld)
         {
-            playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce);
+            playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce, true, !customHurt);
         }
         else
         {
             combatController.CancelSkillStates();
             combatController.EndSkill();
-            playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce);
+            playerController.ApplyKnockback(sourcePosition, hitbox.AttackForce, true, !customHurt);
         }
+
+        if (customHurt)
+            playerAnimation.PlayHurtAnimation(hitbox.HurtClip, hitbox.HasHurtFlashColor ? hitbox.HurtFlashColor : (Color?)null);
 
         hitbox.ConfirmHit();
 

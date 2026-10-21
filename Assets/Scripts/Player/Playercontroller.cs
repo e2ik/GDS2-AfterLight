@@ -1026,7 +1026,6 @@ public class PlayerController : MonoBehaviour
     }
 
     private Coroutine attemptHealRoutine;
-    [SerializeField] private float healDuration = 0.1f;
     public event System.Action OnHealStarted;
     public event System.Action OnHealDenied;
 

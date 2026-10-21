@@ -220,8 +220,18 @@ public class EquipmentSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void OnPointerEnter(PointerEventData eventData)
     {
         isPointerOver = true;
+        SelectOnHover();
         Display?.OnSlotFocused(currentItem);
         UpdateTooltipState();
+    }
+
+    private void SelectOnHover()
+    {
+        if (EventSystem.current == null || actionButton == null) return;
+        if (!actionButton.IsActive() || !actionButton.IsInteractable()) return;
+        if (EventSystem.current.currentSelectedGameObject == actionButton.gameObject) return;
+
+        EventSystem.current.SetSelectedGameObject(actionButton.gameObject);
     }
 
     public void OnPointerExit(PointerEventData eventData)

@@ -205,6 +205,11 @@ MonoBehaviour:
   disableTutorials: 1
   skipCutscenes: 0
   oneHitKillEnemies: 0
+  maxConcurrentAttackers: 1
+  attackSlotCooldown: 0.3
+  extraAttackerChance: 0.33
+  maxExtraAttackers: 1
+  extraAttackerRollInterval: 1
   projectilesIgnoreParryDirection: 1
   backgroundPrefab: {fileID: 3327786354979037545, guid: f6bdba2aea3bb1741a687ba8d5d96a43, type: 3}
 --- !u!4 &78526258
@@ -248,6 +253,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldStreamer
   debugStreaming: 0
+  unloadOnWebGL: 0
+  unloadSafetyRadius: 4
+  lowBackgroundLoadingPriority: 1
   preloadScenes:
   - HospitalZone
   - TowerZone
@@ -362,30 +370,30 @@ MonoBehaviour:
   onlyPlayWhenNavigatingWithinWindow: 1
   uiTabSwitchEvent:
     Guid:
-      Data1: -83240712
-      Data2: 1157097432
-      Data3: -1408910146
-      Data4: 752958174
-    Path: event:/Interface Events/Tab Switch Event
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
   tabSwitchActions:
   - {fileID: -1768861836552554593, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   - {fileID: 5363142178390000624, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   uiSubmitEvent:
     Guid:
-      Data1: -2004170962
-      Data2: 1167673071
-      Data3: -729934169
-      Data4: -121439865
-    Path: event:/Interface Events/Select Event
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
   submitActions:
   - {fileID: 392368643174621059, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   uiCancelEvent:
     Guid:
-      Data1: -911138086
-      Data2: 1153510417
-      Data3: -1549694535
-      Data4: -1235914695
-    Path: event:/Interface Events/Cancel Event
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
   cancelActions:
   - {fileID: 7727032971491509709, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
 --- !u!114 &78526265
@@ -907,7 +915,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0

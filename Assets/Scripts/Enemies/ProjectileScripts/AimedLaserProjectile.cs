@@ -30,6 +30,8 @@ namespace Enemies.ProjectileScripts
         [SerializeField] private Vector2 targetOffset = new Vector2(0f, 0.5f);
         [SerializeField] private bool trackDuringWarning = true;
         [SerializeField, Min(0f)] private float lockBeforeFire = 0.15f;
+        [SerializeField, Min(0f)] private float aimTurnSpeed = 90f;
+        [SerializeField, Range(0f, 180f)] private float startAngleOffset = 0f;
 
         [Header("Warning")]
         [SerializeField, Min(0f)] private float warningDelay = 0.6f;
@@ -76,6 +78,9 @@ namespace Enemies.ProjectileScripts
         private readonly List<BeamSegment> segments = new List<BeamSegment>();
         private readonly List<PathSegment> path = new List<PathSegment>();
         private readonly List<Vector2> impactPoints = new List<Vector2>();
+        private readonly List<RaycastHit2D> obstructionHits = new List<RaycastHit2D>();
+        private ContactFilter2D obstructionFilter;
+        private readonly List<Collider2D> playerOverlapHits = new List<Collider2D>();
 
         private float BeamHitboxWidth => beamWidth + beamHitboxExtraWidth;
 
@@ -84,6 +89,7 @@ namespace Enemies.ProjectileScripts
         protected override void OnLaunch(Vector2 initialVelocity)
         {
             BuildSegments();
+            foreach (BeamSegment segment in segments) ApplyHurtOverride(segment.HitBox);
             anticipationPlayed = false;
 
             Rb.gravityScale = 0f;
@@ -165,7 +171,7 @@ namespace Enemies.ProjectileScripts
                     TryPlayAnticipation();
                     if (trackDuringWarning && timer > lockBeforeFire)
                     {
-                        AimAtPlayer();
+                        AimAtPlayer(Time.fixedDeltaTime);
                         RefreshWarning();
                     }
                     if (timer <= 0f) Fire();
@@ -233,7 +239,12 @@ namespace Enemies.ProjectileScripts
             Rb.linearVelocity = Vector2.zero;
             HitBox.Disable();
 
-            AimAtPlayer();
+            AimAtPlayer(0f);
+            if (startAngleOffset > 0f && beamHitBox != null)
+            {
+                float offset = Random.value < 0.5f ? -startAngleOffset : startAngleOffset;
+                beamHitBox.transform.rotation = Quaternion.Euler(0f, 0f, beamHitBox.transform.eulerAngles.z + offset);
+            }
             RefreshWarning();
             ApplyWarningVisuals();
 
@@ -262,7 +273,7 @@ namespace Enemies.ProjectileScripts
             }
         }
 
-        private void AimAtPlayer()
+        private void AimAtPlayer(float deltaTime)
         {
             if (beamHitBox == null) return;
 
@@ -274,6 +285,10 @@ namespace Enemies.ProjectileScripts
             if (toTarget.sqrMagnitude < 0.0001f) return;
 
             float angle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
+
+            if (deltaTime > 0f && aimTurnSpeed > 0f)
+                angle = Mathf.MoveTowardsAngle(beamHitBox.transform.eulerAngles.z, angle, aimTurnSpeed * deltaTime);
+
             beamHitBox.transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
 
@@ -292,7 +307,7 @@ namespace Enemies.ProjectileScripts
             for (int bounce = 0; bounce <= maxBounces && remaining > 0.01f; bounce++)
             {
                 RaycastHit2D hit = obstructMask.value != 0
-                    ? Physics2D.Raycast(origin, direction, remaining, obstructMask)
+                    ? FindObstruction(origin, direction, remaining)
                     : default;
 
                 if (hit.collider == null)
@@ -308,6 +323,36 @@ namespace Enemies.ProjectileScripts
                 origin = hit.point + hit.normal * 0.01f;
                 direction = Vector2.Reflect(direction, hit.normal).normalized;
             }
+        }
+
+        private RaycastHit2D FindObstruction(Vector2 origin, Vector2 direction, float distance)
+        {
+            obstructionFilter.useTriggers = false;
+            obstructionFilter.SetLayerMask(obstructMask);
+
+            int count = Physics2D.Raycast(origin, direction, obstructionFilter, obstructionHits, distance);
+            RaycastHit2D closest = default;
+            float best = float.MaxValue;
+
+            for (int i = 0; i < count; i++)
+            {
+                RaycastHit2D hit = obstructionHits[i];
+                if (hit.distance >= best || !BlocksLaser(hit.collider)) continue;
+
+                best = hit.distance;
+                closest = hit;
+            }
+
+            return closest;
+        }
+
+        private static bool BlocksLaser(Collider2D col)
+        {
+            if (col == null) return false;
+            if (col.GetComponentInParent<AirOnlyCollisionPlatform>() != null) return false;
+
+            DropThroughPlatform dropThrough = col.GetComponentInParent<DropThroughPlatform>();
+            return dropThrough == null || dropThrough.IsClimbable;
         }
 
         private void AddPathSegment(Vector2 start, Vector2 direction, float length)
@@ -380,6 +425,7 @@ namespace Enemies.ProjectileScripts
             }
 
             DamageEnemiesAlongBeam();
+            if (!hitLanded) HitPlayersInsideBeam();
 
             if (!hitLanded)
             {
@@ -396,6 +442,29 @@ namespace Enemies.ProjectileScripts
 
             timer -= Time.fixedDeltaTime;
             if (timer <= 0f) ReturnToPool();
+        }
+
+        private void HitPlayersInsideBeam()
+        {
+            ContactFilter2D filter = ContactFilter2D.noFilter;
+            filter.useTriggers = true;
+
+            for (int i = 0; i < segments.Count && i < path.Count; i++)
+            {
+                BeamSegment segment = segments[i];
+                if (segment.Collider == null || !segment.Collider.enabled || !segment.HitBox.IsActive) continue;
+                if (segment.HitBox.HasHit || segment.HitBox.HasBeenParried) continue;
+
+                int count = segment.Collider.Overlap(filter, playerOverlapHits);
+                for (int h = 0; h < count; h++)
+                {
+                    PlayerHurtBox hurtBox = playerOverlapHits[h].GetComponent<PlayerHurtBox>();
+                    if (hurtBox == null || hurtBox.Invulnerable) continue;
+
+                    hurtBox.TakeHit(segment.HitBox, segment.Collider);
+                    if (segment.HitBox.HasHit || segment.HitBox.HasBeenParried) break;
+                }
+            }
         }
 
         private void DamageEnemiesAlongBeam()

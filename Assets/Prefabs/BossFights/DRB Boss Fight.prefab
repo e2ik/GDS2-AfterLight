@@ -282,14 +282,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 346d2e76893c3994ead4d8a2cd296dff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.BossTrigger
-  introDialogue: {fileID: 0}
-  deathDialogue: {fileID: 0}
+  introDialogue: {fileID: 11400000, guid: b29e151202e7d444cadc85bbb2273882, type: 2}
+  deathDialogue: {fileID: 11400000, guid: ff05488c194335b428033f6bd23d0189, type: 2}
   bossSpawner: {fileID: 4834338806447968780}
   arenaBounds: {fileID: 5544713734480100453}
   arenaColliders: {fileID: 4585595708212418661}
   playerTag: Player
   bossID: DrBuzzBoss_intro_unique_id
   bossName: Dr Buzz
+  requireGrounded: 1
   rematchPlaysDeathDialogue: 0
   rematchLocksArena: 1
   rematchPlaysBossMusic: 1
@@ -566,7 +567,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 15
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -4933334915704866932, guid: 6195b07d309c0c9428dee8bfc0813e2f, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -574,7 +575,7 @@ SpriteRenderer:
   m_Size: {x: 7.111111, y: 3.5555556}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &8230642013978064197
 GameObject:
