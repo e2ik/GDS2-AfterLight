@@ -111,6 +111,12 @@ Shader "UI/Multiply Outline"
                 return OUT;
             }
 
+            bool IsEvenCell(float2 cell)
+            {
+                float sum = cell.x + cell.y;
+                return sum - 2.0 * floor(sum * 0.5) < 0.5;
+            }
+
             half SampleAlphaLod(float2 uv)
             {
                 return tex2Dlod(_MainTex, float4(uv, 0, 0)).a;
@@ -144,9 +150,6 @@ Shader "UI/Multiply Outline"
                 clipFactor = UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
                 #endif
 
-                float2 uvDx = ddx(IN.texcoord);
-                float2 uvDy = ddy(IN.texcoord);
-
                 if (SampleAlphaLod(IN.texcoord) > 0.5 || clipFactor <= 0.0) return fixed4(1, 1, 1, 1);
 
                 if (_LineEnabled > 0.5 && IsLinePixel(IN.texcoord))
@@ -155,15 +158,11 @@ Shader "UI/Multiply Outline"
                     return fixed4(lerp(half3(1, 1, 1), _LineColor.rgb, lineStrength), 1);
                 }
 
-                float uvPerScreenPixel = max(1e-6, length(float2(uvDx.x, uvDy.x)));
-                float screenPixelsPerArtPixel = 1.0 / (uvPerScreenPixel * _MainTex_TexelSize.z);
-                float cellSize = max(1.0, round(screenPixelsPerArtPixel * max(0.25, _PixelSize)));
-
-                float2 cell = floor(IN.vertex.xy / cellSize);
-                float2 centerOffset = (cell + 0.5) * cellSize - IN.vertex.xy;
-                float2 uv = IN.texcoord + uvDx * centerOffset.x + uvDy * centerOffset.y;
-                float2 cellStepX = uvDx * cellSize;
-                float2 cellStepY = uvDy * cellSize;
+                float2 cellUV = _MainTex_TexelSize.xy * max(0.25, _PixelSize);
+                float2 cell = floor(IN.texcoord / cellUV);
+                float2 uv = (cell + 0.5) * cellUV;
+                float2 cellStepX = float2(cellUV.x, 0.0);
+                float2 cellStepY = float2(0.0, cellUV.y);
 
                 int radius = (int)clamp(round(_Rings), 1.0, 8.0);
                 float radiusSq = (radius + 0.5) * (radius + 0.5);
@@ -189,7 +188,7 @@ Shader "UI/Multiply Outline"
                 float edgeFade = saturate((radius + 0.5 - dist) / 0.5);
                 half level = _Strength * pow(max(_Falloff, 0.0001), dist - 1.0) * edgeFade;
 
-                bool checker = fmod(cell.x + cell.y, 2.0) < 0.5;
+                bool checker = IsEvenCell(cell);
                 half lowLevel = level * lerp(1.0, _Falloff, _Checker);
                 half strength = (checker ? level : lowLevel) * _OutlineColor.a * IN.color.a * clipFactor;
 

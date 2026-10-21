@@ -80,8 +80,9 @@ Shader "Custom/Pixel Light Shafts"
 
             float Bayer4(float2 cell)
             {
-                int x = (int)fmod(abs(cell.x), 4.0);
-                int y = (int)fmod(abs(cell.y), 4.0);
+                float2 wrapped = cell - 4.0 * floor(cell * 0.25);
+                int x = clamp((int)wrapped.x, 0, 3);
+                int y = clamp((int)wrapped.y, 0, 3);
                 return (BayerMatrix[x + y * 4] + 0.5) / 16.0;
             }
 

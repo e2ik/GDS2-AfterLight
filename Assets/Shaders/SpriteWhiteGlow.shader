@@ -69,6 +69,12 @@ Shader "Custom/Sprite White Glow"
             return output;
         }
 
+        bool IsEvenCell(float2 cell)
+        {
+            float sum = cell.x + cell.y;
+            return sum - 2.0 * floor(sum * 0.5) < 0.5;
+        }
+
         half4 frag(Varyings input) : SV_Target
         {
             half4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
@@ -78,7 +84,7 @@ Shader "Custom/Sprite White Glow"
 
             float cellSize = max(1.0, round(_CheckerSize));
             float2 cell = floor(floor(input.uv * _MainTex_TexelSize.zw) / cellSize);
-            bool checker = fmod(abs(cell.x + cell.y), 2.0) < 0.5;
+            bool checker = IsEvenCell(cell);
             half coverage = checker ? 1.0 : _CheckerLow;
 
             return half4(_GlowColor.rgb * _Intensity, coverage * _GlowFade * input.color.a);

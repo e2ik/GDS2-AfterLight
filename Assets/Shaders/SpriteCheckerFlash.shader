@@ -69,6 +69,12 @@ Shader "Custom/Sprite Checker Flash"
             return output;
         }
 
+        bool IsEvenCell(float2 cell)
+        {
+            float sum = cell.x + cell.y;
+            return sum - 2.0 * floor(sum * 0.5) < 0.5;
+        }
+
         half SampleNeighbourAlpha(float2 uv)
         {
             if (any(uv < 0.0) || any(uv > 1.0)) return 0.0;
@@ -97,9 +103,6 @@ Shader "Custom/Sprite Checker Flash"
 
         half4 frag(Varyings input) : SV_Target
         {
-            float2 uvDx = ddx(input.uv);
-            float2 uvDy = ddy(input.uv);
-
             half spriteAlpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv).a;
             if (spriteAlpha <= 0.01 || _Amount <= 0.0001) discard;
 
@@ -109,12 +112,8 @@ Shader "Custom/Sprite Checker Flash"
                 if (!IsEdge(texelUV)) discard;
             }
 
-            float uvPerScreenPixel = max(1e-6, length(float2(uvDx.x, uvDy.x)));
-            float screenPixelsPerArtPixel = 1.0 / (uvPerScreenPixel * _MainTex_TexelSize.z);
-            float cellSize = max(1.0, round(screenPixelsPerArtPixel * max(0.25, _PixelSize)));
-            float2 cell = floor(input.positionCS.xy / cellSize);
-
-            bool checker = fmod(cell.x + cell.y, 2.0) < 0.5;
+            float2 cell = floor(input.uv * _MainTex_TexelSize.zw / max(0.25, _PixelSize));
+            bool checker = IsEvenCell(cell);
             half opacity = (checker ? 1.0 : _CheckerLow) * _Amount * spriteAlpha * input.color.a;
 
             return half4(_FlashColor.rgb * _Intensity, opacity);
