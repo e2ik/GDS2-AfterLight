@@ -93,7 +93,7 @@ public class PlayerEdgeDetection : MonoBehaviour
         lastStandCenter = standCenter;
         lastStandSize = standSize;
 
-        if (Physics2D.OverlapBox(standCenter, standSize, 0f, filter, overlapHits) > 0) return false;
+        if (HasSolidOverlap(standCenter, standSize)) return false;
 
         corner = new Vector2(wall.point.x, ledgeY);
         lastFound = true;
@@ -113,16 +113,36 @@ public class PlayerEdgeDetection : MonoBehaviour
         if (count == 0) return false;
 
         float best = float.MaxValue;
+        bool found = false;
         for (int i = 0; i < count; i++)
         {
-            if (rayHits[i].distance < best)
-            {
-                best = rayHits[i].distance;
-                closest = rayHits[i];
-            }
+            RaycastHit2D hit = rayHits[i];
+            if (hit.distance >= best || !IsClimbable(hit.collider)) continue;
+
+            best = hit.distance;
+            closest = hit;
+            found = true;
         }
 
-        return IsClimbable(closest.collider);
+        return found;
+    }
+
+    private bool HasSolidOverlap(Vector2 center, Vector2 size)
+    {
+        int count = Physics2D.OverlapBox(center, size, 0f, filter, overlapHits);
+        for (int i = 0; i < count; i++)
+        {
+            if (!IsPassThrough(overlapHits[i])) return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsPassThrough(Collider2D col)
+    {
+        if (col == null) return true;
+        if (col.TryGetComponent(out AirOnlyCollisionPlatform _)) return true;
+        return col.GetComponentInParent<DropThroughPlatform>() != null;
     }
 
     private static bool IsClimbable(Collider2D col)

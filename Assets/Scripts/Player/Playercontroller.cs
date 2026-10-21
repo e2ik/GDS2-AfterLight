@@ -1587,7 +1587,7 @@ public class PlayerController : MonoBehaviour
                 && !IsMovingPlatformCollider(groundCollider);
         }
 
-        bool onDropPlatform = isGrounded && groundIsDropPlatform;
+        bool onDropPlatform = isGrounded && groundIsDropPlatform && IsDroppablePlatform(groundCollider);
         if (onDropPlatform && !IsOnDropPlatform)
             Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerOnDropPlatform);
 
@@ -1601,10 +1601,18 @@ public class PlayerController : MonoBehaviour
 
         if (hit.collider != null && hit.collider.GetComponent<PlatformEffector2D>() != null)
         {
+            if (!IsDroppablePlatform(hit.collider)) return false;
             StartCoroutine(DisableCollisionRoutine(hit.collider));
             return true;
         }
         return false;
+    }
+
+    private static bool IsDroppablePlatform(Collider2D platform)
+    {
+        if (platform == null) return false;
+        DropThroughPlatform dropThrough = platform.GetComponentInParent<DropThroughPlatform>();
+        return dropThrough == null || dropThrough.IsDroppable;
     }
 
     private IEnumerator DisableCollisionRoutine(Collider2D platform)
