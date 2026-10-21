@@ -367,7 +367,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43d7a0364cd4a4042bfd2ff0b7f8abf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.Enemy
-  observationSO: {fileID: 11400000, guid: 507f599106ab90f40a26514267cdd09a, type: 2}
+  observationSO: {fileID: 11400000, guid: 3e0d423004b94a74f9a38728e7d97a9e, type: 2}
   attacks:
   - Attack: {fileID: 11400000, guid: d8d52c4ae0e3c964d980eafe8cd779ce, type: 2}
     Weight: 70
@@ -900,7 +900,6 @@ MonoBehaviour:
   minimumLight: 0
   maxBrightness: 0.5
   colorSmoothing: 12
-  lightRefreshInterval: 0.5
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0

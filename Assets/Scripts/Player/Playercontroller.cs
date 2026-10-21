@@ -50,6 +50,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] [Range(0f, 1f)] private float wallJumpCounterStrength = 0.25f;
     [SerializeField] [Range(0f, 1f)] private float wallSlideUpwardDampening = 0.5f;
     [SerializeField] private float wallCheckNormalThreshold = 0.5f;
+    [SerializeField, Min(0f)] private float airOnlyWallOverlapTolerance = 0.05f;
     [SerializeField] private Vector2 wallJumpForce = new(8f, 16f);
     [SerializeField] private float wallJumpDuration = 0.4f;
     [SerializeField] private float wallJumpBufferTime = 0.2f;
@@ -1468,8 +1469,11 @@ public class PlayerController : MonoBehaviour
     {
         RaycastHit2D hit = RaycastIgnoringSelf(origin, Vector2.right * dir, len);
         if (hit.collider == null || Mathf.Abs(hit.normal.x) <= wallCheckNormalThreshold) return false;
-        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
-            return false;
+        if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform))
+        {
+            if (!platform.AllowsSolidContactFrom(hit.normal)) return false;
+            if (hit.distance < cachedBounds.extents.x - airOnlyWallOverlapTolerance) return false;
+        }
 
         currentSurfaceNormal = hit.normal;
         lastHitPoint = hit.point;
@@ -1587,7 +1591,7 @@ public class PlayerController : MonoBehaviour
                 && !IsMovingPlatformCollider(groundCollider);
         }
 
-        bool onDropPlatform = isGrounded && groundIsDropPlatform;
+        bool onDropPlatform = isGrounded && groundIsDropPlatform && IsDroppablePlatform(groundCollider);
         if (onDropPlatform && !IsOnDropPlatform)
             Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerOnDropPlatform);
 
@@ -1601,10 +1605,18 @@ public class PlayerController : MonoBehaviour
 
         if (hit.collider != null && hit.collider.GetComponent<PlatformEffector2D>() != null)
         {
+            if (!IsDroppablePlatform(hit.collider)) return false;
             StartCoroutine(DisableCollisionRoutine(hit.collider));
             return true;
         }
         return false;
+    }
+
+    private static bool IsDroppablePlatform(Collider2D platform)
+    {
+        if (platform == null) return false;
+        DropThroughPlatform dropThrough = platform.GetComponentInParent<DropThroughPlatform>();
+        return dropThrough == null || dropThrough.IsDroppable;
     }
 
     private IEnumerator DisableCollisionRoutine(Collider2D platform)

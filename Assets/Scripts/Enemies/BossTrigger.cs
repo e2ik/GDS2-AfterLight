@@ -12,9 +12,11 @@ namespace Enemies
         [SerializeField] private DialogueData deathDialogue;
         [SerializeField] private PrefabSpawner bossSpawner;
         [SerializeField] private BossBounds arenaBounds;
+        [SerializeField] private GameObject arenaColliders;
         [SerializeField] private string playerTag = "Player";
         [SerializeField] private string bossID = "boss_intro_unique_id";
         [SerializeField] private string bossName = "";
+        [SerializeField] private bool requireGrounded = true;
 
         [Header("Rematch")]
         [SerializeField] private bool rematchPlaysDeathDialogue = false;
@@ -39,6 +41,7 @@ namespace Enemies
         private bool cameraLocked;
         private bool doorsLockedByThis;
         private bool deathSequenceRunning;
+        private bool waitingForGround;
 
         private static int engagedTriggerCount;
         public static bool AnyBossEngaged => engagedTriggerCount > 0;
@@ -55,6 +58,11 @@ namespace Enemies
 
             bool bossGone = !activeBossEnemy.isActiveAndEnabled;
             if (bossGone || engagedPlayer == null) Disengage();
+        }
+
+        private void Awake()
+        {
+            if (arenaColliders != null) arenaColliders.SetActive(false);
         }
 
         private void OnEnable()
@@ -91,6 +99,15 @@ namespace Enemies
             if (activeBossEnemy != null) return;
             if (!other.CompareTag(playerTag)) return;
             if (hasTriggered && !bossDefeated) return;
+
+            Player groundCheckPlayer = other.GetComponentInParent<Player>();
+            if (requireGrounded && groundCheckPlayer != null && groundCheckPlayer.Controller != null && !groundCheckPlayer.Controller.IsGrounded)
+            {
+                waitingForGround = true;
+                return;
+            }
+
+            waitingForGround = false;
 
             if (bossDefeated)
             {
@@ -136,10 +153,23 @@ namespace Enemies
 
         private void OnTriggerStay2D(Collider2D other)
         {
-            if (activeBossEnemy != null || !bossDefeated) return;
+            if (activeBossEnemy != null) return;
+
+            if (waitingForGround)
+            {
+                if (other.CompareTag(playerTag)) OnTriggerEnter2D(other);
+                return;
+            }
+
+            if (!bossDefeated) return;
             if (!HasFreshBoss()) return;
 
             OnTriggerEnter2D(other);
+        }
+
+        private void OnTriggerExit2D(Collider2D other)
+        {
+            if (other.CompareTag(playerTag)) waitingForGround = false;
         }
 
         private bool HasFreshBoss()
@@ -243,6 +273,8 @@ namespace Enemies
         {
             if (locked == doorsLockedByThis) return;
             doorsLockedByThis = locked;
+
+            if (arenaColliders != null) arenaColliders.SetActive(locked);
 
             bool wasEngaged = AnyBossEngaged;
             engagedTriggerCount = Mathf.Max(0, engagedTriggerCount + (locked ? 1 : -1));

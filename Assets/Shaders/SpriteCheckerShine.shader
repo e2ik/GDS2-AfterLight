@@ -111,6 +111,12 @@ Shader "Custom/Sprite Checker Shine"
             return output;
         }
 
+        bool IsEvenCell(float2 cell)
+        {
+            float sum = cell.x + cell.y;
+            return sum - 2.0 * floor(sum * 0.5) < 0.5;
+        }
+
         half SampleNeighbourAlpha(float2 uv)
         {
             if (any(uv < 0.0) || any(uv > 1.0)) return 0.0;
@@ -163,7 +169,8 @@ Shader "Custom/Sprite Checker Shine"
 
             float reach = _Width + _Fringe;
             float cycle = max(0.001, _Duration + _Delay);
-            float t = fmod(_Time.y + _TimeOffset, cycle);
+            float elapsed = _Time.y + _TimeOffset;
+            float t = elapsed - cycle * floor(elapsed / cycle);
             float progress = saturate(t / max(0.001, _Duration));
             float sweep = round(lerp(_SweepFrom - reach - 1.0, _SweepTo + reach + 1.0, progress));
             float dist = abs(diagonal - sweep);
@@ -189,7 +196,7 @@ Shader "Custom/Sprite Checker Shine"
             {
                 float cellSize = max(1.0, round(_CheckerSize));
                 float2 cell = floor(p / cellSize);
-                bool checker = fmod(abs(cell.x + cell.y), 2.0) < 0.5;
+                bool checker = IsEvenCell(cell);
 
                 half fill = dist <= _Width
                     ? (checker ? 1.0 : _CheckerLow)
