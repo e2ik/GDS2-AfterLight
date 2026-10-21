@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FMODUnity;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,6 +24,14 @@ namespace GameUI
         [Header("Cancel")]
         [SerializeField] private EventReference uiCancelEvent;
         [SerializeField] private InputActionReference[] cancelActions;
+
+        [Header("Throttle")]
+        [SerializeField, Min(0f)] private float selectMinInterval = 0.06f;
+        [SerializeField, Min(0f)] private float submitMinInterval = 0.1f;
+        [SerializeField, Min(0f)] private float tabSwitchMinInterval = 0.08f;
+        [SerializeField, Min(0f)] private float cancelMinInterval = 0.1f;
+
+        private readonly Dictionary<FMOD.GUID, float> lastPlayTimes = new Dictionary<FMOD.GUID, float>();
 
         private static float suppressUntil = -1f;
         private static bool suppressNext;
@@ -97,16 +106,25 @@ namespace GameUI
             }
         }
 
-        private void PlayOrFallback(EventReference sound)
+        private void PlayOrFallback(EventReference sound, float minInterval)
         {
             EventReference toPlay = sound.IsNull ? uiSelectEvent : sound;
-            if (!toPlay.IsNull) AudioManager.PlaySFX(toPlay, this);
+            if (!toPlay.IsNull && TryThrottle(toPlay, minInterval)) AudioManager.PlaySFX(toPlay, this);
+        }
+
+        private bool TryThrottle(EventReference sound, float minInterval)
+        {
+            float now = Time.unscaledTime;
+            if (lastPlayTimes.TryGetValue(sound.Guid, out float last) && now - last < minInterval) return false;
+
+            lastPlayTimes[sound.Guid] = now;
+            return true;
         }
 
         private void HandleTabSwitch(InputAction.CallbackContext context)
         {
             if (UIManager.Instance == null || !UIManager.Instance.HasOpenWindows) return;
-            PlayOrFallback(uiTabSwitchEvent);
+            PlayOrFallback(uiTabSwitchEvent, tabSwitchMinInterval);
         }
 
         private void HandleSubmit(InputAction.CallbackContext context)
@@ -124,7 +142,7 @@ namespace GameUI
         {
             if (UIManager.Instance == null || !UIManager.Instance.HasOpenWindows) return;
             if (UIManager.Instance.SuppressCancel) return;
-            PlayOrFallback(uiCancelEvent);
+            PlayOrFallback(uiCancelEvent, cancelMinInterval);
         }
 
         private static bool IsTransient(GameObject current)
@@ -158,7 +176,8 @@ namespace GameUI
 
                 if (current == null || IsTransient(current)) return;
 
-                if (current != anchorSelected && IsNavigation(current) && !ConsumeSuppression())
+                if (current != anchorSelected && IsNavigation(current) && !ConsumeSuppression()
+                    && !uiSelectEvent.IsNull && TryThrottle(uiSelectEvent, selectMinInterval))
                 {
                     AudioManager.PlaySFX(uiSelectEvent);
                 }
@@ -174,7 +193,7 @@ namespace GameUI
             submitPending = false;
             if (suppressSubmitFrame == Time.frameCount) return;
 
-            PlayOrFallback(uiSubmitEvent);
+            PlayOrFallback(uiSubmitEvent, submitMinInterval);
         }
     }
 }
