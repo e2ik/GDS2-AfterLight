@@ -20,6 +20,9 @@ public class PrefabSpawner : MonoBehaviour
     [Header("Respawn")]
     [SerializeField] private bool respawnOnlyAfterRest = true;
 
+    [Header("Spawn Prerequisite")] 
+    [SerializeField] private string requiredDefeatedBossID;
+
     private static readonly HashSet<string> defeatedSpawners = new HashSet<string>();
     public static event Action OnDefeatedReset;
 
@@ -30,6 +33,9 @@ public class PrefabSpawner : MonoBehaviour
     private string spawnerKey;
 
     public GameObject SpawnedEnemy => spawnedEnemy;
+
+    private bool PrerequisiteMet => string.IsNullOrEmpty(requiredDefeatedBossID) || (SaveManager.Instance != null &&
+        SaveManager.Instance.HasStoryFlag(Enemies.BossTrigger.DefeatedFlagFor(requiredDefeatedBossID)));
     public bool IsDefeated => respawnOnlyAfterRest && defeatedSpawners.Contains(SpawnerKey);
 
     private string SpawnerKey
@@ -107,7 +113,7 @@ public class PrefabSpawner : MonoBehaviour
         {
             DespawnEnemy();
         }
-        else if (isCurrentArea && spawnedEnemy == null && spawnCoroutine == null && !IsDefeated)
+        else if (isCurrentArea && spawnedEnemy == null && spawnCoroutine == null && !IsDefeated && PrerequisiteMet)
         {
             TrySpawn();
         }
@@ -151,7 +157,7 @@ public class PrefabSpawner : MonoBehaviour
         }
 
         if (spawnedEnemy != null) return;
-        if (IsDefeated) return;
+        if (IsDefeated || !PrerequisiteMet) return;
 
         if (spawnCoroutine != null)
         {
@@ -194,7 +200,7 @@ public class PrefabSpawner : MonoBehaviour
             }
         }
 
-        if (GameManager.Instance.CurrentAreaSide != targetAreaSide || IsDefeated)
+        if (GameManager.Instance.CurrentAreaSide != targetAreaSide || IsDefeated || !PrerequisiteMet)
         {
             spawnCoroutine = null;
             yield break;

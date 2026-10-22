@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Enemies.Cutscene;
 using FMODUnity;
 using UnityEngine;
 
@@ -17,6 +18,13 @@ namespace Enemies
         [SerializeField] private string bossID = "boss_intro_unique_id";
         [SerializeField] private string bossName = "";
         [SerializeField] private bool requireGrounded = true;
+
+        [Header("Prerequisite")] 
+        [SerializeField] private string requiredBossID = "";
+
+        [Header("Cutscens")] 
+        [SerializeField] private string introCutscene = "";
+        [SerializeField] private string deathCutscene = "";
 
         [Header("Rematch")]
         [SerializeField] private bool rematchPlaysDeathDialogue = false;
@@ -98,6 +106,7 @@ namespace Enemies
         {
             if (activeBossEnemy != null) return;
             if (!other.CompareTag(playerTag)) return;
+            if (!PrerequisiteMet) return;
             if (hasTriggered && !bossDefeated) return;
 
             Player groundCheckPlayer = other.GetComponentInParent<Player>();
@@ -184,10 +193,16 @@ namespace Enemies
         {
             yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
 
+            yield return PlayCutscene(introCutscene, player);
+            
             TriggerBossFight(player);
         }
 
-        private string DefeatedFlag => bossID + "_defeated";
+        public static string DefeatedFlagFor(string id) => id + "_defeated";
+        private string DefeatedFlag => DefeatedFlagFor(bossID);
+
+        private bool PrerequisiteMet => string.IsNullOrEmpty(requiredBossID) || (SaveManager.Instance != null &&
+            SaveManager.Instance.HasStoryFlag(DefeatedFlagFor(requiredBossID)));
 
         private void TriggerBossFight(Player player)
         {
@@ -335,10 +350,10 @@ namespace Enemies
             onHealthDepleted = null;
         }
 
-        private IEnumerator PlayDeathDialogueThenFinalize(Enemy bossyEnemy, Player player)
+        private IEnumerator PlayDeathDialogueThenFinalize(Enemy bossEnemy, Player player)
         {
             deathSequenceRunning = true;
-            bossyEnemy.FreezeForDeathSequence();
+            bossEnemy.FreezeForDeathSequence();
             
             player.Controller.FreezeMovement(true);
             
@@ -347,16 +362,49 @@ namespace Enemies
             {
                 DialogueManager.Instance.StartDialogue(deathDialogue, player);
                 
-
                 if (DialogueManager.Instance.IsDialogueActive)
                     yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
             }
+
+            bool hasCutscene = !string.IsNullOrEmpty(deathCutscene);
+
+            if (hasCutscene)
+                yield return PlayCutscene(deathCutscene, player, bossEnemy);
             
             player.Controller.FreezeMovement(false);
-
-            deathSequenceRunning = false;
-            bossyEnemy.Context.Health.FinalizeDeath();
         }
-        
+
+        private IEnumerator PlayCutscene(string filename, Player player, Enemy bossEnemy = null)
+        {
+            if (string.IsNullOrEmpty(filename))
+                yield break;
+
+            if (CutscenePlayer.Instance == null)
+            {
+                Debug.LogWarning("[BossTrigger] Cutscene requested but not CutscenePlayer is loaded");
+                yield break;
+            }
+            
+            player.Controller.FreezeMovement(true);
+            CutscenePlayer.Instance.SetCutsceneUIHidden(true);
+            AudioManager.ToggleSFXMute();
+            
+            if (MusicManager.Instance != null)
+            {
+                MusicManager.Instance.StopMusicForCutscene();
+                yield return new WaitForSecondsRealtime(MusicManager.Instance.StopFadeDuration);
+            }
+            
+            yield return CutscenePlayer.Instance.Play(filename);
+            
+            deathSequenceRunning = false;
+            if(bossEnemy != null)
+                bossEnemy.Context.Health.FinalizeDeath();
+            
+            MusicManager.Instance?.RestartMusic();
+            AudioManager.ToggleSFXMute();
+            CutscenePlayer.Instance.SetCutsceneUIHidden(false);
+            player.Controller.FreezeMovement(false);
+        }
     }
 }

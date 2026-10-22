@@ -4,6 +4,15 @@ using FMOD.Studio;
 
 public static class AudioManager
 {
+    private static FMOD.Studio.Bus sfxBus;
+    private static float savedSFXVolume = 1.0f;
+    private static bool isMuted = false;
+
+    static AudioManager()
+    {
+        sfxBus = FMODUnity.RuntimeManager.GetBus("bus:/SFX");
+    }
+    
     public static void PlaySFX(EventReference sfxEvent, Object context = null)
     {
         if (sfxEvent.IsNull)
@@ -62,5 +71,22 @@ public static class AudioManager
     {
         string name = context != null ? context.name : "unknown caller";
         Debug.LogWarning($"[AudioManager] PlaySFX called with an empty EventReference (from '{name}'). No sound will play — did you forget to assign it in the inspector?", context);
+    }
+
+    public static void ToggleSFXMute()
+    {
+        if (!isMuted)
+        {
+            sfxBus.getVolume(out float currentVolume, out _);
+            savedSFXVolume = currentVolume;
+
+            sfxBus.setVolume(0.0f);
+            isMuted = true;
+        }
+        else
+        {
+            sfxBus.setVolume(savedSFXVolume);
+            isMuted = false;
+        }
     }
 }
