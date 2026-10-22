@@ -597,7 +597,7 @@ MonoBehaviour:
   aggroEffectOffset: {x: 0, y: 0}
   aggroEffectFollowsEnemy: 1
   aggroAttackDelay: 0.5
-  canDropAggro: 1
+  canDropAggro: 0
   unreachableGiveUpDelay: 1.5
   reaggroCooldown: 3
   isStaggerImmune: 1
@@ -614,6 +614,20 @@ MonoBehaviour:
       Data3: 1112032419
       Data4: -774162852
     Path: event:/CombatSFXEvents/EnemyHitEvent
+  vulnerableHitEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  blockedHitEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
   attackEvent:
     Guid:
       Data1: 0
@@ -639,7 +653,7 @@ MonoBehaviour:
   deathTrigger: Death
   deathStateName: Death
   deathAnimationTimeout: 5
-  hasSpecialBossFreeze: 1
+  hasSpecialBossFreeze: 0
 --- !u!114 &1227528568327133779
 MonoBehaviour:
   m_ObjectHideFlags: 0

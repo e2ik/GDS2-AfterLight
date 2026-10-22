@@ -16,6 +16,7 @@ namespace Enemies
         public bool IsComboFinisher;
         public Vector3 Position;
         public int Blocked;
+        public bool IsBonus;
     }
 
     public class EnemyHealth : MonoBehaviour
@@ -148,6 +149,7 @@ namespace Enemies
             {
                 Amount = damage,
                 Blocked = blocked,
+                IsBonus = bonus,
                 DamageType = context.DamageType,
                 IsCrit = isCrit,
                 HasRoll = context.HasRoll,
