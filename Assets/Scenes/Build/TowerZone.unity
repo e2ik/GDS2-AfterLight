@@ -19093,6 +19093,7 @@ GameObject:
   - component: {fileID: 1085938262}
   - component: {fileID: 1085938263}
   - component: {fileID: 1085938264}
+  - component: {fileID: 1085938265}
   m_Layer: 0
   m_Name: Root
   m_TagString: Untagged
@@ -19151,11 +19152,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9efceae73bb557c49b2b0c6195a4b872, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealthScalingZone
-  minPower: 35
-  maxPower: 50
-  maxHealthMultiplier: 2
-  weaponDamageWeight: 1
-  debugScaling: 0
+  minHitDamage: 8
+  maxHitDamage: 20
+  maxHealthMultiplier: 1.5
+  minAttack: 35
+  maxAttack: 50
+  highAttackMinMultiplier: 1.1
+  highAttackMaxMultiplier: 1.65
+  debugScaling: 1
+--- !u!114 &1085938265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1085938261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdd6da581b735a949a9ad72100e020e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LootRarityZone
+  odds:
+    common: 0
+    rare: 60
+    epic: 25
+    legendary: 5
+  worseThanOwnedNoDropChance: 0.8
+  debugRolls: 0
 --- !u!1001 &1088657262
 PrefabInstance:
   m_ObjectHideFlags: 0

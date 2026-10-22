@@ -90,6 +90,7 @@ public class PlayerCombatController : MonoBehaviour
     private float attackTotalDuration;
     public int CurrentComboIndex => currentComboIndex;
     public int AttackSerial { get; private set; }
+    public float DamageScalingExponent => damageScalingExponent;
     public bool IsDashAttack => isAttacking && isDashAttack;
 
     [Header("Input Conflict Settings")]

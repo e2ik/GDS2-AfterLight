@@ -87,25 +87,57 @@ public class PlayerStats : MonoBehaviour
             FastTravelManager.Instance.OnFastTravelComplete -= HandleRespawnComplete;
     }
 
-    public float GetPotentialAttack() => GetPotentialPower(0f);
-
-    public float GetPotentialPower(float weaponDamageWeight)
+    public float GetPotentialAttack()
     {
-        float bestWeapon = 0f;
+        float nonWeaponAttack = GetBestNonWeaponAttack();
+        float bestWeaponAttack = 0f;
+        foreach (WeaponInstance weapon in GetOwnedWeapons())
+            bestWeaponAttack = Mathf.Max(bestWeaponAttack, weapon.InstRolledAttack);
+
+        return nonWeaponAttack + bestWeaponAttack;
+    }
+
+    public float GetPotentialHitDamage() => GetPotentialHitDamage(out _, out _);
+
+    public float GetPotentialHitDamage(out float bestAttack, out WeaponInstance bestWeapon)
+    {
+        float exponent = player != null && player.CombatController != null ? player.CombatController.DamageScalingExponent : 0.8f;
+        float nonWeaponAttack = GetBestNonWeaponAttack();
+        float best = Mathf.Pow(Mathf.Max(0f, nonWeaponAttack), exponent);
+        bestAttack = nonWeaponAttack;
+        bestWeapon = null;
+
+        foreach (WeaponInstance weapon in GetOwnedWeapons())
+        {
+            float attack = nonWeaponAttack + weapon.InstRolledAttack;
+            float hit = weapon.InstRolledDamage + Mathf.Pow(Mathf.Max(0f, attack), exponent);
+            if (hit > best)
+            {
+                best = hit;
+                bestAttack = attack;
+                bestWeapon = weapon;
+            }
+        }
+
+        return best;
+    }
+
+    private float GetBestNonWeaponAttack()
+    {
         float bestGem = 0f;
         Dictionary<EGearSlot, float> bestGear = new Dictionary<EGearSlot, float>();
 
         PlayerEquipmentManager equipment = player != null ? player.Equipment : null;
-        PlayerInventoryManager inventory = player != null ? player.Inventory : null;
-        PlayerInventorySO owned = inventory != null ? inventory.currentInventory : null;
+        PlayerInventorySO owned = player != null && player.Inventory != null ? player.Inventory.currentInventory : null;
 
         if (equipment != null)
         {
             foreach (var slot in equipment.EquippedGear)
                 ConsiderGear(bestGear, slot.Value);
 
-            if (equipment.EquippedWeapon != null) bestWeapon = Mathf.Max(bestWeapon, WeaponScore(equipment.EquippedWeapon, weaponDamageWeight));
-            if (equipment.SecondaryGem != null) bestGem = Mathf.Max(bestGem, equipment.SecondaryGem.InstRolledDamageValue);
+            SecondaryGemInstance equippedGem = equipment.SecondaryGem;
+            if (equippedGem != null && !string.IsNullOrEmpty(equippedGem.InstTemplateID))
+                bestGem = Mathf.Max(bestGem, equippedGem.InstRolledDamageValue);
         }
 
         if (owned != null)
@@ -113,23 +145,31 @@ public class PlayerStats : MonoBehaviour
             if (owned.GearInstances != null)
                 foreach (GearInstance gear in owned.GearInstances) ConsiderGear(bestGear, gear);
 
-            if (owned.Weapons != null)
-                foreach (WeaponInstance weapon in owned.Weapons)
-                    if (weapon != null && !string.IsNullOrEmpty(weapon.InstTemplateID)) bestWeapon = Mathf.Max(bestWeapon, WeaponScore(weapon, weaponDamageWeight));
-
             if (owned.SecondaryGems != null)
                 foreach (SecondaryGemInstance gem in owned.SecondaryGems)
                     if (gem != null && !string.IsNullOrEmpty(gem.InstTemplateID)) bestGem = Mathf.Max(bestGem, gem.InstRolledDamageValue);
         }
 
-        float total = baseAttack + bestWeapon + bestGem;
+        float total = baseAttack + bestGem;
         foreach (float value in bestGear.Values) total += value;
         return total;
     }
 
-    private static float WeaponScore(WeaponInstance weapon, float weaponDamageWeight)
+    private List<WeaponInstance> GetOwnedWeapons()
     {
-        return weapon.InstRolledAttack + weapon.InstRolledDamage * weaponDamageWeight;
+        List<WeaponInstance> weapons = new List<WeaponInstance>();
+
+        WeaponInstance equipped = player != null && player.Equipment != null ? player.Equipment.EquippedWeapon : null;
+        if (equipped != null && !string.IsNullOrEmpty(equipped.InstTemplateID)) weapons.Add(equipped);
+
+        PlayerInventorySO owned = player != null && player.Inventory != null ? player.Inventory.currentInventory : null;
+        if (owned != null && owned.Weapons != null)
+        {
+            foreach (WeaponInstance weapon in owned.Weapons)
+                if (weapon != null && !string.IsNullOrEmpty(weapon.InstTemplateID) && !weapons.Contains(weapon)) weapons.Add(weapon);
+        }
+
+        return weapons;
     }
 
     private static void ConsiderGear(Dictionary<EGearSlot, float> bestGear, GearInstance gear)

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [CreateAssetMenu(fileName = "LootTableDefinitionSO", menuName = "Enemies/LootTable")]
 public class LootTableDefinitionSO : ScriptableObject
@@ -24,6 +25,7 @@ public class LootTableDefinitionSO : ScriptableObject
     [Header("Rarity Odds")]
     public bool overrideRarityOdds = false;
     public RarityWeights rarityOdds = new RarityWeights();
+    public bool ignoreSceneLootZone = false;
 
     [Header("Pop")]
     [SerializeField] private float popForce = 4f;
@@ -32,7 +34,9 @@ public class LootTableDefinitionSO : ScriptableObject
     private readonly List<LootEntry> candidates = new List<LootEntry>();
     private readonly List<LootEntry> filtered = new List<LootEntry>();
 
-    public void SpawnInstance(Vector3 spawn)
+    public void SpawnInstance(Vector3 spawn) => SpawnInstance(spawn, default);
+
+    public void SpawnInstance(Vector3 spawn, Scene sourceScene)
     {
         LootEntry entry = PickEntry();
         if (entry == null) return;
@@ -44,10 +48,21 @@ public class LootTableDefinitionSO : ScriptableObject
         }
 
         RarityWeights odds = overrideRarityOdds ? rarityOdds : null;
+        ERarity? fixedRarity = null;
+        LootRarityZone zone = null;
+
+        if (!ignoreSceneLootZone && RarityWeights.UsesRarity(entry.lootItem) && LootRarityZone.TryGet(sourceScene, out zone))
+            fixedRarity = zone.RollRarity();
 
         Vector3 spawnPosition = spawn + new Vector3(0f, 0.5f, 0f);
         WorldItem droppedItem = Instantiate(entry.worldItem, spawnPosition, Quaternion.identity);
-        droppedItem.Initialize(entry.lootItem, null, odds);
+        droppedItem.Initialize(entry.lootItem, fixedRarity, odds);
+
+        if (zone != null && zone.ShouldSkipDrop(droppedItem.RolledInstance))
+        {
+            Destroy(droppedItem.gameObject);
+            return;
+        }
 
         Vector2 popDirection = new Vector2(Random.Range(-popSpreadX, popSpreadX), 1f).normalized;
         droppedItem.PopOut(popDirection, popForce);

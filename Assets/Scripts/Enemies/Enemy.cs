@@ -919,7 +919,7 @@ namespace Enemies
         {
             Debug.Log($"Enemy hath died. Rip {name}");
 
-            lootTable?.SpawnInstance(transform.position);
+            lootTable?.SpawnInstance(transform.position, Context.Health != null ? Context.Health.ScalingScene : gameObject.scene);
             
             FreezeForDeathSequence();
 

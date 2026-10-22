@@ -58,9 +58,6 @@ MonoBehaviour:
   - lootItem: {fileID: 11400000, guid: 3704b97f958801b4681141f37392f808, type: 2}
     worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
     weight: 0.5
-  - lootItem: {fileID: 11400000, guid: a1f73d0efc878d442b3013a481dcbb93, type: 2}
-    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
-    weight: 1
   nothingWeight: 0
   avoidRepeat: 1
   cycleThroughTable: 1
@@ -70,5 +67,6 @@ MonoBehaviour:
     rare: 35
     epic: 10
     legendary: 5
+  ignoreSceneLootZone: 0
   popForce: 4
   popSpreadX: 0.1

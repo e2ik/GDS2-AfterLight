@@ -85,11 +85,39 @@ public static class ItemActionFactory
         public string Guid;
     }
 
-    public static List<object> GetWorseItems(PlayerInventoryManager inventory, PlayerEquipmentManager equip, bool keepNewItems)
+    public static bool IsWorseThanOwned(object item, PlayerInventoryManager inventory, PlayerEquipmentManager equip)
     {
-        List<object> result = new List<object>();
-        if (inventory == null || equip == null || inventory.currentInventory == null) return result;
+        if (item == null || inventory == null || equip == null || inventory.currentInventory == null) return false;
 
+        Dictionary<string, List<WorseCandidate>> incoming = new Dictionary<string, List<WorseCandidate>>();
+        switch (item)
+        {
+            case GearInstance gear: AddGear(incoming, gear, equip, false); break;
+            case WeaponInstance weapon: AddWeapon(incoming, weapon, equip, false); break;
+            case SecondaryGemInstance gem: AddGem(incoming, gem, equip, false); break;
+            default: return false;
+        }
+
+        Dictionary<string, List<WorseCandidate>> owned = BuildOwnedGroups(inventory, equip);
+
+        foreach (KeyValuePair<string, List<WorseCandidate>> pair in incoming)
+        {
+            if (!owned.TryGetValue(pair.Key, out List<WorseCandidate> others)) continue;
+
+            foreach (WorseCandidate candidate in pair.Value)
+            {
+                foreach (WorseCandidate other in others)
+                {
+                    if (other.Rarity >= candidate.Rarity && IsBetterOrEqual(other.Stats, candidate.Stats)) return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static Dictionary<string, List<WorseCandidate>> BuildOwnedGroups(PlayerInventoryManager inventory, PlayerEquipmentManager equip)
+    {
         Dictionary<string, List<WorseCandidate>> groups = new Dictionary<string, List<WorseCandidate>>();
 
         if (inventory.currentInventory.GearInstances != null)
@@ -118,6 +146,16 @@ public static class ItemActionFactory
 
         WeaponInstance equippedWeapon = equip.EquippedWeapon;
         if (equippedWeapon != null && !ContainsCandidate(groups, equippedWeapon, equippedWeapon.InstanceGUID)) AddWeapon(groups, equippedWeapon, equip, false);
+
+        return groups;
+    }
+
+    public static List<object> GetWorseItems(PlayerInventoryManager inventory, PlayerEquipmentManager equip, bool keepNewItems)
+    {
+        List<object> result = new List<object>();
+        if (inventory == null || equip == null || inventory.currentInventory == null) return result;
+
+        Dictionary<string, List<WorseCandidate>> groups = BuildOwnedGroups(inventory, equip);
 
         foreach (List<WorseCandidate> candidates in groups.Values)
         {

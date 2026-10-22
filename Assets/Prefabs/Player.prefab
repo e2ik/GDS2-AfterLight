@@ -212,6 +212,7 @@ GameObject:
   - component: {fileID: 340676937458263144}
   - component: {fileID: -6613351761212177417}
   - component: {fileID: 2500322680457246142}
+  - component: {fileID: 6750060450711556842}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -465,13 +466,6 @@ MonoBehaviour:
   bodyCollider: {fileID: 0}
   boundsIgnoreTriggers: 0
   drawDetectionGizmos: 1
-  dashEvent:
-    Guid:
-      Data1: 592182341
-      Data2: 1095649977
-      Data3: 1368063420
-      Data4: -1604961005
-    Path: event:/PlayerMovementSFX Events/Dash
   fadeDuration: 0.2
 --- !u!114 &3547647608137716798
 MonoBehaviour:
@@ -1143,6 +1137,87 @@ MonoBehaviour:
   minimumLight: 0
   maxBrightness: 0.5
   colorSmoothing: 12
+--- !u!114 &6750060450711556842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6310612592100663882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8743920614f9444db0a67be8089b533, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBarks
+  target: {fileID: 0}
+  duration: 2
+  skipDuringTutorials: 1
+  skipDuringDialogue: 1
+  epicChance: 0.75
+  legendaryChance: 0.9
+  lootCooldown: 4
+  epicLines:
+  - text: Ooo... shiny.
+    effect: 0
+  - text: Ooh, sparkly...
+    effect: 0
+  - text: Mine now.
+    effect: 0
+  - text: Yoink!
+    effect: 0
+  - text: <i>Very</i> nice.
+    effect: 0
+  - text: Come to me...
+    effect: 0
+  - text: Is it... glowing?
+    effect: 0
+  - text: Now THAT'S loot!
+    effect: 1
+  legendaryLines:
+  - text: <b>LEGENDARY?!</b>
+    effect: 1
+  - text: Oh. Oh my.
+    effect: 2
+  - text: Wait... is that...?
+    effect: 2
+  - text: It's beautiful...
+    effect: 2
+  - text: Okay. I'm keeping this.
+    effect: 1
+  - text: Hands are shaking.
+    effect: 2
+  - text: <size=120%>JACKPOT!</size>
+    effect: 1
+  idleBarksEnabled: 1
+  idleDelay: 20
+  idleRepeatInterval: 30
+  idleChance: 0.85
+  idleMoveThreshold: 0.1
+  idleLines:
+  - text: Player? You there?
+    effect: 0
+  - text: Hello? Anyone?
+    effect: 0
+  - text: I'll just... wait here.
+    effect: 0
+  - text: Did you forget me?
+    effect: 0
+  - text: Snack break?
+    effect: 0
+  - text: <i>*taps foot*</i>
+    effect: 0
+  - text: Controller died?
+    effect: 0
+  - text: Blink twice if you're okay.
+    effect: 0
+  - text: I can hear you breathing.
+    effect: 2
+  - text: HELLO?!
+    effect: 1
+  - text: The tower won't climb itself.
+    effect: 0
+  - text: Still here. Still waiting.
+    effect: 0
 --- !u!1 &8844592283841214288
 GameObject:
   m_ObjectHideFlags: 0

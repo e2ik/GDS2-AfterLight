@@ -6,10 +6,15 @@ namespace Enemies
 {
     public class EnemyHealthScalingZone : MonoBehaviour
     {
-        [SerializeField] private float minPower = 40f;
-        [SerializeField] private float maxPower = 50f;
+        [SerializeField] private float minHitDamage = 20f;
+        [SerializeField] private float maxHitDamage = 30f;
         [SerializeField, Min(1f)] private float maxHealthMultiplier = 2f;
-        [SerializeField, Min(0f)] private float weaponDamageWeight = 1f;
+
+        [Header("Attack Shift")]
+        [SerializeField] private float minAttack = 35f;
+        [SerializeField] private float maxAttack = 50f;
+        [SerializeField, Min(1f)] private float highAttackMinMultiplier = 1.1f;
+        [SerializeField, Min(1f)] private float highAttackMaxMultiplier = 2.5f;
         [SerializeField] private bool debugScaling = false;
 
         private static readonly Dictionary<int, EnemyHealthScalingZone> zones = new Dictionary<int, EnemyHealthScalingZone>();
@@ -39,15 +44,30 @@ namespace Enemies
             Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
             if (player == null || player.Stats == null) return 1f;
 
-            float power = player.Stats.GetPotentialPower(weaponDamageWeight);
-            float t = maxPower > minPower ? Mathf.InverseLerp(minPower, maxPower, power) : (power >= minPower ? 1f : 0f);
-            multiplier = Mathf.Lerp(1f, maxHealthMultiplier, t);
+            float hitDamage = player.Stats.GetPotentialHitDamage(out float bestAttack, out WeaponInstance bestWeapon);
+            float t = Range01(minHitDamage, maxHitDamage, hitDamage);
+            float potentialAttack = player.Stats.GetPotentialAttack();
+            float attackT = Range01(minAttack, maxAttack, potentialAttack);
+
+            float lowEnd = Mathf.Lerp(1f, highAttackMinMultiplier, attackT);
+            float highEnd = Mathf.Lerp(maxHealthMultiplier, highAttackMaxMultiplier, attackT);
+            multiplier = Mathf.Lerp(lowEnd, highEnd, t);
             evaluated = true;
 
             if (debugScaling)
-                Debug.Log($"[EnemyHealthScalingZone] {gameObject.scene.name}: power {power:F1} (range {minPower}-{maxPower}) -> x{multiplier:F2}", this);
+            {
+                float currentHit = player.CombatController != null ? player.CombatController.GetScaledAttackDamage() : 0f;
+                string weaponText = bestWeapon != null ? $"weapon {bestWeapon.InstTemplateID} dmg {bestWeapon.InstRolledDamage:F1}" : "no weapon";
+                Debug.Log($"[EnemyHealthScalingZone] {gameObject.scene.name}: best hit {hitDamage:F1} = {weaponText} + attack {bestAttack:F1}^exp | current equipped base hit {currentHit:F1}, current attack {player.Stats.TotalAttack:F1} | range {minHitDamage}-{maxHitDamage} | potential attack {potentialAttack:F1} shifts range to x{lowEnd:F2}-x{highEnd:F2} -> x{multiplier:F2}", this);
+            }
 
             return multiplier;
+        }
+
+        private static float Range01(float min, float max, float value)
+        {
+            if (max > min) return Mathf.InverseLerp(min, max, value);
+            return value >= min ? 1f : 0f;
         }
 
         public static float GetMultiplier(Scene scene)

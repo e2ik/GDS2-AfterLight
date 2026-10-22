@@ -83,7 +83,9 @@ public class WorldItem : MonoBehaviour
 
     public bool HasRarity => hasRarity;
     public ERarity Rarity => rarity;
+    public object RolledInstance => rolledInstance;
     public event Action<ERarity> OnRarityAssigned;
+    public static event Action<WorldItem, ERarity?> AnyItemCollected;
 
     private void Awake()
     {
@@ -526,7 +528,6 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(weaponDef);
                         break;
                     }
-                    AudioManager.PlaySFX(weaponLoot.pickupSound, transform.position);
 
                     if (player.Equipment.IsWeaponSlotEmpty())
                         player.Equipment.EquipWeapon(weaponLoot);
@@ -551,7 +552,6 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(gearDef);
                         break;
                     }
-                    AudioManager.PlaySFX(gearLoot.pickupSound, transform.position);
 
                     if (player.Equipment.IsGearSlotEmpty(gearDef.Slot))
                         player.Equipment.EquipGear(gearDef.Slot, gearLoot);
@@ -574,7 +574,6 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(keyDef);
                         break;
                     }
-                    AudioManager.PlaySFX(keyLoot.pickupSound, transform.position);
 
                     LootPickupDisplay.Instance?.AddPickup(
                         keyDef.UISprite, keyDef.UIName, null,
@@ -594,7 +593,6 @@ public class WorldItem : MonoBehaviour
                         ShowInventoryFullMessage(loreDef);
                         break;
                     }
-                    AudioManager.PlaySFX(loreLoot.pickupSound, transform.position);
 
                     LootPickupDisplay.Instance?.AddPickup(
                         loreDef.UISprite, loreDef.UIName, null,
@@ -613,6 +611,7 @@ public class WorldItem : MonoBehaviour
         {
             hasBeenPickedUp = true;
             RaisePickupTutorialEvents();
+            AnyItemCollected?.Invoke(this, hasRarity ? rarity : (ERarity?)null);
             Destroy(gameObject);
         }
         else

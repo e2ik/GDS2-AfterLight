@@ -34418,6 +34418,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1085938262}
   - component: {fileID: 1085938263}
+  - component: {fileID: 1085938264}
   m_Layer: 0
   m_Name: Root
   m_TagString: Untagged
@@ -34461,6 +34462,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SceneAreaState
   exteriorRoot: {fileID: 124264255}
   interiorRoot: {fileID: 282204495}
+--- !u!114 &1085938264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1085938261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdd6da581b735a949a9ad72100e020e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LootRarityZone
+  odds:
+    common: 60
+    rare: 35
+    epic: 5
+    legendary: 1
+  minimumRarity: 0
+  belowMinimumNoDropChance: 0.8
+  debugRolls: 0
 --- !u!1001 &1087160602
 PrefabInstance:
   m_ObjectHideFlags: 0
