@@ -110,6 +110,7 @@ public class GameManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded += HandleSceneLoaded;
 
         if (unlockAllFastTravelAction != null)
         {
@@ -247,9 +248,14 @@ public class GameManager : MonoBehaviour
 
     private void SetState(GameState newState)
     {
-        if (currentState == newState) return;
+        if (currentState == newState)
+        {
+            UpdateHudVisibility();
+            return;
+        }
 
         currentState = newState;
+        UpdateHudVisibility();
 
         switch (currentState)
         {
@@ -292,12 +298,13 @@ public class GameManager : MonoBehaviour
     private IEnumerator NewGameRoutine()
     {
         yield return LoadMasterSceneSingle();
+        UpdateHudVisibility();
 
         FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
-        if (WorldStreamer.Instance != null) yield return WorldStreamer.Instance.PreloadScenes();
-
         if (WillPlayIntroCutscene()) CutscenePlayer.Instance.SetCutsceneUIHidden(true);
+
+        if (WorldStreamer.Instance != null) yield return WorldStreamer.Instance.PreloadScenes();
 
         yield return PlayIntroCutscene();
         
@@ -348,6 +355,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator LoadGameRoutine()
     {
         yield return LoadMasterSceneSingle();
+        UpdateHudVisibility();
 
         FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
@@ -445,6 +453,33 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) SceneManager.sceneLoaded -= HandleSceneLoaded;
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != masterSceneName) return;
+
+        UpdateHudVisibility();
+        if (currentState != GameState.Game) FadeCanvasController.Instance?.FadeTo(1f, 0f);
+    }
+
+    private void UpdateHudVisibility()
+    {
+        GameUI.PlayerHUD hud = FindFirstObjectByType<GameUI.PlayerHUD>(FindObjectsInactive.Include);
+        if (hud == null) return;
+
+        CanvasGroup group = hud.GetComponent<CanvasGroup>();
+        if (group == null) group = hud.gameObject.AddComponent<CanvasGroup>();
+
+        bool visible = currentState == GameState.Game;
+        group.alpha = visible ? 1f : 0f;
+        group.blocksRaycasts = visible;
+        group.interactable = visible;
     }
 
     private bool WillPlayIntroCutscene()

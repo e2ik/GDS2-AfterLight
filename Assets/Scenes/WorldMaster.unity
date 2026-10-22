@@ -128,12 +128,24 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 6502403106020412924, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_Size.x
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 6502403106020412924, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_Size.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6502403106020412924, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
+      propertyPath: m_Size.z
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 6502403106020412924, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
       propertyPath: m_NavMeshData
       value: 
       objectReference: {fileID: 23800000, guid: ca306dcdf243a0440837944b2d1f790c, type: 2}
     - target: {fileID: 6502403106020412924, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
       propertyPath: m_CollectObjects
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6502403106020412924, guid: 5dd9b4a5ae6c8324080cf2ce50c56ca1, type: 3}
       propertyPath: m_HideEditorLogs
@@ -664,6 +676,9 @@ MonoBehaviour:
     m_Bits: 64
   navMeshCheckRadius: 0.5
   asyncBake: 1
+  cacheBakes: 1
+  debugBakeCache: 0
+  prebakeIsolationOffset: {x: 0, y: 20000}
 --- !u!114 &358202636
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2811,7 +2826,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!224 &1241604483
 RectTransform:

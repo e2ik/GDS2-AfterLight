@@ -247,7 +247,7 @@ public class PlayerStats : MonoBehaviour
 
         AudioManager.PlaySFX(hitEvent, transform.position);
 
-        Debug.Log($"Actual Dmg: {rawDamage} - received dmg: {effectiveDamage} (mitigation:{(1f - mitigationMultiplier):P1}, def:{TotalDefense}). Current Health: {currentHealth}");
+        // Debug.Log($"Actual Dmg: {rawDamage} - received dmg: {effectiveDamage} (mitigation:{(1f - mitigationMultiplier):P1}, def:{TotalDefense}). Current Health: {currentHealth}");
 
         if (currentHealth <= 0f)
             Die();
@@ -304,7 +304,7 @@ public class PlayerStats : MonoBehaviour
     private void Die()
     {
         OnDied?.Invoke();
-        Debug.Log("Player died.");
+        // Debug.Log("Player died.");
 
         if (player != null)
         {
