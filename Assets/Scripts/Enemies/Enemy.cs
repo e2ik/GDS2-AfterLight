@@ -108,6 +108,8 @@ namespace Enemies
 
         [Header("FMOD Events")]
         [SerializeField] private EventReference hitEvent;
+        [SerializeField] private EventReference vulnerableHitEvent;
+        [SerializeField] private EventReference blockedHitEvent;
         [SerializeField] private EventReference attackEvent;
 
         [Header("Damage Flash")]
@@ -824,6 +826,13 @@ namespace Enemies
             Context.ForceTeleportNearTarget = false;
         }
 
+        private EventReference GetHitEvent(DamageInfo info)
+        {
+            if (info.IsBonus && !vulnerableHitEvent.IsNull) return vulnerableHitEvent;
+            if (info.Blocked > 0 && !blockedHitEvent.IsNull) return blockedHitEvent;
+            return hitEvent;
+        }
+
         private void OnDamaged(DamageInfo info)
         {
             if (canTeleport && IsBoss) damageSinceTeleport += info.Amount;
@@ -833,7 +842,7 @@ namespace Enemies
             string roll = info.HasRoll ? $" roll:{info.RollQuality:F2}" : "";
             Debug.Log($"Enemy blud was damaged for {info.Amount} ({info.DamageType}{crit}{roll}). Current Health: {Context.Health.CurrentHealth}");
 
-            AudioManager.PlaySFXAttached(hitEvent, gameObject);
+            AudioManager.PlaySFXAttached(GetHitEvent(info), gameObject);
 
             if (hitFlash != null)
             {

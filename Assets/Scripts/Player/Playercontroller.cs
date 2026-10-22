@@ -139,6 +139,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Min(0f)] private float groundSnapMaxDistance = 10f;
     [SerializeField] private float groundCheckDistance = 0.05f;
     [SerializeField] private float groundCheckNormalThreshold = 0.6f;
+    [SerializeField, Min(0f)] private float passThroughInsideTolerance = 0.05f;
     [SerializeField] private float wallCheckDistance = 0.05f;
     [SerializeField] private float edgeMargin = 0.05f;
     [SerializeField] private Collider2D bodyCollider;
@@ -1368,7 +1369,39 @@ public class PlayerController : MonoBehaviour
         if (hit.collider.TryGetComponent(out AirOnlyCollisionPlatform platform) && !platform.AllowsSolidContactFrom(hit.normal))
             return false;
 
+        if (IsPassThroughCollider(hit.collider) && IsInsidePassThrough(origin.x, hit))
+        {
+            if (!isClimbing && rb.linearVelocityY <= 0f && currentPassThroughPlatform != hit.collider && !IsMovingPlatformCollider(hit.collider))
+                StartCoroutine(DisableCollisionRoutine(hit.collider));
+            return false;
+        }
+
         return true;
+    }
+
+    private static bool IsPassThroughCollider(Collider2D platform)
+    {
+        return platform.GetComponent<PlatformEffector2D>() != null || platform.GetComponentInParent<DropThroughPlatform>() != null;
+    }
+
+    private bool IsInsidePassThrough(float x, RaycastHit2D footHit)
+    {
+        if (footHit.distance <= 0f) return true;
+
+        Bounds bounds = cachedBounds;
+        Vector2 origin = new Vector2(x, bounds.max.y - 0.02f);
+        float distance = origin.y - footHit.point.y + 0.02f;
+
+        int count = Physics2D.RaycastNonAlloc(origin, Vector2.down, raycastBuffer, distance, groundLayer);
+        for (int i = 0; i < count; i++)
+        {
+            RaycastHit2D hit = raycastBuffer[i];
+            if (hit.collider != footHit.collider) continue;
+            if (hit.distance <= 0f) return true;
+            return hit.point.y > footHit.point.y + passThroughInsideTolerance;
+        }
+
+        return false;
     }
 
     private bool IsOnMovingPlatform()
