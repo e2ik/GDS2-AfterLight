@@ -42,6 +42,9 @@ public class InventoryDisplay : GameUI.UIWindow
     [SerializeField, Min(0.01f)] private float activeFramePulseSpeed = 1.5f;
     [SerializeField, Range(0f, 1f)] private float activeFramePulseMin = 0.2f;
 
+    [Header("Linked Backgrounds")]
+    [SerializeField] private UIWindowAnimator[] linkedBackgrounds;
+
     [Header("Controller")]
     [SerializeField] private InputActionReference prevFilterAction;
     [SerializeField] private InputActionReference nextFilterAction;
@@ -178,6 +181,10 @@ public class InventoryDisplay : GameUI.UIWindow
     protected override void Awake()
     {
         base.Awake();
+
+        if (linkedBackgrounds != null)
+            foreach (UIWindowAnimator background in linkedBackgrounds)
+                if (background != null) background.InstantHide();
 
         CacheCharacterBaseColor(characterArmorImage);
         CacheCharacterBaseColor(characterBootsImage);
@@ -559,6 +566,10 @@ public class InventoryDisplay : GameUI.UIWindow
 
     protected override void OnWindowOpened()
     {
+        if (linkedBackgrounds != null)
+            foreach (UIWindowAnimator background in linkedBackgrounds)
+                if (background != null) background.Show();
+
         if (prevFilterAction != null)
         {
             prevFilterAction.action.Enable();
@@ -586,6 +597,10 @@ public class InventoryDisplay : GameUI.UIWindow
 
     protected override void OnWindowClosed()
     {
+        if (linkedBackgrounds != null)
+            foreach (UIWindowAnimator background in linkedBackgrounds)
+                if (background != null) background.Hide();
+
         UnsubscribeFilterActions();
         UnsubscribeDeleteWorseAction();
         UpdateDeleteWorseFrame(true);

@@ -491,6 +491,7 @@ MonoBehaviour:
     m_Bits: 6656
   critDamageMultiplier: 1.33
   counterAttackMultiplier: 2
+  maxCounterStacks: 5
   plungeDmgMaxMultiplier: 10
   plungeAdjustedDmg: 3
   plungeGraceWindow: 0.15
@@ -513,7 +514,7 @@ MonoBehaviour:
   attackDuration: 0.6
   attackCoolDown: 0.2
   attackBufferTime: 0.15
-  counterAttackWindow: 0.5
+  counterAttackWindow: 2
   passiveEnergyCooldown: 4
   passiveEnergyRegenMult: 0.2
   passiveEnergyCap: 0.5

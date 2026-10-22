@@ -36,6 +36,10 @@ public class PlayerCombatController : MonoBehaviour
     public LayerMask enemyLayer;
     [SerializeField] private float critDamageMultiplier = 1.33f;
     [SerializeField] private float counterAttackMultiplier = 1.2f;
+    [SerializeField, Min(1)] private int maxCounterStacks = 5;
+    private int counterStacks;
+    private float lastParryTime = float.NegativeInfinity;
+    private bool counterUsedThisAttack;
     [SerializeField] private float plungeDmgMaxMultiplier = float.MaxValue;
     [SerializeField] private float plungeAdjustedDmg = 1f;
     [SerializeField] private float plungeGraceWindow = 0.15f;
@@ -61,7 +65,7 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float attackDuration = 0.3f;
     [SerializeField] private float attackCoolDown = 0.2f;
     [SerializeField] private float attackBufferTime = 0.15f;
-    [SerializeField] private float counterAttackWindow = 0.5f;
+    [SerializeField] private float counterAttackWindow = 2f;
     [SerializeField] private float passiveEnergyCooldown = 4f;
     [SerializeField] private float passiveEnergyRegenMult = 0.2f; // 1f = 1 sec for full bar, .25f = 4 secs etc.
     [SerializeField, Range(0f, 1f)] private float passiveEnergyCap = 0.5f;
@@ -106,7 +110,6 @@ public class PlayerCombatController : MonoBehaviour
     private float attackTimer;
     private bool isAttacking;
     private bool attackStartedGrounded;
-    private bool isCounterAttacking;
     private bool isDashAttack;
     private bool isPlunging;
     private float plungeGraceTimer;
@@ -232,6 +235,12 @@ public class PlayerCombatController : MonoBehaviour
 
     private void Start()
     {
+        if (player != null && player.Stats != null)
+        {
+            player.Stats.OnDamageTaken -= ResetCounterStacks;
+            player.Stats.OnDamageTaken += ResetCounterStacks;
+        }
+
         if (skillMeterAlwaysFull) SkillMeter = 1f;
         RaiseEnergyChanged();
     }
@@ -347,6 +356,7 @@ public class PlayerCombatController : MonoBehaviour
 
     private void UpdateTimers()
     {
+        UpdateCounterStacks();
         parryBufferTimer = Tick(parryBufferTimer, Time.deltaTime);
         attackBufferTimer = Tick(attackBufferTimer, Time.deltaTime);
         skillBufferTimer = Tick(skillBufferTimer, Time.deltaTime);
@@ -504,10 +514,8 @@ public class PlayerCombatController : MonoBehaviour
         CancelParry();
         AudioManager.PlaySFX(parryEvent, transform.position);
         ChargeSkillMeter(chargeSkillAmount);
-        isCounterAttacking = true;
-
-        CancelInvoke(nameof(EndCounterAttackWindow));
-        Invoke(nameof(EndCounterAttackWindow), counterAttackWindow);
+        counterStacks = Mathf.Min(counterStacks + 1, maxCounterStacks);
+        lastParryTime = Time.time;
 
         parrySuccessResetCoroutine = StartCoroutine(ExtendParryAnim(successfulParryVisualDuration));
     }
@@ -520,7 +528,26 @@ public class PlayerCombatController : MonoBehaviour
         parrySuccessResetCoroutine = null;
     }
 
-    private void EndCounterAttackWindow() => isCounterAttacking = false;
+    public void ResetCounterStacks()
+    {
+        counterStacks = 0;
+        counterUsedThisAttack = false;
+    }
+
+    private void UpdateCounterStacks()
+    {
+        if (counterUsedThisAttack && !isAttacking)
+        {
+            counterStacks = 0;
+            counterUsedThisAttack = false;
+        }
+
+        if (counterStacks > 0 && !counterUsedThisAttack && Time.time - lastParryTime > counterAttackWindow)
+            counterStacks = 0;
+    }
+
+    public int CounterStacks => counterStacks;
+    private float CounterMultiplier => 1f + (counterAttackMultiplier - 1f) * counterStacks;
 
     public void CancelParry()
     {
@@ -857,14 +884,19 @@ public class PlayerCombatController : MonoBehaviour
 
     private void HitEnemy(Collider2D[] enemiesInRange, AttackContext context, float plungeDmgMult = 0f)
     {
-        float attackDamage = context.BaseAttackDamage * GetComboMultiplier() * (1f + GetAttackModifierBonus());
+        float sharedMultiplier = GetComboMultiplier() * (1f + GetAttackModifierBonus());
         context.IsComboFinisher = plungeDmgMult <= 0f && currentComboIndex >= maxComboCount;
 
         if (plungeDmgMult <= 0f)
         {
-            if (isDashAttack) attackDamage *= dashAttackMultiplier + (HasAttackGem() ? attackGemDashMultiplierBonus : 0f);
-            if (!attackStartedGrounded) attackDamage *= airAttackMultiplier;
+            if (isDashAttack) sharedMultiplier *= dashAttackMultiplier + (HasAttackGem() ? attackGemDashMultiplierBonus : 0f);
+            if (!attackStartedGrounded) sharedMultiplier *= airAttackMultiplier;
         }
+
+        float attackDamage = context.BaseAttackDamage * sharedMultiplier;
+        float counterBonus = plungeDmgMult <= 0f && counterStacks > 0
+            ? GetScaledAttackDamage() * sharedMultiplier * (CounterMultiplier - 1f)
+            : 0f;
 
         foreach (var col in enemiesInRange)
         {
@@ -876,13 +908,17 @@ public class PlayerCombatController : MonoBehaviour
 
                     float dmg = plungeDmgMult > 0f
                         ? attackDamage * (1 + plungeDmgMult + (HasAttackGem() ? attackGemPlungeMultiplierBonus : 0f))
-                        : attackDamage * (isCounterAttacking ? counterAttackMultiplier : 1f);
+                        : attackDamage;
+
+                    if (counterBonus > 0f) counterUsedThisAttack = true;
 
                     float roll = UnityEngine.Random.value;
                     bool isCrit = roll < context.BaseAttackCrit;
-                    dmg *= (isCrit ? critDamageMultiplier : 1f);
+                    float critMultiplier = isCrit ? critDamageMultiplier : 1f;
 
-                    enemyHealth.ApplyHit((int)dmg, context, isCrit);
+                    int dotSource = (int)(dmg * critMultiplier);
+                    int total = (int)((dmg + counterBonus) * critMultiplier);
+                    enemyHealth.ApplyHit(total, context, isCrit, dotSource);
                 }
             }
         }
@@ -906,6 +942,12 @@ public class PlayerCombatController : MonoBehaviour
 
     public void EndAttack()
     {
+        if (counterUsedThisAttack)
+        {
+            counterStacks = 0;
+            counterUsedThisAttack = false;
+        }
+
         isAttacking = false;
         attackDurationTimer = 0f;
         canBufferNextCombo = false;
@@ -1447,6 +1489,11 @@ public class PlayerCombatController : MonoBehaviour
     private void OnDisable()
     {
         StopChargingSound();
+    }
+
+    private void OnDestroy()
+    {
+        if (player != null && player.Stats != null) player.Stats.OnDamageTaken -= ResetCounterStacks;
     }
 
     private void OnDrawGizmosSelected()

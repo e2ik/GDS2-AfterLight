@@ -161,9 +161,11 @@ namespace Enemies
             }
         }
 
-        public void ApplyHit(int damage, AttackContext context, bool isCrit = false)
+        public void ApplyHit(int damage, AttackContext context, bool isCrit = false, int dotSourceDamage = -1)
         {
             if (Invulnerable) return;
+
+            float dotRatio = dotSourceDamage >= 0 && damage > 0 ? Mathf.Clamp01((float)dotSourceDamage / damage) : 1f;
 
             int blocked = 0;
             bool oneHitKill = GameManager.Instance != null && GameManager.Instance.OneHitKillEnemies;
@@ -210,7 +212,7 @@ namespace Enemies
 
             if (context.AppliesDot)
             {
-                float dotDamagePerTick = damage * context.DotDamagePercent;
+                float dotDamagePerTick = damage * dotRatio * context.DotDamagePercent;
                 if (dotDamagePerTick < 1f) dotDamagePerTick = 1f; // at least 1 damage
 
                 AddDotStack(dotDamagePerTick, context.DotTickInterval, context.DotDuration, Mathf.Max(1, context.DotMaxStacks));

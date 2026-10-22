@@ -56,6 +56,7 @@ public class PlayerStats : MonoBehaviour
     public event System.Action<float, float> OnHealthChanged;
     public event System.Action OnStatsRecalculated;
     public event System.Action OnDied;
+    public event System.Action OnDamageTaken;
     public static event System.Action OnRespawnStarted;
 
     private void Awake()
@@ -241,6 +242,7 @@ public class PlayerStats : MonoBehaviour
 
         currentHealth = Mathf.Max(0f, currentHealth - effectiveDamage);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        OnDamageTaken?.Invoke();
         Tutorial.TutorialEvents.Raise(Tutorial.TutorialEvents.PlayerHit);
 
         AudioManager.PlaySFX(hitEvent, transform.position);
