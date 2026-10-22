@@ -609,18 +609,18 @@ MonoBehaviour:
   hitTrigger: Hurt
   hitEvent:
     Guid:
-      Data1: 515442699
-      Data2: 1331403395
-      Data3: 1112032419
-      Data4: -774162852
-    Path: event:/CombatSFXEvents/EnemyHitEvent
+      Data1: -518119109
+      Data2: 1183803826
+      Data3: -724434530
+      Data4: 1879959443
+    Path: event:/CombatSFXEvents/BuzzHitWeakEvent
   attackEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: 1739630346
+      Data2: 1283924578
+      Data3: -261085565
+      Data4: -1791523683
+    Path: event:/CombatSFXEvents/HammerAttackEvent
   spriteRenderer: {fileID: 5107996575365250629}
   hitFlash: {fileID: 8607045623648066577}
   flashColor: {r: 1.4980392, g: 0, b: 0, a: 1}
@@ -655,25 +655,25 @@ MonoBehaviour:
   enemy: {fileID: 2819779926548626800}
   windupEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: -122415342
+      Data2: 1277063217
+      Data3: -1503894899
+      Data4: -1598432598
+    Path: event:/CombatSFXEvents/BuzzWindupEvent
   moveLoopEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: -1440970872
+      Data2: 1078909926
+      Data3: -1039477095
+      Data4: 822580142
+    Path: event:/CombatSFXEvents/BuzzRocketLoop
   winddownEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: 610136496
+      Data2: 1201875611
+      Data3: -454875977
+      Data4: 1459680708
+    Path: event:/CombatSFXEvents/BuzzWindDownEvent
   stopWindupIfCancelled: 1
   attackEvents: {fileID: 0}
   vulnerableStartEvent:
@@ -1029,11 +1029,19 @@ MonoBehaviour:
   - id: AttackEvent
     sfxEvent:
       Guid:
-        Data1: 51170180
-        Data2: 1335013354
-        Data3: 321829252
-        Data4: -75671352
-      Path: event:/CombatSFXEvents/ScytheAttackEvent
+        Data1: -1272061257
+        Data2: 1113791693
+        Data3: -1711330937
+        Data4: -599032802
+      Path: event:/CombatSFXEvents/BuzzBigAttackEvent
+  - id: PrepareAttackEvent
+    sfxEvent:
+      Guid:
+        Data1: -618994587
+        Data2: 1198063648
+        Data3: 1039113614
+        Data4: -726070447
+      Path: event:/CombatSFXEvents/BuzzAttackWarningEvent
 --- !u!114 &8534714332133621480
 MonoBehaviour:
   m_ObjectHideFlags: 0
