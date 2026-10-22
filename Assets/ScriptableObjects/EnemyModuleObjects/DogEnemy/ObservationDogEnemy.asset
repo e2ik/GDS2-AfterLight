@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: ObservationDogEnemy
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Observation.FacingRangeObservationSO
   viewDistance: 8
-  viewHeight: 1
+  bottomMargin: 0.1
+  topMargin: 2
   targetMask:
     serializedVersion: 2
     m_Bits: 8

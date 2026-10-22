@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Enemies.ModuleScripts.Observation
@@ -6,7 +7,8 @@ namespace Enemies.ModuleScripts.Observation
     public class FacingRangeObservationSO : EnemyObservationSO
     {
         [SerializeField] private float viewDistance = 5f;
-        [SerializeField] private float viewHeight = 1f;
+        [SerializeField] private float bottomMargin = 0.1f;
+        [SerializeField] private float topMargin = 0.1f;
         [SerializeField] private LayerMask targetMask;
         [SerializeField] private LayerMask obstructionMask;
 
@@ -21,16 +23,18 @@ namespace Enemies.ModuleScripts.Observation
 
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
-            Vector2 origin = ctx.Self.position;
+            Bounds body = EnemyTerrainProbe.GetBodyBounds(ctx);
+            Vector2 origin = body.center;
 
-            Collider2D hit = TryFacingCone(ctx, origin);
+            GetVisionBand(body, out float bandBottom, out float bandTop);
+
+            Collider2D hit = TryFacingCone(ctx, body, bandBottom, bandTop);
             if (hit == null)
-                hit = Physics2D.OverlapCircle(origin, proximityRadius, targetMask);
+                hit = TryProximity(origin, bandBottom, bandTop);
 
             if (hit != null)
             {
-                Vector2 toTarget = (Vector2)hit.transform.position - origin;
-                bool losBlocked = Physics2D.Raycast(origin, toTarget.normalized, toTarget.magnitude, obstructionMask);
+                bool losBlocked = IsLineOfSightBlocked(origin, hit.bounds.center, obstructionMask);
 
                 if (!losBlocked)
                 {
@@ -59,11 +63,43 @@ namespace Enemies.ModuleScripts.Observation
             }
         }
 
-        private Collider2D TryFacingCone(EnemyContext ctx, Vector2 origin)
+        private void GetVisionBand(Bounds body, out float bottom, out float top)
+        {
+            bottom = body.min.y + bottomMargin;
+            top = body.max.y - topMargin;
+            if (top - bottom < 0.1f)
+            {
+                float mid = body.center.y;
+                bottom = mid - 0.05f;
+                top = mid + 0.05f;
+            }
+        }
+
+        private static readonly List<Collider2D> proximityResults = new List<Collider2D>();
+
+        private Collider2D TryProximity(Vector2 origin, float bottom, float top)
+        {
+            if (proximityRadius <= 0f) return null;
+
+            ContactFilter2D filter = new ContactFilter2D { useTriggers = true, useLayerMask = true, layerMask = targetMask };
+            Physics2D.OverlapCircle(origin, proximityRadius, filter, proximityResults);
+
+            foreach (Collider2D col in proximityResults)
+            {
+                if (col == null) continue;
+                Bounds bounds = col.bounds;
+                if (bounds.max.y >= bottom && bounds.min.y <= top) return col;
+            }
+
+            return null;
+        }
+
+        private Collider2D TryFacingCone(EnemyContext ctx, Bounds body, float bottom, float top)
         {
             int dir = ctx.FacingRight ? 1 : -1;
-            Vector2 size = new Vector2(viewDistance, viewHeight);
-            Vector2 center = origin + Vector2.right * dir * (viewDistance / 2f);
+
+            Vector2 size = new Vector2(viewDistance, top - bottom);
+            Vector2 center = new Vector2(body.center.x + dir * (viewDistance / 2f), (top + bottom) * 0.5f);
 
             var hit = Physics2D.OverlapBox(center, size, 0f, targetMask);
             //DebugDrawOverlapBox(center, size, 0f, hit ? Color.red : Color.green);
@@ -99,6 +135,28 @@ namespace Enemies.ModuleScripts.Observation
             Debug.DrawLine(worldCorners[1], worldCorners[2], color);
             Debug.DrawLine(worldCorners[2], worldCorners[3], color);
             Debug.DrawLine(worldCorners[3], worldCorners[0], color);
+        }
+
+        private static readonly RaycastHit2D[] losHits = new RaycastHit2D[8];
+
+        private static bool IsLineOfSightBlocked(Vector2 origin, Vector2 target, LayerMask mask)
+        {
+            if (mask.value == 0) return false;
+
+            ContactFilter2D filter = new ContactFilter2D { useTriggers = false, useLayerMask = true, layerMask = mask };
+            int count = Physics2D.Linecast(origin, target, filter, losHits);
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D col = losHits[i].collider;
+                if (col == null) continue;
+                if (col.usedByEffector || col.GetComponentInParent<PlatformEffector2D>() != null) continue;
+                if (col.GetComponentInParent<DropThroughPlatform>() != null) continue;
+                if (col.GetComponentInParent<AirOnlyCollisionPlatform>() != null) continue;
+                return true;
+            }
+
+            return false;
         }
     }
 }

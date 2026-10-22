@@ -15,7 +15,7 @@ namespace Enemies.ModuleScripts.Observation
         
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
-            Vector2 origin = ctx.Self.position;
+            Vector2 origin = EnemyTerrainProbe.GetBodyBounds(ctx).center;
             bool alreadyTracking = ctx.Target != null && ctx.TargetVisible;
             float radius = alreadyTracking ? Mathf.Max(detectionRadius, loseRadius) : detectionRadius;
 
@@ -23,9 +23,7 @@ namespace Enemies.ModuleScripts.Observation
 
             if (hit != null)
             {
-                Vector2 toTarget = (Vector2)hit.transform.position - origin;
-                bool isBlocked = obstructionMask != 0 &&
-                                 Physics2D.Raycast(origin, toTarget.normalized, toTarget.magnitude, obstructionMask);
+                bool isBlocked = IsLineOfSightBlocked(origin, hit.bounds.center, obstructionMask);
 
                 if (!isBlocked)
                 {
@@ -49,6 +47,28 @@ namespace Enemies.ModuleScripts.Observation
 
             ctx.TargetVisible = false;
             ctx.Target = null;
+        }
+
+        private static readonly RaycastHit2D[] losHits = new RaycastHit2D[8];
+
+        private static bool IsLineOfSightBlocked(Vector2 origin, Vector2 target, LayerMask mask)
+        {
+            if (mask.value == 0) return false;
+
+            ContactFilter2D filter = new ContactFilter2D { useTriggers = false, useLayerMask = true, layerMask = mask };
+            int count = Physics2D.Linecast(origin, target, filter, losHits);
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D col = losHits[i].collider;
+                if (col == null) continue;
+                if (col.usedByEffector || col.GetComponentInParent<PlatformEffector2D>() != null) continue;
+                if (col.GetComponentInParent<DropThroughPlatform>() != null) continue;
+                if (col.GetComponentInParent<AirOnlyCollisionPlatform>() != null) continue;
+                return true;
+            }
+
+            return false;
         }
     }
 }

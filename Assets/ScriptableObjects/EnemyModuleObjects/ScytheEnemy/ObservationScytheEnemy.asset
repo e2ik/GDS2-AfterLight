@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: ObservationScytheEnemy
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Observation.FacingRangeObservationSO
   viewDistance: 5
-  viewHeight: 1
+  bottomMargin: 0.1
+  topMargin: 1
   targetMask:
     serializedVersion: 2
     m_Bits: 8
