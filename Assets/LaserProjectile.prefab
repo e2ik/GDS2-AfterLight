@@ -280,6 +280,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ProjectileScripts.AimedLaserProjectile
   lifetime: 3.4028235e+38
   attackForce: 0
+  adjustLaunchForWalls: 1
+  launchWallMask:
+    serializedVersion: 2
+    m_Bits: 64
+  launchWallCheckDistance: 2
+  maxLaunchAdjustAngle: 180
+  launchAdjustStep: 10
+  debugLaunchWallCheck: 0
   damagesEnemies: 1
   enemyMask:
     serializedVersion: 2

@@ -40,6 +40,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpGravity = 2.5f;
     [SerializeField] private float fallGravity = 4.5f;
     [SerializeField] private float plungeGravity = 10f;
+    [SerializeField, Min(0f)] private float maxFallSpeed = 20f;
+    [SerializeField, Min(0f)] private float maxPlungeFallSpeed = 0f;
     [SerializeField] private float coyoteTime = 0.15f;
 
     [Header("Wall Settings")]
@@ -354,6 +356,18 @@ public class PlayerController : MonoBehaviour
         HandlePlunge();
 
         UpdateGravity();
+        ClampFallSpeed();
+    }
+
+    private void ClampFallSpeed()
+    {
+        if (rb.bodyType != RigidbodyType2D.Dynamic) return;
+
+        bool plunging = combat != null && combat.IsPlunging;
+        float cap = plunging ? maxPlungeFallSpeed : maxFallSpeed;
+        if (cap <= 0f) return;
+
+        if (rb.linearVelocityY < -cap) rb.linearVelocityY = -cap;
     }
 
     public void FreezeMovement(bool freeze)
