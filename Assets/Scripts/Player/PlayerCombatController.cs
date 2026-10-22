@@ -42,7 +42,22 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float plungeBounceForce = 10f;
     [SerializeField, Range(0f, 1f)] private float plungeBounceSideAmount = 0.25f;
     [SerializeField] private float plungeRecoveryDuration = 0.3f;
+    [SerializeField, Min(0f)] private float minPlungeAirTime = 0.15f;
+    private float airTime;
+    private float attackStartAirTime;
     [SerializeField] private float attackWidth = 2f;
+
+    [Header("Attack Reach")]
+    [SerializeField] private bool clampAttackToBodyBottom = true;
+    [SerializeField] private float attackBottomPadding = 0f;
+    [SerializeField] private bool clampAttackToBodyTop = true;
+    [SerializeField] private float attackTopPadding = 0f;
+    [SerializeField] private bool debugAttackReach = false;
+    [SerializeField, Min(0f)] private float debugLineDuration = 0.5f;
+    [SerializeField, Min(0f)] private float debugPreviewRange = 2f;
+    [SerializeField] private bool blockAttacksThroughWalls = true;
+    [SerializeField] private LayerMask attackBlockMask;
+    private readonly RaycastHit2D[] attackBlockHits = new RaycastHit2D[8];
     [SerializeField] private float attackDuration = 0.3f;
     [SerializeField] private float attackCoolDown = 0.2f;
     [SerializeField] private float attackBufferTime = 0.15f;
@@ -54,20 +69,28 @@ public class PlayerCombatController : MonoBehaviour
 
     [Header("Combo Settings")]
     [SerializeField] private int maxComboCount = 3;
-    [SerializeField] private float comboResetDelay = 1.0f;
+    [SerializeField, Min(0f)] private float comboGraceTime = 0.25f;
+    [SerializeField] private bool useComboCloseEvent = false;
+    private float comboGraceTimer;
 
     private int currentComboIndex = 0;
     private bool canBufferNextCombo = false;
     private bool comboQueued = false;
-    private float comboResetTimer;
     [SerializeField] private float[] comboDamageMultipliers = { 1.0f, 1.25f, 1.5f };
     [SerializeField] private float dashAttackMultiplier = 1.25f;
     [SerializeField] private float airAttackMultiplier = 1.1f;
+    [SerializeField] private bool airAttackAllAround = true;
+    [SerializeField, Min(0f)] private float airAttackRadiusMultiplier = 1f;
+    [SerializeField] private Vector2 airAttackCenterOffset = Vector2.zero;
+    private bool lastAttackWasCircle;
+    private float lastAttackRadius;
     [SerializeField] private bool endAirAttackOnLanding = true;
     [SerializeField, Range(0f, 1f)] private float attackActiveStart = 0.3f;
     [SerializeField, Range(0f, 1f)] private float attackActiveEnd = 1f;
     private float attackTotalDuration;
     public int CurrentComboIndex => currentComboIndex;
+    public int AttackSerial { get; private set; }
+    public bool IsDashAttack => isAttacking && isDashAttack;
 
     [Header("Input Conflict Settings")]
     [SerializeField] private float dashAttackConflictWindow = 0.2f;
@@ -223,6 +246,7 @@ public class PlayerCombatController : MonoBehaviour
         if (!movement.InputEnabled) return;
 
         currentSkillDef = player.Equipment?.SpecialAttackDef;
+        airTime = movement.IsGrounded ? 0f : airTime + Time.deltaTime;
 
         HandleParry();
         HandleAttack();
@@ -514,7 +538,9 @@ public class PlayerCombatController : MonoBehaviour
         if (dashAttackBlockTimer > 0f) return;
         if (jumpAttackBlockTimer > 0f) return;
 
-        if (attackBufferTimer > 0f && isAttacking && canBufferNextCombo && CanAct())
+        bool inComboGrace = !isAttacking && comboGraceTimer > 0f;
+
+        if (attackBufferTimer > 0f && CanAct() && ((isAttacking && canBufferNextCombo) || inComboGrace))
         {
             comboQueued = true;
             attackBufferTimer = 0f;
@@ -523,9 +549,11 @@ public class PlayerCombatController : MonoBehaviour
         if (attackBufferTimer > 0f && CanAct()) ExecuteAttack();
         if (comboQueued && !isAttacking && attackTimer <= 0f && CanAct()) ExecuteAttack();
 
-        if (currentComboIndex <= 0 || isAttacking) return;
-        comboResetTimer += Time.deltaTime;
-        if (comboResetTimer >= comboResetDelay) ResetCombo();
+        if (!isAttacking && comboGraceTimer > 0f && (!comboQueued || attackTimer <= 0f))
+        {
+            comboGraceTimer -= Time.deltaTime;
+            if (comboGraceTimer <= 0f) ResetCombo();
+        }
     }
 
     private void ExecuteAttack()
@@ -537,12 +565,15 @@ public class PlayerCombatController : MonoBehaviour
             CancelParry();
             comboQueued = false;
             canBufferNextCombo = false;
+            comboGraceTimer = 0f;
 
             if (player.Equipment.EquippedWeapon == null) return;
 
             currentComboIndex = (currentComboIndex % maxComboCount) + 1;
 
             isAttacking = true;
+            AttackSerial++;
+            attackStartAirTime = airTime;
             attackStartedGrounded = movement.IsGrounded;
             isDashAttack = movement.IsDashing;
             attackDurationTimer = attackDuration / AttackSpeedMultiplier;
@@ -578,16 +609,39 @@ public class PlayerCombatController : MonoBehaviour
             _ => Vector2.right
         };
 
+        if (attackDir == Vector2.down && attackStartAirTime < minPlungeAirTime)
+            attackDir = movement.FacingDirection == 1 ? Vector2.right : Vector2.left;
+
         float weaponRange = player.Equipment.EquippedWeapon.InstRolledRange + (HasAttackGem() ? attackGemRangeBonus : 0f);
 
-        if (attackDir != Vector2.down)
+        if (attackDir != Vector2.down && airAttackAllAround && !attackStartedGrounded && !isDashAttack)
         {
             if (!IsAttackHitActive()) return;
 
+            Bounds body = movement.BodyBounds;
+            attackCenter = (Vector2)body.center + airAttackCenterOffset;
+            lastAttackRadius = weaponRange * airAttackRadiusMultiplier;
+            attackRange = Vector2.one * lastAttackRadius * 2f;
+            lastAttackWasCircle = true;
+
+            Collider2D[] enemiesAround = Physics2D.OverlapCircleAll(attackCenter, lastAttackRadius, enemyLayer);
+            if (enemiesAround.Length > 0)
+            {
+                AttackContext context = player.Equipment.GetModifiedAttackContext(isAttack: true);
+                HitEnemy(enemiesAround, context);
+            }
+        }
+        else if (attackDir != Vector2.down)
+        {
+            if (!IsAttackHitActive()) return;
+
+            lastAttackWasCircle = false;
             bool isHorizontal = attackDir.x != 0f;
 
             attackRange = isHorizontal ? new Vector2(weaponRange, attackWidth) : new Vector2(attackWidth, weaponRange);
             attackCenter = (Vector2)attackOrigin.position + attackDir * (weaponRange * 0.5f);
+            ClampAttackToBodyBottom();
+            if (isHorizontal) ClampAttackToBodyTop();
 
             Collider2D[] enemiesInRange = Physics2D.OverlapBoxAll(attackCenter, attackRange, 0f, enemyLayer);
             if (enemiesInRange.Length > 0)
@@ -626,6 +680,7 @@ public class PlayerCombatController : MonoBehaviour
 
         float plungeTimer = 0f;
         attackRange = new Vector2(attackWidth, weaponRange);
+        lastAttackWasCircle = false;
 
         while (isPlunging)
         {
@@ -668,12 +723,79 @@ public class PlayerCombatController : MonoBehaviour
         EndAttack();
     }
 
+    private void ClampAttackToBodyBottom()
+    {
+        if (!clampAttackToBodyBottom || movement == null) return;
+
+        float minY = movement.BodyBounds.min.y + attackBottomPadding;
+        float bottom = attackCenter.y - attackRange.y * 0.5f;
+        if (bottom >= minY) return;
+
+        float top = attackCenter.y + attackRange.y * 0.5f;
+        bottom = Mathf.Min(minY, top - 0.01f);
+        attackRange.y = top - bottom;
+        attackCenter.y = (top + bottom) * 0.5f;
+    }
+
+    private void ClampAttackToBodyTop()
+    {
+        if (!clampAttackToBodyTop || movement == null) return;
+
+        float maxY = movement.BodyBounds.max.y + attackTopPadding;
+        float top = attackCenter.y + attackRange.y * 0.5f;
+        if (top <= maxY) return;
+
+        float bottom = attackCenter.y - attackRange.y * 0.5f;
+        top = Mathf.Max(maxY, bottom + 0.01f);
+        attackRange.y = top - bottom;
+        attackCenter.y = (top + bottom) * 0.5f;
+    }
+
+    private bool IsAttackBlocked(Collider2D target)
+    {
+        if (!blockAttacksThroughWalls || attackBlockMask.value == 0 || movement == null) return false;
+
+        Bounds body = movement.BodyBounds;
+        Vector2 targetPoint = target.ClosestPoint(body.center);
+        float inset = Mathf.Min(0.1f, body.extents.y * 0.5f);
+        Vector2 start = new Vector2(body.center.x, Mathf.Clamp(targetPoint.y, body.min.y + inset, body.max.y - inset));
+        if ((targetPoint - start).sqrMagnitude < 0.0001f) return false;
+
+        ContactFilter2D filter = new ContactFilter2D { useTriggers = false, useLayerMask = true, layerMask = attackBlockMask };
+        int count = Physics2D.Linecast(start, targetPoint, filter, attackBlockHits);
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D hit = attackBlockHits[i].collider;
+            if (hit == null || hit.transform.IsChildOf(transform.root)) continue;
+            if (hit.transform.root == target.transform.root) continue;
+            if (IsPassThroughBlocker(hit)) continue;
+            if (debugAttackReach)
+            {
+                Debug.DrawLine(start, attackBlockHits[i].point, Color.red, debugLineDuration);
+                Debug.DrawLine(attackBlockHits[i].point, targetPoint, new Color(1f, 0.5f, 0f), debugLineDuration);
+            }
+            return true;
+        }
+
+        if (debugAttackReach) Debug.DrawLine(start, targetPoint, Color.green, debugLineDuration);
+        return false;
+    }
+
+    private static bool IsPassThroughBlocker(Collider2D col)
+    {
+        return col.usedByEffector
+               || col.GetComponentInParent<PlatformEffector2D>() != null
+               || col.GetComponentInParent<DropThroughPlatform>() != null
+               || col.GetComponentInParent<AirOnlyCollisionPlatform>() != null;
+    }
+
     private Collider2D[] FilterHurtboxes(Collider2D[] colliders)
     {
         List<Collider2D> valid = new List<Collider2D>();
         foreach (var col in colliders)
         {
-            if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth _))
+            if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth _) && !IsAttackBlocked(col))
             {
                 valid.Add(col);
             }
@@ -737,7 +859,7 @@ public class PlayerCombatController : MonoBehaviour
         {
             if (col.CompareTag("EnemyHurtBox") && col.transform.root.TryGetComponent(out EnemyHealth enemyHealth))
             {
-                if (!enemiesHitThisAttack.Contains(enemyHealth))
+                if (!enemiesHitThisAttack.Contains(enemyHealth) && !IsAttackBlocked(col))
                 {
                     enemiesHitThisAttack.Add(enemyHealth);
 
@@ -779,7 +901,10 @@ public class PlayerCombatController : MonoBehaviour
 
         if (!comboQueued)
         {
-            ResetCombo();
+            if (comboGraceTime > 0f && currentComboIndex > 0 && currentComboIndex < maxComboCount)
+                comboGraceTimer = comboGraceTime;
+            else
+                ResetCombo();
         }
 
         movement.SetDashLockedDuringAttack(false);
@@ -790,6 +915,7 @@ public class PlayerCombatController : MonoBehaviour
         currentComboIndex = 0;
         comboQueued = false;
         canBufferNextCombo = false;
+        comboGraceTimer = 0f;
     }
 
     #endregion
@@ -1134,7 +1260,7 @@ public class PlayerCombatController : MonoBehaviour
 
         attackBufferTimer = attackBufferTime;
 
-        if (isAttacking && canBufferNextCombo)
+        if ((isAttacking && canBufferNextCombo) || (!isAttacking && comboGraceTimer > 0f))
         {
             comboQueued = true;
         }
@@ -1272,12 +1398,13 @@ public class PlayerCombatController : MonoBehaviour
 
     public void OpenComboWindow()
     {
+        if (!isAttacking) return;
         canBufferNextCombo = true;
-        comboResetTimer = 0f;
     }
 
     public void CloseComboWindow()
     {
+        if (!useComboCloseEvent) return;
         canBufferNextCombo = false;
     }
 
@@ -1290,8 +1417,52 @@ public class PlayerCombatController : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (attackOrigin == null) return;
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(attackCenter, attackRange);
+        if (attackOrigin == null || debugAttackReach) return;
+        DrawAttackGizmo();
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (!debugAttackReach || attackOrigin == null) return;
+
+        if (Application.isPlaying) DrawAttackGizmo();
+
+        PlayerController controller = movement != null ? movement : GetComponentInParent<PlayerController>();
+        if (controller == null) controller = transform.root.GetComponentInChildren<PlayerController>();
+        if (controller == null) return;
+
+        Bounds body = controller.BodyBounds;
+        float weaponRange = debugPreviewRange;
+        if (Application.isPlaying && player != null && player.Equipment != null && player.Equipment.EquippedWeapon != null)
+            weaponRange = player.Equipment.EquippedWeapon.InstRolledRange + (HasAttackGem() ? attackGemRangeBonus : 0f);
+        float left = body.center.x - weaponRange - body.extents.x;
+        float right = body.center.x + weaponRange + body.extents.x;
+
+        if (clampAttackToBodyBottom)
+        {
+            float bottom = body.min.y + attackBottomPadding;
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(new Vector3(left, bottom), new Vector3(right, bottom));
+        }
+
+        if (clampAttackToBodyTop)
+        {
+            float top = body.max.y + attackTopPadding;
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawLine(new Vector3(left, top), new Vector3(right, top));
+        }
+
+        if (airAttackAllAround)
+        {
+            Gizmos.color = new Color(1f, 0.6f, 0f, 0.5f);
+            Gizmos.DrawWireSphere((Vector2)body.center + airAttackCenterOffset, weaponRange * airAttackRadiusMultiplier);
+        }
+    }
+
+    private void DrawAttackGizmo()
+    {
+        Gizmos.color = isAttacking || isPlunging ? Color.red : new Color(1f, 0f, 0f, 0.35f);
+        if (lastAttackWasCircle) Gizmos.DrawWireSphere(attackCenter, lastAttackRadius);
+        else Gizmos.DrawWireCube(attackCenter, attackRange);
     }
 }

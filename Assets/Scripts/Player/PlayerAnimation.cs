@@ -108,6 +108,26 @@ public class PlayerAnimation : MonoBehaviour
         return null;
     }
 
+    private void ForceAttackStateOnStart(int attackIndex, bool grounded)
+    {
+        int serial = player.CombatController.AttackSerial;
+        if (serial == lastAttackSerial) return;
+        lastAttackSerial = serial;
+
+        if (!forceAttackStateOnStart || player.CombatController.IsDashAttack) return;
+
+        string[] states = grounded ? groundAttackStates : airAttackStates;
+        if (states == null || states.Length == 0) return;
+
+        string stateName = states[Mathf.Clamp(attackIndex - 1, 0, states.Length - 1)];
+        if (string.IsNullOrEmpty(stateName)) return;
+
+        int hash = Animator.StringToHash(stateName);
+        if (!animator.HasState(0, hash)) return;
+
+        animator.Play(hash, 0, 0f);
+    }
+
     private void ForcePlungeState()
     {
         if (string.IsNullOrEmpty(plungeStateName)) return;
@@ -157,6 +177,12 @@ public class PlayerAnimation : MonoBehaviour
     private string lastPlayedSkill = string.Empty;
     private Coroutine flashColorCoroutine;
     [SerializeField] private HitFlash hitFlash;
+
+    [Header("Attack States")]
+    [SerializeField] private bool forceAttackStateOnStart = true;
+    [SerializeField] private string[] groundAttackStates = { "p_attack", "p_combo1", "p_combo2" };
+    [SerializeField] private string[] airAttackStates = { "p_airattack" };
+    private int lastAttackSerial;
 
     [Header("Attack Glow")]
     [SerializeField] private MultiplyOutline attackGlowOutline;
@@ -511,6 +537,9 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetFloat(SpeedHash, Mathf.Abs(rb.linearVelocityX));
         animator.SetFloat(YVelocityHash, holdingHurt ? 0f : rb.linearVelocityY);
         animator.SetBool(IsGroundedHash, groundedForAnim);
+
+        if (isAttacking) ForceAttackStateOnStart(attackIndex, groundedForAnim);
+        else lastAttackSerial = player.CombatController.AttackSerial;
         animator.SetBool(IsWallSlidingHash, player.Controller.IsWallSliding);
         animator.SetBool(IsBouncingHash, isBouncing);
         animator.SetBool(IsDirectionalDashHash, player.Controller.IsDirectionalDash);

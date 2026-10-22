@@ -304,6 +304,7 @@ namespace Enemies
                 Context.TeleportStartedTime = float.NegativeInfinity;
             }
 
+            if (IsAttacking && Context.Target != null) Context.TimeSinceTargetSeen = 0f;
             observationSO.Tick(Context, Time.deltaTime);
 
             if (reaggroCooldownTimer > 0f)

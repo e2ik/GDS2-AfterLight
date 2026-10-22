@@ -459,6 +459,7 @@ MonoBehaviour:
   groundSnapMaxDistance: 10
   groundCheckDistance: 0.2
   groundCheckNormalThreshold: 0.6
+  passThroughInsideTolerance: 0.05
   wallCheckDistance: 0.2
   edgeMargin: 0.05
   bodyCollider: {fileID: 0}
@@ -494,30 +495,46 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 6656
-  critDamageMultiplier: 1.5
-  counterAttackMultiplier: 1.5
+  critDamageMultiplier: 1.33
+  counterAttackMultiplier: 2
   plungeDmgMaxMultiplier: 10
   plungeAdjustedDmg: 3
   plungeGraceWindow: 0.15
   plungeBounceForce: 15
   plungeBounceSideAmount: 0.25
   plungeRecoveryDuration: 1
+  minPlungeAirTime: 0.15
   attackWidth: 3
-  attackDuration: 0.4
-  attackCoolDown: 0.1
+  clampAttackToBodyBottom: 1
+  attackBottomPadding: 0.2
+  clampAttackToBodyTop: 1
+  attackTopPadding: -0.5
+  debugAttackReach: 1
+  debugLineDuration: 0.5
+  debugPreviewRange: 2
+  blockAttacksThroughWalls: 1
+  attackBlockMask:
+    serializedVersion: 2
+    m_Bits: 64
+  attackDuration: 0.6
+  attackCoolDown: 0.2
   attackBufferTime: 0.15
   counterAttackWindow: 0.5
   passiveEnergyCooldown: 4
   passiveEnergyRegenMult: 0.2
   passiveEnergyCap: 0.5
   maxComboCount: 3
-  comboResetDelay: 1.5
+  comboGraceTime: 0.25
+  useComboCloseEvent: 0
   comboDamageMultipliers:
   - 1
   - 1.4
   - 1.75
   dashAttackMultiplier: 2
   airAttackMultiplier: 1.5
+  airAttackAllAround: 1
+  airAttackRadiusMultiplier: 1.25
+  airAttackCenterOffset: {x: 0, y: 0}
   endAirAttackOnLanding: 1
   attackActiveStart: 0.3
   attackActiveEnd: 1
@@ -615,6 +632,13 @@ MonoBehaviour:
   airParryState: p_airparry
   groundParryState: p_parry
   hitFlash: {fileID: -6613351761212177417}
+  forceAttackStateOnStart: 1
+  groundAttackStates:
+  - p_attack
+  - p_combo1
+  - p_combo2
+  airAttackStates:
+  - p_airattack
   attackGlowOutline: {fileID: 340676937458263144}
   comboGlows:
   - enabled: 1

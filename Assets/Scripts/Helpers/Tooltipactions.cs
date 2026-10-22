@@ -110,6 +110,15 @@ public static class ItemActionFactory
         SecondaryGemInstance equippedGem = equip.SecondaryGem;
         if (equippedGem != null && !ContainsCandidate(groups, equippedGem, equippedGem.InstanceGUID)) AddGem(groups, equippedGem, equip, false);
 
+        if (inventory.currentInventory.Weapons != null)
+        {
+            foreach (WeaponInstance weapon in inventory.currentInventory.Weapons)
+                AddWeapon(groups, weapon, equip, true);
+        }
+
+        WeaponInstance equippedWeapon = equip.EquippedWeapon;
+        if (equippedWeapon != null && !ContainsCandidate(groups, equippedWeapon, equippedWeapon.InstanceGUID)) AddWeapon(groups, equippedWeapon, equip, false);
+
         foreach (List<WorseCandidate> candidates in groups.Values)
         {
             foreach (WorseCandidate candidate in candidates)
@@ -120,7 +129,8 @@ public static class ItemActionFactory
 
                 foreach (WorseCandidate other in candidates)
                 {
-                    if (other == candidate || !IsBetterOrEqual(other.Stats, candidate.Stats)) continue;
+                    if (other == candidate || other.Rarity < candidate.Rarity) continue;
+                    if (!IsBetterOrEqual(other.Stats, candidate.Stats)) continue;
 
                     if (IsStrictlyBetter(other.Stats, candidate.Stats) || RanksAbove(other, candidate))
                     {
@@ -182,6 +192,30 @@ public static class ItemActionFactory
             Rarity = gem.Rarity,
             PickupOrder = gem.PickupOrder,
             Guid = gem.InstanceGUID
+        });
+    }
+
+    private static void AddWeapon(Dictionary<string, List<WorseCandidate>> groups, WeaponInstance weapon, PlayerEquipmentManager equip, bool inInventory)
+    {
+        if (weapon == null) return;
+
+        AddCandidate(groups, "weapon", new WorseCandidate
+        {
+            Item = weapon,
+            Stats = new[]
+            {
+                Mathf.RoundToInt(weapon.InstRolledDamage * 100f),
+                Mathf.RoundToInt(weapon.InstRolledRange * 100f),
+                Mathf.RoundToInt(weapon.InstRolledCrit * 1000f),
+                Mathf.RoundToInt(weapon.InstRolledAttack * 100f),
+                Mathf.RoundToInt(weapon.InstRolledDefense * 100f)
+            },
+            Equipped = equip.IsWeaponEquipped(weapon),
+            InInventory = inInventory,
+            IsNew = weapon.IsNew,
+            Rarity = weapon.Rarity,
+            PickupOrder = weapon.PickupOrder,
+            Guid = weapon.InstanceGUID
         });
     }
 

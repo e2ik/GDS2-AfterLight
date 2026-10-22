@@ -155,10 +155,12 @@ public class InventoryDisplay : GameUI.UIWindow
         public readonly int GroupSortOrder;
         public readonly int RarityRank;
         public readonly bool IsEquipped;
+        public readonly bool IsNew;
 
         public DisplayItem(object item, int pickupOrder, string groupKey, int groupSortOrder, int rarityRank, bool isEquipped)
         {
             Item = item;
+            IsNew = GetIsNew(item);
             PickupOrder = pickupOrder;
             GroupKey = groupKey;
             GroupSortOrder = groupSortOrder;
@@ -1267,6 +1269,21 @@ public class InventoryDisplay : GameUI.UIWindow
         }
     }
 
+    private static bool GetIsNew(object item)
+    {
+        return item switch
+        {
+            SecondaryGemInstance gem => gem.IsNew,
+            GearInstance gear => gear.IsNew,
+            PrimaryGemInstance primary => primary.IsNew,
+            WeaponInstance weapon => weapon.IsNew,
+            KeyInstance key => key.IsNew,
+            LoreItemInstance lore => lore.IsNew,
+            LoreSetDisplayInfo loreSet => loreSet.OwnedInstances != null && loreSet.OwnedInstances.Exists(i => i.IsNew),
+            _ => false
+        };
+    }
+
     private static void SortDisplayItems(List<DisplayItem> displayItems)
     {
         Dictionary<string, int> groupOrder = new Dictionary<string, int>();
@@ -1280,6 +1297,9 @@ public class InventoryDisplay : GameUI.UIWindow
 
         displayItems.Sort((a, b) =>
         {
+            int newCompare = (b.IsNew ? 1 : 0).CompareTo(a.IsNew ? 1 : 0);
+            if (newCompare != 0) return newCompare;
+
             int equippedCompare = (b.IsEquipped ? 1 : 0).CompareTo(a.IsEquipped ? 1 : 0);
             if (equippedCompare != 0) return equippedCompare;
 
@@ -1301,8 +1321,8 @@ public class InventoryDisplay : GameUI.UIWindow
         return currentFilter switch
         {
             InventoryFilter.GearAndWeapons => "No Weapons or Gear found yet.",
-            InventoryFilter.Primary => "No Skills found yet.",
-            InventoryFilter.Secondary => "No Mods found yet.",
+            InventoryFilter.Primary => "No Primary Gems found yet.",
+            InventoryFilter.Secondary => "No Secondary Gems found yet.",
             InventoryFilter.Special => "No Keys or Lore Fragments found yet.",
             _ => "No items found yet."
         };

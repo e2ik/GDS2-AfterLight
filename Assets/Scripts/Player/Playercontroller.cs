@@ -213,6 +213,7 @@ public class PlayerController : MonoBehaviour
     public bool IsDirectionalDashInvulnerable => directionalDashInvulnerable && isDashing && IsDirectionalDash && !isDashLocked;
     public bool IsInvulnerable => IsNeutralDashInvulnerable || IsDirectionalDashInvulnerable;
     public bool IsClimbing => isClimbing;
+    public Bounds BodyBounds => Application.isPlaying ? cachedBounds : ComputePlayerBounds();
     public bool IsHealing => isHealing;
     private bool IsSkillBaseLocked =>
         isChargingSkillPhysics
