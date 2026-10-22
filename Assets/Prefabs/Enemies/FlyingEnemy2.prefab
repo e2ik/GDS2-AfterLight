@@ -381,9 +381,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9b08fde3cea1e74eaa88ad2dd99a63a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
-  maxHealth: 60
+  maxHealth: 100
+  allowHealthScaling: 1
   blockDamageOutsideBonus: 0
   blockedHitDamage: 1
+  useDamageCap: 1
+  thresholdPercent: 0.25
+  excessEfficiency: 0.3
+  kneeWidth: 0.5
+  useHitCap: 1
+  maxHitPercent: 0.5
+  hitCapSoftStart: 0.6
+  cappedVariance: 0.05
+  minResistedToShow: 0.15
 --- !u!114 &5011396066847478461
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -426,31 +436,11 @@ MonoBehaviour:
   spriteFacesLeft: 0
   raiseSortingWhenOverlapping: 1
   overlapPadding: 0
+  ignoreAttackCap: 0
+  attackSlotReserveTimeout: 1
   queueAttackers: 0
   queueSpacing: 1.5
   queueYieldTime: 1.5
-  useMoveWindup: 0
-  moveWindupTrigger: MoveWindup
-  moveWindupState: MoveWindup
-  moveWinddownTrigger: MoveWinddown
-  moveWinddownState: MoveWinddown
-  moveWindupTimeout: 3
-  moveStartDelay: 0.15
-  windupOnDirectionChange: 1
-  holdAttacksUntilStopped: 1
-  lockTargetOnMoveStart: 1
-  lockedArriveDistance: 0.5
-  approachRetreatChance: 0.3
-  approachOnAggro: 1
-  approachSpeed: 5
-  approachStopDistance: 0.5
-  maxAttacksWithoutApproach: 2
-  retreatChance: 0.5
-  noBackToBackRetreats: 1
-  retreatSpeed: 4
-  retreatDistance: 4
-  approachRetreatTimeout: 6
-  debugApproachRetreat: 0
   moveHitDamage: 10
   moveHitForce: 2
   moveHitParryDirection: 2
@@ -475,6 +465,20 @@ MonoBehaviour:
       Data3: 1112032419
       Data4: -774162852
     Path: event:/CombatSFXEvents/EnemyHitEvent
+  vulnerableHitEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  blockedHitEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
   attackEvent:
     Guid:
       Data1: 0
@@ -487,6 +491,7 @@ MonoBehaviour:
   flashColor: {r: 1.6621785, g: 0, b: 0, a: 1}
   blockedFlashColor: {r: 1, g: 1, b: 1, a: 1}
   flashDuration: 0.15
+  projectileSpawnPoint: {fileID: 0}
   bossBounds: {fileID: 0}
   attacksPerTeleport: 3
   teleportMinCooldown: 8
@@ -499,6 +504,7 @@ MonoBehaviour:
   deathTrigger: Death
   deathStateName: Death
   deathAnimationTimeout: 5
+  hasSpecialBossFreeze: 0
 --- !u!114 &3741899294261406425
 MonoBehaviour:
   m_ObjectHideFlags: 0

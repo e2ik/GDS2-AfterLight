@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Enemies;
-using FMODUnity;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -233,8 +232,6 @@ public class PlayerController : MonoBehaviour
     public bool IsPhysicsSuspended => physicsSuspended;
 
     private int lastFacingDirection;
-
-    public EventReference dashEvent;
 
     private void Awake()
     {
@@ -752,7 +749,6 @@ public class PlayerController : MonoBehaviour
             if (combat.IsAttacking) combat.ForceCancelAttack();
 
             combat.ChargeSkillMeter(-dashSkillEnergyCost);
-            AudioManager.PlaySFX(dashEvent);
 
             isDashing = true;
             isDashLocked = false;
@@ -892,6 +888,7 @@ public class PlayerController : MonoBehaviour
         if (edgeDetection == null || !canClimbEdge) return;
         if (!InputEnabled || IsFrozenOrSkillLocked || isStaggered || isBouncing || isDashing) return;
         if (IsOnMovingPlatform()) return;
+        if (combat != null && (combat.IsAttacking || combat.IsSkilling || combat.IsChargeInputHeld || combat.IsPlunging)) return;
 
         // Look for a ledge on the side being pressed toward, not the side being faced.
         // Turning is locked during a wall jump, so using facing made ledges on the other

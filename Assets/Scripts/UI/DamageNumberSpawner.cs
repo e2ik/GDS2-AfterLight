@@ -7,6 +7,14 @@ public class DamageNumberSpawner : MonoBehaviour
     [SerializeField] private Vector3 spawnOffset = new Vector3(0f, 1f, 0f);
     [SerializeField] private float randomSpawnRangeX = 0.5f;
 
+    [Header("Resisted")]
+    [SerializeField] private bool showResisted = true;
+    [SerializeField] private Vector3 resistedOffset = new Vector3(0f, 0.45f, 0f);
+
+    [Header("Blocked")]
+    [SerializeField] private bool showBlocked = true;
+    [SerializeField] private Vector3 blockedOffset = new Vector3(0f, 0.45f, 0f);
+
     [Header("Dodge")]
     [SerializeField] private bool showDodges = true;
     [SerializeField, Min(0f)] private float dodgeCooldown = 0.25f;
@@ -39,8 +47,21 @@ public class DamageNumberSpawner : MonoBehaviour
     {
         if (damageNumberPrefab == null) return;
 
-        DamageNumber number = Instantiate(damageNumberPrefab, info.Position + spawnOffset + RandomOffset(), Quaternion.identity);
+        Vector3 position = info.Position + spawnOffset + RandomOffset();
+        DamageNumber number = Instantiate(damageNumberPrefab, position, Quaternion.identity);
         number.Show(info);
+
+        if (showBlocked && info.Blocked > 0)
+        {
+            DamageNumber blocked = Instantiate(damageNumberPrefab, position + blockedOffset, Quaternion.identity);
+            blocked.ShowBlocked(info);
+        }
+
+        if (showResisted && info.Resisted > 0)
+        {
+            DamageNumber resisted = Instantiate(damageNumberPrefab, position + resistedOffset, Quaternion.identity);
+            resisted.ShowResisted(info);
+        }
 
         if (showRollTiers && info.HasRoll && (info.DamageType == EDamageType.Base || info.DamageType == EDamageType.Skill))
             SpawnRollTier(info.RollTier);

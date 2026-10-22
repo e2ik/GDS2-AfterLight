@@ -115,7 +115,7 @@ public class PlayerCombatController : MonoBehaviour
     private HashSet<EnemyHealth> enemiesHitThisAttack = new HashSet<EnemyHealth>();
 
     [Header("Skill Settings")]
-    [SerializeField] private bool skillMeterAlwaysFull;
+    private static bool skillMeterAlwaysFull => GameManager.Instance != null && GameManager.Instance.SkillMeterAlwaysFull;
     [SerializeField] private float skillCoolDown = 0.2f;
     [SerializeField] private float chargingSkillMinDur = 0.4f;
     [SerializeField] private float chargingSkillMaxDur = 1.5f;
@@ -129,6 +129,16 @@ public class PlayerCombatController : MonoBehaviour
     [SerializeField] private float skillGemModifierBonus = 1f;
     [SerializeField] private float attackGemModifierBonus = 0.25f;
     [SerializeField] private bool attackGemHyperArmor = true;
+
+    [System.Serializable]
+    public class SkillHyperArmorCombo
+    {
+        public PrimaryGemBehaviourDefinition skillGem;
+        public SecondaryGemBehaviourDefinition secondaryGem;
+    }
+
+    [Header("Gear Combos")]
+    [SerializeField] private SkillHyperArmorCombo[] skillHyperArmorCombos;
     [SerializeField, Range(0f, 1f)] private float attackGemCooldownReduction = 0.3f;
     [SerializeField] private float attackGemRangeBonus = 1f;
     [SerializeField, Range(0f, 1f)] private float attackGemAttackSpeedBonus = 0.15f;
@@ -1104,7 +1114,30 @@ public class PlayerCombatController : MonoBehaviour
 
     #region SecondaryGem Logic
 
-    public bool HasAttackHyperArmor => attackGemHyperArmor && (isAttacking || isSkilling || isChargingSkill) && HasAttackGem();
+    public bool HasAttackHyperArmor =>
+        (attackGemHyperArmor && (isAttacking || isSkilling || isChargingSkill) && HasAttackGem())
+        || HasSkillComboHyperArmor;
+
+    public bool HasSkillComboHyperArmor => (isSkilling || isChargingSkill) && MatchesSkillHyperArmorCombo();
+
+    private bool MatchesSkillHyperArmorCombo()
+    {
+        if (skillHyperArmorCombos == null || skillHyperArmorCombos.Length == 0 || player == null || player.Equipment == null) return false;
+
+        PrimaryGemBehaviourDefinition skill = player.Equipment.SpecialAttackDef;
+        SecondaryGemInstance gem = player.Equipment.SecondaryGem;
+        if (skill == null || gem == null || string.IsNullOrEmpty(gem.InstTemplateID)) return false;
+
+        SecondaryGemBehaviourDefinition gemDef = GameDatabase.GetSecondaryTemplateFromID(gem.InstTemplateID);
+        if (gemDef == null) return false;
+
+        foreach (SkillHyperArmorCombo combo in skillHyperArmorCombos)
+        {
+            if (combo != null && combo.skillGem == skill && combo.secondaryGem == gemDef) return true;
+        }
+
+        return false;
+    }
 
     private bool HasAttackGem() => HasGemOfType(SGemType.Attack);
 

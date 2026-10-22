@@ -15,13 +15,13 @@ MonoBehaviour:
   range: 10
   cooldownDuration: 3
   projectilePrefab: {fileID: -4014174415143715826, guid: 7215074949f70bf40ba4e978b21ba15d, type: 3}
-  damage: 20
+  damage: 25
   launchAngleDegrees: 55
   launchSpeed: 8
   shotSpacingDegrees: 12
   shotCount: 1
+  useCustomSpawnPoint: 0
   clip: {fileID: 7400000, guid: 6fd2c038deedf1b4494ef41434b2f4bb, type: 2}
-  placeholderClipName: EmptyAttack
   attackStateName: Attack
   launchEvent:
     Guid:

@@ -235,8 +235,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
   maxHealth: 100
+  allowHealthScaling: 1
   blockDamageOutsideBonus: 0
   blockedHitDamage: 1
+  useDamageCap: 0
+  damageThreshold: 40
+  excessEfficiency: 0.4
+  useHitCap: 0
+  maxHitPercent: 0.35
 --- !u!114 &2819779926548626800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -275,6 +281,8 @@ MonoBehaviour:
   spriteFacesLeft: 0
   raiseSortingWhenOverlapping: 1
   overlapPadding: 0
+  ignoreAttackCap: 0
+  attackSlotReserveTimeout: 1
   queueAttackers: 1
   queueSpacing: 1.5
   queueYieldTime: 1.5
@@ -302,6 +310,20 @@ MonoBehaviour:
       Data3: 1112032419
       Data4: -774162852
     Path: event:/CombatSFXEvents/EnemyHitEvent
+  vulnerableHitEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  blockedHitEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
   attackEvent:
     Guid:
       Data1: 0
@@ -327,6 +349,7 @@ MonoBehaviour:
   deathTrigger: Death
   deathStateName: Death
   deathAnimationTimeout: 5
+  hasSpecialBossFreeze: 0
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -482,6 +505,19 @@ MonoBehaviour:
   moveWindupGlow:
     enabled: 1
     color: {r: 0.3, g: 0.8, b: 1, a: 1}
+    intensity: 1.5
+    checkerLow: 0.5
+    checkerSize: 1
+  chargeGlow:
+    enabled: 1
+    color: {r: 1, g: 0.4, b: 0.1, a: 1}
+    intensity: 2.5
+    checkerLow: 0.5
+    checkerSize: 1
+  retreatUsesOwnGlow: 0
+  retreatGlow:
+    enabled: 1
+    color: {r: 0.6, g: 0.6, b: 1, a: 1}
     intensity: 1.5
     checkerLow: 0.5
     checkerSize: 1

@@ -741,6 +741,10 @@ MonoBehaviour:
   damageNumberPrefab: {fileID: 8735089099477597206, guid: 9cf057f89076f1347801f4fb2d01c60c, type: 3}
   spawnOffset: {x: 0, y: 1, z: 0}
   randomSpawnRangeX: 0.5
+  showResisted: 1
+  resistedOffset: {x: 0, y: -1, z: 0}
+  showBlocked: 1
+  blockedOffset: {x: 0, y: -1, z: 0}
   showDodges: 1
   dodgeCooldown: 0.25
   playerSpawnOffset: {x: 0, y: 1.5, z: 0}

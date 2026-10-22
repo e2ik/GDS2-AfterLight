@@ -210,7 +210,11 @@ public class PrefabSpawner : MonoBehaviour
         enemyAlive = true;
 
         spawnedHealth = spawnedEnemy.GetComponentInChildren<Enemies.EnemyHealth>(true);
-        if (spawnedHealth != null) spawnedHealth.OnDeath += HandleEnemyKilled;
+        if (spawnedHealth != null)
+        {
+            spawnedHealth.SetOriginScene(gameObject.scene);
+            spawnedHealth.OnDeath += HandleEnemyKilled;
+        }
 
         Vector3 pos = spawnedEnemy.transform.position;
         spawnedEnemy.transform.position = new Vector3(pos.x, pos.y, 0f);

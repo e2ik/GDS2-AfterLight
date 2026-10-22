@@ -75,9 +75,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool disableTutorials = false;
     [SerializeField] private bool skipCutscenes = false;
     [SerializeField] private bool oneHitKillEnemies = false;
+    [SerializeField] private bool spawnAllLegendaries = false;
+    [SerializeField] private bool skillMeterAlwaysFull = false;
 
     public bool TutorialsDisabled => disableTutorials;
     public bool OneHitKillEnemies => oneHitKillEnemies;
+    public bool SkillMeterAlwaysFull => skillMeterAlwaysFull;
 
     [Header("Enemy Attack Cap")]
     [SerializeField, Min(0)] private int maxConcurrentAttackers = 2;
@@ -165,6 +168,55 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Dev Tools
+
+    private void Update()
+    {
+        if (spawnAllLegendaries && player != null && player.Inventory != null)
+        {
+            spawnAllLegendaries = false;
+            SpawnAllLegendaries();
+        }
+    }
+
+    public void SpawnAllLegendaries()
+    {
+        if (player == null || player.Inventory == null) return;
+
+        PlayerInventoryManager inventory = player.Inventory;
+        int count = 0;
+
+        if (GameDatabase.WeaponTemplateDB != null && GameDatabase.WeaponTemplateDB.weaponTemplates != null)
+        {
+            foreach (var def in GameDatabase.WeaponTemplateDB.weaponTemplates)
+            {
+                if (def == null) continue;
+                inventory.AddItemToInventory(def.CreateInstance(ERarity.Legendary));
+                count++;
+            }
+        }
+
+        if (GameDatabase.GearTemplateDB != null && GameDatabase.GearTemplateDB.gearTemplates != null)
+        {
+            foreach (var def in GameDatabase.GearTemplateDB.gearTemplates)
+            {
+                if (def == null) continue;
+                inventory.AddItemToInventory(def.CreateInstance(ERarity.Legendary));
+                count++;
+            }
+        }
+
+        if (GameDatabase.SecondaryGemTemplateDB != null && GameDatabase.SecondaryGemTemplateDB.secondaryGemTemplates != null)
+        {
+            foreach (var def in GameDatabase.SecondaryGemTemplateDB.secondaryGemTemplates)
+            {
+                if (def == null) continue;
+                inventory.AddItemToInventory(def.CreateInstance(ERarity.Legendary));
+                count++;
+            }
+        }
+
+        Debug.Log($"[GameManager] Dev: added {count} legendary items to the inventory.");
+    }
 
     public void UnlockAllFastTravelNodes()
     {

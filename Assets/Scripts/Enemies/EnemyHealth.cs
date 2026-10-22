@@ -17,15 +17,37 @@ namespace Enemies
         public Vector3 Position;
         public int Blocked;
         public bool IsBonus;
+        public int Resisted;
     }
 
     public class EnemyHealth : MonoBehaviour
     {
         [SerializeField] private int maxHealth = 10;
+        [SerializeField] private bool allowHealthScaling = false;
+        private int scaledMaxHealth;
+        private UnityEngine.SceneManagement.Scene originScene;
+        private bool hasOriginScene;
+
+        public void SetOriginScene(UnityEngine.SceneManagement.Scene scene)
+        {
+            originScene = scene;
+            hasOriginScene = true;
+        }
         [SerializeField] private bool blockDamageOutsideBonus = false;
         [SerializeField, Min(0)] private int blockedHitDamage = 1;
+
+        [Header("Damage Cap")]
+        [SerializeField] private bool useDamageCap = false;
+        [SerializeField, Range(0.01f, 1f)] private float thresholdPercent = 0.2f;
+        [SerializeField, Range(0f, 1f)] private float excessEfficiency = 0.4f;
+        [SerializeField, Range(0f, 2f)] private float kneeWidth = 0.5f;
+        [SerializeField] private bool useHitCap = false;
+        [SerializeField, Range(0.01f, 1f)] private float maxHitPercent = 0.35f;
+        [SerializeField, Range(0f, 1f)] private float hitCapSoftStart = 0.7f;
+        [SerializeField, Range(0f, 0.25f)] private float cappedVariance = 0.05f;
+        [SerializeField, Range(0f, 1f)] private float minResistedToShow = 0.15f;
         public int CurrentHealth { get; private set; }
-        public int MaxHealth => maxHealth;
+        public int MaxHealth => scaledMaxHealth > 0 ? scaledMaxHealth : maxHealth;
 
         public event Action<int, int, bool> OnDamaged; // amount, currentHealth, isDot
         public event Action<DamageInfo> OnDamageTaken;
@@ -43,6 +65,7 @@ namespace Enemies
         private void Awake()
         {
             CurrentHealth = maxHealth;
+            scaledMaxHealth = maxHealth;
             attackEvents = GetComponentInChildren<AttackEvents>(true);
         }
         private Coroutine dotRoutine;
@@ -60,6 +83,21 @@ namespace Enemies
         {
             dotStacks.Clear();
             dotRoutine = null;
+        }
+
+        public UnityEngine.SceneManagement.Scene ScalingScene => hasOriginScene ? originScene : gameObject.scene;
+
+        public void ApplyHealthScaling(float multiplier)
+        {
+            if (!allowHealthScaling || CurrentHealth <= 0) return;
+
+            int target = Mathf.Max(1, Mathf.RoundToInt(maxHealth * Mathf.Max(1f, multiplier)));
+            int current = MaxHealth;
+            if (target <= current) return;
+
+            float ratio = current > 0 ? (float)CurrentHealth / current : 1f;
+            scaledMaxHealth = target;
+            CurrentHealth = Mathf.Clamp(Mathf.RoundToInt(target * ratio), 1, target);
         }
 
         public void ApplyDamage(int amount, bool isDot = false)
@@ -145,11 +183,21 @@ namespace Enemies
                 damage = blockedHitDamage;
             }
 
+            int resisted = 0;
+            if (!oneHitKill && !bonus && blocked == 0 && context.DamageType != EDamageType.Dot)
+            {
+                int capped = ApplyDamageCap(damage);
+                resisted = damage - capped;
+                if (resisted < damage * minResistedToShow) resisted = 0;
+                damage = capped;
+            }
+
             ApplyDamage(new DamageInfo
             {
                 Amount = damage,
                 Blocked = blocked,
                 IsBonus = bonus,
+                Resisted = resisted,
                 DamageType = context.DamageType,
                 IsCrit = isCrit,
                 HasRoll = context.HasRoll,
@@ -167,6 +215,56 @@ namespace Enemies
 
                 AddDotStack(dotDamagePerTick, context.DotTickInterval, context.DotDuration, Mathf.Max(1, context.DotMaxStacks));
             }
+        }
+
+        private void Start()
+        {
+            if (!allowHealthScaling) return;
+
+            ApplyHealthScaling(EnemyHealthScalingZone.GetMultiplier(ScalingScene));
+        }
+
+        private int ApplyDamageCap(int damage)
+        {
+            if (damage <= 1 || (!useDamageCap && !useHitCap)) return damage;
+
+            float raw = damage;
+            float result = raw;
+
+            if (useDamageCap) result = SoftKnee(result, MaxHealth * thresholdPercent);
+            if (useHitCap) result = SoftCeiling(result, Mathf.Max(1f, MaxHealth * maxHitPercent));
+
+            if (result < raw && cappedVariance > 0f)
+                result *= UnityEngine.Random.Range(1f - cappedVariance, 1f + cappedVariance);
+
+            return Mathf.Clamp(Mathf.RoundToInt(result), 1, damage);
+        }
+
+        private float SoftKnee(float x, float threshold)
+        {
+            float width = threshold * kneeWidth;
+            float kneeStart = threshold - width * 0.5f;
+
+            if (x <= kneeStart) return x;
+
+            if (width > 0f && x < threshold + width * 0.5f)
+            {
+                float t = x - kneeStart;
+                return x + (excessEfficiency - 1f) * t * t / (2f * width);
+            }
+
+            return threshold + (x - threshold) * excessEfficiency;
+        }
+
+        private float SoftCeiling(float x, float ceiling)
+        {
+            float start = ceiling * hitCapSoftStart;
+            if (x <= start) return x;
+
+            float range = ceiling - start;
+            if (range <= 0f) return Mathf.Min(x, ceiling);
+
+            return start + range * (1f - Mathf.Exp(-(x - start) / range));
         }
 
         private void AddDotStack(float damagePerTick, float tickInterval, float duration, int maxStacks)

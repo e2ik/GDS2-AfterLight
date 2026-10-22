@@ -509,7 +509,7 @@ MonoBehaviour:
   attackBottomPadding: 0.2
   clampAttackToBodyTop: 1
   attackTopPadding: -0.5
-  debugAttackReach: 1
+  debugAttackReach: 0
   debugLineDuration: 0.5
   debugPreviewRange: 2
   blockAttacksThroughWalls: 1
@@ -540,25 +540,27 @@ MonoBehaviour:
   attackActiveEnd: 1
   dashAttackConflictWindow: 0.03
   jumpAttackConflictWindow: 0.03
-  skillMeterAlwaysFull: 1
   skillCoolDown: 0.2
   chargingSkillMinDur: 0.4
   chargingSkillMaxDur: 1.5
   heldSkillFastestTickMultiplier: 0.7
   heldSkillRampDuration: 0.6
-  fullChargeDamageMultiplier: 2
+  fullChargeDamageMultiplier: 1.25
   skillHoldThreshold: 0.12
   skillReleaseBufferTime: 0.08
   chargeSkillAmount: 0.2
   skillGemModifierBonus: 0.15
   attackGemModifierBonus: 0.15
   attackGemHyperArmor: 1
+  skillHyperArmorCombos:
+  - skillGem: {fileID: 11400000, guid: 0c490fd2d61891d90966197bc88509b1, type: 2}
+    secondaryGem: {fileID: 11400000, guid: 1102d0c7f5836d14c9fc09f1b9a12ad0, type: 2}
   attackGemCooldownReduction: 0.5
   attackGemRangeBonus: 1
   attackGemAttackSpeedBonus: 0.15
   attackGemDashMultiplierBonus: 0.25
   attackGemPlungeMultiplierBonus: 0.25
-  reflectBonusPerDefense: 0.035
+  reflectBonusPerDefense: 0.025
   maxDefenseReflectMultiplier: 3
   reflectGemParriesHeavy: 1
   parryEvent:

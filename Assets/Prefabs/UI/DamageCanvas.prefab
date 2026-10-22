@@ -116,7 +116,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DamageNumber
   text: {fileID: 5346441271564829247}
-  glowIntensity: 1.35
+  glowIntensity: 1.4
   normalStyle:
     format: '{amount}'
     color: {r: 1, g: 1, b: 1, a: 1}
@@ -152,6 +152,16 @@ MonoBehaviour:
     color: {r: 1, g: 0.84, b: 0, a: 1}
     scale: 1.2
     material: {fileID: 0}
+  blockedStyle:
+    format: ({blocked} Blocked)
+    color: {r: 0.7735849, g: 0.7735849, b: 0.7735849, a: 1}
+    scale: 0.85
+    material: {fileID: 0}
+  resistedStyle:
+    format: ({resisted} Resisted)
+    color: {r: 0.7725491, g: 0.7725491, b: 0.7725491, a: 1}
+    scale: 0.85
+    material: {fileID: 0}
   tintByRoll: 1
   lowRollColor: {r: 0.61635214, g: 0.61635214, b: 0.61635214, a: 1}
   midRollColor: {r: 1, g: 0.95645815, b: 0.50628924, a: 1}
@@ -159,6 +169,15 @@ MonoBehaviour:
   lowRollScale: 0.8
   highRollScale: 1.3
   niceSuffix: \nNICE
+  niceVariants:
+  - NICE
+  - SWEET
+  - SLICK
+  - CLEAN
+  - SHARP
+  - CRISP
+  - SOLID
+  - NEAT
   jackpotSuffix: \nJACKPOT!
   rainbowJackpot: 1
   rainbowSpeed: 2

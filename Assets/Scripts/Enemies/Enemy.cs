@@ -86,6 +86,8 @@ namespace Enemies
         private bool hasAggroed;
         [SerializeField] private bool canDropAggro = true;
         [SerializeField] private float unreachableGiveUpDelay = 1.5f;
+        [SerializeField, Min(0f)] private float targetBelowGiveUpDelay = 0.6f;
+        [SerializeField, Min(0f)] private float targetBelowHeight = 1.5f;
         [SerializeField] private float reaggroCooldown = 3f;
         private float unreachableTimer;
         private float reaggroCooldownTimer;
@@ -146,6 +148,7 @@ namespace Enemies
         [SerializeField] private string deathStateName = "Death";
         [SerializeField] private float deathAnimationTimeout = 5f;
         [SerializeField] private bool hasSpecialBossFreeze = false;
+        [SerializeField] private bool disableCollisionOnDeath = true;
         public EnemyContext Context { get; private set; }
         public bool IsAttacking { get; private set; }
         public bool AttackReady { get; private set; }
@@ -649,7 +652,10 @@ namespace Enemies
             }
 
             unreachableTimer += Time.deltaTime;
-            if (unreachableTimer < unreachableGiveUpDelay) return;
+
+            bool targetBelow = Context.Target != null && transform.position.y - Context.Target.position.y > targetBelowHeight;
+            float giveUpDelay = targetBelow ? Mathf.Min(targetBelowGiveUpDelay, unreachableGiveUpDelay) : unreachableGiveUpDelay;
+            if (unreachableTimer < giveUpDelay) return;
 
             DropAggro();
         }
@@ -1009,6 +1015,7 @@ namespace Enemies
                 animator.SetTrigger("Freeze");
 
             rb2D.linearVelocity = Vector2.zero;
+            if (disableCollisionOnDeath) rb2D.simulated = false;
             IsAttacking = false;
             ReleaseAttackSlot(false);
             Context.IsAttacking = false;

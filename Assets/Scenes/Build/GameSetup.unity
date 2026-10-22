@@ -205,6 +205,8 @@ MonoBehaviour:
   disableTutorials: 1
   skipCutscenes: 0
   oneHitKillEnemies: 0
+  spawnAllLegendaries: 0
+  skillMeterAlwaysFull: 0
   maxConcurrentAttackers: 1
   attackSlotCooldown: 0.3
   extraAttackerChance: 0.33
@@ -259,6 +261,7 @@ MonoBehaviour:
   preloadScenes:
   - HospitalZone
   - TowerZone
+  keepScenesResident: 1
 --- !u!114 &78526261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -396,6 +399,10 @@ MonoBehaviour:
     Path: event:/Interface Events/UI Click Event
   cancelActions:
   - {fileID: 7727032971491509709, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  selectMinInterval: 0.06
+  submitMinInterval: 0.1
+  tabSwitchMinInterval: 0.08
+  cancelMinInterval: 0.1
 --- !u!114 &78526265
 MonoBehaviour:
   m_ObjectHideFlags: 0

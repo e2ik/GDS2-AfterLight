@@ -12,6 +12,10 @@ namespace Enemies.ModuleScripts
         [SerializeField] private float backUpDistance = 0f;
         [SerializeField] private float backUpSpeed = 2f;
         [SerializeField] private bool backUpFacesTarget = true;
+        [SerializeField, Min(0f)] private float backUpMaxHeightDifference = 1.5f;
+
+        [Header("Unreachable")]
+        [SerializeField, Min(0f)] private float targetBelowHeight = 1.5f;
 
         public override void Tick(EnemyContext ctx, float deltaTime)
         {
@@ -38,7 +42,13 @@ namespace Enemies.ModuleScripts
 
             float moveX = ctx.TargetInRange || arrived ? 0f : dir * moveSpeed;
 
-            if (backUpDistance > 0f && Mathf.Abs(diff) < backUpDistance)
+            float heightDiff = Mathf.Abs(ctx.Target.position.y - ctx.Self.position.y);
+
+            if (targetBelowHeight > 0f && ctx.Self.position.y - ctx.Target.position.y > targetBelowHeight)
+                ctx.LastChaseBlockedTime = Time.time;
+            bool sameLevel = backUpMaxHeightDifference <= 0f || heightDiff <= backUpMaxHeightDifference;
+
+            if (backUpDistance > 0f && sameLevel && Mathf.Abs(diff) < backUpDistance)
             {
                 int backDir = -dir;
                 if (!ctx.IgnoreTerrainChecks && EnemyTerrainProbe.IsBlocked(ctx, backDir))

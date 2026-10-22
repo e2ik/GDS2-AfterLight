@@ -28,7 +28,10 @@ public class DamageNumber : MonoBehaviour
     [SerializeField] private DamageStyle reflectStyle = new DamageStyle { color = new Color(0.35f, 0.65f, 1f) };
     [SerializeField] private DamageStyle dodgeStyle = new DamageStyle { format = "Dodged", color = new Color(0.85f, 0.85f, 0.85f), scale = 0.9f };
     [SerializeField] private DamageStyle perfectDodgeStyle = new DamageStyle { format = "Perfect!", color = new Color(1f, 0.84f, 0f), scale = 1.2f };
-    [SerializeField] private string blockedFormat = " ({blocked} Blocked)";
+    [SerializeField] private DamageStyle blockedStyle = new DamageStyle { format = "{blocked} Blocked", color = Color.white, scale = 0.7f };
+
+    [Header("Resisted")]
+    [SerializeField] private DamageStyle resistedStyle = new DamageStyle { format = "-{resisted} Resisted", color = Color.white, scale = 0.7f };
     [Header("Gamble Roll")]
     [SerializeField] private bool tintByRoll = true;
     [SerializeField] private Color lowRollColor = Color.gray;
@@ -77,7 +80,6 @@ public class DamageNumber : MonoBehaviour
         sb.Clear();
         sb.Append(style.format);
         sb.Replace("{amount}", info.Amount.ToString());
-        if (info.Blocked > 0) sb.Append(blockedFormat.Replace("{blocked}", info.Blocked.ToString()));
         rainbowStartIndex = -1;
 
         if (info.HasRoll && (info.DamageType == EDamageType.Base || info.DamageType == EDamageType.Skill))
@@ -90,6 +92,28 @@ public class DamageNumber : MonoBehaviour
         }
 
         Begin(color, scale, style.material);
+    }
+
+    public void ShowBlocked(DamageInfo info)
+    {
+        sb.Clear();
+        sb.Append(blockedStyle.format);
+        sb.Replace("{blocked}", info.Blocked.ToString());
+        sb.Replace("{amount}", info.Amount.ToString());
+        rainbowStartIndex = -1;
+
+        Begin(blockedStyle.color, blockedStyle.scale, blockedStyle.material);
+    }
+
+    public void ShowResisted(DamageInfo info)
+    {
+        sb.Clear();
+        sb.Append(resistedStyle.format);
+        sb.Replace("{resisted}", info.Resisted.ToString());
+        sb.Replace("{amount}", info.Amount.ToString());
+        rainbowStartIndex = -1;
+
+        Begin(resistedStyle.color, resistedStyle.scale, resistedStyle.material);
     }
 
     public static bool HasRollText(ERollTier tier)
