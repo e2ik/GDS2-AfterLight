@@ -616,25 +616,25 @@ MonoBehaviour:
     Path: event:/CombatSFXEvents/EnemyHitEvent
   vulnerableHitEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: -2081630650
+      Data2: 1147327901
+      Data3: -277421433
+      Data4: -968952992
+    Path: event:/CombatSFXEvents/BuzzHitStrongEvent
   blockedHitEvent:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: -518119109
+      Data2: 1183803826
+      Data3: -724434530
+      Data4: 1879959443
+    Path: event:/CombatSFXEvents/BuzzHitWeakEvent
   attackEvent:
     Guid:
-      Data1: 1739630346
-      Data2: 1283924578
-      Data3: -261085565
-      Data4: -1791523683
-    Path: event:/CombatSFXEvents/HammerAttackEvent
+      Data1: -1272061257
+      Data2: 1113791693
+      Data3: -1711330937
+      Data4: -599032802
+    Path: event:/CombatSFXEvents/BuzzBigAttackEvent
   spriteRenderer: {fileID: 5107996575365250629}
   hitFlash: {fileID: 8607045623648066577}
   flashColor: {r: 1.4980392, g: 0, b: 0, a: 1}
