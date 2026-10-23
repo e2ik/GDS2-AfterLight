@@ -175,6 +175,7 @@ namespace Enemies
         {
             Context.Health.OnDamageTaken += OnDamaged;
             Context.Health.OnDeath += OnDeath;
+            EnemyCombatTracker.Register(this);
             if (queueAttackers && !queuedEnemies.Contains(this)) queuedEnemies.Add(this);
             if (raiseSortingWhenOverlapping) SetupOverlapSorting();
         }
@@ -183,6 +184,7 @@ namespace Enemies
         {
             Context.Health.OnDamageTaken -= OnDamaged;
             Context.Health.OnDeath -= OnDeath;
+            EnemyCombatTracker.Unregister(this);
             EnemyCombatTracker.EnemyStoppedTargeting(this);
             if (Context.Health != null) Context.Health.Invulnerable = false;
             queuedEnemies.Remove(this);

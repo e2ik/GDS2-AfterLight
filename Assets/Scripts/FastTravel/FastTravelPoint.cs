@@ -43,6 +43,10 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     [SerializeField] private SpriteOutlineToggle outlineToggle;
     [SerializeField] private Collider2D promptCollider;
 
+    [Header("Music")]
+    [SerializeField] private bool fadeMusicWhenNear = true;
+    [SerializeField, Min(0f)] private float musicZonePadding = 0f;
+
     private static readonly int IsDiscoveredHash = Animator.StringToHash("isDiscovered");
     private static readonly int IsIdleHash = Animator.StringToHash("isIdle");
     private static readonly int IsInteractedHash = Animator.StringToHash("isInteracted");
@@ -59,6 +63,7 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     private float currentPulseSpeed;
     private float pulsePhase;
     private bool lightInitialized;
+    private bool playerNearForMusic;
 
     private void Awake()
     {
@@ -87,6 +92,9 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
             worldMapState.OnStateLoaded -= UpdateVisualState;
             worldMapState.OnStateReset -= UpdateVisualState;
         }
+
+        playerNearForMusic = false;
+        MusicIntensityDriver.SetNearFastTravel(this, false);
     }
 
     private void Start()
@@ -98,6 +106,28 @@ public class FastTravelPoint : MonoBehaviour, IInteractable
     private void Update()
     {
         UpdateLight();
+        UpdateMusicProximity();
+    }
+
+    private void UpdateMusicProximity()
+    {
+        bool near = fadeMusicWhenNear && (isInteracting || IsPlayerInZone());
+        if (near == playerNearForMusic) return;
+
+        playerNearForMusic = near;
+        MusicIntensityDriver.SetNearFastTravel(this, near);
+    }
+
+    private bool IsPlayerInZone()
+    {
+        if (promptCollider == null || !promptCollider.enabled) return false;
+
+        Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+        if (player == null || player.Controller == null) return false;
+
+        Bounds zone = promptCollider.bounds;
+        zone.Expand(musicZonePadding * 2f);
+        return zone.Intersects(player.Controller.BodyBounds);
     }
 
     private void OnNodeUnlocked(FastTravelNodeSO unlockedNode)
