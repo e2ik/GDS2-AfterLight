@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using FMODUnity;
 using UnityEngine;
 
@@ -26,6 +27,10 @@ namespace Enemies
 
         [Header("Camera")]
         [SerializeField] private bool lockCameraToArena = true;
+
+        [Header("Background")]
+        [SerializeField] private List<ParallaxBackground.LayerColor> engagedLayerColors = new List<ParallaxBackground.LayerColor>();
+        [SerializeField, Min(0f)] private float backgroundBlendTime = 3f;
 
         [Header("Music")] 
         [SerializeField] private EventReference bossMusicEvent;
@@ -216,6 +221,7 @@ namespace Enemies
 
                 activeBossEnemy = bossEnemy;
                 engagedPlayer = player.transform;
+                SetEngagedBackground(true);
                 engagedStats = player.Stats;
                 if (engagedStats != null) engagedStats.OnDied += HandlePlayerDied;
 
@@ -278,6 +284,7 @@ namespace Enemies
         private void HandlePlayerDied()
         {
             ReleaseCamera();
+            SetEngagedBackground(false);
             SetDoorsLocked(false);
         }
 
@@ -314,8 +321,29 @@ namespace Enemies
             lockedCamera = null;
         }
 
+        private bool backgroundOverridden;
+
+        private void SetEngagedBackground(bool engaged)
+        {
+            ParallaxBackground background = GameManager.Instance != null ? GameManager.Instance.Background : null;
+            if (background == null) return;
+
+            if (engaged && engagedLayerColors != null && engagedLayerColors.Count > 0)
+            {
+                background.SetOverrideColors(engagedLayerColors, backgroundBlendTime);
+                backgroundOverridden = true;
+            }
+            else if (!engaged && backgroundOverridden)
+            {
+                background.ClearOverrideColors(backgroundBlendTime);
+                backgroundOverridden = false;
+            }
+        }
+
         private void CleanupFightSubscriptions()
         {
+            SetEngagedBackground(false);
+
             if (engagedStats != null) engagedStats.OnDied -= HandlePlayerDied;
             engagedStats = null;
 

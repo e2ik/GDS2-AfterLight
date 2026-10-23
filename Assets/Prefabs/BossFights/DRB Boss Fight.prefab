@@ -26,8 +26,8 @@ Transform:
   m_GameObject: {fileID: 1270272784951285183}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.23, y: 4.98, z: 0}
-  m_LocalScale: {x: 1, y: 14.993023, z: 1}
+  m_LocalPosition: {x: 6.23, y: 13.33, z: 0}
+  m_LocalScale: {x: 1, y: 35.983257, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4652465705145231498}
@@ -218,8 +218,8 @@ Transform:
   m_GameObject: {fileID: 3830897815116287771}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 20.49, y: 4.46, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 15.2, y: 2.4, z: 0}
+  m_LocalScale: {x: 1.15, y: 0.68333, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5681199292943563232}
@@ -290,12 +290,22 @@ MonoBehaviour:
   playerTag: Player
   bossID: DrBuzzBoss_intro_unique_id
   bossName: Dr Buzz
-  requireGrounded: 1
+  requiredGround: {fileID: 0}
   rematchPlaysDeathDialogue: 0
   rematchLocksArena: 1
   rematchPlaysBossMusic: 1
   rematchShowsHealthBar: 1
   lockCameraToArena: 1
+  engagedLayerColors:
+  - layerName: Sky
+    color: {r: 0.41568628, g: 0.29803923, b: 0.6117647, a: 0}
+  - layerName: Sky2
+    color: {r: 0.21960784, g: 0.34509805, b: 0.8352941, a: 0}
+  - layerName: CloudsBack
+    color: {r: 0.95686275, g: 0.20784314, b: 0.27450982, a: 0}
+  - layerName: CloudsFront
+    color: {r: 1, g: 0.61960787, b: 0.87058824, a: 0}
+  instantBackgroundColor: 1
   bossMusicEvent:
     Guid:
       Data1: -575299851
@@ -341,88 +351,9 @@ Transform:
   m_Children:
   - {fileID: 7317828967423252655}
   - {fileID: 4831397140941519834}
-  - {fileID: 4592303678200948809}
   - {fileID: 7181451763152242042}
   m_Father: {fileID: 5681199292943563232}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &5189887403319601961
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4592303678200948809}
-  - component: {fileID: 5072388272086859588}
-  m_Layer: 0
-  m_Name: Top
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4592303678200948809
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5189887403319601961}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 20.7, y: 12.58, z: 0}
-  m_LocalScale: {x: 28.82075, y: 1.1246266, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4652465705145231498}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &5072388272086859588
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5189887403319601961}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!1 &5820503413341801186
 GameObject:
   m_ObjectHideFlags: 0
@@ -603,8 +534,8 @@ Transform:
   m_GameObject: {fileID: 8230642013978064197}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 35.14, y: 4.98, z: 0}
-  m_LocalScale: {x: 1, y: 14.993023, z: 1}
+  m_LocalPosition: {x: 35.14, y: 13.329998, z: 0}
+  m_LocalScale: {x: 1, y: 35.983257, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4652465705145231498}
