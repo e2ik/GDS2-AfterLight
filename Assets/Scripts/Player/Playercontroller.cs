@@ -710,6 +710,7 @@ public class PlayerController : MonoBehaviour
     private float wallSlideBlockedUntil = float.NegativeInfinity;
 
     public bool IsWallSlideBlocked => Time.time < wallSlideBlockedUntil;
+    public Collider2D GroundCollider => isGrounded ? groundCollider : null;
 
     public void BlockWallSlide(float duration)
     {
