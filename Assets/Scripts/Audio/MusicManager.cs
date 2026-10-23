@@ -95,6 +95,7 @@ public class MusicManager : MonoBehaviour
     public void PlayMusic(EventReference musicEvent, bool fadeOutPrevious = true)
     {
         if (musicEvent.IsNull) return;
+        if (_holdMusic) return;
 
         EventInstance previousInstance = _instance;
         bool hasPrevious = previousInstance.isValid();
@@ -183,6 +184,19 @@ public class MusicManager : MonoBehaviour
         }
         
         _bossMode = isBossMusic;
+
+        if (_holdMusic)
+        {
+            Debug.Log("$[MusicManager] SwitchMusic held during cutscene (requested boss music: {isBossMusic})", this);
+            if (!newLevelEvent.IsNull)
+            {
+                _currentEvent = newLevelEvent;
+                _hasCurrentEvent = true;
+            }
+
+            _currentNormalized = _targetNormalized = isBossMusic ? 0f : idleFloor;
+            return;
+        }
 
         if (sameEvent)
             return;

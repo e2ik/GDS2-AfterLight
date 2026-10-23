@@ -432,11 +432,12 @@ namespace Enemies
                 yield return new WaitForSecondsRealtime(MusicManager.Instance.StopFadeDuration);
             }
             
-            yield return CutscenePlayer.Instance.Play(filename);
-            
             deathSequenceRunning = false;
             if(bossEnemy != null)
                 bossEnemy.Context.Health.FinalizeDeath();
+            
+            yield return CutscenePlayer.Instance.Play(filename);
+            
             
             MusicManager.Instance?.RestartMusic();
             AudioManager.ToggleSFXMute();
