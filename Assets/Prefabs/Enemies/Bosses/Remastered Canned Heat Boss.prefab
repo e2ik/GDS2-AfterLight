@@ -262,22 +262,26 @@ MonoBehaviour:
   observationSO: {fileID: 11400000, guid: 2291d82ffdbf7944c83d92b9e7417cdf, type: 2}
   attacks:
   - Attack: {fileID: 11400000, guid: c5d6043f22bf2e04ab0cd5336e72fca9, type: 2}
-    Weight: 55
-    maxDuration: 2
-    manualOnly: 0
-  - Attack: {fileID: 11400000, guid: 0f75b721bbec5ef43b6f61278a419117, type: 2}
     Weight: 45
     maxDuration: 2
     manualOnly: 0
+  - Attack: {fileID: 11400000, guid: 0f75b721bbec5ef43b6f61278a419117, type: 2}
+    Weight: 35
+    maxDuration: 2
+    manualOnly: 0
   - Attack: {fileID: 11400000, guid: e8fb83fdd20f0c548bab514e530e94d8, type: 2}
-    Weight: 0
+    Weight: 20
     maxDuration: 1
-    manualOnly: 1
+    manualOnly: 0
   - Attack: {fileID: 11400000, guid: 921b422f2a95df245b21e0807469adce, type: 2}
     Weight: 0
     maxDuration: 1
     manualOnly: 1
   - Attack: {fileID: 11400000, guid: 303b84b0403e79c4ba79acbb0afea4b1, type: 2}
+    Weight: 0
+    maxDuration: 1
+    manualOnly: 1
+  - Attack: {fileID: 11400000, guid: cdc2b614eb1d0854ab85384f64dc5163, type: 2}
     Weight: 0
     maxDuration: 1
     manualOnly: 1
