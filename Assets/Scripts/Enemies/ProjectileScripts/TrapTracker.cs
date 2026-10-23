@@ -5,7 +5,7 @@ namespace Enemies.ProjectileScripts
 {
     public static class TrapTracker
     {
-        public const int MaxActiveTraps = 3;
+        public const int MaxActiveTraps = 5;
 
         private static readonly List<TrapProjectile> activeTraps = new();
 

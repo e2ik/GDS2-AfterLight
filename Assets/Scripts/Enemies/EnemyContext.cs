@@ -67,5 +67,6 @@ namespace Enemies
         public bool ForceTeleportNearTarget;
         public SpriteRenderer SpriteRenderer;
         public Transform ProjectileSpawnPoint;
+        public int Phase = 1;
     }
 }

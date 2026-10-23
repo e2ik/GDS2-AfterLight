@@ -44432,7 +44432,7 @@ Transform:
   - {fileID: 1823268086}
   - {fileID: 1951650634}
   - {fileID: 6343754}
-  - {fileID: 1344591014}
+  - {fileID: 1751562357}
   m_Father: {fileID: 124264256}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1209631344
@@ -47981,88 +47981,6 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 6145143574291511702, guid: 97ae6dbf2b9864440bb906dbdc0e9e42, type: 3}
   m_PrefabInstance: {fileID: 1368208055}
-  m_PrefabAsset: {fileID: 0}
---- !u!1001 &1344591013
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1209462614}
-    m_Modifications:
-    - target: {fileID: 2954593989394530346, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_Name
-      value: CH Boss Fight
-      objectReference: {fileID: 0}
-    - target: {fileID: 3075481338447874064, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: requiredBossID
-      value: DrBuzzBoss_intro_unique_id
-      objectReference: {fileID: 0}
-    - target: {fileID: 4834338806447968780, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: targetAreaSide
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4834338806447968780, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: requiredDefeatedBossID
-      value: DrBuzzBoss_intro_unique_id
-      objectReference: {fileID: 0}
-    - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 171.26
-      objectReference: {fileID: 0}
-    - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 41.81
-      objectReference: {fileID: 0}
-    - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5881447990178518734, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5881447990178518734, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-      propertyPath: m_WasSpriteAssigned
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
---- !u!4 &1344591014 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5681199292943563232, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
-  m_PrefabInstance: {fileID: 1344591013}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1379847842
 PrefabInstance:
@@ -60035,6 +59953,76 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 6696080959681309351, guid: 3eaea781014f4cf4eaefa1579cc22781, type: 3}
   m_PrefabInstance: {fileID: 1723793334}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1751562356
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1209462614}
+    m_Modifications:
+    - target: {fileID: 2954593989394530346, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_Name
+      value: CH Remaster Boss Fight
+      objectReference: {fileID: 0}
+    - target: {fileID: 3075481338447874064, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: requiredBossID
+      value: DrBuzzBoss_intro_unique_id
+      objectReference: {fileID: 0}
+    - target: {fileID: 4834338806447968780, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: requiredDefeatedBossID
+      value: DrBuzzBoss_intro_unique_id
+      objectReference: {fileID: 0}
+    - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 176.82
+      objectReference: {fileID: 0}
+    - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 40.43
+      objectReference: {fileID: 0}
+    - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+--- !u!4 &1751562357 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
+  m_PrefabInstance: {fileID: 1751562356}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1762860545
 PrefabInstance:

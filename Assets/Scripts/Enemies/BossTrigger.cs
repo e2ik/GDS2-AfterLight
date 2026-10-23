@@ -27,8 +27,18 @@ namespace Enemies
         [SerializeField] private string introCutscene = "";
         [SerializeField] private string deathCutscene = "";
 
+        [Header("Phases")] 
+        [SerializeField, Min(1)] private int phaseCount = 1;
+        [SerializeField] private DialogueData phaseTransitionDialogue;
+        [SerializeField] private EventReference phaseTransitionSFX;
+        [SerializeField, Min(0f)] private float transitionBeat = 0.6f;
+        [SerializeField, Min(0.1f)] private float refillDuration = 2.5f;
+        [SerializeField, Min(0f)] private float resumeDelay = 0.5f;
+        
+
         [Header("Rematch")]
         [SerializeField] private bool rematchPlaysDeathDialogue = false;
+        [SerializeField] private bool rematchPlaysPhaseDialogue = false;
         [SerializeField] private bool rematchLocksArena = true;
         [SerializeField] private bool rematchPlaysBossMusic = true;
         [SerializeField] private bool rematchShowsHealthBar = true;
@@ -246,16 +256,15 @@ namespace Enemies
                     SetDoorsLocked(true);
                 }
 
-                if (playDeathDialogue)
+                bool playPhaseDialogue = !isRematch || rematchPlaysDeathDialogue;
+
+                if (playDeathDialogue || phaseCount > 1)
                 {
                     bossEnemy.Context.Health.DeferDeath = true;
-                    onHealthDepleted = () =>
-                    {
-                        if (playMusic)
-                            MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
-                        
-                        StartCoroutine(PlayDeathDialogueThenFinalize(bossEnemy, player));
-                    };
+
+                    onHealthDepleted = () => HandleHealthDepleted(bossEnemy, player, playMusic, showHealthBar,
+                        playDeathDialogue, playPhaseDialogue);
+                    
                     bossEnemy.Context.Health.OnHealthDepleted += onHealthDepleted;
                 }
 
@@ -294,7 +303,84 @@ namespace Enemies
                 }
             }
         }
-        
+
+        private void HandleHealthDepleted(Enemy boss, Player player, bool playMusic, bool showHealthBar,
+            bool playDeathDialogue, bool playPhaseDialogue)
+        {
+            if (boss.Phase < phaseCount)
+            {
+                StartCoroutine(PlayPhaseTransition(boss, player, playMusic, showHealthBar, playPhaseDialogue));
+                return;
+            }
+
+            if (!playDeathDialogue)
+            {
+                boss.Context.Health.FinalizeDeath();
+                return;
+            }
+            
+            if(playMusic)
+                MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
+
+            StartCoroutine(PlayDeathDialogueThenFinalize(boss, player));
+        }
+
+        private IEnumerator PlayPhaseTransition(Enemy boss, Player player, bool playMusic, bool showHealthBar,
+            bool playDialogue)
+        {
+            EnemyHealth health = boss.Context.Health;
+            
+            boss.FreezeForPhaseTransition();
+            player.Controller.FreezeMovement(true);
+
+            try
+            {
+                yield return new WaitForSeconds(transitionBeat);
+
+                if (activeBossEnemy != boss)
+                    yield break;
+
+                if (playDialogue && phaseTransitionDialogue != null && DialogueManager.Instance != null)
+                {
+                    DialogueManager.Instance.StartDialogue(phaseTransitionDialogue, player);
+
+                    if (DialogueManager.Instance.IsDialogueActive)
+                        yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
+                }
+
+                if (activeBossEnemy != boss)
+                    yield break;
+
+                yield return new WaitForSeconds(transitionBeat);
+
+                if (activeBossEnemy != boss)
+                    yield break;
+
+                if (!phaseTransitionSFX.IsNull)
+                    AudioManager.PlaySFX(phaseTransitionSFX, boss.transform.position);
+
+                if (showHealthBar)
+                    BossHealthBarUI.Instance?.PlayRefill(health.MaxHealth, health.MaxHealth, refillDuration);
+
+                if (playMusic)
+                    MusicManager.Instance?.SetBossIntensity(1f);
+
+                yield return new WaitForSeconds(refillDuration + resumeDelay);
+                
+
+                if (activeBossEnemy != boss)
+                    yield break;
+
+                boss.SetPhase(boss.Phase + 1);
+                health.RefillHealth();
+                boss.ResumeAfterPhaseTransition();
+            }
+            finally
+            {
+                if (player != null && player.Controller != null)
+                    player.Controller.FreezeMovement(false);
+            }
+        }
 
         private void HandlePlayerDied()
         {
@@ -407,6 +493,10 @@ namespace Enemies
 
             if (hasCutscene)
                 yield return PlayCutscene(deathCutscene, player, bossEnemy);
+            
+            deathSequenceRunning = false;
+            if(bossEnemy != null)
+                bossEnemy.Context.Health.FinalizeDeath();
             
             player.Controller.FreezeMovement(false);
         }

@@ -138,6 +138,11 @@ namespace Enemies
             }
         }
 
+        public void RefillHealth()
+        {
+            CurrentHealth = MaxHealth;
+        }
+
         public void FinalizeDeath()
         {
             if (deathFinalized)

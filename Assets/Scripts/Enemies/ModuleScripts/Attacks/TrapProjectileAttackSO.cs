@@ -5,7 +5,9 @@ namespace Enemies.ModuleScripts.Attacks
     [CreateAssetMenu(menuName = "Enemies/Attack/Trap Projectile")]
     public class TrapProjectileAttackSO : ProjectileAttackSO
     {
+        [Header("Trap Specific")]
         [SerializeField, Range(0f, 1f)] private float maxHealthFractionToUse = 0.5f;
+        
         
         public override bool CanUse(EnemyContext ctx) =>
             HealthAllows(ctx) &&

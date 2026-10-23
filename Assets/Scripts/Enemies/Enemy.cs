@@ -154,6 +154,7 @@ namespace Enemies
         public bool AttackReady { get; private set; }
         public bool TeleportReady { get; private set; }
         public bool IsBoss => Context != null && Context.BossBounds != null;
+        public int Phase => Context != null ? Context.Phase : 1;
 
         
         public bool InMoveWindupPhase => Context != null && Context.MoveWindup.InPhase;
@@ -1025,6 +1026,45 @@ namespace Enemies
 
             AttackEvents events = Context.AttackEvents != null ? Context.AttackEvents : GetComponentInChildren<AttackEvents>();
             if (events != null) events.CloseParryWindow();
+        }
+
+        public void SetPhase(int phase) => Context.Phase = phase;
+
+        public void FreezeForPhaseTransition()
+        {
+            if (behaviorAgent != null)
+                behaviorAgent.enabled = false;
+
+            rb2D.linearVelocity = Vector2.zero;
+            Context.ApproachRetreat.Reset();
+            MoveWindup.Reset(Context);
+            IsAttacking = false;
+            ReleaseAttackSlot(false);
+            Context.IsAttacking = false;
+            
+            foreach (HitBox hitBox in GetComponentsInChildren<HitBox>())
+                hitBox.Disable();
+
+            AttackEvents events = Context.AttackEvents != null
+                ? Context.AttackEvents
+                : GetComponentInChildren<AttackEvents>();
+
+            if (events != null)
+                events.CloseParryWindow();
+        }
+        
+        public void ResumeAfterPhaseTransition()
+        {
+            if (behaviorAgent == null)
+            {
+                Debug.LogWarning($"Behavior Agent is null on {name}");
+                return;
+            }
+
+            behaviorAgent.enabled = true;
+            behaviorAgent.Restart();
+            
+            Debug.Log("Restarting Boss BG");
         }
 
 #if UNITY_EDITOR

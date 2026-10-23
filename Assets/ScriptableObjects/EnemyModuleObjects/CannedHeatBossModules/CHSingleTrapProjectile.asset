@@ -18,10 +18,10 @@ MonoBehaviour:
   damage: 10
   launchAngleDegrees: 50
   launchSpeed: 15
-  shotSpacingDegrees: 0
+  shotSpacingDegrees: 25
   shotCount: 1
+  useCustomSpawnPoint: 0
   clip: {fileID: 0}
-  placeholderClipName: AttackPlaceholder
   attackStateName: Attack
   launchEvent:
     Guid:
@@ -30,3 +30,7 @@ MonoBehaviour:
       Data3: -1823744120
       Data4: -1124302290
     Path: event:/CombatSFXEvents/Projectile Spawn Event
+  playAnticipation: 1
+  attackForce: 1
+  anticipationDelay: 0.3
+  maxHealthFractionToUse: 0.5

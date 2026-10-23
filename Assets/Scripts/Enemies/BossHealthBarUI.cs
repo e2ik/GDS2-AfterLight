@@ -26,6 +26,11 @@ namespace Enemies
         [SerializeField] private float punchScale = 1.15f;
         [SerializeField] private float punchDuration = 0.15f;
         [SerializeField] private float fadeDuration = 0.4f;
+
+        [Header("Phase Refill")] 
+        [SerializeField] private Color refillFlashColor = Color.white;
+        private bool refilling;
+        private Coroutine refillRoutine;
         
         private Color normalColor;
         private float targetFraction = 1f;
@@ -104,6 +109,8 @@ namespace Enemies
         
         private void Update()
         {
+            if (refilling) return;
+            
             currentFraction = Mathf.MoveTowards(currentFraction, targetFraction, fillLerpSpeed * Time.deltaTime);
             ApplyScale(fillBar, currentFraction);
 
@@ -186,6 +193,56 @@ namespace Enemies
 
             root.localScale = baseScale;
             punchRoutine = null;
+        }
+
+        public void PlayRefill(int currentHealth, int maxHealth, float duration)
+        {
+            if(refillRoutine != null)
+                StopCoroutine(refillRoutine);
+
+            refillRoutine =
+                StartCoroutine(RefillRoutine(Fraction(currentHealth, maxHealth), Mathf.Max(0.01f, duration)));
+        }
+
+        private IEnumerator RefillRoutine(float to, float duration)
+        {
+            refilling = true;
+            if (flashRoutine != null)
+                StopCoroutine(flashRoutine);
+
+            float from = currentFraction;
+            float t = 0f;
+
+            while (t < duration)
+            {
+                t += Time.deltaTime;
+                float p = Mathf.Clamp01(t / duration);
+                float eased = p * p * (3f - 2f * p);
+
+                currentFraction = ghostFraction = targetFraction = Mathf.Lerp(from, to, eased);
+                ApplyScale(fillBar, currentFraction);
+                ApplyScale(ghostBar, ghostFraction);
+
+                if (fillImage != null)
+                    fillImage.color = Color.Lerp(refillFlashColor, normalColor, p);
+                
+                yield return null;
+            }
+
+            currentFraction = ghostFraction = targetFraction = to;
+            ApplyScale(fillBar, to);
+            ApplyScale(ghostBar, to);
+            
+            if (fillImage != null)
+                fillImage.color = normalColor;
+            
+            if(punchRoutine != null)
+                StopCoroutine(punchRoutine);
+
+            punchRoutine = StartCoroutine(Punch());
+
+            refilling = false;
+            refillRoutine = null;
         }
     }
 }
