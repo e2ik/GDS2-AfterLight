@@ -22,10 +22,26 @@ public class LightRim : MonoBehaviour
     [SerializeField, Min(0f)] private float maxBrightness = 1f;
     [SerializeField, Min(0f)] private float colorSmoothing = 12f;
 
+    [Header("Direction")]
+    [SerializeField, Range(0f, 1f)] private float directional = 1f;
+    [SerializeField] private bool secondLight = true;
+
     private static readonly int RimColorId = Shader.PropertyToID("_RimColor");
     private static readonly int DepthId = Shader.PropertyToID("_RimDepth");
     private static readonly int FadePowerId = Shader.PropertyToID("_RimFadePower");
     private static readonly int DiagonalsId = Shader.PropertyToID("_RimDiagonals");
+    private static readonly int DirId = Shader.PropertyToID("_RimDir");
+    private static readonly int Color2Id = Shader.PropertyToID("_RimColor2");
+    private static readonly int Dir2Id = Shader.PropertyToID("_RimDir2");
+
+    private struct LightSlot
+    {
+        public Color Color;
+        public Vector2 Direction;
+        public float Weight;
+    }
+
+    private readonly List<LightSlot> contributions = new List<LightSlot>();
 
     private const string ChildName = "LightRim";
 
@@ -37,8 +53,11 @@ public class LightRim : MonoBehaviour
     private SpriteRenderer rim;
     private MaterialPropertyBlock block;
     private Color currentLight = Color.black;
+    private Vector2 currentDir = Vector2.up;
+    private Color currentLight2 = Color.black;
+    private Vector2 currentDir2 = Vector2.up;
 
-    public Color CurrentLight => currentLight;
+    public Color CurrentLight => currentLight + currentLight2;
 
     public void SetIntensity(float value) => intensity = value;
 
@@ -99,12 +118,33 @@ public class LightRim : MonoBehaviour
 
     private void LateUpdate()
     {
-        Color target = SampleLights();
-        currentLight = !Application.isPlaying || colorSmoothing <= 0f
-            ? target
-            : Color.Lerp(currentLight, target, 1f - Mathf.Exp(-colorSmoothing * Time.deltaTime));
+        SampleLights(out LightSlot first, out LightSlot second);
+
+        bool instant = !Application.isPlaying || colorSmoothing <= 0f;
+        float blend = instant ? 1f : 1f - Mathf.Exp(-colorSmoothing * Time.deltaTime);
+
+        currentLight = Color.Lerp(currentLight, first.Color, blend);
+        currentLight2 = Color.Lerp(currentLight2, second.Color, blend);
+        currentDir = BlendDirection(currentDir, first.Direction, first.Weight, blend);
+        currentDir2 = BlendDirection(currentDir2, second.Direction, second.Weight, blend);
 
         Sync();
+    }
+
+    private static Vector2 BlendDirection(Vector2 current, Vector2 target, float weight, float blend)
+    {
+        if (weight <= 0f) return current;
+        Vector2 result = Vector2.Lerp(current, target, blend);
+        return result.sqrMagnitude > 0.0001f ? result.normalized : target;
+    }
+
+    private Vector2 ToTextureDirection(Vector2 worldDir)
+    {
+        Vector2 local = transform.InverseTransformVector(worldDir);
+        if (source != null && source.flipX) local.x = -local.x;
+        if (source != null && source.flipY) local.y = -local.y;
+        Vector2 dir = Vector2.Lerp(Vector2.up, local.sqrMagnitude > 0.0001f ? local.normalized : Vector2.up, directional);
+        return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector2.up;
     }
 
     private void OnValidate()
@@ -131,6 +171,10 @@ public class LightRim : MonoBehaviour
 
         Color rimColor = currentLight * tint * intensity * tint.a;
         rimColor.a = 1f;
+        Color rimColor2 = secondLight ? currentLight2 * tint * intensity * tint.a : Color.black;
+        rimColor2.a = 1f;
+        Vector2 dir1 = ToTextureDirection(currentDir);
+        Vector2 dir2 = ToTextureDirection(currentDir2);
 
         block ??= new MaterialPropertyBlock();
         rim.GetPropertyBlock(block);
@@ -138,16 +182,19 @@ public class LightRim : MonoBehaviour
         block.SetFloat(DepthId, depth);
         block.SetFloat(FadePowerId, fadePower);
         block.SetFloat(DiagonalsId, includeDiagonals ? 1f : 0f);
+        block.SetVector(DirId, new Vector4(dir1.x, dir1.y, 0f, 0f));
+        block.SetColor(Color2Id, rimColor2);
+        block.SetVector(Dir2Id, new Vector4(dir2.x, dir2.y, 0f, 0f));
         rim.SetPropertyBlock(block);
     }
 
-    private Color SampleLights()
+    private void SampleLights(out LightSlot first, out LightSlot second)
     {
         RefreshLights();
 
         Vector2 point = (Vector2)transform.position + sampleOffset;
         int sortingLayer = source != null ? source.sortingLayerID : 0;
-        Color total = Color.black;
+        contributions.Clear();
 
         foreach (Light2D light in lights)
         {
@@ -158,16 +205,80 @@ public class LightRim : MonoBehaviour
             float attenuation = PointAttenuation(light, point);
             if (attenuation <= 0f) continue;
 
-            total += light.color * (light.intensity * attenuation);
+            Color color = light.color * (light.intensity * attenuation);
+            Vector2 toLight = (Vector2)light.transform.position - point;
+
+            contributions.Add(new LightSlot
+            {
+                Color = color,
+                Direction = toLight.sqrMagnitude > 0.0001f ? toLight.normalized : Vector2.up,
+                Weight = Mathf.Max(color.r, Mathf.Max(color.g, color.b))
+            });
         }
 
-        if (total.r < minimumLight && total.g < minimumLight && total.b < minimumLight) return Color.black;
+        first = default;
+        second = default;
+        int firstIndex = -1;
+        int secondIndex = -1;
+
+        for (int i = 0; i < contributions.Count; i++)
+        {
+            if (firstIndex < 0 || contributions[i].Weight > contributions[firstIndex].Weight)
+            {
+                secondIndex = firstIndex;
+                firstIndex = i;
+            }
+            else if (secondIndex < 0 || contributions[i].Weight > contributions[secondIndex].Weight)
+            {
+                secondIndex = i;
+            }
+        }
+
+        if (firstIndex < 0) return;
+
+        first = contributions[firstIndex];
+        if (secondLight && secondIndex >= 0) second = contributions[secondIndex];
+
+        for (int i = 0; i < contributions.Count; i++)
+        {
+            if (i == firstIndex || (secondLight && i == secondIndex)) continue;
+
+            LightSlot extra = contributions[i];
+            bool toSecond = secondLight && secondIndex >= 0
+                            && Vector2.Dot(extra.Direction, second.Direction) > Vector2.Dot(extra.Direction, first.Direction);
+
+            if (toSecond) Merge(ref second, extra);
+            else Merge(ref first, extra);
+        }
+
+        Finish(ref first);
+        Finish(ref second);
+    }
+
+    private static void Merge(ref LightSlot slot, LightSlot extra)
+    {
+        Vector2 dir = slot.Direction * slot.Weight + extra.Direction * extra.Weight;
+        slot.Direction = dir.sqrMagnitude > 0.0001f ? dir.normalized : slot.Direction;
+        slot.Color += extra.Color;
+        slot.Weight += extra.Weight;
+    }
+
+    private void Finish(ref LightSlot slot)
+    {
+        Color total = slot.Color;
+
+        if (total.r < minimumLight && total.g < minimumLight && total.b < minimumLight)
+        {
+            slot.Color = Color.black;
+            slot.Weight = 0f;
+            return;
+        }
 
         float peak = Mathf.Max(total.r, Mathf.Max(total.g, total.b));
         if (maxBrightness > 0f && peak > maxBrightness) total *= maxBrightness / peak;
 
         total.a = 1f;
-        return total;
+        slot.Color = total;
     }
 
     private float PointAttenuation(Light2D light, Vector2 point)
