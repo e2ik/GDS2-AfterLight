@@ -13,6 +13,20 @@ namespace Enemies.ProjectileScripts
         [SerializeField] private EventReference explodeEvent;
 
         [SerializeField] private float hitAnimationDuration = 0.3f;
+
+        [Header("Repeat Hit Reduction")]
+        [SerializeField, Min(0f)] private float repeatHitWindow = 0.5f;
+        [SerializeField, Range(0f, 1f)] private float repeatHitDamageMultiplier = 0.5f;
+        [SerializeField, Range(0f, 1f)] private float minimumRepeatMultiplier = 0.1f;
+        private static float lastPlayerHitTime = float.NegativeInfinity;
+        private static int repeatStreak;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetRepeatHits()
+        {
+            lastPlayerHitTime = float.NegativeInfinity;
+            repeatStreak = 0;
+        }
         private Animator animator;
 
         // guard against multiple hits (player has more than 1 collider)
@@ -81,7 +95,8 @@ namespace Enemies.ProjectileScripts
             if (directHitBox != null)
             {
                 Collider2D ownerCollider = Owner != null ? Owner.GetComponentInChildren<Collider2D>() : null;
-                directHitBox.TakeHit(HitBox, ownerCollider);
+                int streak = PrepareRepeatHitDamage();
+                if (directHitBox.TakeHit(HitBox, ownerCollider)) RecordPlayerHit(streak);
             }
 
             if (HitBox.HasBeenParried)
@@ -110,11 +125,28 @@ namespace Enemies.ProjectileScripts
 
                 if (hurtBox != null && explosionHits.Add(hurtBox))
                 {
-                    hurtBox.TakeHit(HitBox);
+                    int streak = PrepareRepeatHitDamage();
+                    if (hurtBox.TakeHit(HitBox)) RecordPlayerHit(streak);
                 }
             }
 
             DamageEnemiesInCircle(transform.position, explosionRadius);
+        }
+
+        private int PrepareRepeatHitDamage()
+        {
+            bool repeat = repeatHitWindow > 0f && Time.time - lastPlayerHitTime < repeatHitWindow;
+            int streak = repeat ? repeatStreak + 1 : 0;
+
+            float multiplier = streak > 0 ? Mathf.Max(minimumRepeatMultiplier, Mathf.Pow(repeatHitDamageMultiplier, streak)) : 1f;
+            HitBox.SetDamage(streak > 0 ? Mathf.Max(1, Mathf.RoundToInt(Damage * multiplier)) : Damage);
+            return streak;
+        }
+
+        private static void RecordPlayerHit(int streak)
+        {
+            lastPlayerHitTime = Time.time;
+            repeatStreak = streak;
         }
 
         private void OnDrawGizmosSelected()

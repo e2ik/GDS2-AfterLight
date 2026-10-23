@@ -157,6 +157,21 @@ MonoBehaviour:
     color: {r: 0.7735849, g: 0.7735849, b: 0.7735849, a: 1}
     scale: 0.85
     material: {fileID: 0}
+  comboLabels:
+  - 
+  - Wombo
+  - Combo
+  comboStyle:
+    format: '{label}'
+    color: {r: 1, g: 0.9629888, b: 0.68867916, a: 1}
+    scale: 0.75
+    material: {fileID: 0}
+  useFinisherStyle: 1
+  finisherStyle:
+    format: '{label}!'
+    color: {r: 1, g: 0.84, b: 0.3, a: 1}
+    scale: 0.85
+    material: {fileID: 0}
   resistedStyle:
     format: ({resisted} Resisted)
     color: {r: 0.7725491, g: 0.7725491, b: 0.7725491, a: 1}

@@ -9,6 +9,7 @@ namespace Enemies
         [SerializeField] private Collider2D col;
         public AttackEvents SourceEvents { get; private set; }
         public int Damage { get; private set; }
+        public int BaseDamage { get; private set; }
         public ParryDirection ParryDirection { get; private set; }
         public AttackForce AttackForce { get; private set; }
         public bool IgnoreParryDirection { get; private set; }
@@ -30,6 +31,7 @@ namespace Enemies
         public void Enable(int damage, ParryDirection parryDirection, AttackForce attackForce, bool ignoreParryDirection = false)
         {
             Damage = damage;
+            BaseDamage = damage;
             col.enabled = true;
             ParryDirection = parryDirection;
             AttackForce = attackForce;
@@ -46,6 +48,8 @@ namespace Enemies
         }
 
         public void UpdateParryDirection(ParryDirection direction) => ParryDirection = direction;
+
+        public void SetDamage(int damage) => Damage = damage;
 
         public void SetParried() => HasBeenParried = true;
 

@@ -18,6 +18,7 @@ namespace Enemies
         public int Blocked;
         public bool IsBonus;
         public int Resisted;
+        public int ComboIndex;
     }
 
     public class EnemyHealth : MonoBehaviour
@@ -205,7 +206,8 @@ namespace Enemies
                 HasRoll = context.HasRoll,
                 RollQuality = context.RollQuality,
                 RollTier = context.RollTier,
-                IsComboFinisher = context.IsComboFinisher
+                IsComboFinisher = context.IsComboFinisher,
+                ComboIndex = context.ComboIndex
             });
 
             if (CurrentHealth <= 0) return;
