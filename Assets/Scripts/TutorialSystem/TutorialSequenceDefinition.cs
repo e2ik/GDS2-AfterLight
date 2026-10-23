@@ -25,6 +25,8 @@ namespace Tutorial
 
         [SerializeField] private bool uninterruptible = false;
         [SerializeField] private bool keepEnemiesAlive = false;
+        [SerializeField] private bool completeWhenCombatEnds = false;
+        [SerializeField, Min(0f)] private float combatEndGrace = 2f;
         [SerializeField] private bool lockMapCloseUntilCloseStep = false;
         [SerializeField] private bool allowMenus = false;
         [SerializeField] private bool neutralDashOnComplete = false;
@@ -37,6 +39,8 @@ namespace Tutorial
         public SequenceReaction[] Reactions => reactions;
         public bool Uninterruptible => uninterruptible;
         public bool KeepEnemiesAlive => keepEnemiesAlive;
+        public bool CompleteWhenCombatEnds => completeWhenCombatEnds;
+        public float CombatEndGrace => combatEndGrace;
         public bool LockMapCloseUntilCloseStep => lockMapCloseUntilCloseStep;
         public bool AllowMenus => allowMenus;
         public bool NeutralDashOnComplete => neutralDashOnComplete;

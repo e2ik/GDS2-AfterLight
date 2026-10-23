@@ -18,12 +18,17 @@ namespace Enemies
         public int Blocked;
         public bool IsBonus;
         public int Resisted;
+        public int ComboIndex;
     }
 
     public class EnemyHealth : MonoBehaviour
     {
         [SerializeField] private int maxHealth = 10;
         [SerializeField] private bool allowHealthScaling = false;
+        [SerializeField] private bool invulnerableUntilEngaged = false;
+        public bool DamageLocked { get; private set; }
+
+        public void SetEngaged(bool engaged) => DamageLocked = invulnerableUntilEngaged && !engaged;
         private int scaledMaxHealth;
         private UnityEngine.SceneManagement.Scene originScene;
         private bool hasOriginScene;
@@ -67,6 +72,7 @@ namespace Enemies
             CurrentHealth = maxHealth;
             scaledMaxHealth = maxHealth;
             attackEvents = GetComponentInChildren<AttackEvents>(true);
+            SetEngaged(false);
         }
         private Coroutine dotRoutine;
 
@@ -111,7 +117,7 @@ namespace Enemies
 
         private void ApplyDamage(DamageInfo info)
         {
-            if (CurrentHealth <= 0 || Invulnerable) return;
+            if (CurrentHealth <= 0 || Invulnerable || DamageLocked) return;
 
             int minHealth = Tutorial.TutorialDirector.Instance != null && Tutorial.TutorialDirector.Instance.EnemiesProtected ? 1 : 0;
             CurrentHealth = Mathf.Max(minHealth, CurrentHealth - info.Amount);
@@ -163,7 +169,7 @@ namespace Enemies
 
         public void ApplyHit(int damage, AttackContext context, bool isCrit = false, int dotSourceDamage = -1)
         {
-            if (Invulnerable) return;
+            if (Invulnerable || DamageLocked) return;
 
             float dotRatio = dotSourceDamage >= 0 && damage > 0 ? Mathf.Clamp01((float)dotSourceDamage / damage) : 1f;
 
@@ -205,7 +211,8 @@ namespace Enemies
                 HasRoll = context.HasRoll,
                 RollQuality = context.RollQuality,
                 RollTier = context.RollTier,
-                IsComboFinisher = context.IsComboFinisher
+                IsComboFinisher = context.IsComboFinisher,
+                ComboIndex = context.ComboIndex
             });
 
             if (CurrentHealth <= 0) return;

@@ -540,9 +540,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9b08fde3cea1e74eaa88ad2dd99a63a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
-  maxHealth: 1500
+  maxHealth: 2000
+  allowHealthScaling: 0
+  invulnerableUntilEngaged: 1
   blockDamageOutsideBonus: 1
   blockedHitDamage: 1
+  useDamageCap: 0
+  thresholdPercent: 0.2
+  excessEfficiency: 0.4
+  kneeWidth: 0.5
+  useHitCap: 0
+  maxHitPercent: 0.35
+  hitCapSoftStart: 0.7
+  cappedVariance: 0.05
+  minResistedToShow: 0.15
 --- !u!114 &2819779926548626800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -599,6 +610,8 @@ MonoBehaviour:
   aggroAttackDelay: 0.5
   canDropAggro: 0
   unreachableGiveUpDelay: 1.5
+  targetBelowGiveUpDelay: 0.6
+  targetBelowHeight: 1.5
   reaggroCooldown: 3
   isStaggerImmune: 1
   staggerOnlyOnComboFinisher: 1
@@ -654,6 +667,7 @@ MonoBehaviour:
   deathStateName: Death
   deathAnimationTimeout: 5
   hasSpecialBossFreeze: 0
+  disableCollisionOnDeath: 1
 --- !u!114 &1227528568327133779
 MonoBehaviour:
   m_ObjectHideFlags: 0

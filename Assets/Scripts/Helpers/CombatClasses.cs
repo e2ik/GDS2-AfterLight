@@ -29,6 +29,7 @@ public struct AttackContext
     public ERollTier RollTier;
 
     public bool IsComboFinisher;
+    public int ComboIndex;
 }
 
 public enum ERollTier

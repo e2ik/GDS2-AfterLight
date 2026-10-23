@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Enemies;
 using UnityEngine;
 
 namespace Tutorial
@@ -202,9 +203,35 @@ namespace Tutorial
 
         public static bool TutorialsDisabled => GameManager.Instance != null && GameManager.Instance.TutorialsDisabled;
 
+        private bool seenCombatThisSequence;
+        private float noCombatTimer;
+
         private void LateUpdate()
         {
             if (TutorialsDisabled && IsRunningSequence) AbortActiveSequence();
+            UpdateCombatCompletion();
+        }
+
+        private void UpdateCombatCompletion()
+        {
+            if (!IsRunningSequence || !activeSequence.CompleteWhenCombatEnds) return;
+
+            if (EnemyCombatTracker.TargetingCount > 0)
+            {
+                seenCombatThisSequence = true;
+                noCombatTimer = 0f;
+                return;
+            }
+
+            if (!seenCombatThisSequence) return;
+
+            noCombatTimer += Time.unscaledDeltaTime;
+            if (noCombatTimer < activeSequence.CombatEndGrace) return;
+
+            if (debugEventTriggers)
+                Debug.Log($"[TutorialDirector] '{activeSequence.name}' completed: no enemies engaged for {activeSequence.CombatEndGrace}s", this);
+
+            SkipActiveSequence();
         }
 
         public bool BeginSequence(TutorialSequenceDefinition sequence, bool force = false)
@@ -269,6 +296,8 @@ namespace Tutorial
         private IEnumerator RunSequence(TutorialSequenceDefinition sequence, int startIndex)
         {
             activeSequence = sequence;
+            seenCombatThisSequence = false;
+            noCombatTimer = 0f;
             stepHoldCount = 0;
             menusAllowed = false;
             StartReactions();

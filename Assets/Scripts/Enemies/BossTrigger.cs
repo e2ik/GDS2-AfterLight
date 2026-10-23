@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Enemies.Cutscene;
+using System.Collections.Generic;
 using FMODUnity;
 using UnityEngine;
 
@@ -17,7 +18,7 @@ namespace Enemies
         [SerializeField] private string playerTag = "Player";
         [SerializeField] private string bossID = "boss_intro_unique_id";
         [SerializeField] private string bossName = "";
-        [SerializeField] private bool requireGrounded = true;
+        [SerializeField] private GameObject requiredGround;
 
         [Header("Prerequisite")] 
         [SerializeField] private string requiredBossID = "";
@@ -35,6 +36,10 @@ namespace Enemies
         [Header("Camera")]
         [SerializeField] private bool lockCameraToArena = true;
 
+        [Header("Background")]
+        [SerializeField] private List<ParallaxBackground.LayerColor> engagedLayerColors = new List<ParallaxBackground.LayerColor>();
+        [SerializeField, Min(0f)] private float backgroundBlendTime = 3f;
+
         [Header("Music")] 
         [SerializeField] private EventReference bossMusicEvent;
         [SerializeField] private EventReference postBossMusicEvent;
@@ -49,7 +54,7 @@ namespace Enemies
         private bool cameraLocked;
         private bool doorsLockedByThis;
         private bool deathSequenceRunning;
-        private bool waitingForGround;
+        private Collider2D playerInside;
 
         private static int engagedTriggerCount;
         public static bool AnyBossEngaged => engagedTriggerCount > 0;
@@ -62,10 +67,21 @@ namespace Enemies
 
         private void Update()
         {
+            if (playerInside != null && activeBossEnemy == null) TryStart(playerInside);
+
             if (activeBossEnemy == null || deathSequenceRunning) return;
 
             bool bossGone = !activeBossEnemy.isActiveAndEnabled;
             if (bossGone || engagedPlayer == null) Disengage();
+        }
+
+        private bool IsOnRequiredGround(Player player)
+        {
+            if (requiredGround == null) return true;
+            if (player == null || player.Controller == null) return false;
+
+            Collider2D ground = player.Controller.GroundCollider;
+            return ground != null && ground.transform.IsChildOf(requiredGround.transform);
         }
 
         private void Awake()
@@ -104,19 +120,29 @@ namespace Enemies
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (activeBossEnemy != null) return;
-            if (!other.CompareTag(playerTag)) return;
-            if (!PrerequisiteMet) return;
-            if (hasTriggered && !bossDefeated) return;
+            if (other.CompareTag(playerTag)) playerInside = other;
+        }
 
-            Player groundCheckPlayer = other.GetComponentInParent<Player>();
-            if (requireGrounded && groundCheckPlayer != null && groundCheckPlayer.Controller != null && !groundCheckPlayer.Controller.IsGrounded)
+        private void OnTriggerExit2D(Collider2D other)
+        {
+            if (other == playerInside) playerInside = null;
+        }
+
+        private void TryStart(Collider2D other)
+        {
+            if (!other.enabled || !other.gameObject.activeInHierarchy)
             {
-                waitingForGround = true;
+                playerInside = null;
                 return;
             }
 
-            waitingForGround = false;
+            if (activeBossEnemy != null) return;
+            if (hasTriggered && !bossDefeated) return;
+            if (!PrerequisiteMet) return;
+            if (bossDefeated && !HasFreshBoss()) return;
+
+            Player player = other.GetComponentInParent<Player>();
+            if (player == null || !IsOnRequiredGround(player)) return;
 
             if (bossDefeated)
             {
@@ -128,9 +154,6 @@ namespace Enemies
                 isRematch = true;
             }
 
-            Player player = other.GetComponentInParent<Player>();
-            if (player == null) return;
-            
             if (SaveManager.Instance != null && SaveManager.Instance.HasStoryFlag(bossID))
             {
                 TriggerBossFight(player);
@@ -147,6 +170,8 @@ namespace Enemies
             if(SaveManager.Instance != null)
                 SaveManager.Instance.SetStoryFlag(bossID);
 
+            if (!isRematch || rematchLocksArena) LockCamera();
+
             Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
             
             if (rb != null)
@@ -155,31 +180,16 @@ namespace Enemies
             DialogueManager.Instance.StartDialogue(introDialogue, player);
 
             if (DialogueManager.Instance.IsDialogueActive)
-                StartCoroutine(WaitForDialogueEnd(player));
-            else
-                hasTriggered = false;
-        }
-
-        private void OnTriggerStay2D(Collider2D other)
-        {
-            if (activeBossEnemy != null) return;
-
-            if (waitingForGround)
             {
-                if (other.CompareTag(playerTag)) OnTriggerEnter2D(other);
-                return;
+                StartCoroutine(WaitForDialogueEnd(player));
             }
-
-            if (!bossDefeated) return;
-            if (!HasFreshBoss()) return;
-
-            OnTriggerEnter2D(other);
+            else
+            {
+                hasTriggered = false;
+                ReleaseCamera();
+            }
         }
 
-        private void OnTriggerExit2D(Collider2D other)
-        {
-            if (other.CompareTag(playerTag)) waitingForGround = false;
-        }
 
         private bool HasFreshBoss()
         {
@@ -213,6 +223,7 @@ namespace Enemies
             if (bossEnemy != null)
             {
                 bossEnemy.SetBossBounds(arenaBounds);
+                bossEnemy.Context.Health.SetEngaged(true);
                 bossEnemy.TriggerLockOn(player.transform);
                 
                 bool playMusic = !isRematch || rematchPlaysBossMusic;
@@ -225,6 +236,7 @@ namespace Enemies
 
                 activeBossEnemy = bossEnemy;
                 engagedPlayer = player.transform;
+                SetEngagedBackground(true);
                 engagedStats = player.Stats;
                 if (engagedStats != null) engagedStats.OnDied += HandlePlayerDied;
 
@@ -287,6 +299,7 @@ namespace Enemies
         private void HandlePlayerDied()
         {
             ReleaseCamera();
+            SetEngagedBackground(false);
             SetDoorsLocked(false);
         }
 
@@ -305,7 +318,7 @@ namespace Enemies
 
         private void LockCamera()
         {
-            if (!lockCameraToArena || arenaBounds == null) return;
+            if (cameraLocked || !lockCameraToArena || arenaBounds == null) return;
 
             lockedCamera = FindFirstObjectByType<CameraFollow2D>();
             if (lockedCamera == null) return;
@@ -323,8 +336,29 @@ namespace Enemies
             lockedCamera = null;
         }
 
+        private bool backgroundOverridden;
+
+        private void SetEngagedBackground(bool engaged)
+        {
+            ParallaxBackground background = GameManager.Instance != null ? GameManager.Instance.Background : null;
+            if (background == null) return;
+
+            if (engaged && engagedLayerColors != null && engagedLayerColors.Count > 0)
+            {
+                background.SetOverrideColors(engagedLayerColors, backgroundBlendTime);
+                backgroundOverridden = true;
+            }
+            else if (!engaged && backgroundOverridden)
+            {
+                background.ClearOverrideColors(backgroundBlendTime);
+                backgroundOverridden = false;
+            }
+        }
+
         private void CleanupFightSubscriptions()
         {
+            SetEngagedBackground(false);
+
             if (engagedStats != null) engagedStats.OnDied -= HandlePlayerDied;
             engagedStats = null;
 
@@ -332,6 +366,9 @@ namespace Enemies
             {
                 if (!deathSequenceRunning)
                     activeBossEnemy.Context.Health.DeferDeath = false;
+
+                if (activeBossEnemy.Context.Health.CurrentHealth > 0)
+                    activeBossEnemy.Context.Health.SetEngaged(false);
 
                 if (onBossDamaged != null)
                     activeBossEnemy.Context.Health.OnDamaged -= onBossDamaged;

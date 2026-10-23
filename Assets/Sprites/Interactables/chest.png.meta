@@ -182,8 +182,8 @@ TextureImporter:
       name: chest_2
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
+        x: 64
+        y: 32
         width: 32
         height: 32
       alignment: 0
@@ -204,7 +204,7 @@ TextureImporter:
       name: chest_3
       rect:
         serializedVersion: 2
-        x: 32
+        x: 0
         y: 0
         width: 32
         height: 32
@@ -218,6 +218,28 @@ TextureImporter:
       bones: []
       spriteID: 59d2d3d39446f26c0800000000000000
       internalID: -4166000864571609707
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chest_4
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 345481d100701d04e99470c7db0e78a6
+      internalID: -681746596
       vertices: []
       indices: 
       edges: []
@@ -242,6 +264,7 @@ TextureImporter:
       chest_1: 5045073161074915229
       chest_2: -1089752354001653685
       chest_3: -4166000864571609707
+      chest_4: -681746596
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

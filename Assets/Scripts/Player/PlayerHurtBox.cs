@@ -83,7 +83,7 @@ public class PlayerHurtBox : MonoBehaviour
             pendingHitbox = null;
             ConfirmAvoidedHit(hitbox);
             hitbox.SetParried();
-            combatController.TryModifyParry(hitbox.Damage, pendingCollider);
+            combatController.TryModifyParry(hitbox.BaseDamage, pendingCollider);
             return;
         }
 
@@ -124,7 +124,7 @@ public class PlayerHurtBox : MonoBehaviour
         {
             ConfirmAvoidedHit(hitbox);
             hitbox.SetParried();
-            combatController.TryModifyParry(hitbox.Damage, col2d); //trigger secondary gem effect
+            combatController.TryModifyParry(hitbox.BaseDamage, col2d); //trigger secondary gem effect
 
             return false; // Successfully parried! Did not take damage.
         }

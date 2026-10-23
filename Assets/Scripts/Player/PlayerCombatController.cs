@@ -886,6 +886,7 @@ public class PlayerCombatController : MonoBehaviour
     {
         float sharedMultiplier = GetComboMultiplier() * (1f + GetAttackModifierBonus());
         context.IsComboFinisher = plungeDmgMult <= 0f && currentComboIndex >= maxComboCount;
+        context.ComboIndex = plungeDmgMult <= 0f ? currentComboIndex : 0;
 
         if (plungeDmgMult <= 0f)
         {

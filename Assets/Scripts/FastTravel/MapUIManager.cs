@@ -143,10 +143,23 @@ public class MapUIManager : GameUI.UIWindow
             if (closeButton.interactable != interactable) closeButton.interactable = interactable;
         }
 
+        LockSelectionDuringTutorial();
+
         UpdateReticle();
         UpdateDestinationLabel();
         UpdateLabelPulse();
         UpdateLocationCursor();
+    }
+
+    private void LockSelectionDuringTutorial()
+    {
+        if (!IsMapOpen || !IsCloseLocked || currentNodeSelectable == null || EventSystem.current == null) return;
+
+        GameObject selected = EventSystem.current.currentSelectedGameObject;
+        if (selected == currentNodeSelectable.gameObject) return;
+
+        GameUI.UISFXWatcher.SuppressSelectSound();
+        EventSystem.current.SetSelectedGameObject(currentNodeSelectable.gameObject);
     }
 
     private void UpdateLocationCursor()

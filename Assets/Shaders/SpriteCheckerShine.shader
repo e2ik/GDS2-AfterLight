@@ -28,6 +28,7 @@ Shader "Custom/Sprite Checker Shine"
         [Enum(Inside, 0, Outside, 1)] _EdgeSide ("Outline Side", Float) = 0
 
         [Header(Timing)]
+        [Enum(Diagonal, 0, Vertical, 1, Horizontal, 2)] _SweepAxis ("Sweep Axis", Float) = 0
         _SweepFrom ("Sweep From (pixels)", Float) = -32
         _SweepTo ("Sweep To (pixels)", Float) = 32
         _Duration ("Sweep Duration", Float) = 0.6
@@ -93,6 +94,7 @@ Shader "Custom/Sprite Checker Shine"
             half _EdgeAdditive;
             half _EdgeAlways;
             half _EdgeSide;
+            half _SweepAxis;
             float _SweepFrom;
             float _SweepTo;
             float _Duration;
@@ -165,7 +167,9 @@ Shader "Custom/Sprite Checker Shine"
             if (!opaque && !(outside && edgeOn)) return half4(0, 0, 0, 0);
 
             float2 p = floor(input.objectPos * _PixelsPerUnit);
-            float diagonal = _FlipDirection > 0.5 ? p.x - p.y : p.x + p.y;
+            float diagonal = _SweepAxis > 1.5 ? p.x
+                           : _SweepAxis > 0.5 ? p.y
+                           : (_FlipDirection > 0.5 ? p.x - p.y : p.x + p.y);
 
             float reach = _Width + _Fringe;
             float cycle = max(0.001, _Duration + _Delay);

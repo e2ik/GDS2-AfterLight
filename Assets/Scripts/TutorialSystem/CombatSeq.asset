@@ -25,8 +25,11 @@ MonoBehaviour:
   canRepeat: 0
   uninterruptible: 1
   keepEnemiesAlive: 1
+  completeWhenCombatEnds: 1
+  combatEndGrace: 2
   lockMapCloseUntilCloseStep: 0
   allowMenus: 0
+  neutralDashOnComplete: 0
   reactions:
   - eventKey: PlayerHit
     speechText: Ouch!

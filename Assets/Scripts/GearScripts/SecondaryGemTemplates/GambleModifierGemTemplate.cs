@@ -63,7 +63,7 @@ public class GambleModifierGemTemplate : SecondaryGemBehaviourDefinition
         context.RollTier = tier;
         context.RollQuality = (tierStart + t * chosen.chance) / total;
 
-        Debug.Log($"Rolled {tier} ({adjustedMult:F2}x). Dealing {context.BaseAttackDamage}.");
+        // Debug.Log($"Rolled {tier} ({adjustedMult:F2}x). Dealing {context.BaseAttackDamage}.");
     }
 
     protected override SecondaryGemInstance CreateInstance(RarityLineRoller roller)

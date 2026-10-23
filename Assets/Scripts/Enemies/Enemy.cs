@@ -847,7 +847,7 @@ namespace Enemies
             bool isDot = info.DamageType == EDamageType.Dot;
             string crit = info.IsCrit ? " CRIT" : "";
             string roll = info.HasRoll ? $" roll:{info.RollQuality:F2}" : "";
-            Debug.Log($"Enemy blud was damaged for {info.Amount} ({info.DamageType}{crit}{roll}). Current Health: {Context.Health.CurrentHealth}");
+            // Debug.Log($"Enemy blud was damaged for {info.Amount} ({info.DamageType}{crit}{roll}). Current Health: {Context.Health.CurrentHealth}");
 
             AudioManager.PlaySFXAttached(GetHitEvent(info), gameObject);
 
@@ -917,7 +917,7 @@ namespace Enemies
 
         private void OnDeath()
         {
-            Debug.Log($"Enemy hath died. Rip {name}");
+            // Debug.Log($"Enemy hath died. Rip {name}");
 
             lootTable?.SpawnInstance(transform.position, Context.Health != null ? Context.Health.ScalingScene : gameObject.scene);
             

@@ -234,8 +234,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.EnemyHealth
   maxHealth: 800
+  allowHealthScaling: 0
+  invulnerableUntilEngaged: 1
   blockDamageOutsideBonus: 0
   blockedHitDamage: 1
+  useDamageCap: 0
+  thresholdPercent: 0.2
+  excessEfficiency: 0.4
+  kneeWidth: 0.5
+  useHitCap: 0
+  maxHitPercent: 0.35
+  hitCapSoftStart: 0.7
+  cappedVariance: 0.05
+  minResistedToShow: 0.15
 --- !u!114 &2819779926548626800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -300,6 +311,8 @@ MonoBehaviour:
   aggroAttackDelay: 0.5
   canDropAggro: 0
   unreachableGiveUpDelay: 1.5
+  targetBelowGiveUpDelay: 0.6
+  targetBelowHeight: 1.5
   reaggroCooldown: 3
   isStaggerImmune: 1
   staggerOnlyOnComboFinisher: 1
@@ -315,6 +328,20 @@ MonoBehaviour:
       Data3: 1112032419
       Data4: -774162852
     Path: event:/CombatSFXEvents/EnemyHitEvent
+  vulnerableHitEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  blockedHitEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
   attackEvent:
     Guid:
       Data1: -2088756105
@@ -341,6 +368,7 @@ MonoBehaviour:
   deathStateName: Death
   deathAnimationTimeout: 2
   hasSpecialBossFreeze: 0
+  disableCollisionOnDeath: 1
 --- !u!114 &7603609893098896341
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -790,6 +818,8 @@ MonoBehaviour:
   minimumLight: 0
   maxBrightness: 1
   colorSmoothing: 12
+  directional: 1
+  secondLight: 1
 --- !u!1 &6608810097252315666
 GameObject:
   m_ObjectHideFlags: 0

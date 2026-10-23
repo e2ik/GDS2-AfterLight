@@ -99,27 +99,51 @@ public class ParallaxBackground : MonoBehaviour
         Unsubscribe();
     }
 
+    private float activeBlendTime = -1f;
+    private float BlendTime => activeBlendTime >= 0f ? activeBlendTime : colorBlendTime;
+
     public void SetLayerColors(IList<LayerColor> colors, bool instant = false)
     {
+        activeBlendTime = -1f;
         activeLayerColors = colors;
         RefreshLayerColors(instant);
     }
 
     public void ResetLayerColors(bool instant = false)
     {
+        activeBlendTime = -1f;
         activeLayerColors = null;
         RefreshLayerColors(instant);
     }
 
+    private IList<LayerColor> overrideLayerColors;
+
+    public void SetOverrideColors(IList<LayerColor> colors, float blendTime = -1f)
+    {
+        activeBlendTime = blendTime;
+        overrideLayerColors = colors;
+        RefreshLayerColors(blendTime == 0f);
+    }
+
+    public void ClearOverrideColors(float blendTime = -1f)
+    {
+        if (overrideLayerColors == null) return;
+        activeBlendTime = blendTime;
+        overrideLayerColors = null;
+        RefreshLayerColors(blendTime == 0f);
+    }
+
     private void RefreshLayerColors(bool instant)
     {
+        IList<LayerColor> colors = overrideLayerColors ?? activeLayerColors;
+
         foreach (ParallaxLayer layer in layers)
         {
             Color target = layer.color;
 
-            if (activeLayerColors != null)
+            if (colors != null)
             {
-                foreach (LayerColor entry in activeLayerColors)
+                foreach (LayerColor entry in colors)
                 {
                     if (entry != null && entry.layerName == layer.name)
                     {
@@ -130,7 +154,7 @@ public class ParallaxBackground : MonoBehaviour
             }
 
             layer.targetColor = target;
-            if (instant || colorBlendTime <= 0f || content == null || !content.gameObject.activeSelf) layer.baseColor = target;
+            if (instant || BlendTime <= 0f || content == null || !content.gameObject.activeSelf) layer.baseColor = target;
         }
 
         ApplyColors();
@@ -138,9 +162,9 @@ public class ParallaxBackground : MonoBehaviour
 
     private void BlendLayerColors()
     {
-        if (colorBlendTime <= 0f) return;
+        if (BlendTime <= 0f) return;
 
-        float step = Time.unscaledDeltaTime / colorBlendTime;
+        float step = Time.unscaledDeltaTime / BlendTime;
         bool changed = false;
 
         foreach (ParallaxLayer layer in layers)

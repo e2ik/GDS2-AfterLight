@@ -47,6 +47,7 @@ public class AirOnlyCollisionPlatform : MonoBehaviour
         bool shouldIgnore = Time.time < forceIgnoreUntil
                             || cachedPlayer.Controller.IsGrounded
                             || cachedPlayer.Controller.IsDashing
+                            || cachedPlayer.Controller.IsWallSlideBlocked
                             || !IsNearSolidFace()
                             || IsOverlapping(playerColliders);
 

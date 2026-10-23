@@ -11,6 +11,11 @@ public class DamageNumberSpawner : MonoBehaviour
     [SerializeField] private bool showResisted = true;
     [SerializeField] private Vector3 resistedOffset = new Vector3(0f, 0.45f, 0f);
 
+    [Header("Combo")]
+    [SerializeField] private bool showCombo = true;
+    [SerializeField, Min(1)] private int minComboToShow = 2;
+    [SerializeField] private Vector3 comboOffset = new Vector3(0f, 0.8f, 0f);
+
     [Header("Blocked")]
     [SerializeField] private bool showBlocked = true;
     [SerializeField] private Vector3 blockedOffset = new Vector3(0f, 0.45f, 0f);
@@ -50,6 +55,13 @@ public class DamageNumberSpawner : MonoBehaviour
         Vector3 position = info.Position + spawnOffset + RandomOffset();
         DamageNumber number = Instantiate(damageNumberPrefab, position, Quaternion.identity);
         number.Show(info);
+
+        if (showCombo && info.ComboIndex >= minComboToShow && info.DamageType == EDamageType.Base
+            && damageNumberPrefab.HasComboLabel(info.ComboIndex))
+        {
+            DamageNumber combo = Instantiate(damageNumberPrefab, position + comboOffset, Quaternion.identity);
+            combo.ShowCombo(info);
+        }
 
         if (showBlocked && info.Blocked > 0)
         {

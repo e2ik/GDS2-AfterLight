@@ -63,7 +63,7 @@ public class WorldMapStateSO : ScriptableObject
             }
         }
 
-        Debug.Log($"[WorldMapStateSO] Successfully loaded {unlockedNodes.Count} nodes.");
+        // Debug.Log($"[WorldMapStateSO] Successfully loaded {unlockedNodes.Count} nodes.");
         OnStateLoaded?.Invoke();
     }
 

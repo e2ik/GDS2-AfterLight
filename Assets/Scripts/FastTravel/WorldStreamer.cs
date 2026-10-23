@@ -235,6 +235,19 @@ public class WorldStreamer : MonoBehaviour
             Scene scene = SceneManager.GetSceneByName(sceneName);
             if (!scene.isLoaded) continue;
 
+            MasterNavMeshController navMesh = MasterNavMeshController.Instance;
+            if (UsesResidentScenes && navMesh != null && navMesh.CanPrebake)
+            {
+                float waitUntil = Time.realtimeSinceStartup + 10f;
+                while (navMesh.IsBaking && Time.realtimeSinceStartup < waitUntil) yield return null;
+
+                if (!navMesh.IsBaking)
+                {
+                    try { navMesh.PrebakeScene(scene); }
+                    catch (System.Exception e) { Debug.LogException(e, this); }
+                }
+            }
+
             foreach (GameObject root in scene.GetRootGameObjects())
                 root.SetActive(false);
 

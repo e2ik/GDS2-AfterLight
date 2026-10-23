@@ -25,7 +25,7 @@ public partial class RollMixedAttackAction : Action
         _projectileStreak = projectile ? _projectileStreak + 1 : 0;
 
         ProjectilePlanned.Value = projectile;
-        Debug.Log($"MixedAttack roll: chance {chance}, projectile {projectile}, forceMelee {forceMelee}, streak {_projectileStreak}");
+        // Debug.Log($"MixedAttack roll: chance {chance}, projectile {projectile}, forceMelee {forceMelee}, streak {_projectileStreak}");
         return Status.Success;
     }
 }

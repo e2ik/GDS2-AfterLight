@@ -30,6 +30,12 @@ public class DamageNumber : MonoBehaviour
     [SerializeField] private DamageStyle perfectDodgeStyle = new DamageStyle { format = "Perfect!", color = new Color(1f, 0.84f, 0f), scale = 1.2f };
     [SerializeField] private DamageStyle blockedStyle = new DamageStyle { format = "{blocked} Blocked", color = Color.white, scale = 0.7f };
 
+    [Header("Combo")]
+    [SerializeField] private string[] comboLabels = { "", "Wombo", "Combo" };
+    [SerializeField] private DamageStyle comboStyle = new DamageStyle { format = "{label}", color = Color.white, scale = 0.7f };
+    [SerializeField] private bool useFinisherStyle = true;
+    [SerializeField] private DamageStyle finisherStyle = new DamageStyle { format = "{label}!", color = new Color(1f, 0.84f, 0.3f), scale = 0.85f };
+
     [Header("Resisted")]
     [SerializeField] private DamageStyle resistedStyle = new DamageStyle { format = "-{resisted} Resisted", color = Color.white, scale = 0.7f };
     [Header("Gamble Roll")]
@@ -92,6 +98,28 @@ public class DamageNumber : MonoBehaviour
         }
 
         Begin(color, scale, style.material);
+    }
+
+    public void ShowCombo(DamageInfo info)
+    {
+        DamageStyle style = useFinisherStyle && info.IsComboFinisher ? finisherStyle : comboStyle;
+
+        sb.Clear();
+        sb.Append(style.format);
+        sb.Replace("{label}", GetComboLabel(info.ComboIndex));
+        sb.Replace("{combo}", info.ComboIndex.ToString());
+        sb.Replace("{amount}", info.Amount.ToString());
+        rainbowStartIndex = -1;
+
+        Begin(style.color, style.scale, style.material);
+    }
+
+    public bool HasComboLabel(int comboIndex) => !string.IsNullOrEmpty(GetComboLabel(comboIndex));
+
+    private string GetComboLabel(int comboIndex)
+    {
+        if (comboLabels == null || comboLabels.Length == 0 || comboIndex <= 0) return string.Empty;
+        return comboLabels[Mathf.Min(comboIndex, comboLabels.Length) - 1];
     }
 
     public void ShowBlocked(DamageInfo info)
