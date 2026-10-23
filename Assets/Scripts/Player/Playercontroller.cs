@@ -591,6 +591,7 @@ public class PlayerController : MonoBehaviour
     private void HandleJump()
     {
         bool canJump = InputEnabled
+                       && !IsMovementFrozen
                        && !isWallJumping
                        && !isStaggered
                        && !isWallSliding

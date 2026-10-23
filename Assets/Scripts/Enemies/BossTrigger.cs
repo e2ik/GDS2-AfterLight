@@ -26,6 +26,8 @@ namespace Enemies
         [Header("Cutscens")] 
         [SerializeField] private string introCutscene = "";
         [SerializeField] private string deathCutscene = "";
+        [SerializeField, Min(0f)] private float cutsceneFadeOutDuration = 1f;
+        [SerializeField, Min(0f)] private float cutsceneFadeInDuration = 1f;
 
         [Header("Phases")] 
         [SerializeField, Min(1)] private int phaseCount = 1;
@@ -593,12 +595,18 @@ namespace Enemies
             player.Controller.FreezeMovement(true);
             CutscenePlayer.Instance.SetCutsceneUIHidden(true);
             AudioManager.ToggleSFXMute();
+
+            Coroutine fadeOut = FadeCanvasController.Instance != null
+                ? FadeCanvasController.Instance.FadeOut(cutsceneFadeOutDuration)
+                : null;
             
             if (MusicManager.Instance != null)
             {
                 MusicManager.Instance.StopMusicForCutscene();
                 yield return new WaitForSecondsRealtime(MusicManager.Instance.StopFadeDuration);
             }
+
+            if (fadeOut != null) yield return fadeOut;
             
             deathSequenceRunning = false;
             if(bossEnemy != null)
@@ -610,6 +618,10 @@ namespace Enemies
             MusicManager.Instance?.RestartMusic();
             AudioManager.ToggleSFXMute();
             CutscenePlayer.Instance.SetCutsceneUIHidden(false);
+
+            if (FadeCanvasController.Instance != null)
+                yield return FadeCanvasController.Instance.FadeIn(cutsceneFadeInDuration);
+
             player.Controller.FreezeMovement(false);
         }
     }
