@@ -205,7 +205,7 @@ MonoBehaviour:
   disableTutorials: 0
   skipCutscenes: 0
   oneHitKillEnemies: 0
-  spawnAllLegendaries: 0
+  spawnAllLegendaries: 1
   skillMeterAlwaysFull: 0
   maxConcurrentAttackers: 1
   attackSlotCooldown: 0.3
@@ -1549,6 +1549,8 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 1f6689609b9f93a43826a1267e7bffc7, type: 2}
   - {fileID: 2100000, guid: 37cf2ca9a2d129b49a192c27408320a3, type: 2}
   - {fileID: 2100000, guid: 1816ea9bcb3f8e0419743ad5dfd0b6f5, type: 2}
+  - {fileID: 2100000, guid: fc5ade2abad99a14b94fd28b0fe5fc07, type: 2}
+  - {fileID: 2100000, guid: d02bf0e0efdf9b94786d7fb0f21dc18d, type: 2}
 --- !u!4 &1958938305
 Transform:
   m_ObjectHideFlags: 0

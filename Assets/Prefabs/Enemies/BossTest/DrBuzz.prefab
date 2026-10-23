@@ -570,7 +570,7 @@ MonoBehaviour:
   attacks:
   - Attack: {fileID: 11400000, guid: 4e4d7c8c35cfcc64683025ab179bf5ac, type: 2}
     Weight: 100
-    maxDuration: 5
+    maxDuration: 7
     manualOnly: 0
   - Attack: {fileID: 11400000, guid: 1d4328bc8dfa3494ba2f98348e9b59a4, type: 2}
     Weight: 0
@@ -594,6 +594,9 @@ MonoBehaviour:
   wallCheckDistance: 0.3
   wallCheckHeight: 0.1
   spriteFacesLeft: 1
+  facingLockStates:
+  - Attack
+  facingLockAfterAttack: 0
   raiseSortingWhenOverlapping: 1
   overlapPadding: 0
   ignoreAttackCap: 0
@@ -1202,7 +1205,7 @@ Transform:
   m_GameObject: {fileID: 6608810097252315666}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.65, z: 0}
+  m_LocalPosition: {x: -0.89, y: 3.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1288,8 +1291,8 @@ MonoBehaviour:
   chargeShapeScale: 0.7
   chargeParticleSize: 0.7
   chargeSimulationSpeed: 5
-  overrideAnticipationScale: 0
-  anticipationScale: 1
+  overrideAnticipationScale: 1
+  anticipationScale: 2
   chargeGlowProperty: _Intensity
   chargeGlowIntensity: 1
 --- !u!1 &8570302234005237042
@@ -1317,7 +1320,7 @@ Transform:
   m_GameObject: {fileID: 8570302234005237042}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.59, z: 0}
+  m_LocalPosition: {x: -0.87, y: 3.26, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -36,6 +36,8 @@ namespace Enemies
 
         [Header("Sprite")]
         [SerializeField] private bool spriteFacesLeft = false;
+        [SerializeField] private string[] facingLockStates = { "Attack" };
+        [SerializeField] private float facingLockAfterAttack = 0f;
 
         [Header("Overlap Sorting")]
         [SerializeField] private bool raiseSortingWhenOverlapping = true;
@@ -166,6 +168,7 @@ namespace Enemies
 
         private float attackCooldownTimer;
         private float attackStartedTime;
+        private float facingLockedUntil;
         private bool wasTargetingPlayer;
 
         private void OnEnable()
@@ -340,10 +343,12 @@ namespace Enemies
                 wasTargetingPlayer = isTargetingPlayer;
             }
 
-            if (!IsAttacking && Context.TargetVisible && Context.Target != null)
+            bool facingLocked = IsFacingLocked();
+
+            if (!facingLocked && Context.TargetVisible && Context.Target != null)
                 FaceTowards(Context.Target.position.x);
 
-            if (!IsAttacking)
+            if (!facingLocked)
                 ApplyFacing();
 
             animator.SetFloat("Speed", Mathf.Abs(Context.Body.linearVelocityX));
@@ -688,6 +693,31 @@ namespace Enemies
             wasTargetingPlayer = false;
         }
 
+        private bool IsFacingLocked()
+        {
+            if (IsAttacking || Time.time < facingLockedUntil) return true;
+            if (animator == null || facingLockStates == null || facingLockStates.Length == 0) return false;
+
+            AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(0);
+            if (IsFacingLockState(current) && current.normalizedTime < 1f) return true;
+
+            if (animator.IsInTransition(0))
+            {
+                AnimatorStateInfo next = animator.GetNextAnimatorStateInfo(0);
+                if (IsFacingLockState(current) || IsFacingLockState(next)) return true;
+            }
+
+            return false;
+        }
+
+        private bool IsFacingLockState(AnimatorStateInfo state)
+        {
+            foreach (string stateName in facingLockStates)
+                if (!string.IsNullOrEmpty(stateName) && state.IsName(stateName)) return true;
+
+            return false;
+        }
+
         private void FaceTowards(float targetX)
         {
             float diff = targetX - transform.position.x;
@@ -814,6 +844,7 @@ namespace Enemies
             Context.AttackEvents?.CloseBonusWindow();
             Context.IsAttacking = false;
             attackCooldownTimer = Mathf.Max(attackCooldown, attackCooldownTimer);
+            if (wasAttacking) facingLockedUntil = Time.time + facingLockAfterAttack;
         }
 
         public bool CanTeleport => canTeleport;

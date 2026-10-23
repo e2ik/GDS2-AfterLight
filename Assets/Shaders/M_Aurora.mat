@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Aurora
+  m_Shader: {fileID: 4800000, guid: 82d78250e4c88b04cb00982c839178ad, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _DITHER_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _AlphaTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BaseHeight: -10
+    - _BottomSoftness: 2
+    - _CurtainHeight: 47
+    - _CustomTime: 0
+    - _Dither: 1
+    - _DriftScale: 256
+    - _DriftSpeed: 0.15
+    - _EdgeFade: 0.368
+    - _EnableExternalAlpha: 0
+    - _FadeInDuration: 0
+    - _FrameRate: 12
+    - _Intensity: 1.01
+    - _MidPoint: 0.139
+    - _PixelsPerUnit: 8
+    - _RaySharpness: 1.67
+    - _RaySpeed: 3
+    - _RayStrength: 0.759
+    - _RayWidth: 2
+    - _SecondHeightOffset: 16
+    - _SecondScale: 0.87
+    - _SecondStrength: 0.515
+    - _Steps: 8
+    - _TopFade: 0.5
+    - _UseCustomTime: 0
+    - _WaveAmplitude: 13.2
+    - _WaveLength: 187
+    - _WaveSpeed: 0.5
+    - _ZWrite: 0
+    m_Colors:
+    - _BottomColor: {r: 0, g: 1.0592737, b: 0.7937398, a: 0.9843137}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _MidColor: {r: 0, g: 0.5683682, b: 1.7207954, a: 1}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+    - _TopColor: {r: 2.433572, g: 0.7423156, b: 1.7628233, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

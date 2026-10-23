@@ -49,6 +49,13 @@ namespace Enemies
         [Header("Background")]
         [SerializeField] private List<ParallaxBackground.LayerColor> engagedLayerColors = new List<ParallaxBackground.LayerColor>();
         [SerializeField, Min(0f)] private float backgroundBlendTime = 3f;
+        [SerializeField] private SpriteRenderer[] fadeWithBackground;
+        private Coroutine backgroundFadeRoutine;
+        private float backgroundFade;
+        private float starsStartTime = float.PositiveInfinity;
+        private MaterialPropertyBlock fadeBlock;
+        private static readonly int UseCustomTimeId = Shader.PropertyToID("_UseCustomTime");
+        private static readonly int CustomTimeId = Shader.PropertyToID("_CustomTime");
 
         [Header("Music")] 
         [SerializeField] private EventReference bossMusicEvent;
@@ -77,6 +84,7 @@ namespace Enemies
 
         private void Update()
         {
+            UpdateFadeTime();
             if (playerInside != null && activeBossEnemy == null) TryStart(playerInside);
 
             if (activeBossEnemy == null || deathSequenceRunning) return;
@@ -97,6 +105,7 @@ namespace Enemies
         private void Awake()
         {
             if (arenaColliders != null) arenaColliders.SetActive(false);
+            SetFadeAlpha(0f);
         }
 
         private void OnEnable()
@@ -256,7 +265,7 @@ namespace Enemies
                     SetDoorsLocked(true);
                 }
 
-                bool playPhaseDialogue = !isRematch || rematchPlaysDeathDialogue;
+                bool playPhaseDialogue = !isRematch || rematchPlaysPhaseDialogue;
 
                 if (playDeathDialogue || phaseCount > 1)
                 {
@@ -424,8 +433,16 @@ namespace Enemies
 
         private bool backgroundOverridden;
 
+        private bool backgroundFadedIn;
+
         private void SetEngagedBackground(bool engaged)
         {
+            if (engaged != backgroundFadedIn)
+            {
+                backgroundFadedIn = engaged;
+                StartBackgroundFade(engaged ? 1f : 0f);
+            }
+
             ParallaxBackground background = GameManager.Instance != null ? GameManager.Instance.Background : null;
             if (background == null) return;
 
@@ -438,6 +455,67 @@ namespace Enemies
             {
                 background.ClearOverrideColors(backgroundBlendTime);
                 backgroundOverridden = false;
+            }
+        }
+
+        private void UpdateFadeTime()
+        {
+            if (fadeWithBackground == null || fadeWithBackground.Length == 0 || backgroundFade <= 0f) return;
+
+            fadeBlock ??= new MaterialPropertyBlock();
+            float elapsed = Time.unscaledTime - starsStartTime;
+
+            foreach (SpriteRenderer sprite in fadeWithBackground)
+            {
+                if (sprite == null) continue;
+                sprite.GetPropertyBlock(fadeBlock);
+                fadeBlock.SetFloat(UseCustomTimeId, 1f);
+                fadeBlock.SetFloat(CustomTimeId, elapsed);
+                sprite.SetPropertyBlock(fadeBlock);
+            }
+        }
+
+        private void StartBackgroundFade(float target)
+        {
+            if (fadeWithBackground == null || fadeWithBackground.Length == 0) return;
+
+            if (target > 0f) starsStartTime = Time.unscaledTime + backgroundBlendTime;
+
+            if (backgroundFadeRoutine != null) StopCoroutine(backgroundFadeRoutine);
+
+            if (backgroundBlendTime <= 0f || !isActiveAndEnabled)
+            {
+                SetFadeAlpha(target);
+                return;
+            }
+
+            backgroundFadeRoutine = StartCoroutine(FadeBackgroundObjects(target));
+        }
+
+        private IEnumerator FadeBackgroundObjects(float target)
+        {
+            while (!Mathf.Approximately(backgroundFade, target))
+            {
+                SetFadeAlpha(Mathf.MoveTowards(backgroundFade, target, Time.unscaledDeltaTime / backgroundBlendTime));
+                yield return null;
+            }
+
+            backgroundFadeRoutine = null;
+        }
+
+        private void SetFadeAlpha(float alpha)
+        {
+            backgroundFade = alpha;
+            if (fadeWithBackground == null) return;
+
+            foreach (SpriteRenderer sprite in fadeWithBackground)
+            {
+                if (sprite == null) continue;
+
+                Color color = sprite.color;
+                color.a = alpha;
+                sprite.color = color;
+                sprite.enabled = alpha > 0f;
             }
         }
 
