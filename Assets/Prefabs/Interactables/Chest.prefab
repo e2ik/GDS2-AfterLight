@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7640087272198285541}
   - component: {fileID: 4521098625128912410}
   - component: {fileID: 8851293876535323906}
+  - component: {fileID: 123426747455873642}
   m_Layer: 0
   m_Name: Chest
   m_TagString: Untagged
@@ -31,7 +32,7 @@ Transform:
   m_GameObject: {fileID: 3103605441073713388}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.2276688, y: -5.9551697, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -191,6 +192,7 @@ MonoBehaviour:
   fillAmount: 1
   coreWidth: 3
   fringeWidth: 2
+  sweepAxis: 0
   flipDirection: 0
   checkerLow: 0.579
   checkerSize: 1
@@ -274,6 +276,29 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &123426747455873642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3103605441073713388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 552c61b0b3d01574a9c690c9cfa647a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorGlow
+  glowMaterial: {fileID: 2100000, guid: a0c1a57ea1df1db49895f57043a4c18d, type: 2}
+  startActive: 1
+  matchColor: {r: 1, g: 1, b: 1, a: 1}
+  matchTolerance: 0.563
+  glowColor: {r: 1, g: 0.693823, b: 0.003144443, a: 1}
+  intensity: 5
+  checkerLow: 0.777
+  checkerSize: 1
+  fadeDuration: 0.08
+  useUnscaledTime: 0
+  sortingOrderOffset: 1
 --- !u!1 &5835048346931572114
 GameObject:
   m_ObjectHideFlags: 0
