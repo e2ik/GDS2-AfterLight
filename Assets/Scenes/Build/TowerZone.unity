@@ -9097,6 +9097,63 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1001 &248564701
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 814989269678111826, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_Name
+      value: Spike
+      objectReference: {fileID: 0}
+    - target: {fileID: 1874927118298420068, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 12.88
+      objectReference: {fileID: 0}
+    - target: {fileID: 1874927118298420068, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.16
+      objectReference: {fileID: 0}
+    - target: {fileID: 1874927118298420068, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1874927118298420068, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1874927118298420068, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1874927118298420068, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1874927118298420068, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1874927118298420068, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1874927118298420068, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1874927118298420068, guid: e59949e4cb2374341b40cf403232357b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e59949e4cb2374341b40cf403232357b, type: 3}
 --- !u!1001 &258520759
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10695,7 +10752,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4902663068329118945, guid: 68508054f88a5c1428315451a6d5888f, type: 3}
       propertyPath: m_SortingOrder
-      value: 111
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 6226799064702600607, guid: 68508054f88a5c1428315451a6d5888f, type: 3}
       propertyPath: m_Name
@@ -10719,7 +10776,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6357118356327732673, guid: 68508054f88a5c1428315451a6d5888f, type: 3}
       propertyPath: m_SortingOrder
-      value: 111
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 8208278341150868631, guid: 68508054f88a5c1428315451a6d5888f, type: 3}
       propertyPath: m_Color.a
@@ -10739,7 +10796,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8208278341150868631, guid: 68508054f88a5c1428315451a6d5888f, type: 3}
       propertyPath: m_SortingOrder
-      value: 111
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 9112984418950718370, guid: 68508054f88a5c1428315451a6d5888f, type: 3}
       propertyPath: m_Color.a
@@ -10759,7 +10816,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9112984418950718370, guid: 68508054f88a5c1428315451a6d5888f, type: 3}
       propertyPath: m_SortingOrder
-      value: 111
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -72693,3 +72750,4 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1085938262}
+  - {fileID: 248564701}

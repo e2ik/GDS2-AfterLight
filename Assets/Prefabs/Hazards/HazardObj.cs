@@ -10,6 +10,7 @@ public class HazardObj : MonoBehaviour
     [SerializeField, Min(0f)] private float damage = 10f;
     [SerializeField, Min(0f)] private float knockbackForce = 12f;
     [SerializeField, Min(0f)] private float staggerDuration = 0.3f;
+    [SerializeField, Min(0f)] private float blockWallSlideDuration = 2f;
     [SerializeField] private DirectionMode directionMode = DirectionMode.Default;
     [SerializeField] private AnimationClip hurtClipOverride;
     [SerializeField] private bool overrideHurtFlashColor = false;
@@ -79,6 +80,9 @@ public class HazardObj : MonoBehaviour
 
         bool hit = hurtBox.TakeHazardHit(damage, contactPoint, knockbackForce, staggerDuration, direction, damagesPlayer, resetsPlayer, hurtClipOverride,
             overrideHurtFlashColor ? hurtFlashColor : (Color?)null);
+        if (hit && blockWallSlideDuration > 0f && player.Controller != null)
+            player.Controller.BlockWallSlide(blockWallSlideDuration);
+
         if (hit)
             Log($"hit: damages {damagesPlayer} (damage {damage}), force {knockbackForce}, stagger {staggerDuration}, direction {direction}");
     }

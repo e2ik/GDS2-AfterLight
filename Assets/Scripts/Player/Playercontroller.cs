@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Enemies;
+using FMODUnity;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -235,6 +236,8 @@ public class PlayerController : MonoBehaviour
 
     private int lastFacingDirection;
 
+    public EventReference dashEvent;
+
     private void Awake()
     {
         Player player = GetComponent<Player>();
@@ -326,11 +329,68 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private bool IsDeadNow => stats != null && stats.IsDead;
+    private bool deathLockApplied;
+    private RigidbodyConstraints2D constraintsBeforeDeath;
+    private readonly List<Collider2D> hazardCollidersIgnoredOnDeath = new List<Collider2D>();
+
+    private void SetHazardCollisionIgnored(bool ignore)
+    {
+        if (playerColliders == null) return;
+
+        if (ignore)
+        {
+            hazardCollidersIgnoredOnDeath.Clear();
+            foreach (HazardObj hazard in FindObjectsByType<HazardObj>(FindObjectsSortMode.None))
+                foreach (Collider2D col in hazard.GetComponentsInChildren<Collider2D>())
+                    if (col != null && !col.isTrigger) hazardCollidersIgnoredOnDeath.Add(col);
+        }
+
+        foreach (Collider2D hazardCol in hazardCollidersIgnoredOnDeath)
+        {
+            if (hazardCol == null) continue;
+            foreach (Collider2D playerCol in playerColliders)
+                if (playerCol != null) Physics2D.IgnoreCollision(playerCol, hazardCol, ignore);
+        }
+
+        if (!ignore) hazardCollidersIgnoredOnDeath.Clear();
+    }
+
+    private void UpdateDeathLock()
+    {
+        bool dead = IsDeadNow;
+        if (dead == deathLockApplied) return;
+
+        deathLockApplied = dead;
+        if (dead)
+        {
+            constraintsBeforeDeath = rb.constraints;
+            rb.linearVelocity = new Vector2(0f, Mathf.Min(0f, rb.linearVelocityY));
+            rb.constraints = constraintsBeforeDeath | RigidbodyConstraints2D.FreezePositionX;
+            SetHazardCollisionIgnored(true);
+        }
+        else
+        {
+            rb.constraints = constraintsBeforeDeath;
+            SetHazardCollisionIgnored(false);
+        }
+    }
+
     private void FixedUpdate()
     {
         if (physicsSuspended) return;
 
+        UpdateDeathLock();
         cachedBounds = ComputePlayerBounds();
+
+        if (deathLockApplied)
+        {
+            if (rb.linearVelocityY > 0f) rb.linearVelocityY = 0f;
+            GroundCheckUpdate();
+            UpdateGravity();
+            ClampFallSpeed();
+            return;
+        }
 
         if (jumpPressed)
         {
@@ -647,9 +707,18 @@ public class PlayerController : MonoBehaviour
         playerAnimation.TriggerTurnDustEffect(turnEffectDirection);
     }
 
+    private float wallSlideBlockedUntil = float.NegativeInfinity;
+
+    public bool IsWallSlideBlocked => Time.time < wallSlideBlockedUntil;
+
+    public void BlockWallSlide(float duration)
+    {
+        wallSlideBlockedUntil = Mathf.Max(wallSlideBlockedUntil, Time.time + duration);
+    }
+
     private void HandleWallSlide()
     {
-        if (IsFrozenOrSkillLocked || combat.IsAttacking || isClimbing)
+        if (IsFrozenOrSkillLocked || combat.IsAttacking || isClimbing || Time.time < wallSlideBlockedUntil)
         {
             isWallSliding = false;
             wallContactTimer = 0f;
@@ -763,6 +832,7 @@ public class PlayerController : MonoBehaviour
             if (combat.IsAttacking) combat.ForceCancelAttack();
 
             combat.ChargeSkillMeter(-dashSkillEnergyCost);
+            AudioManager.PlaySFX(dashEvent);
 
             isDashing = true;
             isDashLocked = false;
@@ -1125,6 +1195,8 @@ public class PlayerController : MonoBehaviour
 
     private void PushAway(Vector2 sourcePosition, float force, float staggerDuration, bool applyStagger, Vector2? directionOverride = null)
     {
+        if (IsDeadNow) return;
+
         if (force > 0f)
         {
             Vector2 dir = directionOverride.HasValue
@@ -1154,7 +1226,7 @@ public class PlayerController : MonoBehaviour
 
     public void ApplyBounceImpulse(Vector2 sourcePosition, float force)
     {
-        if (physicsSuspended) return;
+        if (physicsSuspended || IsDeadNow) return;
 
         CancelClimb();
         Vector2 dir = ((Vector2)transform.position - sourcePosition).normalized;
@@ -1164,7 +1236,7 @@ public class PlayerController : MonoBehaviour
 
     public void ApplyBounceImpulseInDirection(Vector2 direction, float force)
     {
-        if (physicsSuspended) return;
+        if (physicsSuspended || IsDeadNow) return;
 
         CancelClimb();
         rb.linearVelocity = Vector2.zero;
@@ -1173,7 +1245,7 @@ public class PlayerController : MonoBehaviour
 
     public void TriggerBounce(Vector2 sourcePosition, float force, float duration)
     {
-        if (physicsSuspended) return;
+        if (physicsSuspended || IsDeadNow) return;
 
         CancelClimb();
         CancelHeal();
@@ -1825,7 +1897,7 @@ public class PlayerController : MonoBehaviour
 
     public bool ApplyHazardKnockback(Vector2 contactPoint, float force, float staggerDuration, Vector2? directionOverride = null)
     {
-        if (physicsSuspended || isStaggered || isBouncing || IsSkillActive) return false;
+        if (physicsSuspended || isStaggered || isBouncing || IsSkillActive || IsDeadNow) return false;
 
         bool wasPlunging = combat.WasRecentlyPlunging;
 
@@ -1834,8 +1906,9 @@ public class PlayerController : MonoBehaviour
         combat.ForceCancelAttack();
         if (isDashing) CancelDash();
 
+        float backX = Mathf.Abs(rb.linearVelocityX) > 0.1f ? -Mathf.Sign(rb.linearVelocityX) : -FacingDirection;
         rb.linearVelocity = Vector2.zero;
-        Vector2 dir = directionOverride ?? new Vector2(transform.position.x >= contactPoint.x ? 1f : -1f, 1f);
+        Vector2 dir = directionOverride ?? new Vector2(backX, 1f);
         rb.AddForce(dir.normalized * force, ForceMode2D.Impulse);
 
         if (wasPlunging) PlayBounceState(bounceDuration);

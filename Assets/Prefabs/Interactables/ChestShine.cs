@@ -4,6 +4,7 @@ using UnityEngine;
 public class ChestShine : MonoBehaviour
 {
     public enum OutlineSide { Inside, Outside }
+    public enum SweepAxis { Diagonal, Vertical, Horizontal }
 
     [Header("References")]
     [SerializeField] private SpriteRenderer chestRenderer;
@@ -20,6 +21,7 @@ public class ChestShine : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float fillAmount = 1f;
     [SerializeField, Range(0f, 16f)] private float coreWidth = 1f;
     [SerializeField, Range(0f, 16f)] private float fringeWidth = 2f;
+    [SerializeField] private SweepAxis sweepAxis = SweepAxis.Diagonal;
     [SerializeField] private bool flipDirection = false;
     [SerializeField, Range(0f, 1f)] private float checkerLow = 0.4f;
     [SerializeField, Range(1, 4)] private int checkerSize = 1;
@@ -57,6 +59,7 @@ public class ChestShine : MonoBehaviour
     private static readonly int EdgeAdditiveId = Shader.PropertyToID("_EdgeAdditive");
     private static readonly int EdgeAlwaysId = Shader.PropertyToID("_EdgeAlways");
     private static readonly int EdgeSideId = Shader.PropertyToID("_EdgeSide");
+    private static readonly int SweepAxisId = Shader.PropertyToID("_SweepAxis");
     private static readonly int SweepFromId = Shader.PropertyToID("_SweepFrom");
     private static readonly int SweepToId = Shader.PropertyToID("_SweepTo");
     private static readonly int DurationId = Shader.PropertyToID("_Duration");
@@ -153,6 +156,7 @@ public class ChestShine : MonoBehaviour
         block.SetFloat(EdgeWidthId, outlineWidth);
         block.SetFloat(EdgeAdditiveId, outlineAdditive);
 
+        block.SetFloat(SweepAxisId, (float)sweepAxis);
         block.SetFloat(SweepFromId, sweepFrom);
         block.SetFloat(SweepToId, sweepTo);
         block.SetFloat(DurationId, duration);
