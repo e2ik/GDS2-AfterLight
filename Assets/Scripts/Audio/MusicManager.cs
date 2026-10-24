@@ -28,6 +28,7 @@ public class MusicManager : MonoBehaviour
     [SerializeField] private float stopFadeDuration = 0.7f;
     [SerializeField, Range(0f, 1f)] private float idleFloor = 0f;
     public float StopFadeDuration => stopFadeDuration;
+    public bool FadeWhilePaused { get; set; }
     
     private EventInstance _instance;
     public bool IsBossMusicActive => _bossMode;
@@ -167,7 +168,8 @@ public class MusicManager : MonoBehaviour
 
         while (t < crossfadeDuration)
         {
-            t += Time.deltaTime;
+            if (Time.timeScale > 0f) t += Time.deltaTime;
+            else if (FadeWhilePaused) t += Mathf.Min(Time.unscaledDeltaTime, Time.maximumDeltaTime);
             float ratio = Mathf.Clamp01(t / crossfadeDuration);
 
             if (fadingOut.isValid())

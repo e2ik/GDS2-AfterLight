@@ -122,6 +122,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float climbTimeout = 1.5f;
     [Tooltip("Delay after a climb ends or is cancelled before another climb can start.")]
     [SerializeField] private float climbCooldown = 0.1f;
+    [SerializeField, Min(0f)] private float dropClimbBlockDuration = 0.5f;
+    private float climbBlockedUntil;
 
     private PlayerEdgeDetection edgeDetection;
     private Vector2 climbStartPos;
@@ -971,7 +973,7 @@ public class PlayerController : MonoBehaviour
         }
 
         onEdge = false;
-        if (edgeDetection == null || !canClimbEdge) return;
+        if (edgeDetection == null || !canClimbEdge || Time.time < climbBlockedUntil) return;
         if (!InputEnabled || IsFrozenOrSkillLocked || isStaggered || isBouncing || isDashing) return;
         if (IsOnMovingPlatform()) return;
         if (combat != null && (combat.IsAttacking || combat.IsSkilling || combat.IsChargeInputHeld || combat.IsPlunging)) return;
@@ -1740,6 +1742,7 @@ public class PlayerController : MonoBehaviour
     private IEnumerator DisableCollisionRoutine(Collider2D platform)
     {
         currentPassThroughPlatform = platform;
+        climbBlockedUntil = Time.time + dropClimbBlockDuration;
 
         foreach (var col in playerColliders) Physics2D.IgnoreCollision(col, platform, true);
         yield return new WaitForSeconds(passThroughPlatformDuration);

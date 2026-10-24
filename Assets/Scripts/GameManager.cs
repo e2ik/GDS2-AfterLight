@@ -40,6 +40,11 @@ public class GameManager : MonoBehaviour
     [SerializeField, Min(0f)] private float creditsFadeDuration = 1f;
     [SerializeField, Min(0f)] private float returnToTitleFadeDuration = 0.75f;
 
+    [Header("Dynamic Music")]
+    [SerializeField] private bool unlockDynamicMusicOnLoad = true;
+    [SerializeField] private string[] keepMusicLockedAnchors = { "HospitalPark" };
+    [SerializeField] private string[] keepMusicLockedNodeIDs = { "T01" };
+
     [Header("Player")]
     [SerializeField] private GameObject playerPrefab;
 
@@ -536,7 +541,29 @@ public class GameManager : MonoBehaviour
         PlacePlayerAtAnchor(anchorToUse);
         SetState(GameState.Game);
 
+        if (unlockDynamicMusicOnLoad && hasSavedLocation && !KeepsMusicLocked(anchorToUse))
+            MusicIntensityDriver.UnlockIntensity();
+
         yield return FadeCanvasController.Instance?.FadeIn(startupFadeDuration);
+    }
+
+    private bool KeepsMusicLocked(string anchorID)
+    {
+        if (string.IsNullOrEmpty(anchorID)) return true;
+
+        if (keepMusicLockedAnchors != null && System.Array.IndexOf(keepMusicLockedAnchors, anchorID) >= 0) return true;
+
+        if (keepMusicLockedNodeIDs != null)
+        {
+            foreach (string nodeID in keepMusicLockedNodeIDs)
+            {
+                if (string.IsNullOrEmpty(nodeID)) continue;
+                FastTravelNodeSO node = FastTravelNodeResolver.GetByID(nodeID);
+                if (node != null && node.spawnAnchorID == anchorID) return true;
+            }
+        }
+
+        return false;
     }
 
     private IEnumerator ReturnToTitleRoutine()

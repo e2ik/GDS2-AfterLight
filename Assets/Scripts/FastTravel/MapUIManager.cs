@@ -3,6 +3,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class MapUIManager : GameUI.UIWindow
 {
@@ -130,6 +133,15 @@ public class MapUIManager : GameUI.UIWindow
                 lineGraphics.Add(graphic);
             }
         }
+        if (crosshairArea != null)
+        {
+            foreach (Graphic graphic in crosshairArea.GetComponentsInChildren<Graphic>(true))
+            {
+                if (graphic.GetComponentInParent<Selectable>(true) != null) continue;
+                graphic.raycastTarget = false;
+            }
+        }
+
         crosshairRects = rects.ToArray();
         crosshairGraphics = lineGraphics.ToArray();
         SetCrosshairVisible(false);
@@ -405,6 +417,7 @@ public class MapUIManager : GameUI.UIWindow
         cursorStateInitialized = false;
         SetDestinationLabel(defaultLabel, defaultLocation);
         if (syncFlicker != null) syncFlicker.Play();
+        if (MusicManager.Instance != null) MusicManager.Instance.FadeWhilePaused = true;
 
         if (GameManager.Instance?.Player?.Controller != null)
         {
@@ -416,6 +429,7 @@ public class MapUIManager : GameUI.UIWindow
     protected override void OnWindowClosed()
     {
         if (syncFlicker != null) syncFlicker.SetOff();
+        if (MusicManager.Instance != null) MusicManager.Instance.FadeWhilePaused = false;
         if (closeButton != null) closeButton.interactable = true;
         if (selectionReticle != null) selectionReticle.gameObject.SetActive(false);
         SetCrosshairVisible(false);
@@ -473,4 +487,92 @@ public class MapUIManager : GameUI.UIWindow
         CloseMap();
         FastTravelManager.Instance.TravelTo(targetNode);
     }
+
+#if UNITY_EDITOR
+    private const string PreviewPrefix = "[Map Preview] ";
+
+    [ContextMenu("Preview All Nodes")]
+    private void PreviewAllNodes()
+    {
+        ClearNodePreview();
+
+        if (mapContainer == null || nodeButtonPrefab == null)
+        {
+            Debug.LogWarning("[MapUIManager] Assign Map Container and Node Button Prefab to preview nodes.", this);
+            return;
+        }
+
+        Vector2 size = mapContainer.rect.size;
+
+        foreach (FastTravelNodeSO node in FindAllNodeAssets())
+        {
+            FastTravelNodeUI preview = Instantiate(nodeButtonPrefab, mapContainer);
+            preview.name = PreviewPrefix + node.name;
+            preview.Setup(node, false, null);
+
+            RectTransform rect = preview.GetComponent<RectTransform>();
+            rect.anchoredPosition = new Vector2((node.mapUIPosition.x - 0.5f) * size.x, (node.mapUIPosition.y - 0.5f) * size.y);
+
+            foreach (Transform child in preview.GetComponentsInChildren<Transform>(true))
+                child.gameObject.hideFlags = HideFlags.DontSaveInEditor;
+        }
+
+        SceneView.RepaintAll();
+    }
+
+    [ContextMenu("Apply Preview Positions To Nodes")]
+    private void ApplyPreviewPositions()
+    {
+        if (mapContainer == null) return;
+
+        Vector2 size = mapContainer.rect.size;
+        if (size.x <= 0f || size.y <= 0f) return;
+
+        List<FastTravelNodeSO> nodes = FindAllNodeAssets();
+        int applied = 0;
+
+        foreach (Transform child in mapContainer)
+        {
+            if (!child.name.StartsWith(PreviewPrefix)) continue;
+
+            string assetName = child.name.Substring(PreviewPrefix.Length);
+            FastTravelNodeSO node = nodes.Find(n => n.name == assetName);
+            RectTransform rect = child as RectTransform;
+            if (node == null || rect == null) continue;
+
+            Undo.RecordObject(node, "Apply Map Node Position");
+            node.mapUIPosition = new Vector2(rect.anchoredPosition.x / size.x + 0.5f, rect.anchoredPosition.y / size.y + 0.5f);
+            EditorUtility.SetDirty(node);
+            applied++;
+        }
+
+        AssetDatabase.SaveAssets();
+        Debug.Log($"[MapUIManager] Applied {applied} preview positions to fast travel nodes.", this);
+    }
+
+    [ContextMenu("Clear Node Preview")]
+    private void ClearNodePreview()
+    {
+        if (mapContainer == null) return;
+
+        for (int i = mapContainer.childCount - 1; i >= 0; i--)
+        {
+            Transform child = mapContainer.GetChild(i);
+            if (child.name.StartsWith(PreviewPrefix)) DestroyImmediate(child.gameObject);
+        }
+
+        SceneView.RepaintAll();
+    }
+
+    private static List<FastTravelNodeSO> FindAllNodeAssets()
+    {
+        List<FastTravelNodeSO> nodes = new List<FastTravelNodeSO>();
+        foreach (string guid in AssetDatabase.FindAssets("t:FastTravelNodeSO"))
+        {
+            FastTravelNodeSO node = AssetDatabase.LoadAssetAtPath<FastTravelNodeSO>(AssetDatabase.GUIDToAssetPath(guid));
+            if (node != null) nodes.Add(node);
+        }
+        return nodes;
+    }
+#endif
 }
