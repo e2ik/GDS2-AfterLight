@@ -52,6 +52,7 @@ public class MusicManager : MonoBehaviour
     private bool _hasUnlockedAudio = false;
     private EventReference _pendingEvent;
     private bool _hasGlobalParams;
+    private bool _loggedMissingParams;
 
     private EventReference _currentEvent;
     private bool _hasCurrentEvent;
@@ -88,7 +89,11 @@ public class MusicManager : MonoBehaviour
 
         if (intensityResult != FMOD.RESULT.OK)
         {
-            Debug.LogError($"MusicManager: no global 'Intensity' parameter found ({intensityResult})");
+            if (!_loggedMissingParams && RuntimeManager.HaveAllBanksLoaded)
+            {
+                _loggedMissingParams = true;
+                Debug.LogError($"MusicManager: no global 'Intensity' parameter found ({intensityResult})");
+            }
             return;
         }
         
@@ -379,6 +384,7 @@ public class MusicManager : MonoBehaviour
         }
 #endif
 
+        if (!_hasGlobalParams) CacheGlobalParameters();
         if (!_instance.isValid() || !_hasGlobalParams) return;
 
         if (!_bossMode)

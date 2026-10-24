@@ -137,36 +137,40 @@ Shader "Custom/Sprite Silhouette"
             return SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv).a;
         }
 
+        half SpriteAlphaLod(float2 uv)
+        {
+            return SAMPLE_TEXTURE2D_LOD(_MainTex, sampler_MainTex, uv, 0).a;
+        }
+
         bool IsOutline(float2 uv, half cutoff)
         {
             uint width;
             uint height;
             _MainTex.GetDimensions(width, height);
             float2 texel = 1.0 / float2(max(width, 1u), max(height, 1u));
-            int steps = (int)round(_OutlineWidth);
-            bool diagonals = _OutlineDiagonals > 0.5;
+            float steps = round(_OutlineWidth);
+            half diagonals = _OutlineDiagonals > 0.5 ? 1.0 : 0.0;
+            half found = 0.0;
 
             [unroll]
             for (int s = 1; s <= 4; s++)
             {
-                if (s > steps) break;
                 float2 d = texel * s;
 
-                if (SpriteAlpha(uv + float2(d.x, 0)) >= cutoff) return true;
-                if (SpriteAlpha(uv - float2(d.x, 0)) >= cutoff) return true;
-                if (SpriteAlpha(uv + float2(0, d.y)) >= cutoff) return true;
-                if (SpriteAlpha(uv - float2(0, d.y)) >= cutoff) return true;
+                half straight = max(
+                    max(SpriteAlphaLod(uv + float2(d.x, 0)), SpriteAlphaLod(uv - float2(d.x, 0))),
+                    max(SpriteAlphaLod(uv + float2(0, d.y)), SpriteAlphaLod(uv - float2(0, d.y))));
 
-                if (diagonals)
-                {
-                    if (SpriteAlpha(uv + d) >= cutoff) return true;
-                    if (SpriteAlpha(uv - d) >= cutoff) return true;
-                    if (SpriteAlpha(uv + float2(d.x, -d.y)) >= cutoff) return true;
-                    if (SpriteAlpha(uv + float2(-d.x, d.y)) >= cutoff) return true;
-                }
+                half diagonal = max(
+                    max(SpriteAlphaLod(uv + d), SpriteAlphaLod(uv - d)),
+                    max(SpriteAlphaLod(uv + float2(d.x, -d.y)), SpriteAlphaLod(uv + float2(-d.x, d.y))));
+
+                half nearest = max(straight, diagonal * diagonals);
+                half active = s <= steps ? 1.0 : 0.0;
+                found = max(found, step(cutoff, nearest) * active);
             }
 
-            return false;
+            return found > 0.5;
         }
 
         half4 frag(Varyings input) : SV_Target
@@ -180,7 +184,7 @@ Shader "Custom/Sprite Silhouette"
                 {
                     if (_OutlineIgnoreWhite > 0.5)
                     {
-                        half3 under = SAMPLE_TEXTURE2D(_CutoutTex, sampler_CutoutTex, CutoutUV(input)).rgb;
+                        half3 under = SAMPLE_TEXTURE2D_LOD(_CutoutTex, sampler_CutoutTex, CutoutUV(input), 0).rgb;
                         if (min(under.r, min(under.g, under.b)) >= _OutlineWhiteThreshold) discard;
                     }
 
