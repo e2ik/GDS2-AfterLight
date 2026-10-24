@@ -1,15 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(PlayerInput))]
-[RequireComponent(typeof(InteractionManager))]
-[RequireComponent(typeof(PlayerController))]
-[RequireComponent(typeof(PlayerStats))]
-[RequireComponent(typeof(PlayerInventoryManager))]
-[RequireComponent(typeof(PlayerEquipmentManager))]
-[RequireComponent(typeof(PlayerCombatController))]
-[RequireComponent(typeof(PlayerAnimation))]
-[RequireComponent(typeof(PlayerHeals))]
 public class Player : MonoBehaviour
 {
     private PlayerInput _input;

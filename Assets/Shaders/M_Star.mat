@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Star
+  m_Shader: {fileID: 4800000, guid: 24ae9a4a4a2f0f84687dea03c3a6ae46, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _PIXELSNAP_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _AlphaTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaCutoff: 0.892
+    - _EnableExternalAlpha: 0
+    - _GlowFalloff: 4
+    - _GlowIntensity: 0.95
+    - _GlowRadius: 7
+    - _GlowSteps: 8
+    - _PixelSnap: 1
+    - _PulseIntensityMin: 0.176
+    - _PulseRadiusMin: 0
+    - _PulseSpeed: 1.98
+    - _Runner: 0
+    - _RunnerCount: 4
+    - _RunnerLength: 0.447
+    - _RunnerReach: 1
+    - _RunnerSpeed: -0.3
+    - _Shine: 0
+    - _ShineAngle: 30
+    - _ShineInterval: 0.54
+    - _ShineSoftness: 0.095
+    - _ShineSweepTime: 3.53
+    - _ShineWidth: 0.322
+    - _ZWrite: 0
+    m_Colors:
+    - _Color: {r: 0.97743833, g: 1, b: 0.64465404, a: 1}
+    - _GlowColor: {r: 1, g: 0.99478537, b: 0.81446534, a: 0.101960786}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+    - _RunnerCenter: {r: 0.5, g: 0.47, b: 0, a: 0}
+    - _RunnerColor: {r: 1, g: 1, b: 1, a: 0.7176471}
+    - _ShineColor: {r: 1, g: 0, b: 0, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
