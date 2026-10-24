@@ -357,6 +357,8 @@ namespace Enemies
             boss.FreezeForPhaseTransition();
             player.Controller.FreezeMovement(true);
 
+            bool dialoguePlayed = false;
+
             try
             {
                 yield return new WaitForSeconds(transitionBeat);
@@ -369,7 +371,13 @@ namespace Enemies
                     DialogueManager.Instance.StartDialogue(phaseTransitionDialogue, player);
 
                     if (DialogueManager.Instance.IsDialogueActive)
+                    {
+                        dialoguePlayed = true;
+                        if(playMusic)
+                            MusicManager.Instance?.ExitBossMusicToPrevious();
+                        
                         yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
+                    }
                 }
 
                 if (activeBossEnemy != boss)
@@ -387,7 +395,14 @@ namespace Enemies
                     BossHealthBarUI.Instance?.PlayRefill(health.MaxHealth, health.MaxHealth, refillDuration);
 
                 if (playMusic)
+                {
+                    if (dialoguePlayed)
+                        MusicManager.Instance?.SwitchMusic(bossMusicEvent, isBossMusic: true);
+                    else
+                        MusicManager.Instance?.PlayMusic(bossMusicEvent);
+                    
                     MusicManager.Instance?.SetBossIntensity(1f);
+                }
 
                 yield return new WaitForSeconds(refillDuration + resumeDelay);
                 
