@@ -231,9 +231,11 @@ public class PlayerStats : MonoBehaviour
         OnStatsRecalculated?.Invoke();
     }
 
+    private static bool GodModeOn => GameManager.Instance != null && GameManager.Instance.GodMode;
+
     public void TakeDamage(float rawDamage)
     {
-        if (IsDead || rawDamage <= 0f) return;
+        if (IsDead || rawDamage <= 0f || GodModeOn) return;
 
         if (player != null) player.Controller.CancelClimb();
 
@@ -263,7 +265,7 @@ public class PlayerStats : MonoBehaviour
 
     public void Crush()
     {
-        if (IsDead) return;
+        if (IsDead || GodModeOn) return;
 
         currentHealth = 0f;
         OnHealthChanged?.Invoke(currentHealth, maxHealth);

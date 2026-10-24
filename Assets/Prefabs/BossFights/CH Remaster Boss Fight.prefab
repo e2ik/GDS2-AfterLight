@@ -111,6 +111,7 @@ Transform:
   - {fileID: 8699676975642801874}
   - {fileID: 4023906617089591661}
   - {fileID: 7628043204773355478}
+  - {fileID: 7760754685291639664}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3830897815116287771
@@ -213,7 +214,7 @@ MonoBehaviour:
   bossID: CHRemasterboss_intro_unique_id
   bossName: Canned Heat Remastered
   requiredGround: {fileID: 0}
-  requiredBossID: 
+  requiredBossID: DrBuzzBoss_intro_unique_id
   introCutscene: 
   deathCutscene: 
   cutsceneFadeOutDuration: 1
@@ -236,9 +237,18 @@ MonoBehaviour:
   rematchPlaysBossMusic: 1
   rematchShowsHealthBar: 1
   lockCameraToArena: 1
-  engagedLayerColors: []
+  engagedLayerColors:
+  - layerName: Sky
+    color: {r: 1, g: 0, b: 0.48235294, a: 0}
+  - layerName: Sky2
+    color: {r: 1, g: 0.64705884, b: 0, a: 0}
+  - layerName: CloudsBack
+    color: {r: 0.22352941, g: 0.7176471, b: 0.62352943, a: 0}
+  - layerName: CloudsFront
+    color: {r: 0.58431375, g: 0.47843137, b: 0.58431375, a: 0}
   backgroundBlendTime: 3
-  fadeWithBackground: []
+  fadeWithBackground:
+  - {fileID: 8793989830033821014}
   bossMusicEvent:
     Guid:
       Data1: -575299851
@@ -426,7 +436,7 @@ MonoBehaviour:
   spawnOnStart: 1
   targetAreaSide: 0
   respawnOnlyAfterRest: 1
-  requiredDefeatedBossID: 
+  requiredDefeatedBossID: DrBuzzBoss_intro_unique_id
 --- !u!212 &5881447990178518734
 SpriteRenderer:
   serializedVersion: 2
@@ -473,7 +483,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -401912243
-  m_SortingLayer: 1
+  m_SortingLayer: 2
   m_SortingOrder: 15
   m_MaskInteraction: 0
   m_Sprite: {fileID: 0}
@@ -519,3 +529,94 @@ Transform:
   - {fileID: 874820577243418416}
   m_Father: {fileID: 5681199292943563232}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &9057675545515054195
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7760754685291639664}
+  - component: {fileID: 8793989830033821014}
+  m_Layer: 0
+  m_Name: HeatHaze
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7760754685291639664
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9057675545515054195}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 28.005219, y: 8.05085, z: 0}
+  m_LocalScale: {x: 33.1723, y: 21.189009, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5681199292943563232}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &8793989830033821014
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9057675545515054195}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 850a392b292d8004f9ec7e90f7fd0906, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: -1814749355
+  m_SortingLayer: 1
+  m_SortingOrder: 1
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0

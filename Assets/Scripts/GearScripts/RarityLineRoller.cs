@@ -5,6 +5,8 @@ public class RarityLineRoller
 {
     private readonly RarityWeights customOdds;
     private readonly ERarity? fixedRarity;
+    private readonly int anchorIndex = -1;
+    private readonly int tiersBelow;
     private readonly List<ERarity> lines = new List<ERarity>();
 
     public IReadOnlyList<ERarity> Lines => lines;
@@ -19,11 +21,33 @@ public class RarityLineRoller
         this.fixedRarity = fixedRarity;
     }
 
+    private RarityLineRoller(ERarity fixedRarity, int anchorIndex, int tiersBelow)
+    {
+        this.fixedRarity = fixedRarity;
+        this.anchorIndex = Mathf.Max(0, anchorIndex);
+        this.tiersBelow = Mathf.Max(0, tiersBelow);
+    }
+
     public static RarityLineRoller Fixed(ERarity rarity) => new RarityLineRoller(rarity);
+
+    public static RarityLineRoller Anchored(ERarity rarity, int anchorIndex, int tiersBelow) =>
+        new RarityLineRoller(rarity, anchorIndex, tiersBelow);
 
     public ERarity Next()
     {
-        ERarity lineRarity = fixedRarity ?? RarityWeights.Roll(customOdds != null, customOdds);
+        ERarity lineRarity;
+
+        if (fixedRarity.HasValue && anchorIndex >= 0 && lines.Count != anchorIndex)
+        {
+            int top = (int)fixedRarity.Value;
+            int bottom = Mathf.Max((int)ERarity.Common, top - tiersBelow);
+            lineRarity = (ERarity)Random.Range(bottom, top + 1);
+        }
+        else
+        {
+            lineRarity = fixedRarity ?? RarityWeights.Roll(customOdds != null, customOdds);
+        }
+
         lines.Add(lineRarity);
         return lineRarity;
     }

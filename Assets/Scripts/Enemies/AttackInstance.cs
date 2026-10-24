@@ -29,7 +29,8 @@ namespace Enemies
                 _cooldownTimer -= deltaTime;
 
             InRange = Attack != null && ctx.Target != null &&
-                      EnemyRange.DistanceToTarget(ctx) <= Attack.Range;
+                      EnemyRange.DistanceToTarget(ctx) <= Attack.Range &&
+                      Attack.IsInVerticalBand(ctx);
 
             _canUse = Attack != null && Attack.CanUse(ctx);
             InRangeIfUsable = InRange && _canUse;

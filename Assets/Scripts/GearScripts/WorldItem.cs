@@ -212,21 +212,38 @@ public class WorldItem : MonoBehaviour
         }
 
         RarityWeights odds = customOdds ?? (overrideRarityOdds ? rarityOdds : null);
-        RarityLineRoller roller = fixedRarity.HasValue
-            ? RarityLineRoller.Fixed(fixedRarity.Value)
-            : new RarityLineRoller(odds);
+        RarityLineRoller roller;
 
-        rolledInstance = itemDefinition switch
+        if (fixedRarity.HasValue)
+        {
+            RarityLineRoller counter = RarityLineRoller.Fixed(fixedRarity.Value);
+            RollDefinition(counter);
+            int anchor = UnityEngine.Random.Range(0, Mathf.Max(1, counter.Lines.Count));
+            roller = RarityLineRoller.Anchored(fixedRarity.Value, anchor, FixedRarityTiersBelow);
+        }
+        else
+        {
+            roller = new RarityLineRoller(odds);
+        }
+
+        rolledInstance = RollDefinition(roller);
+
+        rarity = roller.Final;
+        hasRarity = true;
+        OnRarityAssigned?.Invoke(rarity);
+    }
+
+    private const int FixedRarityTiersBelow = 2;
+
+    private object RollDefinition(RarityLineRoller roller)
+    {
+        return itemDefinition switch
         {
             WeaponDefinition weaponDef => weaponDef.Roll(roller),
             GearDefinition gearDef => gearDef.Roll(roller),
             SecondaryGemBehaviourDefinition gemDef => gemDef.Roll(roller),
             _ => null
         };
-
-        rarity = roller.Final;
-        hasRarity = true;
-        OnRarityAssigned?.Invoke(rarity);
     }
 
     private T GetRolledInstance<T>() where T : class

@@ -77,10 +77,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool oneHitKillEnemies = false;
     [SerializeField] private bool spawnAllLegendaries = false;
     [SerializeField] private bool skillMeterAlwaysFull = false;
+    [SerializeField] private bool godMode = false;
 
     public bool TutorialsDisabled => disableTutorials;
     public bool OneHitKillEnemies => oneHitKillEnemies;
     public bool SkillMeterAlwaysFull => skillMeterAlwaysFull;
+    public bool GodMode => godMode;
 
     [Header("Enemy Attack Cap")]
     [SerializeField, Min(0)] private int maxConcurrentAttackers = 2;

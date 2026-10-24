@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.ComboMeleeAttack
   range: 4
   cooldownDuration: 1
+  useVerticalBand: 1
+  bottomMargin: 0.1
+  topMargin: 0.1
+  debugVerticalBand: 0
   steps:
   - placeholderClip: {fileID: 7400000, guid: d66efa7785c333342abd93d7aad1f9b5, type: 2}
     clip: {fileID: 7400000, guid: f19c0c54fdef13542abc27014ba3607d, type: 2}
@@ -31,4 +35,3 @@ MonoBehaviour:
   continueChance: 0.33
   healthThreshold: 0.6
   continueChanceBelowThreshold: 0.66
-  lightFirstStepWhenContinuing: 1
