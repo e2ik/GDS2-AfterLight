@@ -57,6 +57,7 @@ public class MusicManager : MonoBehaviour
     private EventReference _preBossEvent;
     private bool _hasPreBossEvent;
     private bool _holdMusic;
+    private readonly Dictionary<string, string> _localParameterLabels = new Dictionary<string, string>();
 
     private void Awake()
     {
@@ -111,6 +112,7 @@ public class MusicManager : MonoBehaviour
         bool hasPrevious = previousInstance.isValid();
 
         EventInstance newInstance = RuntimeManager.CreateInstance(musicEvent);
+        ApplyStoredLocalParameters(newInstance);
 
         if (fadeOutPrevious && hasPrevious)
         {
@@ -188,7 +190,9 @@ public class MusicManager : MonoBehaviour
     public void SwitchMusic(EventReference newLevelEvent, bool isBossMusic = false, bool fadeOutPrevious = true)
     {
         bool sameEvent = _hasCurrentEvent && _instance.isValid() && _currentEvent.Guid.Equals(newLevelEvent.Guid);
-
+        bool leavingBossMode = _bossMode && !isBossMusic;
+        
+        
         if (isBossMusic && !_bossMode)
         {
             _preBossEvent = _currentEvent;
@@ -196,6 +200,9 @@ public class MusicManager : MonoBehaviour
         }
         
         _bossMode = isBossMusic;
+        
+        if(leavingBossMode)
+            _localParameterLabels.Clear();
 
         if (_holdMusic)
         {
@@ -334,12 +341,14 @@ public class MusicManager : MonoBehaviour
         _decayDelayTimer = decayDelay;
     }
 
-    public void SetBossIntensity(float healthPercent)
+    public void SetBossIntensity(float healthPercent, float fullIntensityAtHealth = 0f)
     {
         if (!_bossMode)
             return;
 
-        _targetNormalized = 1f - Mathf.Clamp01(healthPercent);
+        float lost = 1f - Mathf.Clamp01(healthPercent);
+        float range = Mathf.Max(0.01f, 1f - Mathf.Clamp01(fullIntensityAtHealth));
+        _targetNormalized = Mathf.Clamp01(lost / range);
     }
 
     public void SetLoop(bool loop)
@@ -385,5 +394,24 @@ public class MusicManager : MonoBehaviour
         _currentNormalized = Mathf.MoveTowards(_currentNormalized, _targetNormalized, smoothSpeed * Time.deltaTime);
         float actualValue = Mathf.Lerp(_intensityMin, _intensityMax, _currentNormalized);
         RuntimeManager.StudioSystem.setParameterByID(_intensityParamId, actualValue);
+    }
+
+    public void SetLocalParameterLabel(string parameterName, string label)
+    {
+        if (string.IsNullOrEmpty(parameterName) || string.IsNullOrEmpty(label))
+            return;
+
+        _localParameterLabels[parameterName] = label;
+
+        if (_instance.isValid())
+            _instance.setParameterByNameWithLabel(parameterName, label);
+    }
+
+    public void ClearLocalParameters() => _localParameterLabels.Clear();
+
+    private void ApplyStoredLocalParameters(EventInstance inst)
+    {
+        foreach (KeyValuePair<string, string> pair in _localParameterLabels)
+            inst.setParameterByNameWithLabel(pair.Key, pair.Value);
     }
 }

@@ -384,11 +384,32 @@ MonoBehaviour:
   bossID: DrBuzzBoss_intro_unique_id
   bossName: Dr Buzz
   requiredGround: {fileID: 0}
+  requiredBossID: 
+  introCutscene: 
+  deathCutscene: 
+  cutsceneFadeOutDuration: 1
+  cutsceneFadeInDuration: 1
+  phaseCount: 1
+  phaseTransitionDialogue: {fileID: 0}
+  phaseTransitionSFX:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  transitionBeat: 0.6
+  refillDuration: 2.5
+  resumeDelay: 0.5
   rematchPlaysDeathDialogue: 0
+  rematchPlaysPhaseDialogue: 0
   rematchLocksArena: 1
   rematchPlaysBossMusic: 1
   rematchShowsHealthBar: 1
   lockCameraToArena: 1
+  playEndCreditsOnDefeat: 0
+  endCreditsOnRematch: 0
+  endCreditsDelay: 1.5
   engagedLayerColors:
   - layerName: Sky
     color: {r: 0.41568628, g: 0.29803923, b: 0.6117647, a: 0}
@@ -408,13 +429,12 @@ MonoBehaviour:
       Data3: 1939245233
       Data4: 1325775335
     Path: event:/DrBuzz
-  postBossMusicEvent:
-    Guid:
-      Data1: 1626273885
-      Data2: 1300586119
-      Data3: 1151470465
-      Data4: 998864367
-    Path: event:/TowerTheme
+  musicPhaseParameter: 
+  phaseMusicLabels:
+  - First
+  - Second
+  phaseIntensities:
+  - 0.25
 --- !u!1 &4585595708212418661
 GameObject:
   m_ObjectHideFlags: 0
@@ -544,6 +564,7 @@ MonoBehaviour:
   spawnOnStart: 1
   targetAreaSide: 0
   respawnOnlyAfterRest: 1
+  requiredDefeatedBossID: 
 --- !u!212 &5881447990178518734
 SpriteRenderer:
   serializedVersion: 2
@@ -590,7 +611,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -401912243
-  m_SortingLayer: 1
+  m_SortingLayer: 2
   m_SortingOrder: 15
   m_MaskInteraction: 0
   m_Sprite: {fileID: 0}
