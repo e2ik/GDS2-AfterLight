@@ -136,7 +136,7 @@ MonoBehaviour:
   requiredGround: {fileID: 0}
   requiredBossID: 
   introCutscene: 
-  deathCutscene: 
+  deathCutscene: ISeeYouCutscene
   cutsceneFadeOutDuration: 1
   cutsceneFadeInDuration: 1
   phaseCount: 1
@@ -178,6 +178,12 @@ MonoBehaviour:
       Data3: -1889155924
       Data4: 1785508625
     Path: event:/CannedHeat
+  musicPhaseParameter: 
+  phaseMusicLabels:
+  - First
+  - Second
+  phaseIntensities:
+  - 0
 --- !u!1 &5820503413341801186
 GameObject:
   m_ObjectHideFlags: 0
