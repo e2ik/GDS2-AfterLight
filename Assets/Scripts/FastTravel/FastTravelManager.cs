@@ -83,6 +83,7 @@ public class FastTravelManager : MonoBehaviour
 
         string targetScene = destination.targetSceneName;
         MusicManager.Instance?.SetAreaMusicForScene(targetScene);
+        MusicIntensityDriver.UnlockIntensity();
 
         Scene masterScene = SceneManager.GetSceneByName("WorldMaster");
         if (masterScene.isLoaded)

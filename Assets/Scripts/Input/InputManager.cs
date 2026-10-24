@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.DualShock;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.XInput;
+using UnityEngine.UI;
 
 public enum InputDeviceType
 {
@@ -31,6 +34,11 @@ public class InputManager : MonoBehaviour
     [SerializeField] private float mouseMoveThreshold = 3f;
     [SerializeField] private bool hideCursorOnGamepad = true;
     [SerializeField] private bool parkMouseOnGamepad = true;
+    [SerializeField] private bool selectOnMouseHover = true;
+
+    private static readonly List<RaycastResult> HoverResults = new List<RaycastResult>();
+    private PointerEventData hoverPointer;
+    private EventSystem hoverEventSystem;
 
     private static readonly Vector2 ParkedMousePosition = new Vector2(-10000f, -10000f);
 
@@ -71,6 +79,37 @@ public class InputManager : MonoBehaviour
 
         if (IsKeyboardMouseActive())
             SetDevice(InputDeviceType.KeyboardMouse);
+
+        SelectHoveredSelectable();
+    }
+
+    private void SelectHoveredSelectable()
+    {
+        if (!selectOnMouseHover || IsUsingGamepad) return;
+
+        Mouse mouse = Mouse.current;
+        EventSystem eventSystem = EventSystem.current;
+        if (mouse == null || eventSystem == null || !eventSystem.isActiveAndEnabled) return;
+        if (mouse.delta.ReadValue().sqrMagnitude < 0.01f) return;
+
+        if (hoverPointer == null || hoverEventSystem != eventSystem)
+        {
+            hoverPointer = new PointerEventData(eventSystem);
+            hoverEventSystem = eventSystem;
+        }
+
+        hoverPointer.position = mouse.position.ReadValue();
+
+        HoverResults.Clear();
+        eventSystem.RaycastAll(hoverPointer, HoverResults);
+        if (HoverResults.Count == 0) return;
+
+        GameObject top = HoverResults[0].gameObject;
+        Selectable selectable = top != null ? top.GetComponentInParent<Selectable>() : null;
+        if (selectable == null || !selectable.IsInteractable()) return;
+        if (eventSystem.currentSelectedGameObject == selectable.gameObject) return;
+
+        eventSystem.SetSelectedGameObject(selectable.gameObject);
     }
 
     private void KeepMouseParked()

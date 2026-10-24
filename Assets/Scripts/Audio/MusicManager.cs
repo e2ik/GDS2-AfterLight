@@ -28,6 +28,7 @@ public class MusicManager : MonoBehaviour
     [SerializeField] private float stopFadeDuration = 0.7f;
     [SerializeField, Range(0f, 1f)] private float idleFloor = 0f;
     public float StopFadeDuration => stopFadeDuration;
+    public bool FadeWhilePaused { get; set; }
     
     private EventInstance _instance;
     public bool IsBossMusicActive => _bossMode;
@@ -51,6 +52,7 @@ public class MusicManager : MonoBehaviour
     private bool _hasUnlockedAudio = false;
     private EventReference _pendingEvent;
     private bool _hasGlobalParams;
+    private bool _loggedMissingParams;
 
     private EventReference _currentEvent;
     private bool _hasCurrentEvent;
@@ -87,7 +89,11 @@ public class MusicManager : MonoBehaviour
 
         if (intensityResult != FMOD.RESULT.OK)
         {
-            Debug.LogError($"MusicManager: no global 'Intensity' parameter found ({intensityResult})");
+            if (!_loggedMissingParams && RuntimeManager.HaveAllBanksLoaded)
+            {
+                _loggedMissingParams = true;
+                Debug.LogError($"MusicManager: no global 'Intensity' parameter found ({intensityResult})");
+            }
             return;
         }
         
@@ -167,7 +173,8 @@ public class MusicManager : MonoBehaviour
 
         while (t < crossfadeDuration)
         {
-            t += Time.deltaTime;
+            if (Time.timeScale > 0f) t += Time.deltaTime;
+            else if (FadeWhilePaused) t += Mathf.Min(Time.unscaledDeltaTime, Time.maximumDeltaTime);
             float ratio = Mathf.Clamp01(t / crossfadeDuration);
 
             if (fadingOut.isValid())
@@ -377,6 +384,7 @@ public class MusicManager : MonoBehaviour
         }
 #endif
 
+        if (!_hasGlobalParams) CacheGlobalParameters();
         if (!_instance.isValid() || !_hasGlobalParams) return;
 
         if (!_bossMode)

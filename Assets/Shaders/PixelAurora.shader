@@ -173,7 +173,7 @@ Shader "Custom/Pixel Aurora"
 
             float rayCell = floor(x / max(1.0, _RayWidth));
             float rays = Noise1(rayCell * 0.73 + time * _RaySpeed + seed * 31.0);
-            rays = pow(rays, _RaySharpness);
+            rays = pow(saturate(rays), _RaySharpness);
             float flicker = 0.5 + 0.5 * sin(time * (1.5 + Hash11(rayCell + seed) * 2.5) + Hash11(rayCell * 1.9 + seed) * 6.2831853);
             float rayMask = lerp(1.0, rays * (0.6 + 0.4 * flicker), _RayStrength);
 

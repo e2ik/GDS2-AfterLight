@@ -140,6 +140,7 @@ GameObject:
   - component: {fileID: 78526266}
   - component: {fileID: 78526267}
   - component: {fileID: 78526268}
+  - component: {fileID: 78526269}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -180,23 +181,14 @@ MonoBehaviour:
   defaultSpawnAnchorID: GameStart
   defaultStartAreaSide: 1
   titleSceneName: GameSetup
-  titleMusic:
-    Guid:
-      Data1: -558913821
-      Data2: 1078041006
-      Data3: 1295943831
-      Data4: -2118747392
-    Path: event:/Intro
-  gameMusic:
-    Guid:
-      Data1: 300044231
-      Data2: 1214001075
-      Data3: 842542756
-      Data4: -412094302
-    Path: event:/HospitalTheme
   creditsSceneName: Credits
   creditsFadeDuration: 1
   returnToTitleFadeDuration: 0.75
+  unlockDynamicMusicOnLoad: 1
+  keepMusicLockedAnchors:
+  - HospitalPark
+  keepMusicLockedNodeIDs:
+  - T01
   playerPrefab: {fileID: 6310612592100663882, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
   worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
   saveManager: {fileID: 78526259}
@@ -222,7 +214,7 @@ MonoBehaviour:
   unlockAllFastTravelAction: {fileID: 7163206889840615523, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   disableTutorials: 0
   skipCutscenes: 0
-  oneHitKillEnemies: 1
+  oneHitKillEnemies: 0
   spawnAllLegendaries: 0
   skillMeterAlwaysFull: 0
   godMode: 0
@@ -495,6 +487,7 @@ MonoBehaviour:
   mouseMoveThreshold: 3
   hideCursorOnGamepad: 1
   parkMouseOnGamepad: 1
+  selectOnMouseHover: 1
 --- !u!114 &78526267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -578,6 +571,22 @@ MonoBehaviour:
   debugIntensity: 0
   debugTiming: 0
   debugEnemies: 0
+--- !u!114 &78526269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 78526255}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50a2ac61305fb4e4b980d29d6df99e38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FmodInstanceDebugger
+  logKey: 102
+  showOverlay: 1
+  pathFilter: 
+  overlayRefresh: 0.5
 --- !u!1 &155930548
 GameObject:
   m_ObjectHideFlags: 0
@@ -2724,6 +2733,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: fc5ade2abad99a14b94fd28b0fe5fc07, type: 2}
   - {fileID: 2100000, guid: d02bf0e0efdf9b94786d7fb0f21dc18d, type: 2}
   - {fileID: 2100000, guid: 97c57af9a82e20a4d98604e46b8f202a, type: 2}
+  - {fileID: 2100000, guid: 3cc0b8ef2ae305342973bb3e42b0700a, type: 2}
 --- !u!4 &1958938305
 Transform:
   m_ObjectHideFlags: 0

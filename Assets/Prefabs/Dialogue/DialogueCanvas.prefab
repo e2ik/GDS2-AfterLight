@@ -298,6 +298,9 @@ MonoBehaviour:
   slideDuration: 0.25
   slideOutDuration: 0.2
   slideOffscreenMargin: 20
+  typingSoundInterval: 0.07
+  skipSoundOnWhitespace: 1
+  stopPlayerMovement: 1
   holdSkipDuration: 1.5
   holdSkipAppearDelay: 0.25
   holdSkipUI: {fileID: 7478678284816314331}
@@ -734,7 +737,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 605, y: 48.000015}
+  m_AnchoredPosition: {x: 793, y: 48.000015}
   m_SizeDelta: {x: 800, y: 800}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5403753269007159592
@@ -765,7 +768,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: ceb4a7ca4e0519445b1114c0ee3349b3, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b8055d1ac85ba2e43a5e4d16c2ce181f, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -788,14 +791,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIMultiplyOutline
   outlineMaterial: {fileID: 2100000, guid: dfe2cfefc484dab48a80c923be074f8b, type: 2}
-  tint: {r: 0, g: 0, b: 0, a: 1}
+  tint: {r: 0, g: 0, b: 0, a: 0.7294118}
   strength: 0.668
   falloff: 0.531
-  rings: 4
+  rings: 2
   pixelSize: 2
   checkerContrast: 1
   showLine: 1
-  lineColor: {r: 0, g: 0, b: 0, a: 0.88235295}
+  lineColor: {r: 0, g: 0, b: 0, a: 0.6313726}
   lineStrength: 0.888
   lineDiagonals: 0
 --- !u!1 &6697026570505582837
@@ -833,7 +836,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -609, y: 48}
+  m_AnchoredPosition: {x: -788, y: 48}
   m_SizeDelta: {x: 800, y: 800}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5881913766177180281
@@ -887,14 +890,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIMultiplyOutline
   outlineMaterial: {fileID: 2100000, guid: dfe2cfefc484dab48a80c923be074f8b, type: 2}
-  tint: {r: 0, g: 0, b: 0, a: 1}
+  tint: {r: 0, g: 0, b: 0, a: 0.7294118}
   strength: 0.668
   falloff: 0.531
-  rings: 4
+  rings: 2
   pixelSize: 2
   checkerContrast: 1
   showLine: 1
-  lineColor: {r: 0, g: 0, b: 0, a: 0.88235295}
+  lineColor: {r: 0, g: 0, b: 0, a: 0.6313726}
   lineStrength: 0.888
   lineDiagonals: 0
 --- !u!1 &6718950514711702415
@@ -1915,10 +1918,10 @@ PrefabInstance:
     - target: {fileID: 1616517994544587287, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 21300000, guid: 5c75c3e94969cbb48a1d31feee402905, type: 3}
     - target: {fileID: 1616517994544587287, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2311379646682679555, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: icons
@@ -1930,11 +1933,11 @@ PrefabInstance:
       objectReference: {fileID: 1781555164194001046, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     - target: {fileID: 3554293607578817304, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_text
-      value: 
+      value: E
       objectReference: {fileID: 0}
     - target: {fileID: 3554293607578817304, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3554293607578817304, guid: 0c2578b09690a4e409dc14292693e391, type: 3}
       propertyPath: m_fontSize

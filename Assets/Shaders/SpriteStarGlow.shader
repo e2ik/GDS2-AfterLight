@@ -105,9 +105,10 @@ Shader "Custom/Sprite Star Glow"
                 for (int x = -radius; x <= radius; x++)
                 {
                     float distSq = (float)(x * x + y * y);
-                    if (distSq == 0.0 || distSq >= bestSq) continue;
+                    bool candidate = distSq > 0.0 && distSq < bestSq;
+                    bool solid = SpriteAlpha(uv + float2(x, y) * texel) >= _AlphaCutoff;
 
-                    if (SpriteAlpha(uv + float2(x, y) * texel) >= _AlphaCutoff)
+                    if (candidate && solid)
                     {
                         bestSq = distSq;
                         best = sqrt(distSq);
