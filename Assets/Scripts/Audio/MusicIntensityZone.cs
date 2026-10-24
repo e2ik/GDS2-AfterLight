@@ -3,8 +3,10 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class MusicIntensityZone : MonoBehaviour
 {
-    [SerializeField, Range(0f, 1f)] private float minimumIntensity = 0.2f;
-    [SerializeField, Range(0f, 1f)] private float maximumIntensity = 1f;
+    [SerializeField] private bool unlockDynamicMusic = false;
+    [SerializeField] private bool applyIntensityLimits = true;
+    [SerializeField] private float minimumIntensity = 0f;
+    [SerializeField] private float maximumIntensity = 99f;
 
     private Collider2D zone;
     private bool playerInside;
@@ -23,15 +25,12 @@ public class MusicIntensityZone : MonoBehaviour
     private void Update()
     {
         bool inside = IsPlayerInside();
-        if (inside == playerInside)
-        {
-            if (inside) MusicIntensityDriver.SetIntensityZone(this, minimumIntensity, maximumIntensity);
-            return;
-        }
-
+        bool entered = inside && !playerInside;
         playerInside = inside;
 
-        if (inside) MusicIntensityDriver.SetIntensityZone(this, minimumIntensity, maximumIntensity);
+        if (entered && unlockDynamicMusic) MusicIntensityDriver.UnlockIntensity();
+
+        if (inside && applyIntensityLimits) MusicIntensityDriver.SetIntensityZone(this, minimumIntensity, maximumIntensity);
         else MusicIntensityDriver.ClearIntensityZone(this);
     }
 

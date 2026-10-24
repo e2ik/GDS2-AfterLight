@@ -483,39 +483,62 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dd34cb7a011f4c49a2e1d593346bdee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicIntensityDriver
-  onScreenIntensity: 0.3
-  engagedIntensity: 0.7
-  perExtraEnemyIntensity: 0.1
+  intensityParameter: Intensity
+  trackProfiles:
+  - name: Hospital
+    musicEvent:
+      Guid:
+        Data1: 300044231
+        Data2: 1214001075
+        Data3: 842542756
+        Data4: -412094302
+      Path: event:/HospitalTheme
+    baselineIntensity: 2.5
+    onScreenIntensity: 4.5
+    engagedIntensity: 3.5
+    engagedStep: 2
+    perExtraEnemyIntensity: 1
+    maximumIntensity: 13
+    introSteps:
+    - marker: Hospital1
+      bars: 8
+      nextIntensity: 0.5
+    - marker: Hospital2
+      bars: 8
+      nextIntensity: 1.5
+    - marker: Hospital3
+      bars: 8
+      nextIntensity: 2.5
+  - name: Tower
+    musicEvent:
+      Guid:
+        Data1: 1626273885
+        Data2: 1300586119
+        Data3: 1151470465
+        Data4: 998864367
+      Path: event:/TowerTheme
+    baselineIntensity: 2
+    onScreenIntensity: 4
+    engagedIntensity: 4
+    engagedStep: 4
+    perExtraEnemyIntensity: 2
+    maximumIntensity: 13
+    introSteps:
+    - marker: Tower1
+      bars: 4
+      nextIntensity: 2
   deaggroFadeDuration: 4
-  bossHealthRaisesIntensity: 1
-  healthIntensity:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: -1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: -1
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   fastTravelFadeDuration: 1.5
-  riseSpeed: 1.5
-  fallSpeed: 0.5
+  riseSpeed: 4
+  fallSpeed: 1.5
+  lockUntilTriggered: 1
+  lockedIntensity: 0
+  introLeadBeats: 1
+  defaultBeatsPerBar: 4
+  introTimeout: 30
   debugIntensity: 0
+  debugTiming: 0
+  debugEnemies: 0
 --- !u!1 &215098120
 GameObject:
   m_ObjectHideFlags: 0

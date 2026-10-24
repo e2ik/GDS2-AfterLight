@@ -47,11 +47,13 @@ namespace Enemies
                 MusicManager.Instance?.SetTargetIntensity(0.5f);
         }
 
-        public static bool AnyUnengagedOnScreen(Camera cam)
+        public static int CollectUnengagedOnScreen(Camera cam, List<Enemy> results)
         {
-            if (cam == null || _activeEnemies.Count == 0) return false;
+            results?.Clear();
+            if (cam == null || _activeEnemies.Count == 0) return 0;
 
             Rect view = GetCameraRect(cam);
+            int count = 0;
 
             foreach (Enemy enemy in _activeEnemies)
             {
@@ -62,14 +64,16 @@ namespace Enemies
 
                 Bounds body = EnemyTerrainProbe.GetBodyBounds(ctx);
                 Rect rect = new Rect(body.min.x, body.min.y, body.size.x, body.size.y);
+                if (!view.Overlaps(rect)) continue;
 
-                if (view.Overlaps(rect)) return true;
+                count++;
+                results?.Add(enemy);
             }
 
-            return false;
+            return count;
         }
 
-        private static Rect GetCameraRect(Camera cam)
+        public static Rect GetCameraRect(Camera cam)
         {
             if (cam.orthographic)
             {
