@@ -471,6 +471,8 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("[GameManager] No save data found — falling back to new game.");
             TutorialDirector.Instance?.ClearCompletedSequences();
+            MusicManager.Instance?.SetAreaMusicForScene(defaultStartSceneName);
+            
             yield return LoadSceneAdditive(defaultStartSceneName);
             yield return null;
 
@@ -497,6 +499,7 @@ public class GameManager : MonoBehaviour
         string sceneToLoad = hasSavedLocation ? data.progress.lastVisitedSceneName : defaultStartSceneName;
         string anchorToUse = hasSavedLocation ? data.progress.lastSpawnAnchorID : defaultSpawnAnchorID;
 
+        MusicManager.Instance?.SetAreaMusicForScene(sceneToLoad);
         yield return LoadSceneAdditive(sceneToLoad);
         yield return null;
 
@@ -541,6 +544,7 @@ public class GameManager : MonoBehaviour
             yield return FadeCanvasController.Instance.FadeOut(returnToTitleFadeDuration);
 
         SetState(GameState.Title);
+        MusicManager.Instance?.PlayMenuMusic();
 
         if (_playerInstance != null)
         {
@@ -597,11 +601,15 @@ public class GameManager : MonoBehaviour
     private IEnumerator PlayIntroCutscene()
     {
         if (!WillPlayIntroCutscene())
+        {
+            MusicManager.Instance?.SetAreaMusicForScene(defaultStartSceneName);
             yield break;
+        }
 
         if (MusicManager.Instance != null)
         {
             MusicManager.Instance.StopMusicForCutscene();
+            MusicManager.Instance.SetAreaMusicForScene(defaultStartSceneName);
             yield return new WaitForSecondsRealtime(MusicManager.Instance.StopFadeDuration);
         }
 
@@ -693,8 +701,10 @@ public class GameManager : MonoBehaviour
 
         SaveManager.Instance?.SaveProgressAtLocation(targetScene, anchorID, side);
         
-        if(MusicManager.Instance != null && MusicManager.Instance.IsBossMusicActive)
-            MusicManager.Instance.ExitBossMusicToPrevious();
+        MusicManager music = MusicManager.Instance;
+        
+        if(music != null && !music.SetAreaMusicForScene(targetScene))
+            music.ExitBossMusicToPrevious();
 
         onComplete?.Invoke();
 

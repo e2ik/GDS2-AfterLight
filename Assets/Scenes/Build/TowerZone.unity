@@ -10768,6 +10768,8 @@ MonoBehaviour:
   onExitLeft: 0
   onExitRight: 2
   unloadPadding: 0
+  switchAreaMusic: 1
+  loadedSceneIsOnRight: 0
 --- !u!61 &223651042
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -10823,7 +10825,7 @@ Transform:
   m_GameObject: {fileID: 223651040}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -14.79, y: 6.76, z: 0}
+  m_LocalPosition: {x: -15.06, y: 6.76, z: 0}
   m_LocalScale: {x: 4.798233, y: 27.321896, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

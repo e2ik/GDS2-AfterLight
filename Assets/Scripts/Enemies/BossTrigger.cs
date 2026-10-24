@@ -69,7 +69,6 @@ namespace Enemies
 
         [Header("Music")] 
         [SerializeField] private EventReference bossMusicEvent;
-        [SerializeField] private EventReference postBossMusicEvent;
         
         private bool hasTriggered;
         private bool bossDefeated;
@@ -302,7 +301,10 @@ namespace Enemies
                     if (SaveManager.Instance != null) SaveManager.Instance.SetStoryFlag(DefeatedFlag);
                     ReleaseCamera();
                     SetDoorsLocked(false);
-                    if (playMusic) MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
+                    
+                    if (playMusic) 
+                        MusicManager.Instance?.ExitBossMusicToPrevious();
+                    
                     BossHealthBarUI.Instance?.Hide();
                     CleanupFightSubscriptions();
 
@@ -341,7 +343,7 @@ namespace Enemies
             }
             
             if(playMusic)
-                MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
+                MusicManager.Instance?.ExitBossMusicToPrevious();
 
             endCreditsPending = ShouldPlayEndCredits;
             StartCoroutine(PlayDeathDialogueThenFinalize(boss, player));

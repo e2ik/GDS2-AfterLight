@@ -181,6 +181,8 @@ MonoBehaviour:
   defaultStartAreaSide: 1
   titleSceneName: GameSetup
   creditsSceneName: Credits
+  creditsFadeDuration: 1
+  returnToTitleFadeDuration: 0.75
   playerPrefab: {fileID: 6310612592100663882, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
   worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
   saveManager: {fileID: 78526259}
@@ -209,7 +211,7 @@ MonoBehaviour:
   oneHitKillEnemies: 0
   spawnAllLegendaries: 0
   skillMeterAlwaysFull: 0
-  godMode: 1
+  godMode: 0
   maxConcurrentAttackers: 1
   attackSlotCooldown: 0.3
   extraAttackerChance: 0.33
@@ -343,11 +345,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
   defaultMusicEvent:
     Guid:
-      Data1: 1626273885
-      Data2: 1300586119
-      Data3: 1151470465
-      Data4: 998864367
-    Path: event:/TowerTheme
+      Data1: -558913821
+      Data2: 1078041006
+      Data3: 1295943831
+      Data4: -2118747392
+    Path: event:/Intro
+  areaMusic:
+  - areaName: Hospital
+    sceneNames:
+    - HospitalZone
+    musicEvent:
+      Guid:
+        Data1: 300044231
+        Data2: 1214001075
+        Data3: 842542756
+        Data4: -412094302
+      Path: event:/HospitalTheme
+  - areaName: Tower
+    sceneNames:
+    - TowerZone
+    musicEvent:
+      Guid:
+        Data1: 1626273885
+        Data2: 1300586119
+        Data3: 1151470465
+        Data4: 998864367
+      Path: event:/TowerTheme
   smoothSpeed: 2
   decayPerSecond: 0.125
   decayDelay: 1.5

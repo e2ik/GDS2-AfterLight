@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using FMOD.Studio;
 using FMODUnity;
 using UnityEngine;
@@ -10,7 +11,16 @@ public class MusicManager : MonoBehaviour
 {
     public static MusicManager Instance { get; private set; }
 
+    [Serializable]
+    public class AreaMusicEntry
+    {
+        public string areaName;
+        public string[] sceneNames;
+        public EventReference musicEvent;
+    }
+
     [SerializeField] private EventReference defaultMusicEvent;
+    [SerializeField] private List<AreaMusicEntry> areaMusic = new List<AreaMusicEntry>();
     [SerializeField] private float smoothSpeed = 2f;
     [SerializeField] private float decayPerSecond = 0.125f;
     [SerializeField] private float decayDelay = 1.5f;
@@ -149,6 +159,8 @@ public class MusicManager : MonoBehaviour
     private IEnumerator CrossfadeRoutine(EventInstance fadingOut, EventInstance fadingIn)
     {
         _fadingOutInstance = fadingOut;
+        fadingOut.getVolume(out float outStart);
+        fadingIn.getVolume(out float inStart);
         float t = 0f;
 
         while (t < crossfadeDuration)
@@ -157,10 +169,10 @@ public class MusicManager : MonoBehaviour
             float ratio = Mathf.Clamp01(t / crossfadeDuration);
 
             if (fadingOut.isValid())
-                fadingOut.setVolume(1f - ratio);
+                fadingOut.setVolume(outStart * (1f - ratio));
 
             if (fadingIn.isValid())
-                fadingIn.setVolume(ratio);
+                fadingIn.setVolume(Mathf.Lerp(inStart, 1f, ratio));
 
             yield return null;
         }
@@ -205,6 +217,24 @@ public class MusicManager : MonoBehaviour
         _currentEvent = newLevelEvent;
         _hasCurrentEvent = true;
         _currentNormalized = _targetNormalized = isBossMusic ? 0f : idleFloor;
+    }
+
+    public void PlayMenuMusic() => SwitchMusic(defaultMusicEvent, isBossMusic: false);
+
+    public bool SetAreaMusicForScene(string sceneName, bool interruptBoss = true)
+    {
+        if (_bossMode && !interruptBoss) return false;
+        
+        foreach (AreaMusicEntry area in areaMusic)
+        {
+            if (area.musicEvent.IsNull || area.sceneNames == null) continue;
+            if (Array.IndexOf(area.sceneNames, sceneName) < 0) continue;
+            
+            SwitchMusic(area.musicEvent, isBossMusic: false);
+            return true;
+        }
+
+        return false;
     }
 
     public void StopMusic(bool fadeout = true)
@@ -322,7 +352,7 @@ public class MusicManager : MonoBehaviour
 
     public void ExitBossMusicToPrevious(bool fadeOutPrevious = true)
     {
-        if (!_hasPreBossEvent)
+        if (!_bossMode || !_hasPreBossEvent)
             return;
         
         SwitchMusic(_preBossEvent, isBossMusic: false, fadeOutPrevious);

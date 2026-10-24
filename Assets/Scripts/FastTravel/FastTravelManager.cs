@@ -82,6 +82,7 @@ public class FastTravelManager : MonoBehaviour
             yield return FadeCanvasController.Instance.FadeOut(fadeDuration);
 
         string targetScene = destination.targetSceneName;
+        MusicManager.Instance?.SetAreaMusicForScene(targetScene);
 
         Scene masterScene = SceneManager.GetSceneByName("WorldMaster");
         if (masterScene.isLoaded)

@@ -17,6 +17,10 @@ public class WorldZoneTrigger : MonoBehaviour
     [SerializeField] private ZoneAction onExitRight = ZoneAction.None;
     [SerializeField, Min(0f)] private float unloadPadding = 0f;
 
+    [Header("Music")] 
+    [SerializeField] private bool switchAreaMusic = true;
+    [SerializeField] private bool loadedSceneIsOnRight = true;
+
     private Collider2D zone;
     private int playerColliderCount;
     private bool unloadPending;
@@ -73,6 +77,7 @@ public class WorldZoneTrigger : MonoBehaviour
         if (playerColliderCount > 0) return;
 
         bool exitRight = IsRightOfCenter(other);
+        UpdateAreaMusic(exitRight);
         ZoneAction action = exitRight ? onExitRight : onExitLeft;
 
         if (action == ZoneAction.Unload && unloadPadding > 0f)
@@ -128,5 +133,18 @@ public class WorldZoneTrigger : MonoBehaviour
             float x = bounds.min.x - unloadPadding;
             Gizmos.DrawLine(new Vector3(x, bounds.min.y), new Vector3(x, bounds.max.y));
         }
+    }
+
+    private void UpdateAreaMusic(bool exitRight)
+    {
+        if (!switchAreaMusic || MusicManager.Instance == null) return;
+        
+        WorldStreamer streamer = WorldStreamer.Instance;
+
+        if (streamer != null && streamer.IsFastTraveling)
+            return;
+
+        string enteredScene = exitRight == loadedSceneIsOnRight ? sceneToLoad : gameObject.scene.name;
+        MusicManager.Instance.SetAreaMusicForScene(enteredScene, interruptBoss: false);
     }
 }

@@ -442,31 +442,35 @@ MonoBehaviour:
   promptFadeOut: 1
   creditsMusic:
     Guid:
-      Data1: -575299851
-      Data2: 1122126428
-      Data3: 1939245233
-      Data4: 1325775335
-    Path: event:/DrBuzz
+      Data1: 471556615
+      Data2: 1126353144
+      Data3: 1863889045
+      Data4: -1727282115
+    Path: event:/Credits
   musicAfterFinish:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: -558913821
+      Data2: 1078041006
+      Data3: 1295943831
+      Data4: -2118747392
+    Path: event:/Intro
   typeBlip:
     Guid:
-      Data1: 0
-      Data2: 0
-      Data3: 0
-      Data4: 0
-    Path: 
+      Data1: 1214235905
+      Data2: 1117444650
+      Data3: -257892426
+      Data4: 2053622759
+    Path: event:/Interface Events/Dialogue Event
   blipEveryChars: 2
   syncToBeat: 1
   syncUnit: 0
-  syncLines: 1
   typeToBeat: 1
+  lineBeats: 1
   beatsPerLine: 2
+  maxBeatsPerLine: 8
+  lineGapBeats: 1
+  compensateAudioLatency: 1
+  beatOffset: 0
   maxBeatWait: 2
   debugBeats: 0
   cardSound:
