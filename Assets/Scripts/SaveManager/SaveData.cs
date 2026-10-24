@@ -13,6 +13,17 @@ public class SaveData
     public ProgressSaveData progress;
     public ChestSaveData chestData;
     public InventorySaveData inventoryData;
+    public RunStatsSaveData runStats;
+}
+
+[System.Serializable]
+public class RunStatsSaveData
+{
+    public float timePlayed;
+    public int enemiesDefeated;
+    public int deaths;
+    public int epicsFound;
+    public int legendariesFound;
 }
 
 [System.Serializable]

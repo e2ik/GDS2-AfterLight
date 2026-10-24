@@ -40,6 +40,7 @@ public class SaveManager : MonoBehaviour
 
     public void CreateNewSaveData()
     {
+        RunStats.Reset();
         InitializeNewSaveData();
         CommitToDisk();
     }
@@ -50,7 +51,8 @@ public class SaveManager : MonoBehaviour
         {
             progress = new ProgressSaveData(),
             chestData = new ChestSaveData(),
-            inventoryData = new InventorySaveData()
+            inventoryData = new InventorySaveData(),
+            runStats = new RunStatsSaveData()
         };
     }
 
@@ -75,6 +77,8 @@ public class SaveManager : MonoBehaviour
 
         if (TutorialDirector.Instance != null)
             _currentSaveData.progress.completedTutorialSequenceIDs = TutorialDirector.Instance.GetCompletedSequencesForSave();
+
+        _currentSaveData.runStats = RunStats.ToSaveData();
 
         try
         {
@@ -117,6 +121,7 @@ public class SaveManager : MonoBehaviour
         }
 
         EnsureDataIntegrity();
+        RunStats.Restore(_currentSaveData.runStats);
         return _currentSaveData;
     }
 

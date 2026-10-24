@@ -44,6 +44,30 @@ public static class RunStats
         countedDead.Clear();
     }
 
+    public static RunStatsSaveData ToSaveData()
+    {
+        return new RunStatsSaveData
+        {
+            timePlayed = TimePlayed,
+            enemiesDefeated = EnemiesDefeated,
+            deaths = Deaths,
+            epicsFound = EpicsFound,
+            legendariesFound = LegendariesFound
+        };
+    }
+
+    public static void Restore(RunStatsSaveData data)
+    {
+        Reset();
+        if (data == null) return;
+
+        TimePlayed = Mathf.Max(0f, data.timePlayed);
+        EnemiesDefeated = Mathf.Max(0, data.enemiesDefeated);
+        Deaths = Mathf.Max(0, data.deaths);
+        EpicsFound = Mathf.Max(0, data.epicsFound);
+        LegendariesFound = Mathf.Max(0, data.legendariesFound);
+    }
+
     public static string FormatTime(float seconds)
     {
         int total = Mathf.FloorToInt(seconds);
@@ -79,18 +103,12 @@ public static class RunStats
 
     private class RunStatsTimer : MonoBehaviour
     {
-        private GameManager.GameState lastState = GameManager.GameState.Title;
-
         private void Update()
         {
             GameManager manager = GameManager.Instance;
             if (manager == null) return;
 
-            GameManager.GameState state = manager.CurrentState;
-            if (lastState == GameManager.GameState.Title && state == GameManager.GameState.Game) Reset();
-            lastState = state;
-
-            if (state == GameManager.GameState.Game && Time.timeScale > 0f) AddTime(Time.unscaledDeltaTime);
+            if (manager.CurrentState == GameManager.GameState.Game && Time.timeScale > 0f) AddTime(Time.unscaledDeltaTime);
         }
     }
 }
