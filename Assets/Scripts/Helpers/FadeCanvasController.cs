@@ -20,6 +20,7 @@ public class FadeCanvasController : MonoBehaviour
         }
 
         Instance = this;
+        if (transform.parent == null) DontDestroyOnLoad(gameObject);
 
         if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
     }

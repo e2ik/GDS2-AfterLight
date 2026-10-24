@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FMODUnity;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -177,33 +178,71 @@ namespace Enemies.ModuleScripts.Movement
             return false;
         }
 
+        private static readonly List<RaycastHit2D> groundHits = new List<RaycastHit2D>();
+        private static readonly List<Collider2D> overlapResults = new List<Collider2D>();
+
         private bool TryValidate(EnemyContext ctx, Vector2 candidate, bool useGround, Bounds body, bool hasTarget, Vector2 targetPos, float minDistSqr, out Vector2 destination)
         {
             destination = candidate;
 
-            if (useGround)
-            {
-                if (Physics2D.OverlapPoint(candidate, groundMask)) return false;
-
-                RaycastHit2D hit = Physics2D.Raycast(candidate, Vector2.down, groundCheckDepth, groundMask);
-                if (hit.collider == null) return false;
-
-                float feetOffset = ctx.Self.position.y - body.min.y;
-                destination = new Vector2(candidate.x, hit.point.y + feetOffset);
-
-                Vector2 bodyCenterOffset = (Vector2)body.center - (Vector2)ctx.Self.position;
-                Vector2 bodyCenterAtDestination = destination + bodyCenterOffset + Vector2.up * 0.05f;
-                if (Physics2D.OverlapBox(bodyCenterAtDestination, (Vector2)body.size * 0.9f, 0f, groundMask)) return false;
-            }
-            else
+            if (!useGround)
             {
                 if (hasTarget && (candidate - targetPos).sqrMagnitude < minDistSqr) return false;
                 if (!NavMeshFlightUtility.TrySamplePoint(candidate, navMeshSampleDistance, out destination)) return false;
+                if (!InsideBounds(ctx, destination, body)) return false;
+                return !hasTarget || (destination - targetPos).sqrMagnitude >= minDistSqr;
             }
 
-            if (!InsideBounds(ctx, destination, body)) return false;
+            float startHeight = body.size.y;
+            Vector2 start = candidate + Vector2.up * startHeight;
+            ContactFilter2D filter = new ContactFilter2D { useTriggers = false, useLayerMask = true, layerMask = groundMask };
+            groundHits.Clear();
+            Physics2D.Raycast(start, Vector2.down, filter, groundHits, groundCheckDepth + startHeight);
 
-            return !hasTarget || (destination - targetPos).sqrMagnitude >= minDistSqr;
+            float preferredY = matchTargetY && hasTarget ? targetPos.y : candidate.y;
+            groundHits.Sort((a, b) => Mathf.Abs(a.point.y - preferredY).CompareTo(Mathf.Abs(b.point.y - preferredY)));
+
+            float feetOffset = ctx.Self.position.y - body.min.y;
+            Vector2 bodyCenterOffset = (Vector2)body.center - (Vector2)ctx.Self.position;
+
+            foreach (RaycastHit2D hit in groundHits)
+            {
+                if (hit.collider == null || hit.distance <= 0f || hit.normal.y < 0.5f) continue;
+
+                Vector2 landing = new Vector2(candidate.x, hit.point.y + feetOffset);
+                Vector2 bodyCenterAtLanding = landing + bodyCenterOffset + Vector2.up * 0.05f;
+
+                if (IsBlockedBySolidGround(bodyCenterAtLanding, (Vector2)body.size * 0.9f)) continue;
+                if (!InsideBounds(ctx, landing, body)) continue;
+                if (hasTarget && (landing - targetPos).sqrMagnitude < minDistSqr) continue;
+
+                destination = landing;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsBlockedBySolidGround(Vector2 center, Vector2 size)
+        {
+            ContactFilter2D filter = new ContactFilter2D { useTriggers = false, useLayerMask = true, layerMask = groundMask };
+            overlapResults.Clear();
+            Physics2D.OverlapBox(center, size, 0f, filter, overlapResults);
+
+            foreach (Collider2D col in overlapResults)
+            {
+                if (col == null || IsPassThrough(col)) continue;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsPassThrough(Collider2D col)
+        {
+            if (col.usedByEffector || col.GetComponentInParent<PlatformEffector2D>() != null) return true;
+            if (col.GetComponentInParent<DropThroughPlatform>() != null) return true;
+            return col.GetComponentInParent<AirOnlyCollisionPlatform>() != null;
         }
 
         private bool InsideBounds(EnemyContext ctx, Vector2 destination, Bounds body)

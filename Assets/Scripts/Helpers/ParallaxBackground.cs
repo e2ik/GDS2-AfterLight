@@ -68,6 +68,9 @@ public class ParallaxBackground : MonoBehaviour
     private bool hasAppliedSide;
     private AreaSide appliedSide;
     private IList<LayerColor> activeLayerColors;
+    private bool forceVisible;
+
+    public void SetForceVisible(bool visible) => forceVisible = visible;
 
     private void Awake()
     {
@@ -77,6 +80,7 @@ public class ParallaxBackground : MonoBehaviour
         foreach (ParallaxLayer layer in layers)
         {
             GameObject layerObject = new GameObject(string.IsNullOrEmpty(layer.name) ? "Layer" : layer.name);
+            layerObject.SetActive(false);
             layerObject.transform.SetParent(content, false);
 
             SpriteRenderer sr = layerObject.AddComponent<SpriteRenderer>();
@@ -91,6 +95,8 @@ public class ParallaxBackground : MonoBehaviour
             layer.renderer = sr;
             layer.baseColor = layer.color;
             layer.targetColor = layer.color;
+
+            layerObject.SetActive(true);
         }
     }
 
@@ -232,7 +238,7 @@ public class ParallaxBackground : MonoBehaviour
     {
         TrySubscribe();
 
-        bool visible = !onlyVisibleInGame || (GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.Game);
+        bool visible = forceVisible || !onlyVisibleInGame || (GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.Game);
         if (content.gameObject.activeSelf != visible)
         {
             content.gameObject.SetActive(visible);

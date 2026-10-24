@@ -1,0 +1,117 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7a33a44824e98e4bb0292e9f1083a1c, type: 3}
+  m_Name: CreditsData
+  m_EditorClassIdentifier: Assembly-CSharp::CreditsData
+  sections:
+  - heading: Thanks for Playing
+    layout: 1
+    holdTime: 5
+    clearTerminal: 0
+    lines:
+    - style: 3
+      role: 
+      name: 
+    - style: 1
+      role: 
+      name: We hope you enjoyed the vertical slice of Project AfterLight.
+  - heading: Development Team
+    layout: 0
+    holdTime: 0
+    clearTerminal: 1
+    lines: []
+  - heading: Programmers
+    layout: 0
+    holdTime: 1
+    clearTerminal: 1
+    lines:
+    - style: 3
+      role: 
+      name: 
+    - style: 0
+      role: Backend Systems
+      name: Erik Lin
+    - style: 0
+      role: Enemys & Audio
+      name: James Gardner
+    - style: 0
+      role: Dialogue System
+      name: Pun Rojanamontien
+    - style: 0
+      role: Player & Combat
+      name: Benjamin Howe
+    - style: 0
+      role: Gearing & SFX
+      name: Arie Maljers
+    - style: 0
+      role: UI/UX Design
+      name: James Kirwan
+    - style: 0
+      role: FMOD & Music
+      name: Spencer Edwards
+  - heading: Misc Roles
+    layout: 0
+    holdTime: 1
+    clearTerminal: 1
+    lines:
+    - style: 3
+      role: 
+      name: 
+    - style: 0
+      role: Lead Artist
+      name: Erik Lin
+    - style: 0
+      role: Narrative & World
+      name: James Gardner
+    - style: 0
+      role: UI/UX graphics
+      name: Pun Rojanamontien
+    - style: 0
+      role: Level Blocking
+      name: Benjamin Howe
+    - style: 0
+      role: SFX sourcing
+      name: Arie Maljers
+    - style: 0
+      role: QA Lead
+      name: James Kirwan
+  - heading: Music & Sound Design
+    layout: 0
+    holdTime: 3
+    clearTerminal: 1
+    lines:
+    - style: 3
+      role: 
+      name: 
+    - style: 1
+      role: 
+      name: Spencer Edwards
+    - style: 3
+      role: 
+      name: 
+    - style: 2
+      role: 
+      name: Huge thanks to Spencer for making this collaboration possible,<br>and
+        to the students of the UTS MSD department<br>for pouring their talent into
+        every track and sound.<br>This game wouldn't feel the way it does without
+        you.
+  showStats: 1
+  statsHeading: MISSION REPORT
+  timeLabel: TIME
+  enemiesLabel: ENEMIES DEFEATED
+  deathsLabel: DEATHS
+  epicsLabel: EPICS FOUND
+  legendariesLabel: LEGENDARIES FOUND
+  statsHoldTime: 5
+  stingerLine: 
+  stingerDelay: 1.5
+  stingerHoldTime: 3

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Enemies.Cutscene;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Tutorial;
@@ -35,6 +36,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private string defaultSpawnAnchorID = "DefaultSpawn";
     [SerializeField] private AreaSide defaultStartAreaSide = AreaSide.Interior;
     [SerializeField] private string titleSceneName = "TitleScene";
+    [SerializeField] private string creditsSceneName = "Credits";
+    [SerializeField, Min(0f)] private float creditsFadeDuration = 1f;
+    [SerializeField, Min(0f)] private float returnToTitleFadeDuration = 0.75f;
 
     [Header("Player")]
     [SerializeField] private GameObject playerPrefab;
@@ -292,6 +296,97 @@ public class GameManager : MonoBehaviour
         StartCoroutine(LoadGameRoutine());
     }
 
+    public bool CreditsOpen { get; private set; }
+    private bool returningToTitle;
+
+    public void LoadCredits()
+    {
+        if (CreditsOpen || string.IsNullOrEmpty(creditsSceneName)) return;
+        StartCoroutine(LoadCreditsRoutine());
+    }
+
+    private IEnumerator LoadCreditsRoutine()
+    {
+        CreditsOpen = true;
+
+        EventSystem eventSystem = EventSystem.current;
+        GameObject previousSelection = eventSystem != null ? eventSystem.currentSelectedGameObject : null;
+        if (eventSystem != null) eventSystem.enabled = false;
+
+        if (FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeOut(creditsFadeDuration);
+
+        List<CanvasGroup> hiddenGroups = new List<CanvasGroup>();
+        List<float> hiddenAlphas = new List<float>();
+        HideSceneCanvases(SceneManager.GetActiveScene(), hiddenGroups, hiddenAlphas);
+
+        AsyncOperation load = SceneManager.LoadSceneAsync(creditsSceneName, LoadSceneMode.Additive);
+        while (load != null && !load.isDone) yield return null;
+
+        while (SceneManager.GetSceneByName(creditsSceneName).isLoaded) yield return null;
+
+        for (int i = 0; i < hiddenGroups.Count; i++)
+            if (hiddenGroups[i] != null) hiddenGroups[i].alpha = hiddenAlphas[i];
+
+        if (!returningToTitle && FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeIn(creditsFadeDuration);
+
+        if (eventSystem != null)
+        {
+            eventSystem.enabled = true;
+            if (previousSelection != null && previousSelection.activeInHierarchy) eventSystem.SetSelectedGameObject(previousSelection);
+        }
+
+        CreditsOpen = false;
+    }
+
+    private static void HideSceneCanvases(Scene scene, List<CanvasGroup> groups, List<float> alphas)
+    {
+        if (!scene.IsValid() || !scene.isLoaded) return;
+
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            foreach (Canvas canvas in root.GetComponentsInChildren<Canvas>(true))
+            {
+                if (!canvas.isRootCanvas) continue;
+
+                CanvasGroup group = canvas.GetComponent<CanvasGroup>();
+                if (group == null) group = canvas.gameObject.AddComponent<CanvasGroup>();
+
+                groups.Add(group);
+                alphas.Add(group.alpha);
+                group.alpha = 0f;
+            }
+        }
+    }
+
+    public void PlayEndCredits()
+    {
+        if (CreditsOpen || string.IsNullOrEmpty(creditsSceneName)) return;
+        StartCoroutine(EndCreditsRoutine());
+    }
+
+    private IEnumerator EndCreditsRoutine()
+    {
+        CreditsOpen = true;
+        SaveManager.Instance?.CommitToDisk();
+
+        if (FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeOut(creditsFadeDuration);
+
+        SetState(GameState.Title);
+
+        if (_playerInstance != null)
+        {
+            Destroy(_playerInstance);
+            _playerInstance = null;
+            player = null;
+        }
+
+        AsyncOperation load = SceneManager.LoadSceneAsync(creditsSceneName, LoadSceneMode.Single);
+        while (load != null && !load.isDone) yield return null;
+    }
+
     public void ReturnToTitle()
     {
         StartCoroutine(ReturnToTitleRoutine());
@@ -440,6 +535,10 @@ public class GameManager : MonoBehaviour
     private IEnumerator ReturnToTitleRoutine()
     {
         SaveManager.Instance?.CommitToDisk();
+        returningToTitle = true;
+
+        if (FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeOut(returnToTitleFadeDuration);
 
         SetState(GameState.Title);
 
@@ -455,6 +554,12 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
+
+        returningToTitle = false;
+        CreditsOpen = false;
+
+        if (FadeCanvasController.Instance != null)
+            yield return FadeCanvasController.Instance.FadeIn(returnToTitleFadeDuration);
     }
 
     private void OnDestroy()

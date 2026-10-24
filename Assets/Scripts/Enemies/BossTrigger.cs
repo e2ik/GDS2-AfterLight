@@ -48,6 +48,14 @@ namespace Enemies
         [Header("Camera")]
         [SerializeField] private bool lockCameraToArena = true;
 
+        [Header("End Credits")]
+        [SerializeField] private bool playEndCreditsOnDefeat = false;
+        [SerializeField] private bool endCreditsOnRematch = false;
+        [SerializeField, Min(0f)] private float endCreditsDelay = 1.5f;
+        private bool endCreditsPending;
+        private bool endCreditsStarted;
+        private bool ShouldPlayEndCredits => playEndCreditsOnDefeat && (!isRematch || endCreditsOnRematch);
+
         [Header("Background")]
         [SerializeField] private List<ParallaxBackground.LayerColor> engagedLayerColors = new List<ParallaxBackground.LayerColor>();
         [SerializeField, Min(0f)] private float backgroundBlendTime = 3f;
@@ -297,6 +305,8 @@ namespace Enemies
                     if (playMusic) MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
                     BossHealthBarUI.Instance?.Hide();
                     CleanupFightSubscriptions();
+
+                    if (ShouldPlayEndCredits && !endCreditsPending) StartEndCredits(endCreditsDelay);
                 };
 
                 bossEnemy.Context.Health.OnDamaged += onBossDamaged;
@@ -333,6 +343,7 @@ namespace Enemies
             if(playMusic)
                 MusicManager.Instance?.SwitchMusic(postBossMusicEvent, isBossMusic: false);
 
+            endCreditsPending = ShouldPlayEndCredits;
             StartCoroutine(PlayDeathDialogueThenFinalize(boss, player));
         }
 
@@ -577,8 +588,27 @@ namespace Enemies
             deathSequenceRunning = false;
             if(bossEnemy != null)
                 bossEnemy.Context.Health.FinalizeDeath();
+
+            if (endCreditsPending)
+            {
+                StartEndCredits(hasCutscene ? 0f : endCreditsDelay);
+                yield break;
+            }
             
             player.Controller.FreezeMovement(false);
+        }
+
+        private void StartEndCredits(float delay)
+        {
+            if (endCreditsStarted) return;
+            endCreditsStarted = true;
+            StartCoroutine(EndCreditsRoutine(delay));
+        }
+
+        private IEnumerator EndCreditsRoutine(float delay)
+        {
+            if (delay > 0f) yield return new WaitForSecondsRealtime(delay);
+            GameManager.Instance?.PlayEndCredits();
         }
 
         private IEnumerator PlayCutscene(string filename, Player player, Enemy bossEnemy = null)
@@ -618,6 +648,8 @@ namespace Enemies
             MusicManager.Instance?.RestartMusic();
             AudioManager.ToggleSFXMute();
             CutscenePlayer.Instance.SetCutsceneUIHidden(false);
+
+            if (endCreditsPending) yield break;
 
             if (FadeCanvasController.Instance != null)
                 yield return FadeCanvasController.Instance.FadeIn(cutsceneFadeInDuration);

@@ -11,6 +11,7 @@ public class SaveButtonState : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Button primaryButton;
     [SerializeField] private Button newGameButton;
+    [SerializeField] private Button creditsButton;
 
     private TMP_Text primaryButtonText;
     private TMP_Text newGameButtonText;
@@ -51,6 +52,12 @@ public class SaveButtonState : MonoBehaviour
             }
         }
 
+        if (creditsButton != null)
+        {
+            creditsButton.onClick.RemoveAllListeners();
+            creditsButton.onClick.AddListener(OnCreditsPressed);
+        }
+
         if (newGameButton != null)
         {
             newGameButton.gameObject.SetActive(saveExists);
@@ -71,5 +78,10 @@ public class SaveButtonState : MonoBehaviour
     private void OnNewGamePressed()
     {
         GameManager.Instance.NewGame();
+    }
+
+    private void OnCreditsPressed()
+    {
+        GameManager.Instance.LoadCredits();
     }
 }
