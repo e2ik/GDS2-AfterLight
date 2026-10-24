@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Enemies.Cutscene;
-using FMODUnity;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -37,11 +36,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private string defaultSpawnAnchorID = "DefaultSpawn";
     [SerializeField] private AreaSide defaultStartAreaSide = AreaSide.Interior;
     [SerializeField] private string titleSceneName = "TitleScene";
-
-    [Header("Music")]
-    [SerializeField] private EventReference titleMusic;
-    [SerializeField] private EventReference gameMusic;
-    private bool suppressStateMusic;
     [SerializeField] private string creditsSceneName = "Credits";
     [SerializeField, Min(0f)] private float creditsFadeDuration = 1f;
     [SerializeField, Min(0f)] private float returnToTitleFadeDuration = 0.75f;
@@ -269,8 +263,6 @@ public class GameManager : MonoBehaviour
         currentState = newState;
         UpdateHudVisibility();
 
-        if (!suppressStateMusic) PlayStateMusic(currentState);
-
         switch (currentState)
         {
             case GameState.Title:
@@ -286,14 +278,6 @@ public class GameManager : MonoBehaviour
                 }
                 break;
         }
-    }
-
-    private void PlayStateMusic(GameState state)
-    {
-        EventReference music = state == GameState.Title ? titleMusic : gameMusic;
-        if (music.IsNull || MusicManager.Instance == null) return;
-
-        MusicManager.Instance.SwitchMusic(music);
     }
 
     #endregion
@@ -313,6 +297,7 @@ public class GameManager : MonoBehaviour
     }
 
     public bool CreditsOpen { get; private set; }
+    public bool CreditsFromTitle { get; private set; }
     private bool returningToTitle;
 
     public void LoadCredits()
@@ -324,6 +309,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator LoadCreditsRoutine()
     {
         CreditsOpen = true;
+        CreditsFromTitle = CurrentState == GameState.Title;
 
         EventSystem eventSystem = EventSystem.current;
         GameObject previousSelection = eventSystem != null ? eventSystem.currentSelectedGameObject : null;
@@ -354,6 +340,7 @@ public class GameManager : MonoBehaviour
         }
 
         CreditsOpen = false;
+        CreditsFromTitle = false;
     }
 
     private static void HideSceneCanvases(Scene scene, List<CanvasGroup> groups, List<float> alphas)
@@ -385,14 +372,13 @@ public class GameManager : MonoBehaviour
     private IEnumerator EndCreditsRoutine()
     {
         CreditsOpen = true;
+        CreditsFromTitle = false;
         SaveManager.Instance?.CommitToDisk();
 
         if (FadeCanvasController.Instance != null)
             yield return FadeCanvasController.Instance.FadeOut(creditsFadeDuration);
 
-        suppressStateMusic = true;
         SetState(GameState.Title);
-        suppressStateMusic = false;
 
         if (_playerInstance != null)
         {
@@ -632,8 +618,7 @@ public class GameManager : MonoBehaviour
         }
 
         yield return CutscenePlayer.Instance.Play(introCutsceneFile);
-
-        if (!gameMusic.IsNull) MusicManager.Instance?.SwitchMusic(gameMusic);
+        
         MusicManager.Instance?.RestartMusic();
     }
 

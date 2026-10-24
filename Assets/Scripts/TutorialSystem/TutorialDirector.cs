@@ -205,6 +205,7 @@ namespace Tutorial
 
         private bool seenCombatThisSequence;
         private float noCombatTimer;
+        private readonly HashSet<Enemy> engagedThisSequence = new();
 
         private void LateUpdate()
         {
@@ -220,10 +221,23 @@ namespace Tutorial
             {
                 seenCombatThisSequence = true;
                 noCombatTimer = 0f;
+                foreach (Enemy enemy in EnemyCombatTracker.TargetingEnemies)
+                    if (enemy != null) engagedThisSequence.Add(enemy);
                 return;
             }
 
             if (!seenCombatThisSequence) return;
+
+            if (AllEngagedEnemiesDefeated())
+            {
+                if (debugEventTriggers)
+                    Debug.Log($"[TutorialDirector] '{activeSequence.name}' combat ended by defeating enemies, continuing sequence", this);
+
+                seenCombatThisSequence = false;
+                noCombatTimer = 0f;
+                engagedThisSequence.Clear();
+                return;
+            }
 
             noCombatTimer += Time.unscaledDeltaTime;
             if (noCombatTimer < activeSequence.CombatEndGrace) return;
@@ -232,6 +246,20 @@ namespace Tutorial
                 Debug.Log($"[TutorialDirector] '{activeSequence.name}' completed: no enemies engaged for {activeSequence.CombatEndGrace}s", this);
 
             SkipActiveSequence();
+        }
+
+        private bool AllEngagedEnemiesDefeated()
+        {
+            if (engagedThisSequence.Count == 0) return false;
+
+            foreach (Enemy enemy in engagedThisSequence)
+            {
+                if (enemy == null || !enemy.isActiveAndEnabled) continue;
+                if (enemy.Context != null && enemy.Context.Health != null && enemy.Context.Health.CurrentHealth <= 0) continue;
+                return false;
+            }
+
+            return true;
         }
 
         public bool BeginSequence(TutorialSequenceDefinition sequence, bool force = false)
@@ -298,6 +326,7 @@ namespace Tutorial
             activeSequence = sequence;
             seenCombatThisSequence = false;
             noCombatTimer = 0f;
+            engagedThisSequence.Clear();
             stepHoldCount = 0;
             menusAllowed = false;
             StartReactions();

@@ -99,6 +99,7 @@ public class CreditsScreen : MonoBehaviour
     [SerializeField] private EventReference creditsMusic;
     [SerializeField] private EventReference musicAfterFinish;
     [SerializeField] private EventReference typeBlip;
+    [SerializeField, Range(0f, 1f)] private float typeBlipVolume = 0.4f;
     [SerializeField, Min(1)] private int blipEveryChars = 2;
 
     [Header("Beat Sync")]
@@ -370,6 +371,21 @@ public class CreditsScreen : MonoBehaviour
         playRoutine = StartCoroutine(PlayRoutine());
     }
 
+    private bool IsBlipCharacter(TMP_Text text, int index)
+    {
+        if (index < 0 || index >= text.textInfo.characterCount) return false;
+        char character = text.textInfo.characterInfo[index].character;
+        return character != leaderChar && !char.IsWhiteSpace(character);
+    }
+
+    private void PlayTypeBlip()
+    {
+        var blip = RuntimeManager.CreateInstance(typeBlip);
+        blip.setVolume(typeBlipVolume);
+        blip.start();
+        blip.release();
+    }
+
     private IEnumerator PlayRoutine()
     {
         skipping = false;
@@ -419,7 +435,8 @@ public class CreditsScreen : MonoBehaviour
             if (!skipping) yield return WaitOrTap(sectionPause);
         }
 
-        if (!skipping && data.showStats)
+        bool fromTitle = GameManager.Instance != null && GameManager.Instance.CreditsFromTitle;
+        if (!skipping && data.showStats && !fromTitle)
         {
             yield return HideTerminal();
             yield return WaitForBeat();
@@ -604,10 +621,10 @@ public class CreditsScreen : MonoBehaviour
             text.maxVisibleCharacters = visible;
             PlaceCursor(text, visible);
 
-            if (!typeBlip.IsNull && visible - lastBlip >= blipEveryChars)
+            if (!typeBlip.IsNull && visible - lastBlip >= blipEveryChars && IsBlipCharacter(text, visible - 1))
             {
                 lastBlip = visible;
-                AudioManager.PlaySFX(typeBlip);
+                PlayTypeBlip();
             }
 
             yield return null;

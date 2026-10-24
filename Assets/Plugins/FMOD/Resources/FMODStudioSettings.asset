@@ -905,7 +905,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: FMODUnity::FMODUnity.PlatformWebGL
   identifier: 46fbfdf3fc43db0458918377fd40293e
   parentIdentifier: default
-  active: 1
+  active: 0
   Properties:
     LiveUpdate:
       Value: 0
@@ -941,11 +941,11 @@ MonoBehaviour:
       Value: 0
       HasValue: 0
     DSPBufferLength:
-      Value: 1024
-      HasValue: 1
+      Value: 0
+      HasValue: 0
     DSPBufferCount:
-      Value: 4
-      HasValue: 1
+      Value: 0
+      HasValue: 0
     Plugins:
       Value: []
       HasValue: 0
@@ -955,7 +955,7 @@ MonoBehaviour:
     CallbackHandler:
       Value: {fileID: 0}
       HasValue: 0
-  OutputTypeName: AUTODETECT
+  OutputTypeName: 
   threadAffinities:
     Value: []
     HasValue: 0
