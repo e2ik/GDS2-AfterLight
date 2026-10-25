@@ -205,8 +205,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 346d2e76893c3994ead4d8a2cd296dff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.BossTrigger
-  introDialogue: {fileID: 11400000, guid: 82026368e70b5a245822b74f4b07e434, type: 2}
-  deathDialogue: {fileID: 11400000, guid: 2e2f63a2707b83749ad5e82c1f27d774, type: 2}
+  introDialogue: {fileID: 11400000, guid: 480d07c289b882c49b4a3b319201b8b0, type: 2}
+  deathDialogue: {fileID: 11400000, guid: c67c8b034f787634190bc415f35079cc, type: 2}
   bossSpawner: {fileID: 4834338806447968780}
   arenaBounds: {fileID: 5544713734480100453}
   arenaColliders: {fileID: 8232934314577423133}
@@ -220,7 +220,7 @@ MonoBehaviour:
   cutsceneFadeOutDuration: 1
   cutsceneFadeInDuration: 1
   phaseCount: 2
-  phaseTransitionDialogue: {fileID: 11400000, guid: 2ed6600bea7b543bd939f3a4eea86f77, type: 2}
+  phaseTransitionDialogue: {fileID: 11400000, guid: a611738d02395284391698cde770f020, type: 2}
   phaseTransitionSFX:
     Guid:
       Data1: -1667255183
@@ -259,13 +259,6 @@ MonoBehaviour:
       Data3: -1889155924
       Data4: 1785508625
     Path: event:/CannedHeat
-  musicPhaseParameter: CannedHeatBoss
-  phaseMusicLabels:
-  - FIRST
-  - SECOND
-  phaseIntensities:
-  - 0.5
-  - 0.9
 --- !u!1 &3852305289550027895
 GameObject:
   m_ObjectHideFlags: 0
