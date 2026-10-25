@@ -105,11 +105,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 359096b6fa27c3b40a4527735bf9c9f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialTriggerVolume
-  uiMode: 2
+  uiMode: 1
+  triggerID: 
   sequence: {fileID: 0}
+  maxDistanceFromPlayer: 0
+  completeWhenOutOfRange: 0
   speechBubbleText: Sample Text for Speech Bubble
   speechBubbleDuration: 3
-  disableAfterTriggering: 1
+  speechBubbleEffect: 0
+  speechBubbleLines: []
+  hideVisualsOnStart: 1
 --- !u!61 &4583466477509238872
 BoxCollider2D:
   m_ObjectHideFlags: 0
