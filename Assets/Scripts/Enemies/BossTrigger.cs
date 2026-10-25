@@ -3,6 +3,7 @@ using System.Collections;
 using Enemies.Cutscene;
 using System.Collections.Generic;
 using FMODUnity;
+using Tutorial;
 using UnityEditor.Build;
 using UnityEngine;
 
@@ -78,6 +79,19 @@ namespace Enemies
         [SerializeField] private bool useRematchInteractable = false;
         [SerializeField] private BossRematch rematchInteractable;
         private bool rematchInteractableShown = true;
+
+        [Header("Speech Bubble")] 
+        [SerializeField] private bool thoughtAfterCutscene;
+        [SerializeField] private SpeechLine[] thoughtLines;
+        [SerializeField] private float thoughtDuration;
+        
+        [System.Serializable]
+        private struct SpeechLine
+        {
+            [TextArea(2, 4)]
+            public string text;
+            public DialogueEffect effect;
+        }
         
         private bool hasTriggered;
         private bool bossDefeated;
@@ -752,6 +766,30 @@ namespace Enemies
                 yield return FadeCanvasController.Instance.FadeIn(cutsceneFadeInDuration);
 
             player.Controller.FreezeMovement(false);
+
+            if (thoughtAfterCutscene)
+            {
+
+                Transform followTarget = null;
+
+                if (GameManager.Instance != null && GameManager.Instance.Player != null)
+                    followTarget = GameManager.Instance.Player.transform;
+
+                if (followTarget != null && thoughtLines != null)
+                    StartCoroutine(PlaySpeechLinesRoutine(thoughtLines, followTarget));
+
+            }
+        }
+        
+        private IEnumerator PlaySpeechLinesRoutine(SpeechLine[] lines, Transform target)
+        {
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrEmpty(line.text)) continue;
+
+                TutorialSpeechBubblePool.Instance.Show(line.text, target, thoughtDuration, line.effect);
+                yield return new WaitForSecondsRealtime(thoughtDuration);
+            }
         }
         
         private void SetPhaseMusicLabel(int phase)
