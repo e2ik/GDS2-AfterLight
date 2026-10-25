@@ -20,6 +20,7 @@ namespace Tutorial
 
         [SerializeField] private EventSequenceTrigger[] eventTriggers;
         [SerializeField] private bool debugEventTriggers = false;
+        [SerializeField] private bool saveWhenCompleted = true;
 
         public event Action<TutorialSequenceDefinition> OnSequenceBegan;
         public event Action<TutorialSequenceDefinition> OnSequenceCompleted;
@@ -207,7 +208,14 @@ namespace Tutorial
 
         public void MarkCompleted(string id)
         {
-            if (!string.IsNullOrEmpty(id)) completedSequenceIDs.Add(id);
+            if (!string.IsNullOrEmpty(id) && completedSequenceIDs.Add(id)) SaveProgress();
+        }
+
+        private void SaveProgress()
+        {
+            if (!saveWhenCompleted || TutorialsDisabled) return;
+            if (GameManager.Instance == null || GameManager.Instance.CurrentState != GameManager.GameState.Game) return;
+            SaveManager.Instance?.CommitToDisk();
         }
 
         public void LoadCompletedSequences(IEnumerable<string> ids)
@@ -478,14 +486,17 @@ namespace Tutorial
         {
             StopReactions();
 
+            bool newlyCompleted = false;
             if (markCompleted)
             {
-                if (sequence != null && !string.IsNullOrEmpty(sequence.SequenceID)) completedSequenceIDs.Add(sequence.SequenceID);
+                if (sequence != null && !string.IsNullOrEmpty(sequence.SequenceID)) newlyCompleted = completedSequenceIDs.Add(sequence.SequenceID);
                 if (sequence != null) resumeIndices.Remove(sequence.SequenceID);
             }
             activeSequence = null;
             sequenceRoutine = null;
             OnSequenceCompleted?.Invoke(sequence);
+
+            if (newlyCompleted) SaveProgress();
         }
 
         public void SetCutsceneState(bool freezeMovement, bool disableInput)

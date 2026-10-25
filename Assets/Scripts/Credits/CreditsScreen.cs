@@ -40,6 +40,7 @@ public class CreditsScreen : MonoBehaviour
     [SerializeField] private bool autoLineWidth = true;
     [SerializeField, Min(10)] private int lineWidth = 36;
     [SerializeField, Min(1)] private int minLeaderDots = 3;
+    [SerializeField, Min(1)] private int creditsMinLeaderDots = 3;
     [SerializeField] private string statusSuffix = " <color=#7CFFB2>[OK]</color>";
     [SerializeField, Min(1f)] private float charsPerSecond = 40f;
     [SerializeField, Min(0f)] private float linePause = 0.25f;
@@ -164,6 +165,7 @@ public class CreditsScreen : MonoBehaviour
     private bool cursorTyping;
     private TMP_Text measurer;
     private float terminalTargetWidth;
+    private int activeMinDots;
 
     public bool IsPlaying => playRoutine != null;
 
@@ -401,7 +403,8 @@ public class CreditsScreen : MonoBehaviour
         lastPromptInput = float.NegativeInfinity;
         if (promptGroup != null) promptGroup.alpha = 0f;
         if (promptRoot != null) promptRoot.SetActive(true);
-        terminalTargetWidth = autoLineWidth ? ComputeTerminalWidth() : 0f;
+        activeMinDots = creditsMinLeaderDots;
+        terminalTargetWidth = 0f;
 
         FadeCanvasController fader = FadeCanvasController.Instance;
         if (fader != null && fader.Group != null && fader.Group.alpha < 0.99f)
@@ -426,7 +429,10 @@ public class CreditsScreen : MonoBehaviour
             firstSection = false;
 
             if (section.layout == CreditsData.Layout.Terminal)
+            {
+                terminalTargetWidth = autoLineWidth ? ComputeTerminalWidth(new List<CreditsData.Section> { section }, activeMinDots) : 0f;
                 yield return PlayTerminalSection(section);
+            }
             else
                 yield return PlayCardSection(section.heading, section.lines ?? new List<CreditsData.Line>(), section.holdTime);
 
@@ -455,6 +461,8 @@ public class CreditsScreen : MonoBehaviour
 
             tapRequested = false;
             revealSection = false;
+            activeMinDots = minLeaderDots;
+            terminalTargetWidth = 0f;
             
             yield return PlayTerminalSection(data.epilogue);
             revealSection = false;
@@ -1015,7 +1023,7 @@ public class CreditsScreen : MonoBehaviour
             case CreditsData.LineStyle.RoleAndName:
                 int dots = terminalTargetWidth > 0f
                     ? LeaderDotsFor(line.role, line.name)
-                    : Mathf.Max(minLeaderDots, lineWidth - VisibleLength(line.role) - VisibleLength(line.name) - 2);
+                    : Mathf.Max(activeMinDots, lineWidth - VisibleLength(line.role) - VisibleLength(line.name) - 2);
                 return $"{Role(line.role)} {new string(leaderChar, dots)} {Name(line.name)}{statusSuffix}";
             case CreditsData.LineStyle.Name:
                 return Name(line.name) + statusSuffix;
@@ -1046,18 +1054,19 @@ public class CreditsScreen : MonoBehaviour
         return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
     }
 
-    private float ComputeTerminalWidth()
+    private float ComputeTerminalWidth(List<CreditsData.Section> sections, int dots)
     {
         float widest = 0f;
+        if (sections == null) return widest;
 
-        foreach (CreditsData.Section section in data.sections)
+        foreach (CreditsData.Section section in sections)
         {
             if (section == null || section.layout != CreditsData.Layout.Terminal || section.lines == null) continue;
 
             foreach (CreditsData.Line line in section.lines)
             {
                 if (line == null || line.style != CreditsData.LineStyle.RoleAndName) continue;
-                widest = Mathf.Max(widest, Measure(LeaderLine(line.role, line.name, minLeaderDots)));
+                widest = Mathf.Max(widest, Measure(LeaderLine(line.role, line.name, dots)));
             }
         }
 
@@ -1067,7 +1076,7 @@ public class CreditsScreen : MonoBehaviour
     private int LeaderDotsFor(string role, string name)
     {
         float dotWidth = Mathf.Max(0.01f, Measure(new string(leaderChar, 10)) / 10f);
-        int dots = minLeaderDots;
+        int dots = activeMinDots;
 
         while (dots < 300 && Measure(LeaderLine(role, name, dots + 1)) <= terminalTargetWidth + dotWidth * 0.5f)
             dots++;
