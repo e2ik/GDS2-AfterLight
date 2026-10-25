@@ -224,11 +224,11 @@ MonoBehaviour:
   phaseTransitionDialogue: {fileID: 11400000, guid: a611738d02395284391698cde770f020, type: 2}
   phaseTransitionSFX:
     Guid:
-      Data1: -1667255183
-      Data2: 1250584896
-      Data3: -1208214129
-      Data4: 1472509125
-    Path: event:/CombatSFXEvents/Player Heal Event
+      Data1: 462156002
+      Data2: 1144074639
+      Data3: -2097776970
+      Data4: 1612754395
+    Path: event:/CombatSFXEvents/CannedHeat2RestoreEvent
   transitionBeat: 0.6
   refillDuration: 2.5
   resumeDelay: 0.5
@@ -269,6 +269,9 @@ MonoBehaviour:
   - 0.9
   useRematchInteractable: 1
   rematchInteractable: {fileID: 3025756627638978734}
+  thoughtAfterCutscene: 0
+  thoughtLines: []
+  thoughtDuration: 0
 --- !u!1 &3852305289550027895
 GameObject:
   m_ObjectHideFlags: 0
