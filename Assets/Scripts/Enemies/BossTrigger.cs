@@ -3,6 +3,7 @@ using System.Collections;
 using Enemies.Cutscene;
 using System.Collections.Generic;
 using FMODUnity;
+using UnityEditor.Build;
 using UnityEngine;
 
 namespace Enemies
@@ -69,6 +70,9 @@ namespace Enemies
 
         [Header("Music")] 
         [SerializeField] private EventReference bossMusicEvent;
+        [SerializeField] private string musicPhaseParameter;
+        [SerializeField] private string[] phaseMusicLabels;
+        [SerializeField, Range(0f, 0.9f)] private float[] phaseFullIntensityHealths = {0};
 
         [Header("Rematch Interactable")]
         [SerializeField] private bool useRematchInteractable = false;
@@ -300,7 +304,12 @@ namespace Enemies
                 bool lockArena = !isRematch || rematchLocksArena;
                 bool playDeathDialogue = !isRematch || rematchPlaysDeathDialogue;
 
-                if (playMusic) MusicManager.Instance?.SwitchMusic(bossMusicEvent, isBossMusic: true);
+                if (playMusic)
+                {
+                    MusicManager.Instance?.ClearLocalParameters();
+                    SetPhaseMusicLabel(bossEnemy.Phase);
+                    MusicManager.Instance?.SwitchMusic(bossMusicEvent, isBossMusic: true);
+                }
                 if (showHealthBar) BossHealthBarUI.Instance?.Initialize(bossEnemy.Context.Health.CurrentHealth, bossEnemy.Context.Health.MaxHealth, bossName);
 
                 activeBossEnemy = bossEnemy;
@@ -329,7 +338,10 @@ namespace Enemies
 
                 onBossDamaged = (amount, currentHealth, isCrit) =>
                 {
-                    if (playMusic) MusicManager.Instance?.SetBossIntensity((float)currentHealth / bossEnemy.Context.Health.MaxHealth);
+                    if (playMusic)
+                    {
+                        MusicManager.Instance?.SetBossIntensity((float)currentHealth / bossEnemy.Context.Health.MaxHealth, phaseFullIntensityHealths[phaseCount - 1]);
+                    }
                     if (showHealthBar) BossHealthBarUI.Instance?.SetHealth(currentHealth, bossEnemy.Context.Health.MaxHealth);
                 };
                 
@@ -398,6 +410,8 @@ namespace Enemies
             boss.FreezeForPhaseTransition();
             player.Controller.FreezeMovement(true);
 
+            bool dialoguePlayed = false;
+
             try
             {
                 yield return new WaitForSeconds(transitionBeat);
@@ -410,7 +424,14 @@ namespace Enemies
                     DialogueManager.Instance.StartDialogue(phaseTransitionDialogue, player);
 
                     if (DialogueManager.Instance.IsDialogueActive)
+                    {
+                        dialoguePlayed = true;
+                        
+                        if(playMusic)
+                            MusicManager.Instance?.ExitBossMusicToPrevious();
+                        
                         yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
+                    }
                 }
 
                 if (activeBossEnemy != boss)
@@ -428,7 +449,16 @@ namespace Enemies
                     BossHealthBarUI.Instance?.PlayRefill(health.MaxHealth, health.MaxHealth, refillDuration);
 
                 if (playMusic)
+                {
+                    SetPhaseMusicLabel(boss.Phase + 1);
+                    
+                    if(dialoguePlayed)
+                        MusicManager.Instance?.SwitchMusic(bossMusicEvent, isBossMusic: true);
+                    else
+                        MusicManager.Instance?.PlayMusic(bossMusicEvent);
+                    
                     MusicManager.Instance?.SetBossIntensity(1f);
+                }
 
                 yield return new WaitForSeconds(refillDuration + resumeDelay);
                 
@@ -698,6 +728,16 @@ namespace Enemies
                 yield return FadeCanvasController.Instance.FadeIn(cutsceneFadeInDuration);
 
             player.Controller.FreezeMovement(false);
+        }
+        
+        private void SetPhaseMusicLabel(int phase)
+        {
+            if (string.IsNullOrEmpty(musicPhaseParameter) || phaseMusicLabels == null) return;
+
+            int index = phase - 1;
+            if (index < 0 || index >= phaseMusicLabels.Length) return;
+
+            MusicManager.Instance?.SetLocalParameterLabel(musicPhaseParameter, phaseMusicLabels[index]);
         }
     }
 }
