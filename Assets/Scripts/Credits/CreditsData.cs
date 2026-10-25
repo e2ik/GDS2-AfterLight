@@ -39,4 +39,16 @@ public class CreditsData : ScriptableObject
     public string epicsLabel = "EPICS FOUND";
     public string legendariesLabel = "LEGENDARIES FOUND";
     [Min(0f)] public float statsHoldTime = 5f;
+
+    [Header("Epilogue")] 
+    public bool showEpilogue = true;
+    public bool epilogueFromTitle = false;
+
+    public Section epilogue = new Section
+    {
+        heading = "EPILOGUE",
+        layout = Layout.Terminal,
+        clearTerminal = true,
+        holdTime = 4f
+    };
 }

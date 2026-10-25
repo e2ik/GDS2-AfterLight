@@ -106,7 +106,7 @@ MonoBehaviour:
       imageHeight: 64
       imageSpacing: 24
     - style: 0
-      role: Narrative & World
+      role: Narrative Director
       name: James Gardner
       images: []
       imageHeight: 64
@@ -361,3 +361,77 @@ MonoBehaviour:
   epicsLabel: EPICS FOUND
   legendariesLabel: LEGENDARIES FOUND
   statsHoldTime: 5
+  showEpilogue: 1
+  epilogueFromTitle: 0
+  epilogue:
+    heading: 
+    layout: 0
+    holdTime: 2
+    clearTerminal: 1
+    lines:
+    - style: 3
+      role: 
+      name: 
+      images: []
+      imageHeight: 0
+      imageSpacing: 0
+    - style: 0
+      role: CONNECTION STATUS
+      name: CONNECTED
+      images: []
+      imageHeight: 0
+      imageSpacing: 0
+    - style: 3
+      role: 
+      name: 
+      images: []
+      imageHeight: 0
+      imageSpacing: 0
+    - style: 1
+      role: 
+      name: TRANSMISSION RECIEVED
+      images: []
+      imageHeight: 0
+      imageSpacing: 0
+    - style: 3
+      role: 
+      name: 
+      images: []
+      imageHeight: 0
+      imageSpacing: 0
+    - style: 2
+      role: Please come to my side
+      name: 
+      images: []
+      imageHeight: 0
+      imageSpacing: 0
+    - style: 2
+      role: I am still out here waiting
+      name: 
+      images: []
+      imageHeight: 0
+      imageSpacing: 0
+    - style: 2
+      role: Come find me
+      name: 
+      images: []
+      imageHeight: 0
+      imageSpacing: 0
+    - style: 2
+      role: My Love
+      name: 
+      images: []
+      imageHeight: 0
+      imageSpacing: 0
+    - style: 3
+      role: 
+      name: 
+      images: []
+      imageHeight: 0
+      imageSpacing: 0
+    - style: 0
+      role: CONNECTION STATUS
+      name: TERMINATED
+      images: []
+      imageHeight: 0
+      imageSpacing: 0

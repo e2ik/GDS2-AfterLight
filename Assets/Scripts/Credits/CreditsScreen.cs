@@ -143,6 +143,8 @@ public class CreditsScreen : MonoBehaviour
     private float BeatLength => musicTempo > 0f ? 60f / musicTempo : 0f;
     private bool BeatTiming => syncToBeat && typeToBeat && BeatActive && musicTempo > 0f;
     private float nextHookAttempt;
+    private bool beatSyncSuspended;
+    
     [SerializeField] private EventReference cardSound;
 
     private readonly List<GameObject> terminalLines = new List<GameObject>();
@@ -243,7 +245,7 @@ public class CreditsScreen : MonoBehaviour
 
     private void TryHookMusic()
     {
-        if (!syncToBeat || beatHooked || creditsMusic.IsNull || Time.unscaledTime < nextHookAttempt) return;
+        if (!syncToBeat || beatSyncSuspended || beatHooked || creditsMusic.IsNull || Time.unscaledTime < nextHookAttempt) return;
         nextHookAttempt = Time.unscaledTime + 0.2f;
 
         FMOD.Studio.EventDescription description;
@@ -389,6 +391,7 @@ public class CreditsScreen : MonoBehaviour
         ignoreSkipUntilRelease = false;
         tapRequested = false;
         revealSection = false;
+        beatSyncSuspended = false;
         UnhookMusic();
         ClearAll();
         AcquireInput();
@@ -432,11 +435,35 @@ public class CreditsScreen : MonoBehaviour
         }
 
         bool fromTitle = GameManager.Instance != null && GameManager.Instance.CreditsFromTitle;
+        bool playEpilogue = data.showEpilogue && data.epilogue != null && (!fromTitle || data.epilogueFromTitle);
         if (!skipping && data.showStats && !fromTitle)
         {
             yield return HideTerminal();
             yield return WaitForBeat();
-            yield return PlayCardSection(data.statsHeading, BuildStatsLines(), data.statsHoldTime, holdStatsUntilSkip);
+            yield return PlayCardSection(data.statsHeading, BuildStatsLines(), data.statsHoldTime, holdStatsUntilSkip && !playEpilogue);
+        }
+
+        if (!skipping && playEpilogue)
+        {
+            yield return WaitForBeat();
+
+            beatSyncSuspended = true;
+            UnhookMusic();
+            MusicManager.Instance?.StopMusic();
+            float fade = MusicManager.Instance != null ? MusicManager.Instance.StopFadeDuration : 0f;
+            yield return WaitUntil(Time.unscaledTime + fade);
+
+            tapRequested = false;
+            revealSection = false;
+            
+            yield return PlayTerminalSection(data.epilogue);
+            revealSection = false;
+
+            if (!skipping && holdStatsUntilSkip)
+                yield return WaitForSkipPress();
+            else if (!skipping)
+                yield return WaitOrTap(sectionPause);
+
         }
 
         if (promptRoot != null) promptRoot.SetActive(false);
