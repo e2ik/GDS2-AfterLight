@@ -32,6 +32,7 @@ Transform:
   - {fileID: 7175029450576355374}
   - {fileID: 8699676975642801874}
   - {fileID: 4023906617089591661}
+  - {fileID: 8456203690630085471}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3830897815116287771
@@ -61,8 +62,8 @@ Transform:
   m_GameObject: {fileID: 3830897815116287771}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 20.49, y: 4.46, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 26.71, y: 4.46, z: 0}
+  m_LocalScale: {x: 5.6917, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5681199292943563232}
@@ -178,12 +179,8 @@ MonoBehaviour:
       Data3: -1889155924
       Data4: 1785508625
     Path: event:/CannedHeat
-  musicPhaseParameter: 
-  phaseMusicLabels:
-  - First
-  - Second
-  phaseIntensities:
-  - 0
+  useRematchInteractable: 1
+  rematchInteractable: {fileID: 1954474404458472936}
 --- !u!1 &5820503413341801186
 GameObject:
   m_ObjectHideFlags: 0
@@ -280,6 +277,8 @@ MonoBehaviour:
   targetAreaSide: 1
   respawnOnlyAfterRest: 1
   requiredDefeatedBossID: 
+  stayDefeatedAfterBossWin: 1
+  bossID: CHboss_intro_unique_id
 --- !u!212 &5881447990178518734
 SpriteRenderer:
   serializedVersion: 2
@@ -339,3 +338,76 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
+--- !u!1001 &20893195512264973
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5681199292943563232}
+    m_Modifications:
+    - target: {fileID: 2655967221178132563, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_Name
+      value: Rematch
+      objectReference: {fileID: 0}
+    - target: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 22.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.32
+      objectReference: {fileID: 0}
+    - target: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+--- !u!114 &1954474404458472936 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1969632547049315557, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+  m_PrefabInstance: {fileID: 20893195512264973}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3530e53e9392644fb6cd2ec51c0b23e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossRematch
+--- !u!4 &8456203690630085471 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8435314893185434194, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+  m_PrefabInstance: {fileID: 20893195512264973}
+  m_PrefabAsset: {fileID: 0}

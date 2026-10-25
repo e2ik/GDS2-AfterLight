@@ -69,6 +69,11 @@ namespace Enemies
 
         [Header("Music")] 
         [SerializeField] private EventReference bossMusicEvent;
+
+        [Header("Rematch Interactable")]
+        [SerializeField] private bool useRematchInteractable = false;
+        [SerializeField] private BossRematch rematchInteractable;
+        private bool rematchInteractableShown = true;
         
         private bool hasTriggered;
         private bool bossDefeated;
@@ -94,6 +99,7 @@ namespace Enemies
         private void Update()
         {
             UpdateFadeTime();
+            UpdateRematchInteractable();
             if (playerInside != null && activeBossEnemy == null) TryStart(playerInside);
 
             if (activeBossEnemy == null || deathSequenceRunning) return;
@@ -115,6 +121,41 @@ namespace Enemies
         {
             if (arenaColliders != null) arenaColliders.SetActive(false);
             SetFadeAlpha(0f);
+            if (rematchInteractable != null) rematchInteractable.SetOwner(this);
+            UpdateRematchInteractable();
+        }
+
+        private void UpdateRematchInteractable()
+        {
+            if (rematchInteractable == null) return;
+
+            bool show = useRematchInteractable
+                        && activeBossEnemy == null
+                        && !deathSequenceRunning
+                        && SaveManager.Instance != null && SaveManager.Instance.HasStoryFlag(DefeatedFlag)
+                        && !BossPresent();
+
+            if (show == rematchInteractableShown) return;
+            rematchInteractableShown = show;
+            rematchInteractable.gameObject.SetActive(show);
+        }
+
+        private bool BossPresent()
+        {
+            GameObject boss = bossSpawner != null ? bossSpawner.SpawnedEnemy : null;
+            if (boss == null || !boss.activeInHierarchy) return false;
+
+            EnemyHealth health = boss.GetComponentInChildren<EnemyHealth>();
+            return health == null || health.CurrentHealth > 0;
+        }
+
+        public bool RequestRematch()
+        {
+            if (bossSpawner == null || activeBossEnemy != null || deathSequenceRunning || BossPresent()) return false;
+
+            bossSpawner.ForceRespawn();
+            UpdateRematchInteractable();
+            return true;
         }
 
         private void OnEnable()

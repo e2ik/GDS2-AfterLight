@@ -23,6 +23,11 @@ public class PrefabSpawner : MonoBehaviour
     [Header("Spawn Prerequisite")] 
     [SerializeField] private string requiredDefeatedBossID;
 
+    [Header("Boss")]
+    [SerializeField] private bool stayDefeatedAfterBossWin = false;
+    [SerializeField] private string bossID = "";
+    private bool forcedSpawnAllowed;
+
     private static readonly HashSet<string> defeatedSpawners = new HashSet<string>();
     public static event Action OnDefeatedReset;
 
@@ -36,7 +41,10 @@ public class PrefabSpawner : MonoBehaviour
 
     private bool PrerequisiteMet => string.IsNullOrEmpty(requiredDefeatedBossID) || (SaveManager.Instance != null &&
         SaveManager.Instance.HasStoryFlag(Enemies.BossTrigger.DefeatedFlagFor(requiredDefeatedBossID)));
-    public bool IsDefeated => respawnOnlyAfterRest && defeatedSpawners.Contains(SpawnerKey);
+    public bool IsDefeated => (respawnOnlyAfterRest && defeatedSpawners.Contains(SpawnerKey)) || BossStaysDefeated;
+
+    private bool BossStaysDefeated => stayDefeatedAfterBossWin && !forcedSpawnAllowed && !string.IsNullOrEmpty(bossID)
+        && SaveManager.Instance != null && SaveManager.Instance.HasStoryFlag(Enemies.BossTrigger.DefeatedFlagFor(bossID));
 
     private string SpawnerKey
     {
@@ -122,6 +130,7 @@ public class PrefabSpawner : MonoBehaviour
     private void HandleEnemyKilled()
     {
         enemyAlive = false;
+        forcedSpawnAllowed = false;
         UnhookHealth();
         if (respawnOnlyAfterRest) defeatedSpawners.Add(SpawnerKey);
     }
@@ -143,6 +152,7 @@ public class PrefabSpawner : MonoBehaviour
 
     public void ForceRespawn()
     {
+        forcedSpawnAllowed = true;
         defeatedSpawners.Remove(SpawnerKey);
         DespawnEnemy();
         TrySpawn();
