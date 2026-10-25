@@ -59,7 +59,25 @@ namespace Tutorial
         public bool EnemiesProtected =>
             activeSequence != null
             && activeSequence.KeepEnemiesAlive
-            && (activeStep == null || activeStep.ConditionType != TutorialStepConditionType.DefeatEnemies);
+            && (activeStep == null || activeStep.ConditionType != TutorialStepConditionType.DefeatEnemies)
+            && !EnemyProtectionReleased();
+
+        private bool EnemyProtectionReleased()
+        {
+            int stopAt = activeSequence.StopKeepingEnemiesAliveAtStep;
+            if (stopAt >= 0 && activeStepIndex >= stopAt) return true;
+
+            if (!activeSequence.ReleaseEnemiesAfterDefeatStep || activeSequence.Steps == null) return false;
+
+            int last = Mathf.Min(activeStepIndex, activeSequence.Steps.Length - 1);
+            for (int i = 0; i <= last; i++)
+            {
+                TutorialStepDefinition step = activeSequence.Steps[i];
+                if (step != null && step.ConditionType == TutorialStepConditionType.DefeatEnemies) return true;
+            }
+
+            return false;
+        }
         public TutorialStepDefinition ActiveStep => activeStep;
 
         public bool MapCloseLocked =>
@@ -324,6 +342,7 @@ namespace Tutorial
         private IEnumerator RunSequence(TutorialSequenceDefinition sequence, int startIndex)
         {
             activeSequence = sequence;
+            activeStepIndex = startIndex;
             seenCombatThisSequence = false;
             noCombatTimer = 0f;
             engagedThisSequence.Clear();

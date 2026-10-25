@@ -27,6 +27,8 @@ public class PlayerEdgeDetection : MonoBehaviour
     private LayerMask groundLayer;
 
     private ContactFilter2D filter;
+    private ContactFilter2D blockFilter;
+    private Transform playerRoot;
     private readonly List<RaycastHit2D> rayHits = new();
     private readonly List<Collider2D> overlapHits = new();
 
@@ -46,9 +48,13 @@ public class PlayerEdgeDetection : MonoBehaviour
     {
         PlayerController controller = GetComponentInParent<PlayerController>();
         if (controller != null) groundLayer = controller.groundLayer;
+        playerRoot = controller != null ? controller.transform : transform;
 
         filter = new ContactFilter2D { useTriggers = false };
         filter.SetLayerMask(groundLayer);
+
+        blockFilter = new ContactFilter2D { useTriggers = false };
+        blockFilter.SetLayerMask(Physics2D.GetLayerCollisionMask(playerRoot.gameObject.layer) | groundLayer);
     }
 
     public bool TryFindLedge(Bounds body, int dir, out Vector2 corner) => TryFindLedge(body, dir, false, out corner);
@@ -94,6 +100,7 @@ public class PlayerEdgeDetection : MonoBehaviour
         lastStandSize = standSize;
 
         if (HasSolidOverlap(standCenter, standSize)) return false;
+        if (IsPathBlocked(body.center, standCenter)) return false;
 
         corner = new Vector2(wall.point.x, ledgeY);
         lastFound = true;
@@ -129,13 +136,41 @@ public class PlayerEdgeDetection : MonoBehaviour
 
     private bool HasSolidOverlap(Vector2 center, Vector2 size)
     {
-        int count = Physics2D.OverlapBox(center, size, 0f, filter, overlapHits);
+        int count = Physics2D.OverlapBox(center, size, 0f, blockFilter, overlapHits);
         for (int i = 0; i < count; i++)
         {
-            if (!IsPassThrough(overlapHits[i])) return true;
+            Collider2D col = overlapHits[i];
+            if (IsGround(col) ? !IsPassThrough(col) : IsStaticBlocker(col)) return true;
         }
 
         return false;
+    }
+
+    private bool IsPathBlocked(Vector2 from, Vector2 to)
+    {
+        Vector2 delta = to - from;
+        float distance = delta.magnitude;
+        if (distance <= 0.001f) return false;
+
+        int count = Physics2D.Raycast(from, delta / distance, blockFilter, rayHits, distance);
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D col = rayHits[i].collider;
+            if (!IsGround(col) && IsStaticBlocker(col)) return true;
+        }
+
+        return false;
+    }
+
+    private bool IsGround(Collider2D col) => col != null && (groundLayer.value & (1 << col.gameObject.layer)) != 0;
+
+    private bool IsStaticBlocker(Collider2D col)
+    {
+        if (col == null || col.isTrigger) return false;
+        if (playerRoot != null && col.transform.IsChildOf(playerRoot)) return false;
+
+        Rigidbody2D body = col.attachedRigidbody;
+        return body == null || body.bodyType == RigidbodyType2D.Static;
     }
 
     private static bool IsPassThrough(Collider2D col)

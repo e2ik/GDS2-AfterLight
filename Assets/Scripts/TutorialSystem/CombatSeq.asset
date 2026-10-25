@@ -25,6 +25,8 @@ MonoBehaviour:
   canRepeat: 0
   uninterruptible: 1
   keepEnemiesAlive: 1
+  stopKeepingEnemiesAliveAtStep: 3
+  releaseEnemiesAfterDefeatStep: 1
   completeWhenCombatEnds: 1
   combatEndGrace: 2
   lockMapCloseUntilCloseStep: 0

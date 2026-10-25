@@ -169,19 +169,33 @@ public class MusicManager : MonoBehaviour
         _fadingOutInstance = fadingOut;
         fadingOut.getVolume(out float outStart);
         fadingIn.getVolume(out float inStart);
-        float t = 0f;
+        float tOut = 0f;
+        float tIn = 0f;
+        bool outReleased = false;
 
-        while (t < crossfadeDuration)
+        while (tIn < crossfadeDuration)
         {
-            if (Time.timeScale > 0f) t += Time.deltaTime;
-            else if (FadeWhilePaused) t += Mathf.Min(Time.unscaledDeltaTime, Time.maximumDeltaTime);
-            float ratio = Mathf.Clamp01(t / crossfadeDuration);
+            float cappedReal = Mathf.Min(Time.unscaledDeltaTime, Time.maximumDeltaTime);
+            tOut += Time.timeScale > 0f ? Time.deltaTime : cappedReal;
 
-            if (fadingOut.isValid())
-                fadingOut.setVolume(outStart * (1f - ratio));
+            if (Time.timeScale > 0f) tIn += Time.deltaTime;
+            else if (FadeWhilePaused) tIn += cappedReal;
+
+            if (!outReleased)
+            {
+                float outRatio = Mathf.Clamp01(tOut / crossfadeDuration);
+                if (fadingOut.isValid())
+                    fadingOut.setVolume(outStart * (1f - outRatio));
+
+                if (outRatio >= 1f)
+                {
+                    ReleaseFadingOut();
+                    outReleased = true;
+                }
+            }
 
             if (fadingIn.isValid())
-                fadingIn.setVolume(Mathf.Lerp(inStart, 1f, ratio));
+                fadingIn.setVolume(Mathf.Lerp(inStart, 1f, Mathf.Clamp01(tIn / crossfadeDuration)));
 
             yield return null;
         }
