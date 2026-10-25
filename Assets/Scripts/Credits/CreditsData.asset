@@ -21,9 +21,15 @@ MonoBehaviour:
     - style: 3
       role: 
       name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 1
       role: 
       name: We hope you enjoyed the vertical slice of Project AfterLight.
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
   - heading: Development Team
     layout: 0
     holdTime: 0
@@ -37,27 +43,51 @@ MonoBehaviour:
     - style: 3
       role: 
       name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: Backend Systems
       name: Erik Lin
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: Enemies & Audio
       name: James Gardner
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: Dialogue System
       name: Pun Rojanamontien
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: Player & Combat
       name: Benjamin Howe
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: Gearing & SFX
       name: Arie Maljers
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: UI/UX Design
       name: James Kirwan
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: FMOD & Music
       name: Spencer Edwards
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
   - heading: Misc Roles
     layout: 0
     holdTime: 1
@@ -66,24 +96,45 @@ MonoBehaviour:
     - style: 3
       role: 
       name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: Lead Artist
       name: Erik Lin
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: Narrative & World
       name: James Gardner
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: UI/UX graphics
       name: Pun Rojanamontien
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: Level Blocking
       name: Benjamin Howe
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: SFX sourcing
       name: Arie Maljers
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 0
       role: QA Lead
       name: James Kirwan
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
   - heading: Music & Sound Design
     layout: 0
     holdTime: 3
@@ -92,18 +143,216 @@ MonoBehaviour:
     - style: 3
       role: 
       name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 1
       role: 
       name: Spencer Edwards
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 3
       role: 
       name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
     - style: 2
       role: 
       name: Huge thanks to Spencer for making this collaboration possible,<br>and
         to the students of the UTS MSD department<br>for pouring their talent into
         every track and sound.<br>This game wouldn't feel the way it does without
         you.
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+  - heading: Shout Outs
+    layout: 0
+    holdTime: 3
+    clearTerminal: 1
+    lines:
+    - style: 3
+      role: 
+      name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: Subject Coordinator
+      name: Jaime Garcia
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: Tutor & Newly Wedded
+      name: Aaron Reyes
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: Exploits Master
+      name: Louis Leow
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: Testing Fodder
+      name: MASB Guild Members
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+  - heading: SFX Assets
+    layout: 0
+    holdTime: 3
+    clearTerminal: 1
+    lines:
+    - style: 3
+      role: 
+      name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 1
+      role: 
+      name: Helton Yan
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 2
+      role: 
+      name: Huge thanks to Helton Yan for the sound effects<br>that helped bring
+        Afterlight's world to life.<br>You can find his work at:<br><br><color=#FFB6D9>https://heltonyan.itch.io</color>
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+  - heading: Additional SFX
+    layout: 0
+    holdTime: 3
+    clearTerminal: 1
+    lines:
+    - style: 3
+      role: 
+      name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: Sci-fi SFX
+      name: rubberduck
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: UI SFX Pack
+      name: JDSherbert
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: Sound Pack
+      name: Chequered Ink
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: SoundPack
+      name: PlaceholderAssets
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: ZipChip SFX
+      name: zipdisq
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: Free SFX
+      name: Kronbits
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 0
+      role: Footsteps SFX
+      name: Dryoma
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+  - heading: Visual Assets
+    layout: 0
+    holdTime: 3
+    clearTerminal: 1
+    lines:
+    - style: 3
+      role: 
+      name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 1
+      role: 
+      name: Penusbmic
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 2
+      role: 
+      name: Huge thanks to Penusbmic for the Swordmaster asset<br>that brought Canned
+        Heat's visuals to life.<br>You can find his work at:<br><br><color=#FFB6D9>https://penusbmic.itch.io</color>
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+  - heading: Special Thanks
+    layout: 1
+    holdTime: 2
+    clearTerminal: 1
+    lines:
+    - style: 3
+      role: 
+      name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 4
+      role: 
+      name: 
+      images:
+      - {fileID: 21300000, guid: bc896cb916bae8845acce952ac2df478, type: 3}
+      imageHeight: 150
+      imageSpacing: 57
+    - style: 2
+      role: 
+      name: Audio powered by FMOD Studio. Thank you to Firelight Technologies<br>for
+        the tools that brought our music and sound to life.<br><color=#FFB6D9>https://www.fmod.com</color>
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+  - heading: Final Thanks
+    layout: 1
+    holdTime: 2
+    clearTerminal: 1
+    lines:
+    - style: 3
+      role: 
+      name: 
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
+    - style: 4
+      role: 
+      name: 
+      images:
+      - {fileID: 21300000, guid: bf33364920601004e8ffe12b6147b362, type: 3}
+      imageHeight: 150
+      imageSpacing: 57
+    - style: 2
+      role: 
+      name: Special thanks to the University of Technology Sydney for creating<br>the
+        Games Development course and Game Design Studio 2.<br><color=#FFB6D9>https://www.uts.edu.au</color>
+      images: []
+      imageHeight: 64
+      imageSpacing: 24
   showStats: 1
   statsHeading: MISSION REPORT
   timeLabel: TIME
@@ -112,6 +361,3 @@ MonoBehaviour:
   epicsLabel: EPICS FOUND
   legendariesLabel: LEGENDARIES FOUND
   statsHoldTime: 5
-  stingerLine: 
-  stingerDelay: 1.5
-  stingerHoldTime: 3

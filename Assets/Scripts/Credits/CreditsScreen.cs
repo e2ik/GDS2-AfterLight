@@ -83,9 +83,6 @@ public class CreditsScreen : MonoBehaviour
     [SerializeField, Min(0.01f)] private float pulseDuration = 0.5f;
     [SerializeField, Range(0.01f, 0.9f)] private float pulseRise = 0.15f;
 
-    [Header("Stinger")]
-    [SerializeField] private TMP_Text stingerText;
-
     [Header("Input")]
     [SerializeField] private InputActionReference skipAction;
     [SerializeField, Min(0f)] private float skipHoldDuration = 1f;
@@ -176,7 +173,6 @@ public class CreditsScreen : MonoBehaviour
         SetBackgroundsActive(false);
         if (terminalGroup != null) terminalGroup.alpha = 0f;
         if (cardGroup != null) cardGroup.alpha = 0f;
-        if (stingerText != null) stingerText.text = "";
         if (promptRoot != null)
         {
             promptGroup = promptRoot.GetComponent<CanvasGroup>();
@@ -443,15 +439,6 @@ public class CreditsScreen : MonoBehaviour
             yield return PlayCardSection(data.statsHeading, BuildStatsLines(), data.statsHoldTime, holdStatsUntilSkip);
         }
 
-        if (!skipping && !string.IsNullOrEmpty(data.stingerLine))
-        {
-            yield return HideTerminal();
-            revealSection = false;
-            yield return WaitOrTap(data.stingerDelay);
-            yield return WaitForBeat();
-            yield return PlayStinger();
-        }
-
         if (promptRoot != null) promptRoot.SetActive(false);
         yield return WaitForBeat();
         yield return FadeGroup(rootGroup, 0f, fadeOutDuration);
@@ -520,6 +507,8 @@ public class CreditsScreen : MonoBehaviour
                 continue;
             }
 
+            if (line.style == CreditsData.LineStyle.Images) continue;
+
             TMP_Text prefab = line.style == CreditsData.LineStyle.SmallPrint && smallPrintPrefab != null ? smallPrintPrefab : linePrefab;
             if (BeatTiming && !revealSection && chainedLineStart > 0f) yield return WaitUntil(chainedLineStart);
             TMP_Text text = AddTerminalLine(prefab, linePrefix + FormatTerminalLine(line));
@@ -549,6 +538,12 @@ public class CreditsScreen : MonoBehaviour
                 continue;
             }
 
+            if (line.style == CreditsData.LineStyle.Images)
+            {
+                AddImageRow(cardContent, cardLines, line);
+                continue;
+            }
+
             TMP_Text prefab = line.style == CreditsData.LineStyle.SmallPrint && smallPrintPrefab != null ? smallPrintPrefab : linePrefab;
             AddCardLine(prefab, FormatCardLine(line));
         }
@@ -561,19 +556,6 @@ public class CreditsScreen : MonoBehaviour
         yield return WaitForBeat();
         yield return FadeGroup(cardGroup, 0f, cardFadeOutDuration);
         ClearCard();
-    }
-
-    private IEnumerator PlayStinger()
-    {
-        if (stingerText == null) yield break;
-
-        stingerText.text = data.stingerLine;
-        stingerText.maxVisibleCharacters = 0;
-        stingerText.gameObject.SetActive(true);
-
-        yield return TypeLine(stingerText);
-        if (revealSection) tapRequested = false;
-        yield return WaitOrTap(data.stingerHoldTime);
     }
 
     private IEnumerator TypeLine(TMP_Text text)
@@ -911,6 +893,45 @@ public class CreditsScreen : MonoBehaviour
         return lineColor;
     }
 
+    private void AddImageRow(RectTransform parent, List<GameObject> owner, CreditsData.Line line)
+    {
+        if (parent == null || line.images == null || line.images.Length == 0) return;
+
+        GameObject row = new GameObject("Images", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+        row.transform.SetParent(parent, false);
+
+        HorizontalLayoutGroup layout = row.GetComponent<HorizontalLayoutGroup>();
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.spacing = line.imageSpacing;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+
+        row.GetComponent<LayoutElement>().minHeight = line.imageHeight;
+        row.GetComponent<LayoutElement>().preferredHeight = line.imageHeight;
+
+        foreach (Sprite sprite in line.images)
+        {
+            if (sprite == null) continue;
+
+            GameObject logo = new GameObject(sprite.name, typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+            logo.transform.SetParent(row.transform, false);
+
+            Image image = logo.GetComponent<Image>();
+            image.sprite = sprite;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+
+            float aspect = sprite.rect.height > 0f ? sprite.rect.width / sprite.rect.height : 1f;
+            LayoutElement element = logo.GetComponent<LayoutElement>();
+            element.preferredHeight = line.imageHeight;
+            element.preferredWidth = line.imageHeight * aspect;
+        }
+
+        owner.Add(row);
+    }
+
     private void AddSpacer(RectTransform parent, List<GameObject> owner)
     {
         if (parent == null) return;
@@ -957,7 +978,6 @@ public class CreditsScreen : MonoBehaviour
         ClearCard();
         if (terminalGroup != null) terminalGroup.alpha = 0f;
         if (cardGroup != null) cardGroup.alpha = 0f;
-        if (stingerText != null) stingerText.text = "";
         if (skipFill != null) skipFill.fillAmount = 0f;
     }
 

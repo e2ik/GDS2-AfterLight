@@ -178,6 +178,10 @@ public class UIWindowAnimator : MonoBehaviour
         float width = slideDistanceOverride > 0f ? slideDistanceOverride : fallbackWidth;
         float height = slideDistanceOverride > 0f ? slideDistanceOverride : fallbackHeight;
 
+        float required = DistanceToClearCanvas(direction, parentRect);
+        width = Mathf.Max(width, required);
+        height = Mathf.Max(height, required);
+
         switch (direction)
         {
             case Direction.Left: return targetPosition + new Vector2(-width, 0);
@@ -186,5 +190,43 @@ public class UIWindowAnimator : MonoBehaviour
             case Direction.Bottom: return targetPosition + new Vector2(0, -height);
             default: return targetPosition;
         }
+    }
+
+    private float DistanceToClearCanvas(Direction direction, RectTransform parentRect)
+    {
+        Canvas canvas = GetComponentInParent<Canvas>();
+        if (canvas == null || parentRect == null) return 0f;
+
+        RectTransform root = canvas.rootCanvas.transform as RectTransform;
+        if (root == null) return 0f;
+
+        Vector3[] panel = new Vector3[4];
+        Vector3[] screen = new Vector3[4];
+        rectTransform.GetWorldCorners(panel);
+        root.GetWorldCorners(screen);
+
+        Vector3 toTarget = parentRect.TransformVector(targetPosition - rectTransform.anchoredPosition);
+        float panelMinX = Mathf.Min(panel[0].x, panel[2].x) + toTarget.x;
+        float panelMaxX = Mathf.Max(panel[0].x, panel[2].x) + toTarget.x;
+        float panelMinY = Mathf.Min(panel[0].y, panel[2].y) + toTarget.y;
+        float panelMaxY = Mathf.Max(panel[0].y, panel[2].y) + toTarget.y;
+        float screenMinX = Mathf.Min(screen[0].x, screen[2].x);
+        float screenMaxX = Mathf.Max(screen[0].x, screen[2].x);
+        float screenMinY = Mathf.Min(screen[0].y, screen[2].y);
+        float screenMaxY = Mathf.Max(screen[0].y, screen[2].y);
+
+        Vector3 worldShift;
+        switch (direction)
+        {
+            case Direction.Left: worldShift = new Vector3(panelMaxX - screenMinX, 0f, 0f); break;
+            case Direction.Right: worldShift = new Vector3(screenMaxX - panelMinX, 0f, 0f); break;
+            case Direction.Top: worldShift = new Vector3(0f, screenMaxY - panelMinY, 0f); break;
+            case Direction.Bottom: worldShift = new Vector3(0f, panelMaxY - screenMinY, 0f); break;
+            default: return 0f;
+        }
+
+        Vector3 localShift = parentRect.InverseTransformVector(worldShift);
+        float distance = direction == Direction.Left || direction == Direction.Right ? Mathf.Abs(localShift.x) : Mathf.Abs(localShift.y);
+        return distance + 4f;
     }
 }

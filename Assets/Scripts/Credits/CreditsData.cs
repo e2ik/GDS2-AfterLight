@@ -5,7 +5,7 @@ using UnityEngine;
 public class CreditsData : ScriptableObject
 {
     public enum Layout { Terminal, Card }
-    public enum LineStyle { RoleAndName, Name, SmallPrint, Spacer }
+    public enum LineStyle { RoleAndName, Name, SmallPrint, Spacer, Images }
 
     [System.Serializable]
     public class Line
@@ -13,6 +13,9 @@ public class CreditsData : ScriptableObject
         public LineStyle style = LineStyle.RoleAndName;
         public string role = "";
         public string name = "";
+        public Sprite[] images;
+        [Min(1f)] public float imageHeight = 64f;
+        [Min(0f)] public float imageSpacing = 24f;
     }
 
     [System.Serializable]
@@ -36,9 +39,4 @@ public class CreditsData : ScriptableObject
     public string epicsLabel = "EPICS FOUND";
     public string legendariesLabel = "LEGENDARIES FOUND";
     [Min(0f)] public float statsHoldTime = 5f;
-
-    [Header("Ending")]
-    [TextArea] public string stingerLine = "";
-    [Min(0f)] public float stingerDelay = 1.5f;
-    [Min(0f)] public float stingerHoldTime = 3f;
 }
