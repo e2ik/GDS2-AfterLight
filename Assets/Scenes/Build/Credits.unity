@@ -400,6 +400,7 @@ MonoBehaviour:
   autoLineWidth: 1
   lineWidth: 50
   minLeaderDots: 10
+  creditsMinLeaderDots: 6
   statusSuffix: ' <color=#7CFFB2>[OK]</color>'
   charsPerSecond: 40
   linePause: 0.25
@@ -432,7 +433,6 @@ MonoBehaviour:
   pulseWhiten: 1
   pulseDuration: 0.5
   pulseRise: 0.15
-  stingerText: {fileID: 0}
   skipAction: {fileID: 392368643174621059, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   skipHoldDuration: 1
   promptRoot: {fileID: 1357709755}
@@ -462,7 +462,7 @@ MonoBehaviour:
       Data4: 2053622759
     Path: event:/Interface Events/Dialogue Event
   typeBlipVolume: 0.4
-  blipEveryChars: 3
+  blipEveryChars: 2
   syncToBeat: 1
   syncUnit: 0
   typeToBeat: 1

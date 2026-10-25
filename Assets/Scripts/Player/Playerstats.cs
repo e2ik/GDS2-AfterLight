@@ -235,7 +235,13 @@ public class PlayerStats : MonoBehaviour
 
     public void TakeDamage(float rawDamage)
     {
-        if (IsDead || rawDamage <= 0f || GodModeOn) return;
+        if (IsDead || rawDamage <= 0f) return;
+
+        if (GodModeOn)
+        {
+            AudioManager.PlaySFX(hitEvent, transform.position);
+            return;
+        }
 
         if (player != null) player.Controller.CancelClimb();
 

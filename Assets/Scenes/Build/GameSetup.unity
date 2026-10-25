@@ -214,10 +214,10 @@ MonoBehaviour:
   unlockAllFastTravelAction: {fileID: 7163206889840615523, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   disableTutorials: 0
   skipCutscenes: 0
-  oneHitKillEnemies: 1
+  oneHitKillEnemies: 0
   spawnAllLegendaries: 0
   skillMeterAlwaysFull: 0
-  godMode: 1
+  godMode: 0
   maxConcurrentAttackers: 1
   attackSlotCooldown: 0.3
   extraAttackerChance: 0.33
@@ -468,6 +468,7 @@ MonoBehaviour:
     sequence: {fileID: 11400000, guid: 69b55e4faf7f4674abcbd3e6ddc7e788, type: 2}
     requiredCompletedSequences: []
   debugEventTriggers: 0
+  saveWhenCompleted: 1
   pauseTimeOnPromptSteps: 1
 --- !u!114 &78526266
 MonoBehaviour:
