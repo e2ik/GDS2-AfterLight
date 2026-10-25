@@ -74,13 +74,32 @@ public class MusicManager : MonoBehaviour
 
         CacheGlobalParameters();
 
-#if !UNITY_WEBGL
+#if UNITY_WEBGL && !UNITY_EDITOR
+        if (!AudioUnlocked)
+        {
+            _pendingEvent = defaultMusicEvent;
+            return;
+        }
+#endif
+        _hasUnlockedAudio = true;
         PlayMusic(defaultMusicEvent);
         _currentEvent = defaultMusicEvent;
         _hasCurrentEvent = true;
-#else
-        _pendingEvent = defaultMusicEvent;
-#endif
+    }
+
+    public static bool AudioUnlocked { get; private set; }
+
+    public static void UnlockAudio()
+    {
+        AudioUnlocked = true;
+        if (Instance != null) Instance.PlayPendingMusic();
+    }
+
+    private void PlayPendingMusic()
+    {
+        if (_hasUnlockedAudio || _holdMusic) return;
+        _hasUnlockedAudio = true;
+        PlayMusic(_pendingEvent);
     }
     
     private void CacheGlobalParameters()
@@ -390,14 +409,6 @@ public class MusicManager : MonoBehaviour
 
     private void Update()
     {
-#if UNITY_WEBGL
-        if (!_hasUnlockedAudio && !_holdMusic && Input.anyKeyDown)
-        {
-            _hasUnlockedAudio = true;
-            PlayMusic(_pendingEvent);
-        }
-#endif
-
         if (!_hasGlobalParams) CacheGlobalParameters();
         if (!_instance.isValid() || !_hasGlobalParams) return;
 

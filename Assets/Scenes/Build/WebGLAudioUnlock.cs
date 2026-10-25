@@ -30,6 +30,7 @@ public class WebGLAudioUnlock : MonoBehaviour
 #else
         if (clickToStartPanel != null) clickToStartPanel.SetActive(false);
         unlocked = true;
+        MusicManager.UnlockAudio();
 #endif
     }
 
@@ -69,6 +70,8 @@ public class WebGLAudioUnlock : MonoBehaviour
             FMODUnity.RuntimeManager.CoreSystem.mixerSuspend();
             FMODUnity.RuntimeManager.CoreSystem.mixerResume();
         }
+
+        MusicManager.UnlockAudio();
 
         if (clickToStartPanel != null) clickToStartPanel.SetActive(false);
         if (pauseUntilUnlocked) Time.timeScale = previousTimeScale;
