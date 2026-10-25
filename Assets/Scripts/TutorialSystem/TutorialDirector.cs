@@ -99,6 +99,12 @@ namespace Tutorial
 
             UIWindowAnimator.OnAnyShown += HandleAnyWindowShown;
             TutorialEvents.OnRaised += HandleTriggerEvent;
+            BossTrigger.OnBossEngagementChanged += HandleBossEngagementChanged;
+        }
+
+        private void HandleBossEngagementChanged(bool engaged)
+        {
+            if (engaged && IsRunningSequence) AbortActiveSequence();
         }
 
         private void HandleTriggerEvent(string key)
@@ -168,6 +174,7 @@ namespace Tutorial
             {
                 UIWindowAnimator.OnAnyShown -= HandleAnyWindowShown;
                 TutorialEvents.OnRaised -= HandleTriggerEvent;
+                BossTrigger.OnBossEngagementChanged -= HandleBossEngagementChanged;
             }
         }
 
@@ -283,6 +290,7 @@ namespace Tutorial
         public bool BeginSequence(TutorialSequenceDefinition sequence, bool force = false)
         {
             if (TutorialsDisabled) return false;
+            if (!force && (BossTrigger.AnyBossEngaged || BossTrigger.AnyBossIntroRunning)) return false;
             if (sequence == null || sequence.Steps == null || sequence.Steps.Length == 0) return false;
             if (!force && !sequence.CanRepeat && IsSequenceCompleted(sequence.SequenceID)) return false;
 

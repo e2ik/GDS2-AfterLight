@@ -39,8 +39,9 @@ namespace Enemies
         private float ghostDelayTimer;
 
         private Coroutine fadeRoutine;
-        private Coroutine flashRoutine;
-        private Coroutine punchRoutine;
+        private Vector3 rootBaseScale = Vector3.one;
+        private float punchElapsed = -1f;
+        private float flashRemaining;
 
         private void Awake()
         {
@@ -51,7 +52,7 @@ namespace Enemies
             }
 
             Instance = this;
-            
+            rootBaseScale = transform.localScale;
             
             if (fillImage != null)
                 normalColor = fillImage.color;
@@ -67,8 +68,53 @@ namespace Enemies
                 Instance = null;
         }
 
+        private void OnDisable()
+        {
+            ResetVisuals();
+        }
+
+        private void ResetVisuals()
+        {
+            if (refillRoutine != null) StopCoroutine(refillRoutine);
+            refillRoutine = null;
+            refilling = false;
+            punchElapsed = -1f;
+            flashRemaining = 0f;
+
+            transform.localScale = rootBaseScale;
+            if (fillImage != null) fillImage.color = normalColor;
+        }
+
+        private void LateUpdate()
+        {
+            float dt = Time.deltaTime;
+
+            if (punchElapsed >= 0f)
+            {
+                punchElapsed += dt;
+                if (punchElapsed >= punchDuration) punchElapsed = -1f;
+            }
+
+            float curve = punchElapsed >= 0f && punchDuration > 0f ? Mathf.Sin(punchElapsed / punchDuration * Mathf.PI) : 0f;
+            transform.localScale = rootBaseScale * (1f + (punchScale - 1f) * curve);
+
+            if (refilling || fillImage == null) return;
+
+            if (flashRemaining > 0f)
+            {
+                flashRemaining -= dt;
+                fillImage.color = damageFlashColor;
+            }
+            else
+            {
+                fillImage.color = normalColor;
+            }
+        }
+
         public void Initialize(int currentHealth, int maxHealth, string bossName = null)
         {
+            ResetVisuals();
+
             if (bossNameText != null)
                 bossNameText.text = bossName ?? string.Empty;
 
@@ -91,11 +137,8 @@ namespace Enemies
             {
                 ghostDelayTimer = ghostDelay;
 
-                if (flashRoutine != null) StopCoroutine(flashRoutine);
-                flashRoutine = StartCoroutine(Flash());
-
-                if (punchRoutine != null) StopCoroutine(punchRoutine);
-                punchRoutine = StartCoroutine(Punch());
+                flashRemaining = flashDuration;
+                punchElapsed = 0f;
             }
 
             targetFraction = newFraction;
@@ -163,38 +206,14 @@ namespace Enemies
 
             canvasGroup.alpha = targetAlpha;
             SyncName(targetAlpha, !deactivateOnEnd);
-            if (deactivateOnEnd) canvasGroup.gameObject.SetActive(false);
+            if (deactivateOnEnd)
+            {
+                ResetVisuals();
+                canvasGroup.gameObject.SetActive(false);
+            }
             fadeRoutine = null;
         }
         
-        private IEnumerator Flash()
-        {
-            if (fillImage == null) yield break;
-
-            fillImage.color = damageFlashColor;
-            yield return new WaitForSeconds(flashDuration);
-            fillImage.color = normalColor;
-            flashRoutine = null;
-        }
-        
-        private IEnumerator Punch()
-        {
-            RectTransform root = (RectTransform)transform;
-            Vector3 baseScale = root.localScale;
-            float t = 0f;
-
-            while (t < punchDuration)
-            {
-                t += Time.deltaTime;
-                float curve = Mathf.Sin((t / punchDuration) * Mathf.PI);
-                root.localScale = baseScale * (1f + (punchScale - 1f) * curve);
-                yield return null;
-            }
-
-            root.localScale = baseScale;
-            punchRoutine = null;
-        }
-
         public void PlayRefill(int currentHealth, int maxHealth, float duration)
         {
             if(refillRoutine != null)
@@ -207,8 +226,7 @@ namespace Enemies
         private IEnumerator RefillRoutine(float to, float duration)
         {
             refilling = true;
-            if (flashRoutine != null)
-                StopCoroutine(flashRoutine);
+            flashRemaining = 0f;
 
             float from = currentFraction;
             float t = 0f;
@@ -236,10 +254,7 @@ namespace Enemies
             if (fillImage != null)
                 fillImage.color = normalColor;
             
-            if(punchRoutine != null)
-                StopCoroutine(punchRoutine);
-
-            punchRoutine = StartCoroutine(Punch());
+            punchElapsed = 0f;
 
             refilling = false;
             refillRoutine = null;

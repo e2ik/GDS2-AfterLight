@@ -93,6 +93,9 @@ namespace Enemies
 
         private static int engagedTriggerCount;
         public static bool AnyBossEngaged => engagedTriggerCount > 0;
+        private static int introTriggerCount;
+        private bool introRunning;
+        public static bool AnyBossIntroRunning => introTriggerCount > 0;
         public static event Action<bool> OnBossEngagementChanged;
         private CameraFollow2D lockedCamera;
         private PlayerStats engagedStats;
@@ -169,6 +172,7 @@ namespace Enemies
 
         private void OnDisable()
         {
+            SetIntroRunning(false);
             PlayerStats.OnRespawnStarted -= HandleRespawnStarted;
             if (activeBossEnemy != null) Disengage();
         }
@@ -249,7 +253,9 @@ namespace Enemies
             
             if (rb != null)
                 rb.linearVelocity = Vector2.zero;
-            
+
+            ClearTutorials(player);
+            SetIntroRunning(true);
             DialogueManager.Instance.StartDialogue(introDialogue, player);
 
             if (DialogueManager.Instance.IsDialogueActive)
@@ -258,11 +264,25 @@ namespace Enemies
             }
             else
             {
+                SetIntroRunning(false);
                 hasTriggered = false;
                 ReleaseCamera();
             }
         }
 
+
+        private static void ClearTutorials(Player player)
+        {
+            Tutorial.TutorialDirector.Instance?.AbortActiveSequence();
+            if (player != null) Tutorial.TutorialSpeechBubblePool.Instance?.Hide(player.transform);
+        }
+
+        private void SetIntroRunning(bool running)
+        {
+            if (running == introRunning) return;
+            introRunning = running;
+            introTriggerCount = Mathf.Max(0, introTriggerCount + (running ? 1 : -1));
+        }
 
         private bool HasFreshBoss()
         {
@@ -293,8 +313,12 @@ namespace Enemies
 
             Enemy bossEnemy = bossSpawner != null ? bossSpawner.SpawnedEnemy?.GetComponent<Enemy>() : null;
 
+            SetIntroRunning(false);
+
             if (bossEnemy != null)
             {
+                ClearTutorials(player);
+
                 bossEnemy.SetBossBounds(arenaBounds);
                 bossEnemy.Context.Health.SetEngaged(true);
                 bossEnemy.TriggerLockOn(player.transform);
