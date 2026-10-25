@@ -386,7 +386,7 @@ MonoBehaviour:
   requiredGround: {fileID: 0}
   requiredBossID: 
   introCutscene: 
-  deathCutscene: 
+  deathCutscene: CrashOutCutscene
   cutsceneFadeOutDuration: 1
   cutsceneFadeInDuration: 1
   phaseCount: 1
@@ -429,12 +429,6 @@ MonoBehaviour:
       Data3: 1939245233
       Data4: 1325775335
     Path: event:/DrBuzz
-  musicPhaseParameter: 
-  phaseMusicLabels:
-  - First
-  - Second
-  phaseIntensities:
-  - 0.25
 --- !u!1 &4585595708212418661
 GameObject:
   m_ObjectHideFlags: 0
