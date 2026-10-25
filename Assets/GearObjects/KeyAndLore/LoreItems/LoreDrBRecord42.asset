@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 280d69ebfcaeb664c905fc4dc8d6692d, type: 3}
+  m_Name: LoreDrBRecord42
+  m_EditorClassIdentifier: Assembly-CSharp::LoreItemDefinition
+  ItemID: LORE-DRBUZZ-RECORD-42
+  UIName: 'Experiment Record: 42'
+  UISprite: {fileID: 21300000, guid: 6b54b0f43252446e7a79014ccdea9f2f, type: 3}
+  Deletable: 1
+  SortOrder: 0
+  maxCommonValue: 0
+  maxRareValue: 0
+  maxEpicValue: 0
+  maxLegendaryValue: 0
+  FullImage: {fileID: 21300000, guid: 6b54b0f43252446e7a79014ccdea9f2f, type: 3}
+  Description: A crumpled page ripped out of an experiment notebook
+  LoreSetID: 
+  PieceIndex: 1
+  TotalPieces: 1
+  ItemText: 'Experiment 42, Date 10/12/3063
+
+
+    The digital personas created from
+    constructed multi sensory memories are showing promise, I have never felt this
+    popular in my life. The more I implant the more I feel I have lived a fufilling
+    life. This technology will change society. My key concern is... '
+  pickupSound:
+    Guid:
+      Data1: 622354256
+      Data2: 1210595945
+      Data3: 893189544
+      Data4: -714071588
+    Path: event:/WorldSFX Events/SecondaryGemPickupEvent
