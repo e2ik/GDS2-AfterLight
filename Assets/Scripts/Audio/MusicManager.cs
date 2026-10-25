@@ -246,7 +246,7 @@ public class MusicManager : MonoBehaviour
 
         if (_holdMusic)
         {
-            Debug.Log("$[MusicManager] SwitchMusic held during cutscene (requested boss music: {isBossMusic})", this);
+            // Debug.Log("$[MusicManager] SwitchMusic held during cutscene (requested boss music: {isBossMusic})", this);
             if (!newLevelEvent.IsNull)
             {
                 _currentEvent = newLevelEvent;

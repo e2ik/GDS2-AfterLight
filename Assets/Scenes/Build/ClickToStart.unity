@@ -223,6 +223,475 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &157423120
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 157423134}
+  - component: {fileID: 157423133}
+  - component: {fileID: 157423132}
+  - component: {fileID: 157423131}
+  - component: {fileID: 157423130}
+  - component: {fileID: 157423129}
+  - component: {fileID: 157423128}
+  - component: {fileID: 157423127}
+  - component: {fileID: 157423126}
+  - component: {fileID: 157423125}
+  - component: {fileID: 157423124}
+  - component: {fileID: 157423123}
+  - component: {fileID: 157423122}
+  - component: {fileID: 157423121}
+  m_Layer: 0
+  m_Name: Managers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &157423121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50a2ac61305fb4e4b980d29d6df99e38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FmodInstanceDebugger
+  logKey: 102
+  showOverlay: 1
+  pathFilter: 
+  overlayRefresh: 0.5
+--- !u!114 &157423122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dd34cb7a011f4c49a2e1d593346bdee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MusicIntensityDriver
+  intensityParameter: Intensity
+  trackProfiles:
+  - name: Hospital
+    musicEvent:
+      Guid:
+        Data1: 300044231
+        Data2: 1214001075
+        Data3: 842542756
+        Data4: -412094302
+      Path: event:/HospitalTheme
+    baselineIntensity: 2.5
+    onScreenIntensity: 4.5
+    engagedIntensity: 3.5
+    engagedStep: 2
+    perExtraEnemyIntensity: 2.5
+    maximumIntensity: 13
+    introSteps:
+    - marker: Hospital1
+      bars: 8
+      nextIntensity: 0.5
+    - marker: Hospital2
+      bars: 8
+      nextIntensity: 1.5
+    - marker: Hospital3
+      bars: 8
+      nextIntensity: 2.5
+  - name: Tower
+    musicEvent:
+      Guid:
+        Data1: 1626273885
+        Data2: 1300586119
+        Data3: 1151470465
+        Data4: 998864367
+      Path: event:/TowerTheme
+    baselineIntensity: 2
+    onScreenIntensity: 4
+    engagedIntensity: 4
+    engagedStep: 4
+    perExtraEnemyIntensity: 2.5
+    maximumIntensity: 13
+    introSteps:
+    - marker: Tower1
+      bars: 4
+      nextIntensity: 2
+  deaggroFadeDuration: 4
+  fastTravelFadeDuration: 1.5
+  riseSpeed: 4
+  fallSpeed: 1.5
+  lockUntilTriggered: 1
+  lockedIntensity: 0
+  introLeadBeats: 1
+  defaultBeatsPerBar: 4
+  introTimeout: 30
+  debugIntensity: 0
+  debugTiming: 0
+  debugEnemies: 0
+--- !u!114 &157423123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee08e259937fb0f428fd28c3d3bef342, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioFocusHandler
+  webGLOnly: 1
+  suspendOnFocusLost: 1
+  suspendOnPause: 1
+--- !u!114 &157423124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 492adc927902afb4ca380abd022bd25b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputManager
+  iconDatabase: {fileID: 11400000, guid: 402c7ad02a3389741bce4f23ee0ff7fa, type: 2}
+  stickThreshold: 0.5
+  triggerThreshold: 0.5
+  mouseMoveThreshold: 3
+  hideCursorOnGamepad: 1
+  parkMouseOnGamepad: 1
+  selectOnMouseHover: 1
+--- !u!114 &157423125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93fbceed59807a74c85f97a680657382, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameUI.UISFXWatcher
+  uiSelectEvent:
+    Guid:
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
+  onlyPlayWhenNavigatingWithinWindow: 1
+  uiTabSwitchEvent:
+    Guid:
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
+  tabSwitchActions:
+  - {fileID: -1768861836552554593, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  - {fileID: 5363142178390000624, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  uiSubmitEvent:
+    Guid:
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
+  submitActions:
+  - {fileID: 392368643174621059, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  uiCancelEvent:
+    Guid:
+      Data1: -302887632
+      Data2: 1227459827
+      Data3: -2109094511
+      Data4: -1938160201
+    Path: event:/Interface Events/UI Click Event
+  cancelActions:
+  - {fileID: 7727032971491509709, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  selectMinInterval: 0.06
+  submitMinInterval: 0.1
+  tabSwitchMinInterval: 0.08
+  cancelMinInterval: 0.1
+--- !u!114 &157423126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d495cdc66305ce447af6bb257ca9274b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MusicManager
+  defaultMusicEvent:
+    Guid:
+      Data1: -558913821
+      Data2: 1078041006
+      Data3: 1295943831
+      Data4: -2118747392
+    Path: event:/Intro
+  areaMusic:
+  - areaName: Hospital
+    sceneNames:
+    - HospitalZone
+    musicEvent:
+      Guid:
+        Data1: 300044231
+        Data2: 1214001075
+        Data3: 842542756
+        Data4: -412094302
+      Path: event:/HospitalTheme
+  - areaName: Tower
+    sceneNames:
+    - TowerZone
+    musicEvent:
+      Guid:
+        Data1: 1626273885
+        Data2: 1300586119
+        Data3: 1151470465
+        Data4: 998864367
+      Path: event:/TowerTheme
+  smoothSpeed: 2
+  decayPerSecond: 0.125
+  decayDelay: 1.5
+  crossfadeDuration: 1.5
+  stopFadeDuration: 0.7
+  idleFloor: 0
+--- !u!114 &157423127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dca45967bcf9004699e206ce29e0e70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PSpawner
+  database:
+  - key: spark
+    prefab: {fileID: 525218031157934298, guid: cfe360f1890206848aabc05b477a7387, type: 3}
+    initialPoolSize: 1
+  - key: anticipation
+    prefab: {fileID: 5497425098577746589, guid: 3ad1cec5f40777c4d9ea4e8d04c257ba, type: 3}
+    initialPoolSize: 1
+  - key: JumpDust
+    prefab: {fileID: 3808574646349885763, guid: d654844c7ca7a4028a99627c117d2f50, type: 3}
+    initialPoolSize: 1
+  - key: PlayerHit
+    prefab: {fileID: 4761495741035824944, guid: a2d56de8ab6424f38a73fcc0b18c599a, type: 3}
+    initialPoolSize: 1
+  - key: EnemyHit
+    prefab: {fileID: 4761495741035824944, guid: 2bffe2055451b4272ad83de75b03a780, type: 3}
+    initialPoolSize: 1
+  - key: TurnDust
+    prefab: {fileID: 7942674913948366880, guid: cd7cbe25b8ad547008de42f07f2ec482, type: 3}
+    initialPoolSize: 1
+  - key: ProjectileExplode
+    prefab: {fileID: 5497425098577746589, guid: 6679b307d9c79084b8e7c2bd601a4d4f, type: 3}
+    initialPoolSize: 1
+  - key: FastTravel
+    prefab: {fileID: 7942674913948366880, guid: 081d2c84a0d2a4477ba80868242216b5, type: 3}
+    initialPoolSize: 1
+  - key: SwordAOE
+    prefab: {fileID: 7942674913948366880, guid: d61bcd65a54e2455cb38c76d9dea061b, type: 3}
+    initialPoolSize: 1
+  - key: DustDashEffect
+    prefab: {fileID: 7942674913948366880, guid: 2eceff67d1d024141bdf3a1aaa66715d, type: 3}
+    initialPoolSize: 1
+  - key: Aggro
+    prefab: {fileID: 5497425098577746589, guid: 7661e10a0781fa84197669d5e61189a3, type: 3}
+    initialPoolSize: 1
+  - key: wallspark
+    prefab: {fileID: 7942674913948366880, guid: 9c28599bc54ffe841922d29602112228, type: 3}
+    initialPoolSize: 1
+  - key: splash
+    prefab: {fileID: 2359786052023973350, guid: f301e48b1d0f7e94b9ed01a2ba2525a8, type: 3}
+    initialPoolSize: 1
+--- !u!114 &157423128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9469e95082ad1cc4cb76d83c122ddae6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CamControls
+--- !u!114 &157423129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da1972d6c136bc94b8b35266ba6693f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldStreamer
+  debugStreaming: 0
+  unloadOnWebGL: 0
+  unloadSafetyRadius: 4
+  lowBackgroundLoadingPriority: 1
+  preloadScenes:
+  - HospitalZone
+  - TowerZone
+  keepScenesResident: 1
+--- !u!114 &157423130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41f6fc173fb32c14b855fd526d4832a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaveManager
+  worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
+--- !u!114 &157423131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38bc156dc0bf0f841bd2641f95da1c7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FastTravelManager
+  fadeDuration: 0.5
+--- !u!114 &157423132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c082fa6a54147c043b550f59a9c836fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tutorial.TutorialDirector
+  eventTriggers:
+  - eventKey: ItemPickedUp
+    sequence: {fileID: 11400000, guid: 44a60c5ab5476284a8f772c67e5c9a34, type: 2}
+    requiredCompletedSequences:
+    - {fileID: 11400000, guid: 1631a3fff5c7db048bca853201e8496e, type: 2}
+  - eventKey: FastTravelUsed
+    sequence: {fileID: 11400000, guid: 40faba29a39be0140aaf8831fe9cace1, type: 2}
+    requiredCompletedSequences: []
+  - eventKey: PrimaryGemPickedUp
+    sequence: {fileID: 11400000, guid: 8ec1a9fd94e536340b2f2be96eedbfdf, type: 2}
+    requiredCompletedSequences: []
+  - eventKey: EnemyHeavyAttack
+    sequence: {fileID: 11400000, guid: 1cce327c88cf6fa458e03f7594a4e0e3, type: 2}
+    requiredCompletedSequences: []
+  - eventKey: EnemyAggroed
+    sequence: {fileID: 11400000, guid: 1631a3fff5c7db048bca853201e8496e, type: 2}
+    requiredCompletedSequences: []
+  - eventKey: PlayerOnDropPlatform
+    sequence: {fileID: 11400000, guid: 69b55e4faf7f4674abcbd3e6ddc7e788, type: 2}
+    requiredCompletedSequences: []
+  debugEventTriggers: 0
+  saveWhenCompleted: 1
+  pauseTimeOnPromptSteps: 1
+--- !u!114 &157423133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53d6205038a0a31468c335e174d35f11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  currentState: 0
+  currentAreaSide: 0
+  fadeCanvas: {fileID: 0}
+  masterSceneName: WorldMaster
+  defaultStartSceneName: HospitalZone
+  defaultSpawnAnchorID: GameStart
+  defaultStartAreaSide: 1
+  titleSceneName: GameSetup
+  creditsSceneName: Credits
+  creditsFadeDuration: 1
+  returnToTitleFadeDuration: 0.75
+  unlockDynamicMusicOnLoad: 1
+  keepMusicLockedAnchors:
+  - HospitalPark
+  keepMusicLockedNodeIDs:
+  - T01
+  playerPrefab: {fileID: 6310612592100663882, guid: 43a7815d30013ac4f87da349fa720dfb, type: 3}
+  worldMapState: {fileID: 11400000, guid: f827977728c33c44999097a5fd1e9658, type: 2}
+  saveManager: {fileID: 157423130}
+  startupFadeDuration: 0.5
+  respawnFadeDuration: 0.5
+  introCutsceneFile: IntroCutscene.mp4
+  commonColor: {r: 0.69, g: 0.69, b: 0.69, a: 1}
+  rareColor: {r: 0.56, g: 0.76, b: 1, a: 1}
+  epicColor: {r: 0.78, g: 0.61, b: 1, a: 1}
+  legendaryColor: {r: 1, g: 0.71, b: 0.44, a: 1}
+  defaultRarityColor: {r: 1, g: 1, b: 1, a: 1}
+  keyItemColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  loreItemColor: {r: 0, g: 1, b: 1, a: 1}
+  zeroForceColor: {r: 1.4980392, g: 1.4980392, b: 1.4980392, a: 1}
+  lightForceColor: {r: 0, g: 0.6259438, b: 1.1353016, a: 1}
+  mediumForceColor: {r: 1.1353016, g: 0.5621913, b: 0.010710214, a: 1}
+  heavyForceColor: {r: 1.1353016, g: 0.017850537, b: 0.017850537, a: 1}
+  defaultRarityOdds:
+    common: 50
+    rare: 35
+    epic: 10
+    legendary: 5
+  unlockAllFastTravelAction: {fileID: 7163206889840615523, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  disableTutorials: 0
+  skipCutscenes: 0
+  oneHitKillEnemies: 0
+  spawnAllLegendaries: 0
+  skillMeterAlwaysFull: 0
+  godMode: 0
+  maxConcurrentAttackers: 1
+  attackSlotCooldown: 0.3
+  extraAttackerChance: 0.33
+  maxExtraAttackers: 1
+  extraAttackerRollInterval: 1
+  projectilesIgnoreParryDirection: 1
+  backgroundPrefab: {fileID: 3327786354979037545, guid: f6bdba2aea3bb1741a687ba8d5d96a43, type: 3}
+--- !u!4 &157423134
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157423120}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 16.94476, y: 8.80638, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &607132998
 GameObject:
   m_ObjectHideFlags: 0
@@ -844,3 +1313,4 @@ SceneRoots:
   - {fileID: 41167319}
   - {fileID: 1923965820}
   - {fileID: 1424757507}
+  - {fileID: 157423134}

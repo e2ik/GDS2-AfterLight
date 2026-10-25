@@ -85,7 +85,7 @@ public class WebGLAudioUnlock : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(nextSceneName))
         {
-            Debug.Log($"[WebGLAudioUnlock] Loading scene '{nextSceneName}'", this);
+            // Debug.Log($"[WebGLAudioUnlock] Loading scene '{nextSceneName}'", this);
             SceneManager.LoadScene(nextSceneName);
             return;
         }
