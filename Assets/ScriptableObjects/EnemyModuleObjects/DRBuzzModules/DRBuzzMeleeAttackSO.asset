@@ -14,6 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.MeleeAttack
   range: 15
   cooldownDuration: 2
+  useVerticalBand: 0
+  bottomMargin: 0.1
+  topMargin: 0.1
+  debugVerticalBand: 0
+  keepClearOfBoundary: 1
+  boundaryClearance: 10
+  repositionSpeed: 8
+  repositionTimeout: 3
+  attackIfBlocked: 0
+  repositionWindupTrigger: MoveWindup
+  repositionWindupState: MoveWindup
+  repositionWinddownTrigger: MoveWinddown
+  repositionWinddownState: MoveWinddown
+  repositionPhaseTimeout: 1.5
+  debugBoundaryClearance: 0
   clip: {fileID: 7400000, guid: b7e644ae1111357459a34b862daf0cc9, type: 2}
   damage: 30
   attackForce: 3
@@ -24,5 +39,4 @@ MonoBehaviour:
       Data3: 0
       Data4: 0
     Path: 
-  placeholderClipName: EmptyAttack
   attackStateName: Attack

@@ -14,10 +14,21 @@ public class TransitionDoor : MonoBehaviour, IInteractable
     [SerializeField] private string interactionPrompt = "Enter";
     [SerializeField] private bool canInteract = true;
     [SerializeField] private bool shouldStopPlayer = true;
+    [SerializeField] private bool requireGrounded = true;
     [SerializeField] private SpriteOutlineToggle outlineToggle;
     [SerializeField] private Collider2D promptCollider;
     public string InteractionPrompt => interactionPrompt;
-    public bool CanInteract => canInteract && currentTransition == null && !isDoorAnimating;
+    public bool CanInteract => canInteract && currentTransition == null && !isDoorAnimating && PlayerGroundedIfRequired;
+
+    private bool PlayerGroundedIfRequired
+    {
+        get
+        {
+            if (!requireGrounded) return true;
+            Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+            return player == null || player.Controller == null || player.Controller.IsGrounded;
+        }
+    }
     public bool ShouldStopPlayerMovement => shouldStopPlayer;
     public SpriteOutlineToggle OutlineToggle => outlineToggle;
     public Collider2D PromptCollider => promptCollider;

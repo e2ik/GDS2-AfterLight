@@ -837,6 +837,21 @@ namespace Enemies
             attacksSinceLastTeleport++;
         }
 
+        public void FaceDirection(int direction)
+        {
+            if (direction == 0) return;
+            Context.FacingRight = direction > 0;
+            ApplyFacing();
+        }
+
+        public void FaceCurrentTarget()
+        {
+            if (Context.Target != null) FaceTowards(Context.Target.position.x);
+            ApplyFacing();
+        }
+
+        public void KeepAttackAlive() => attackStartedTime = Time.time;
+
         public void MarkAttackEnded()
         {
             bool wasAttacking = IsAttacking;
