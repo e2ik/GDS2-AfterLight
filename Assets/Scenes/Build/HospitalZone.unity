@@ -12559,6 +12559,8 @@ MonoBehaviour:
   onExitLeft: 2
   onExitRight: 0
   unloadPadding: 0
+  switchAreaMusic: 1
+  loadedSceneIsOnRight: 1
 --- !u!61 &223651042
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -60679,6 +60681,14 @@ PrefabInstance:
     - target: {fileID: 5881447990178518734, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8456203690630085471, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 24.46
+      objectReference: {fileID: 0}
+    - target: {fileID: 8456203690630085471, guid: 85f7a2a03d0bc924389d0920cfabf107, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.37
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

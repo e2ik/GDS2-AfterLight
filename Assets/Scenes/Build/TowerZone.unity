@@ -3895,7 +3895,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &124264256
 Transform:
   m_ObjectHideFlags: 0
@@ -16952,34 +16952,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1209462614}
     m_Modifications:
-    - target: {fileID: 1938178954659153748, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
-      propertyPath: m_Color.a
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1938178954659153748, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
-      propertyPath: m_SortingOrder
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2954593989394530346, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
       propertyPath: m_Name
       value: DRB Boss Fight
       objectReference: {fileID: 0}
     - target: {fileID: 3075481338447874064, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
-      propertyPath: deathCutscene
-      value: IntroCutscene
-      objectReference: {fileID: 0}
-    - target: {fileID: 3075481338447874064, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
       propertyPath: requiredGround
       value: 
       objectReference: {fileID: 538729092}
-    - target: {fileID: 3075481338447874064, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
-      propertyPath: fadeWithBackground.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3075481338447874064, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
-      propertyPath: 'fadeWithBackground.Array.data[1]'
-      value: 
-      objectReference: {fileID: 479839604}
     - target: {fileID: 5681199292943563232, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 160.36
@@ -17028,11 +17008,6 @@ PrefabInstance:
 --- !u!4 &479839603 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5681199292943563232, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
-  m_PrefabInstance: {fileID: 479839602}
-  m_PrefabAsset: {fileID: 0}
---- !u!212 &479839604 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 7571993982257703308, guid: 4c32ad6df44df604083e0039fdc5880c, type: 3}
   m_PrefabInstance: {fileID: 479839602}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &486845309
@@ -68181,14 +68156,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: CH Remaster Boss Fight
       objectReference: {fileID: 0}
-    - target: {fileID: 3075481338447874064, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
-      propertyPath: fadeWithBackground.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3075481338447874064, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
-      propertyPath: 'fadeWithBackground.Array.data[0]'
-      value: 
-      objectReference: {fileID: 1751562358}
     - target: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
       propertyPath: m_LocalPosition.x
       value: 176.82
@@ -68237,11 +68204,6 @@ PrefabInstance:
 --- !u!4 &1751562357 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5681199292943563232, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
-  m_PrefabInstance: {fileID: 1751562356}
-  m_PrefabAsset: {fileID: 0}
---- !u!212 &1751562358 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 8793989830033821014, guid: 75bcec17292503d4dbf95c56ebf75d13, type: 3}
   m_PrefabInstance: {fileID: 1751562356}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1762317759
