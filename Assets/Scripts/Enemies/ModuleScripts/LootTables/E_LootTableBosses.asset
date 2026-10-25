@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b51b181963454ed49d9d92a68f14ee6, type: 3}
+  m_Name: E_LootTableBosses
+  m_EditorClassIdentifier: Assembly-CSharp::LootTableDefinitionSO
+  possibleDrops:
+  - lootItem: {fileID: 11400000, guid: 32f0bb3968290e7459f3533a02b86ed1, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1
+  - lootItem: {fileID: 11400000, guid: 7b8773f36d0b8a148929c5d52955a42b, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.75
+  - lootItem: {fileID: 11400000, guid: 098ac50ba69f4424a8d3001fa2c307fc, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1
+  - lootItem: {fileID: 11400000, guid: 3704b97f958801b4681141f37392f808, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.75
+  - lootItem: {fileID: 11400000, guid: 3704b97f958801b4681141f37392f808, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.75
+  - lootItem: {fileID: 11400000, guid: 2844b6d4a6b9dfe418f4b89cbe5a9f3b, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1.5
+  - lootItem: {fileID: 11400000, guid: e86d611ccf0165947ab9d68b7479e4cb, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 1.5
+  - lootItem: {fileID: 11400000, guid: ad79a8a955122ef0b95b5db5ec727976, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.5
+  - lootItem: {fileID: 11400000, guid: 0e6408a80eb85c34a8dae751f99bf196, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.5
+  - lootItem: {fileID: 11400000, guid: e216697a235d3ff4cae3328dfa3e739f, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.5
+  - lootItem: {fileID: 11400000, guid: ba55e8e3426bf7747ba3a8f1237480c4, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.5
+  - lootItem: {fileID: 11400000, guid: e83c70c081f33b94aa34171d181e2947, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.5
+  - lootItem: {fileID: 11400000, guid: 02f999b411a3cb90890f65e7c4aef9db, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.5
+  - lootItem: {fileID: 11400000, guid: 29dfae1ea4a96d875b57f74f1fc9ca5e, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.5
+  - lootItem: {fileID: 11400000, guid: 1102d0c7f5836d14c9fc09f1b9a12ad0, type: 2}
+    worldItem: {fileID: 5759693753818341132, guid: 420b2049da29f2945b0e898e004f48c8, type: 3}
+    weight: 0.5
+  nothingWeight: 0
+  avoidRepeat: 1
+  cycleThroughTable: 1
+  overrideRarityOdds: 1
+  rarityOdds:
+    common: 0
+    rare: 0
+    epic: 80
+    legendary: 20
+  ignoreSceneLootZone: 0
+  popForce: 4
+  popSpreadX: 0.1
