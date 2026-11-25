@@ -1,5 +1,7 @@
+using System.Collections;
 using Enemies;
 using FMODUnity;
+using GameUI;
 using UnityEngine;
 
 public class BossRematch : MonoBehaviour, IInteractable
@@ -10,8 +12,10 @@ public class BossRematch : MonoBehaviour, IInteractable
     [SerializeField] private SpriteOutlineToggle outlineToggle;
     [SerializeField] private Collider2D promptCollider;
     [SerializeField] private EventReference rematchSound;
+    [SerializeField] private string promptMessage = "Rematch the boss?";
 
     private BossTrigger owner;
+    private ConfirmWindow confirmWindow;
 
     public string InteractionPrompt => interactionPrompt;
     public bool CanInteract => owner != null && PlayerGroundedIfRequired;
@@ -40,6 +44,41 @@ public class BossRematch : MonoBehaviour, IInteractable
     public void Interact(Player player)
     {
         if (!CanInteract) return;
-        if (owner.RequestRematch() && !rematchSound.IsNull) AudioManager.PlaySFX(rematchSound, transform.position);
+
+        if (confirmWindow == null)
+            confirmWindow = FindFirstObjectByType<ConfirmWindow>(FindObjectsInactive.Include);
+
+        if (confirmWindow == null)
+        {
+            Debug.LogWarning("[BossRematch] No ConfirmWindow found");
+            StartRematch();
+            return;
+        }
+        
+        confirmWindow.Show(promptMessage, OnRematchConfirmed);
+    }
+
+    private void OnRematchConfirmed() => StartCoroutine(StartRematchWhenReleased());
+
+    private IEnumerator StartRematchWhenReleased()
+    {
+        float waited = 0f;
+
+        while (UIManager.Instance != null && UIManager.Instance.IsInputLocked && waited < 2f)
+        {
+            waited += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        StartRematch();
+    }
+
+    private void StartRematch()
+    {
+        if (owner == null)
+            return;
+        
+        if(owner.RequestRematch() && !rematchSound.IsNull)
+            AudioManager.PlaySFX(rematchSound, transform.position);
     }
 }

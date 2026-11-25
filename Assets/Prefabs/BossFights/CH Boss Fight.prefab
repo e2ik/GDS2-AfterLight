@@ -179,8 +179,15 @@ MonoBehaviour:
       Data3: -1889155924
       Data4: 1785508625
     Path: event:/CannedHeat
+  musicPhaseParameter: 
+  phaseMusicLabels: []
+  phaseFullIntensityHealths:
+  - 0
   useRematchInteractable: 1
   rematchInteractable: {fileID: 1954474404458472936}
+  thoughtAfterCutscene: 0
+  thoughtLines: []
+  thoughtDuration: 0
 --- !u!1 &5820503413341801186
 GameObject:
   m_ObjectHideFlags: 0
@@ -346,6 +353,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5681199292943563232}
     m_Modifications:
+    - target: {fileID: 1969632547049315557, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
+      propertyPath: promptMessage
+      value: Rematch Canned Heat?
+      objectReference: {fileID: 0}
     - target: {fileID: 2655967221178132563, guid: 17b08881be4c22842b4b2662424f7027, type: 3}
       propertyPath: m_Name
       value: Rematch
