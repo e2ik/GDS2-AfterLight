@@ -39,6 +39,9 @@ public class LootRarityZone : MonoBehaviour
 
     public bool ShouldSkipDrop(object rolledItem)
     {
+        if (BossRushManager.IsActive)
+            return true;
+        
         if (rolledItem == null || worseThanOwnedNoDropChance <= 0f) return false;
 
         Player player = GameManager.Instance != null ? GameManager.Instance.Player : null;

@@ -553,21 +553,34 @@ public class DialogueManager : MonoBehaviour
     private IEnumerator TypeLine(DialogueLine line)
     {
         isTyping = true;
-        activeDialogueText.text = "";
 
-        foreach (char character in line.Text)
+        activeDialogueText.text = line.Text;
+        activeDialogueText.maxVisibleCharacters = 0;
+        activeDialogueText.ForceMeshUpdate();
+
+        TMP_TextInfo info = activeDialogueText.textInfo;
+        int total = info.characterCount;
+
+        char[] visible = new char[total];
+
+        for (int i = 0; i < total; i++)
+            visible[i] = info.characterInfo[i].character;
+
+        for(int i = 0; i < total; i++)
         {
-            activeDialogueText.text += character;
+            activeDialogueText.maxVisibleCharacters = i + 1;
 
-            PlayTypingSound(line, character);
+            PlayTypingSound(line, visible[i]);
 
             float textSpeed = line.TextSpeed;
 
-            if (line.Effect == DialogueEffect.Angry) textSpeed *= 0.7f;
+            if (line.Effect == DialogueEffect.Angry) 
+                textSpeed *= 0.7f;
 
             yield return new WaitForSecondsRealtime(textSpeed);
         }
 
+        activeDialogueText.maxVisibleCharacters = int.MaxValue;
         isTyping = false;
         typingCoroutine = null;
 
@@ -584,6 +597,8 @@ public class DialogueManager : MonoBehaviour
 
         activeDialogueText.text =
             currentDialogue.Lines[currentLineIndex].Text;
+
+        activeDialogueText.maxVisibleCharacters = int.MaxValue;
 
         isTyping = false;
 

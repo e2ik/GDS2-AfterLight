@@ -39,8 +39,10 @@ public class PrefabSpawner : MonoBehaviour
 
     public GameObject SpawnedEnemy => spawnedEnemy;
 
-    private bool PrerequisiteMet => string.IsNullOrEmpty(requiredDefeatedBossID) || (SaveManager.Instance != null &&
-        SaveManager.Instance.HasStoryFlag(Enemies.BossTrigger.DefeatedFlagFor(requiredDefeatedBossID)));
+    private bool PrerequisiteMet => BossRushManager.IsActive 
+                                    || string.IsNullOrEmpty(requiredDefeatedBossID) 
+                                    || (SaveManager.Instance != null 
+                                        && SaveManager.Instance.HasStoryFlag(Enemies.BossTrigger.DefeatedFlagFor(requiredDefeatedBossID)));
     public bool IsDefeated => (respawnOnlyAfterRest && defeatedSpawners.Contains(SpawnerKey)) || BossStaysDefeated;
 
     private bool BossStaysDefeated => stayDefeatedAfterBossWin && !forcedSpawnAllowed && !string.IsNullOrEmpty(bossID)

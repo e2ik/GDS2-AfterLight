@@ -62,11 +62,15 @@ public class PlayerSpeechBubble : MonoBehaviour
 
         for (int i = 0; i < currentLines.Length; i++)
         {
-            bubbleText.text = "";
+            bubbleText.text = currentLines[i];
+            bubbleText.maxVisibleCharacters = 0;
+            bubbleText.ForceMeshUpdate();
 
-            foreach (char character in currentLines[i])
+            int total = bubbleText.textInfo.characterCount;
+
+            for (int c = 1; c <= total; c++)
             {
-                bubbleText.text += character;
+                bubbleText.maxVisibleCharacters = c;
                 yield return new WaitForSeconds(textSpeed);
             }
 

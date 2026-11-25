@@ -13,6 +13,8 @@ public class SaveManager : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void SyncSaveFilesToIndexedDB();
 #endif
+    
+    public bool IsSandBox { get; private set; }
 
     public bool HasSaveFile => File.Exists(SavePath);
     private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
@@ -67,7 +69,7 @@ public class SaveManager : MonoBehaviour
 
     public void CommitToDisk()
     {
-        if (_currentSaveData == null) return;
+        if (_currentSaveData == null || IsSandBox) return;
 
         Player player = FindFirstObjectByType<Player>();
         if (player != null && player.Equipment != null)
@@ -227,6 +229,29 @@ public class SaveManager : MonoBehaviour
         if (pauseStatus)
         {
             CommitToDisk();
+        }
+    }
+
+    public void BeginSandBox()
+    {
+        IsSandBox = true;
+        RunStats.Reset();
+        InitializeNewSaveData();
+    }
+
+    public void EndSandBox()
+    {
+        if (!IsSandBox)
+            return;
+
+        IsSandBox = false;
+
+        if (HasSaveFile)
+            LoadGame();
+        else
+        {
+            RunStats.Reset();
+            InitializeNewSaveData();
         }
     }
 }

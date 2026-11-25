@@ -47,18 +47,25 @@ public class FastTravelManager : MonoBehaviour
         lastVisitedNode = null;
     }
 
-    public void TravelTo(FastTravelNodeSO node)
+    public void TravelTo(FastTravelNodeSO node, bool recordProgress = true)
     {
         if (node == null) return;
 
-        SetLastInteractedNode(node);
+        if(recordProgress)
+            SetLastInteractedNode(node);
 
         IsTravelling = true;
-        StartCoroutine(FastTravelRoutine(node));
+        StartCoroutine(FastTravelRoutine(node, recordProgress));
     }
 
     public void RespawnAtLastFastTravel()
     {
+        if (BossRushManager.IsActive)
+        {
+            BossRushManager.Instance.Fail();
+            return;
+        }
+        
         if (lastVisitedNode == null)
         {
             Debug.LogWarning("[FastTravelManager] No fast travel point visited this session; cannot respawn.");
@@ -76,7 +83,7 @@ public class FastTravelManager : MonoBehaviour
         GameManager.Instance.ForceReloadAndRespawn(lastVisitedNode, lastVisitedNode.destinationAreaSide, () => OnFastTravelComplete?.Invoke());
     }
 
-    private IEnumerator FastTravelRoutine(FastTravelNodeSO destination)
+    private IEnumerator FastTravelRoutine(FastTravelNodeSO destination, bool recordProgress)
     {
         if (FadeCanvasController.Instance != null)
             yield return FadeCanvasController.Instance.FadeOut(fadeDuration);
@@ -150,7 +157,8 @@ public class FastTravelManager : MonoBehaviour
                 CameraFollow2D cam = FindFirstObjectByType<CameraFollow2D>();
                 cam?.SnapToTarget();
 
-                SaveManager.Instance?.SaveProgressAtLocation(targetScene, destination.spawnAnchorID, destination.destinationAreaSide);
+                if(recordProgress)
+                    SaveManager.Instance?.SaveProgressAtLocation(targetScene, destination.spawnAnchorID, destination.destinationAreaSide);
             }
             else
             {

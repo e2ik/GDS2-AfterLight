@@ -88,7 +88,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool skillMeterAlwaysFull = false;
     [SerializeField] private bool godMode = false;
 
-    public bool TutorialsDisabled => disableTutorials;
+    public bool TutorialsDisabled => disableTutorials || BossRushManager.IsActive;
     public bool OneHitKillEnemies => oneHitKillEnemies;
     public bool SkillMeterAlwaysFull => skillMeterAlwaysFull;
     public bool GodMode => godMode;
@@ -190,7 +190,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void SpawnAllLegendaries()
+    public void SpawnAllLegendaries() => SpawnAllOfRarity(ERarity.Legendary);
+    
+    public void SpawnAllOfRarity(ERarity rarity)
     {
         if (player == null || player.Inventory == null) return;
 
@@ -202,7 +204,7 @@ public class GameManager : MonoBehaviour
             foreach (var def in GameDatabase.WeaponTemplateDB.weaponTemplates)
             {
                 if (def == null) continue;
-                inventory.AddItemToInventory(def.CreateInstance(ERarity.Legendary));
+                inventory.AddItemToInventory(def.CreateInstance(rarity));
                 count++;
             }
         }
@@ -212,7 +214,7 @@ public class GameManager : MonoBehaviour
             foreach (var def in GameDatabase.GearTemplateDB.gearTemplates)
             {
                 if (def == null) continue;
-                inventory.AddItemToInventory(def.CreateInstance(ERarity.Legendary));
+                inventory.AddItemToInventory(def.CreateInstance(rarity));
                 count++;
             }
         }
@@ -222,12 +224,12 @@ public class GameManager : MonoBehaviour
             foreach (var def in GameDatabase.SecondaryGemTemplateDB.secondaryGemTemplates)
             {
                 if (def == null) continue;
-                inventory.AddItemToInventory(def.CreateInstance(ERarity.Legendary));
+                inventory.AddItemToInventory(def.CreateInstance(rarity));
                 count++;
             }
         }
 
-        Debug.Log($"[GameManager] Dev: added {count} legendary items to the inventory.");
+        Debug.Log($"[GameManager] Dev: added {count} {rarity} items to the inventory.");
     }
 
     public void UnlockAllFastTravelNodes()
@@ -368,16 +370,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void PlayEndCredits()
+    public void PlayEndCredits(bool standardCredits = false)
     {
         if (CreditsOpen || string.IsNullOrEmpty(creditsSceneName)) return;
-        StartCoroutine(EndCreditsRoutine());
+        StartCoroutine(EndCreditsRoutine(standardCredits));
     }
 
-    private IEnumerator EndCreditsRoutine()
+    private IEnumerator EndCreditsRoutine(bool standardCredits)
     {
         CreditsOpen = true;
-        CreditsFromTitle = false;
+        CreditsFromTitle = standardCredits;
         SaveManager.Instance?.CommitToDisk();
 
         if (FadeCanvasController.Instance != null)
@@ -583,6 +585,8 @@ public class GameManager : MonoBehaviour
             _playerInstance = null;
             player = null;
         }
+        
+        SaveManager.Instance?.EndSandBox();
 
         AsyncOperation loadTitle = SceneManager.LoadSceneAsync(titleSceneName, LoadSceneMode.Single);
         while (!loadTitle.isDone)
@@ -667,6 +671,12 @@ public class GameManager : MonoBehaviour
 
     public void ForceReloadAndRespawnAtStart(System.Action onComplete)
     {
+        if(BossRushManager.IsActive)
+        {
+            BossRushManager.Instance.Fail();
+            return;
+        }
+        
         StartCoroutine(ForceReloadAndRespawnAtRoutine(defaultStartSceneName, defaultSpawnAnchorID, defaultStartAreaSide, onComplete));
     }
 
@@ -951,4 +961,51 @@ public class GameManager : MonoBehaviour
     }
 
     #endregion
+
+    public void StartBossRush()
+    {
+        if (CreditsOpen)
+            return;
+        
+        PrefabSpawner.ClearDefeated();
+        StartCoroutine(BossRushRoutine());
+    }
+
+    private IEnumerator BossRushRoutine()
+    {
+        GetSaveManager()?.BeginSandBox();
+
+        yield return LoadMasterSceneSingle();
+        UpdateHudVisibility();
+        FadeCanvasController.Instance?.FadeTo(1f, 0f);
+
+        BossRushManager rush = BossRushManager.Instance;
+
+        if (rush == null)
+        {
+            Debug.LogError("[GameManager] No BossRushManager in the master scene");
+            ReturnToTitle();
+            yield break;
+        }
+
+        if (WorldStreamer.Instance != null)
+            yield return WorldStreamer.Instance.PreloadScenes();
+        
+        SpawnPlayer();
+        
+        TutorialDirector.Instance?.AbortActiveSequence();
+        LootDropHistory.Clear();
+        ClearPlayerInventory();
+        ClearPlayerEquipment();
+        player.Equipment.RegisterInspectorAssignedStartingGear();
+        
+        if(worldMapState != null)
+            worldMapState.ResetState();
+        
+        FastTravelManager.Instance?.ClearLastVisitedNode();
+        CameraRevealTrigger.ClearSessionTriggers();
+        
+        SetState(GameState.Game);
+        rush.StartRush();
+    }
 }

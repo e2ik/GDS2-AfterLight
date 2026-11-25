@@ -38,6 +38,9 @@ public class LootTableDefinitionSO : ScriptableObject
 
     public void SpawnInstance(Vector3 spawn, Scene sourceScene)
     {
+        if (BossRushManager.IsActive)
+            return;
+        
         LootEntry entry = PickEntry();
         if (entry == null) return;
 

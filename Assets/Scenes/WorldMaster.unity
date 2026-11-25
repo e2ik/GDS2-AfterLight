@@ -1268,6 +1268,70 @@ RectTransform:
   m_AnchoredPosition: {x: 425, y: 34}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0}
+--- !u!1 &480522948
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 480522950}
+  - component: {fileID: 480522949}
+  m_Layer: 0
+  m_Name: BossRushManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &480522949
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480522948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6d1c807809e463e889befc57a2de9ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossRushManager
+  stages:
+  - bossID: CHboss_intro_unique_id
+    arrivalNode: {fileID: 11400000, guid: c7f046fd708312f4eb88a593a4a7e428, type: 2}
+    rewardRarity: 1
+    rewardMessage: <color=#005ED1>Rare</color> gear received!
+  - bossID: DrBuzzBoss_intro_unique_id
+    arrivalNode: {fileID: 11400000, guid: ef5c4e3131339c24ab251bcfc2e70930, type: 2}
+    rewardRarity: 2
+    rewardMessage: <color=#6F00FF>Epic</color> gear received!
+  - bossID: CHRemasterboss_intro_unique_id
+    arrivalNode: {fileID: 11400000, guid: bdb0308f02532514d99fd713809fea07, type: 2}
+    rewardRarity: 3
+    rewardMessage: <color=#D16500>Legendary</color> gear received!
+  requireRematchInteract: 1
+  autoStartDelay: 1
+  betweenStagesDelay: 2
+  winReturnDelay: 4
+  triggerTimeout: 5
+  noticeDuration: 4
+  noticeEffect: 0
+--- !u!4 &480522950
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480522948}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 167.0747, y: 32.44316, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &488322502
 GameObject:
   m_ObjectHideFlags: 0
@@ -3848,10 +3912,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0.1
+    x: 0.20677084
     y: 0
-    width: 0.8
-    height: 1
+    width: 0.3490741
+    height: 0.34907407
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -6599,3 +6663,4 @@ SceneRoots:
   - {fileID: 398162715711782289}
   - {fileID: 1298946180}
   - {fileID: 1986295401}
+  - {fileID: 480522950}

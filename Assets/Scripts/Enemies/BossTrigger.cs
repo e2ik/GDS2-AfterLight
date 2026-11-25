@@ -4,6 +4,7 @@ using Enemies.Cutscene;
 using System.Collections.Generic;
 using FMODUnity;
 using Tutorial;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Enemies
@@ -55,7 +56,7 @@ namespace Enemies
         [SerializeField, Min(0f)] private float endCreditsDelay = 1.5f;
         private bool endCreditsPending;
         private bool endCreditsStarted;
-        private bool ShouldPlayEndCredits => playEndCreditsOnDefeat && (!isRematch || endCreditsOnRematch);
+        private bool ShouldPlayEndCredits => playEndCreditsOnDefeat && !rushFight && (!isRematch || endCreditsOnRematch);
 
         [Header("Background")]
         [SerializeField] private List<ParallaxBackground.LayerColor> engagedLayerColors = new List<ParallaxBackground.LayerColor>();
@@ -116,6 +117,20 @@ namespace Enemies
         private Action onBossDeath;
         private Action onHealthDepleted;
 
+        private bool rushOffered;
+        public bool CanOfferRush => rematchInteractable != null;
+
+        private static readonly Dictionary<string, BossTrigger> registry = new Dictionary<string, BossTrigger>();
+
+        public static bool TryGet(string id, out BossTrigger trigger) =>
+            registry.TryGetValue(id, out trigger) && trigger != null;
+        
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetRegistry() => registry.Clear();
+
+        private bool rushFight;
+        private bool rushStarting;
+
         private void Update()
         {
             UpdateFadeTime();
@@ -149,11 +164,13 @@ namespace Enemies
         {
             if (rematchInteractable == null) return;
 
-            bool show = useRematchInteractable
-                        && activeBossEnemy == null
-                        && !deathSequenceRunning
-                        && SaveManager.Instance != null && SaveManager.Instance.HasStoryFlag(DefeatedFlag)
-                        && !BossPresent();
+            bool show = BossRushManager.IsActive 
+                ? rushOffered && activeBossEnemy == null
+                : useRematchInteractable 
+                  && activeBossEnemy == null 
+                  && !deathSequenceRunning
+                  && SaveManager.Instance != null && SaveManager.Instance.HasStoryFlag(DefeatedFlag)
+                  && !BossPresent();
 
             if (show == rematchInteractableShown) return;
             rematchInteractableShown = show;
@@ -171,6 +188,21 @@ namespace Enemies
 
         public bool RequestRematch()
         {
+            if (BossRushManager.IsActive)
+            {
+                if (!rushOffered)
+                    return false;
+
+                Player rushPlayer = GameManager.Instance != null ? GameManager.Instance.Player : null;
+
+                if (rushPlayer == null || !StartRushFight(rushPlayer)) 
+                    return false;
+
+                rushOffered = false;
+                UpdateRematchInteractable();
+                return true;
+            }
+            
             if (bossSpawner == null || activeBossEnemy != null || deathSequenceRunning || BossPresent()) return false;
 
             bossSpawner.ForceRespawn();
@@ -180,11 +212,19 @@ namespace Enemies
 
         private void OnEnable()
         {
+            registry[bossID] = this;
             PlayerStats.OnRespawnStarted += HandleRespawnStarted;
         }
 
         private void OnDisable()
         {
+            if (registry.TryGetValue(bossID, out BossTrigger current) && current == this)
+                registry.Remove(bossID);
+
+            rushFight = false;
+            rushStarting = false;
+            rushOffered = false;
+            
             SetIntroRunning(false);
             PlayerStats.OnRespawnStarted -= HandleRespawnStarted;
             if (activeBossEnemy != null) Disengage();
@@ -220,6 +260,9 @@ namespace Enemies
 
         private void TryStart(Collider2D other)
         {
+            if (BossRushManager.IsActive)
+                return;
+            
             if (!other.enabled || !other.gameObject.activeInHierarchy)
             {
                 playerInside = null;
@@ -336,10 +379,10 @@ namespace Enemies
                 bossEnemy.Context.Health.SetEngaged(true);
                 bossEnemy.TriggerLockOn(player.transform);
                 
-                bool playMusic = !isRematch || rematchPlaysBossMusic;
-                bool showHealthBar = !isRematch || rematchShowsHealthBar;
-                bool lockArena = !isRematch || rematchLocksArena;
-                bool playDeathDialogue = !isRematch || rematchPlaysDeathDialogue;
+                bool playMusic = rushFight || !isRematch || rematchPlaysBossMusic;
+                bool showHealthBar = rushFight || !isRematch || rematchShowsHealthBar;
+                bool lockArena = rushFight || !isRematch || rematchLocksArena;
+                bool playDeathDialogue = !rushFight && (!isRematch || rematchPlaysDeathDialogue);
 
                 if (playMusic)
                 {
@@ -361,7 +404,7 @@ namespace Enemies
                     SetDoorsLocked(true);
                 }
 
-                bool playPhaseDialogue = !isRematch || rematchPlaysPhaseDialogue;
+                bool playPhaseDialogue = !rushFight && (!isRematch || rematchPlaysPhaseDialogue);
 
                 if (playDeathDialogue || phaseCount > 1)
                 {
@@ -388,7 +431,10 @@ namespace Enemies
                     bossDefeated = true;
                     hasTriggered = false;
                     defeatedBossObject = bossObject;
-                    if (SaveManager.Instance != null) SaveManager.Instance.SetStoryFlag(DefeatedFlag);
+                    
+                    if (SaveManager.Instance != null && !rushFight) 
+                        SaveManager.Instance.SetStoryFlag(DefeatedFlag);
+                    
                     ReleaseCamera();
                     SetDoorsLocked(false);
                     
@@ -398,7 +444,11 @@ namespace Enemies
                     BossHealthBarUI.Instance?.Hide();
                     CleanupFightSubscriptions();
 
-                    if (ShouldPlayEndCredits && !endCreditsPending) StartEndCredits(endCreditsDelay);
+                    if (ShouldPlayEndCredits && !endCreditsPending) 
+                        StartEndCredits(endCreditsDelay);
+                    
+                    if(rushFight)
+                        BossRushManager.Instance?.HandleBossDefeated(bossID);
                 };
 
                 bossEnemy.Context.Health.OnDamaged += onBossDamaged;
@@ -799,6 +849,70 @@ namespace Enemies
             if (index < 0 || index >= phaseMusicLabels.Length) return;
 
             MusicManager.Instance?.SetLocalParameterLabel(musicPhaseParameter, phaseMusicLabels[index]);
+        }
+
+        public void OfferRushFight()
+        {
+            rushOffered = true;
+            UpdateRematchInteractable();
+        }
+
+        public bool StartRushFight(Player player)
+        {
+            if (!BossRushManager.IsActive || bossSpawner == null || activeBossEnemy != null || rushStarting)
+                return false;
+
+            StartCoroutine(RushFightRoutine(player));
+            return true;
+        }
+
+        public void EndRush()
+        {
+            rushFight = false;
+            
+            if(!doorsLockedByThis && arenaColliders != null)
+                arenaColliders.SetActive(false);
+            
+            ReleaseCamera();
+        }
+
+        private IEnumerator RushFightRoutine(Player player)
+        {
+            rushStarting = true;
+            rushFight = true;
+            bossDefeated = false;
+            hasTriggered = false;
+            defeatedBossObject = null;
+            
+            if(!BossPresent())
+                bossSpawner.ForceRespawn();
+
+            float waited = 0f;
+            
+            while (!BossPresent() && waited < 3f)
+            {
+                waited += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            rushStarting = false;
+
+            if (!BossPresent())
+            {
+                Debug.LogWarning("[BossTrigger] Rush boss failed to spawn.");
+                BossRushManager.Instance?.Fail();
+                yield break;
+            }
+
+            TriggerBossFight(player);
+        }
+
+        public void PrepareRushArena()
+        {
+            if(arenaColliders != null)
+                arenaColliders.SetActive(true);
+            
+            LockCamera();
         }
     }
 }
