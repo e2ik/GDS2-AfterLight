@@ -11,6 +11,7 @@ public class SaveButtonState : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Button primaryButton;
     [SerializeField] private Button newGameButton;
+    [SerializeField] private Button bossRushButton;
     [SerializeField] private Button creditsButton;
 
     private TMP_Text primaryButtonText;
@@ -58,6 +59,12 @@ public class SaveButtonState : MonoBehaviour
             creditsButton.onClick.AddListener(OnCreditsPressed);
         }
 
+        if (bossRushButton != null)
+        {
+            bossRushButton.onClick.RemoveAllListeners();
+            bossRushButton.onClick.AddListener(OnBossRushPressed);
+        }
+
         if (newGameButton != null)
         {
             newGameButton.gameObject.SetActive(saveExists);
@@ -83,5 +90,10 @@ public class SaveButtonState : MonoBehaviour
     private void OnCreditsPressed()
     {
         GameManager.Instance.LoadCredits();
+    }
+
+    private void OnBossRushPressed()
+    {
+        GameManager.Instance.StartBossRush();
     }
 }

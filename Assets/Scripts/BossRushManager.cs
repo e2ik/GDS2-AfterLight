@@ -69,9 +69,14 @@ public class BossRushManager : MonoBehaviour
 
       public void StartRush()
       {
+            Debug.Log($"[BossRush] StartRush. IsActive={IsActive}, stages={StageCount}");
+            
             if (IsActive || StageCount == 0)
                   return;
 
+            StageIndex = 0;
+            stageCleared = false;
+            currentTrigger = null;
             IsActive = true;
             StartCoroutine(RushRoutine());
       }
@@ -96,6 +101,7 @@ public class BossRushManager : MonoBehaviour
                   currentTrigger = null;
                   
                   FastTravelManager.Instance.TravelTo(stage.arrivalNode, recordProgress: false);
+                  Debug.Log($"[BossRush] Stage {StageIndex}: travelling={FastTravelManager.Instance.IsTravelling}");
 
                   while (FastTravelManager.Instance.IsTravelling)
                         yield return null;
@@ -190,5 +196,17 @@ public class BossRushManager : MonoBehaviour
                   return;
 
             TutorialSpeechBubblePool.Instance.Show(stage.rewardMessage, player.transform, noticeDuration, noticeEffect);
+      }
+
+      public void Abort()
+      {
+            StopAllCoroutines();
+            
+            if(currentTrigger != null)
+                  currentTrigger.EndRush();
+
+            currentTrigger = null;
+            stageCleared = false;
+            IsActive = false;
       }
 }

@@ -400,6 +400,8 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToTitle()
     {
+        BossRushManager.Instance?.Abort();
+        FastTravelManager.Instance?.CancelTravel();
         StartCoroutine(ReturnToTitleRoutine());
     }
 
@@ -964,6 +966,7 @@ public class GameManager : MonoBehaviour
 
     public void StartBossRush()
     {
+        Debug.Log($"[BossRush] Start pressed. CreditsOpen={CreditsOpen}, IsActive={BossRushManager.IsActive}, Sandbox={SaveManager.Instance != null && SaveManager.Instance.IsSandBox}");
         if (CreditsOpen)
             return;
         
@@ -980,6 +983,7 @@ public class GameManager : MonoBehaviour
         FadeCanvasController.Instance?.FadeTo(1f, 0f);
 
         BossRushManager rush = BossRushManager.Instance;
+        Debug.Log($"[BossRush] Master loaded. Manager={(rush != null)}, IsActive={BossRushManager.IsActive}");
 
         if (rush == null)
         {

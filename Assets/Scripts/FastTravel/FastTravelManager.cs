@@ -198,4 +198,10 @@ public class FastTravelManager : MonoBehaviour
         Debug.LogWarning($"[FastTravelManager] Spawn anchor '{anchorID}' could not be found among {anchors.Length} total anchors.");
         return null;
     }
+
+    public void CancelTravel()
+    {
+        StopAllCoroutines();
+        IsTravelling = false;
+    }
 }
