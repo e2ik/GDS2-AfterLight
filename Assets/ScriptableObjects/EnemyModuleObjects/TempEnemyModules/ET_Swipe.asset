@@ -12,10 +12,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca334159b860b7943b6e9457654eb9b5, type: 3}
   m_Name: ET_Swipe
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.ModuleScripts.Attacks.MeleeAttack
-  range: 5
+  range: 2.5
   cooldownDuration: 5
+  useVerticalBand: 0
+  bottomMargin: 0.1
+  topMargin: 0.1
+  debugVerticalBand: 0
+  keepClearOfBoundary: 0
+  boundaryClearance: 2
+  repositionSpeed: 4
+  repositionTimeout: 3
+  attackIfBlocked: 0
+  repositionWindupTrigger: MoveWindup
+  repositionWindupState: MoveWindup
+  repositionWinddownTrigger: MoveWinddown
+  repositionWinddownState: MoveWinddown
+  repositionPhaseTimeout: 1.5
+  debugBoundaryClearance: 0
   clip: {fileID: 7400000, guid: cf0b3d4188a4df44684f0385dc963b97, type: 2}
   damage: 20
   attackForce: 2
-  placeholderClipName: EmptyAttack
+  executeAttackEvent:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
   attackStateName: Attack
