@@ -53,6 +53,9 @@ public class PlayerStats : MonoBehaviour
     public bool IsDead => currentHealth <= 0f;
     public bool CanRespawn => FastTravelManager.Instance != null && FastTravelManager.Instance.HasLastVisitedNode;
 
+    private readonly HashSet<object> damageBlockers = new HashSet<object>();
+    public bool DamageBlocked => damageBlockers.Count > 0;
+
     public event System.Action<float, float> OnHealthChanged;
     public event System.Action OnStatsRecalculated;
     public event System.Action OnDied;
@@ -235,7 +238,7 @@ public class PlayerStats : MonoBehaviour
 
     public void TakeDamage(float rawDamage)
     {
-        if (IsDead || rawDamage <= 0f) return;
+        if (IsDead || rawDamage <= 0f || DamageBlocked) return;
 
         if (GodModeOn)
         {
@@ -417,7 +420,8 @@ public class PlayerStats : MonoBehaviour
     {
         StopLandingWait();
         isRespawning = false;
-
+        damageBlockers.Clear();
+        
         ReviveFull();
         if (player != null && player.Heals != null) player.Heals.ResetHeals();
         PrefabSpawner.ResetAllDefeated();
@@ -436,5 +440,16 @@ public class PlayerStats : MonoBehaviour
         if (deathWindow == null)
             deathWindow = FindFirstObjectByType<GameUI.DeathWindow>();
         return deathWindow;
+    }
+
+    public void SetDamageBlocked(object source, bool blocked)
+    {
+        if (source == null)
+            return;
+
+        if (blocked)
+            damageBlockers.Add(source);
+        else
+            damageBlockers.Remove(source);
     }
 }

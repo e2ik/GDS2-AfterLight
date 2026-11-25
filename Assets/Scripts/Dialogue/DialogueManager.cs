@@ -236,6 +236,7 @@ public class DialogueManager : MonoBehaviour
         {
             currentPlayer.Controller.InputEnabled = false;
             currentPlayer.InteractionManager.SetInteractionBlocked(true);
+            currentPlayer.Stats.SetDamageBlocked(this, true);
 
             if (stopPlayerMovement && !playerMovementFrozen)
             {
@@ -812,6 +813,7 @@ public class DialogueManager : MonoBehaviour
         {
             currentPlayer.Controller.InputEnabled = true;
             currentPlayer.InteractionManager.SetInteractionBlocked(false);
+            currentPlayer.Stats.SetDamageBlocked(this, false);
 
             if (playerMovementFrozen) currentPlayer.Controller.FreezeMovement(false);
         }

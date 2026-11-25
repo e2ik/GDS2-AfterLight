@@ -225,6 +225,7 @@ namespace Enemies
             rushStarting = false;
             rushOffered = false;
             
+            BlockPlayerDamage(false);
             SetIntroRunning(false);
             PlayerStats.OnRespawnStarted -= HandleRespawnStarted;
             if (activeBossEnemy != null) Disengage();
@@ -337,6 +338,7 @@ namespace Enemies
         {
             if (running == introRunning) return;
             introRunning = running;
+            BlockPlayerDamage(running);
             introTriggerCount = Mathf.Max(0, introTriggerCount + (running ? 1 : -1));
         }
 
@@ -496,6 +498,7 @@ namespace Enemies
             
             boss.FreezeForPhaseTransition();
             player.Controller.FreezeMovement(true);
+            BlockPlayerDamage(true);
 
             bool dialoguePlayed = false;
 
@@ -559,6 +562,7 @@ namespace Enemies
             }
             finally
             {
+                BlockPlayerDamage(false);
                 if (player != null && player.Controller != null)
                     player.Controller.FreezeMovement(false);
             }
@@ -727,35 +731,43 @@ namespace Enemies
         private IEnumerator PlayDeathDialogueThenFinalize(Enemy bossEnemy, Player player)
         {
             deathSequenceRunning = true;
-            bossEnemy.FreezeForDeathSequence();
+            BlockPlayerDamage(true);
             
-            player.Controller.FreezeMovement(true);
-            
-
-            if (deathDialogue != null && DialogueManager.Instance != null)
+            try
             {
-                DialogueManager.Instance.StartDialogue(deathDialogue, player);
-                
-                if (DialogueManager.Instance.IsDialogueActive)
-                    yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
+                bossEnemy.FreezeForDeathSequence();
+                player.Controller.FreezeMovement(true);
+
+
+                if (deathDialogue != null && DialogueManager.Instance != null)
+                {
+                    DialogueManager.Instance.StartDialogue(deathDialogue, player);
+
+                    if (DialogueManager.Instance.IsDialogueActive)
+                        yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive);
+                }
+
+                bool hasCutscene = !string.IsNullOrEmpty(deathCutscene);
+
+                if (hasCutscene)
+                    yield return PlayCutscene(deathCutscene, player, bossEnemy);
+
+                deathSequenceRunning = false;
+                if (bossEnemy != null)
+                    bossEnemy.Context.Health.FinalizeDeath();
+
+                if (endCreditsPending)
+                {
+                    StartEndCredits(hasCutscene ? 0f : endCreditsDelay);
+                    yield break;
+                }
+
+                player.Controller.FreezeMovement(false);
             }
-
-            bool hasCutscene = !string.IsNullOrEmpty(deathCutscene);
-
-            if (hasCutscene)
-                yield return PlayCutscene(deathCutscene, player, bossEnemy);
-            
-            deathSequenceRunning = false;
-            if(bossEnemy != null)
-                bossEnemy.Context.Health.FinalizeDeath();
-
-            if (endCreditsPending)
+            finally
             {
-                StartEndCredits(hasCutscene ? 0f : endCreditsDelay);
-                yield break;
+                BlockPlayerDamage(false);
             }
-            
-            player.Controller.FreezeMovement(false);
         }
 
         private void StartEndCredits(float delay)
@@ -913,6 +925,14 @@ namespace Enemies
                 arenaColliders.SetActive(true);
             
             LockCamera();
+        }
+
+        private void BlockPlayerDamage(bool block)
+        {
+            Player p = GameManager.Instance != null ? GameManager.Instance.Player : null;
+            
+            if(p != null && p.Stats != null)
+                p.Stats.SetDamageBlocked(this, block);
         }
     }
 }

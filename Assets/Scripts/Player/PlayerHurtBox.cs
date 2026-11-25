@@ -27,7 +27,9 @@ public class PlayerHurtBox : MonoBehaviour
     private const float DodgeRepeatWindow = 0.5f;
     public bool Invulnerable
     {
-        get => manualInvulnerable || (playerController != null && playerController.IsInvulnerable);
+        get => manualInvulnerable 
+               || (stats != null && stats.DamageBlocked)
+               || (playerController != null && playerController.IsInvulnerable);
         set => manualInvulnerable = value;
     }
 
