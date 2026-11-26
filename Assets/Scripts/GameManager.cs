@@ -232,6 +232,22 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[GameManager] Dev: added {count} {rarity} items to the inventory.");
     }
 
+    public void UnlockAllSkills()
+    {
+        if (player == null || player.Inventory == null) return;
+
+        PlayerInventoryManager inventory = player.Inventory;
+        
+        if (GameDatabase.PrimaryGemTemplateDB != null && GameDatabase.PrimaryGemTemplateDB.primaryGemTemplates != null)
+        {
+            foreach (var def in GameDatabase.PrimaryGemTemplateDB.primaryGemTemplates)
+            {
+                if (def == null) continue;
+                inventory.AddItemToInventory(def.CreateInstance());
+            }
+        }
+    }
+
     public void UnlockAllFastTravelNodes()
     {
         if (worldMapState == null)

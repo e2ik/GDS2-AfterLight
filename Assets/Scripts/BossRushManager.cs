@@ -78,6 +78,9 @@ public class BossRushManager : MonoBehaviour
             stageCleared = false;
             currentTrigger = null;
             IsActive = true;
+            
+            GameManager.Instance.UnlockAllSkills();
+            
             StartCoroutine(RushRoutine());
       }
 
